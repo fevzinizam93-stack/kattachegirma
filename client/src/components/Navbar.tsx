@@ -1,22 +1,30 @@
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
-import { MapPin, Menu, Phone, Search, ShoppingCart, X } from "lucide-react";
+import { ChevronDown, MapPin, Search, ShoppingCart, User } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 
 export default function Navbar() {
   const { totalItems } = useCart();
+  const { user, isAuthenticated, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [, navigate] = useLocation();
+  const [location] = useLocation();
 
   const { data: categoriesData } = trpc.categories.list.useQuery();
-  const { data: settings } = trpc.storeSettings.getAll.useQuery();
-  const categories = categoriesData ?? [];
+  const { data: settingsRaw } = trpc.storeSettings.getAll.useQuery();
 
-  const s = (settings as Record<string, string>) ?? {};
-  const storePhone = s.phone || "";
-  const storeAddress = s.address || "";
+  const categories = categoriesData ?? [];
+  const settings: Record<string, string> = {};
+  if (Array.isArray(settingsRaw)) {
+    (settingsRaw as { key: string; value: string }[]).forEach((s) => {
+      settings[s.key] = s.value;
+    });
+  }
+
+  const topCategories = categories.slice(0, 6);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,164 +34,141 @@ export default function Navbar() {
     }
   };
 
-  const mainCategories = categories.slice(0, 7);
-
   return (
     <header className="sticky top-0 z-50 shadow-md">
-      {/* Top bar - kırmızı */}
-      <div className="bg-primary text-primary-foreground py-1.5">
-        <div className="container">
-          <div className="flex items-center justify-between text-xs">
-            <span className="hidden sm:block">🔥 Katta chegirmalar har kuni! 🔥</span>
-            <div className="flex items-center gap-4 ml-auto">
-              {storePhone && (
-                <a href={`tel:${storePhone}`} className="flex items-center gap-1 hover:text-white/80 transition-colors">
-                  <Phone size={12} />
-                  <span>{storePhone}</span>
-                </a>
-              )}
-              {storeAddress && (
-                <span className="hidden md:flex items-center gap-1">
-                  <MapPin size={12} />
-                  <span className="truncate max-w-[200px]">{storeAddress}</span>
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main navbar - beyaz */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="container">
-          <div className="flex items-center gap-4 py-3">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 shrink-0">
+      {/* ===== MAIN HEADER - RED ===== */}
+      <div style={{ backgroundColor: "#cc0000" }} className="text-white">
+        <div className="container py-2 flex items-center gap-3">
+          {/* Logo */}
+          <Link href="/" className="shrink-0 flex items-center gap-2 min-w-fit">
+            <div className="bg-white rounded p-1 flex items-center justify-center w-10 h-10">
               <img
                 src="/manus-storage/kattachegirma-logo_b5417617.png"
-                alt="Katta Chegirma - Texnomagister"
-                className="h-12 w-auto object-contain"
+                alt="KC"
+                className="h-8 w-auto object-contain"
               />
+            </div>
+            <div className="hidden sm:block">
+              <div className="font-black text-sm leading-tight">
+                Katta Chegirma<span className="text-yellow-300">!!!</span>
+              </div>
+            </div>
+          </Link>
+
+          {/* Search bar */}
+          <form onSubmit={handleSearch} className="flex-1 flex max-w-2xl">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Поиск..."
+              className="flex-1 px-4 py-2 text-sm text-gray-900 bg-white rounded-l-md outline-none border-0 min-w-0"
+            />
+            <button
+              type="submit"
+              className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-r-md transition-colors shrink-0"
+            >
+              <Search size={16} />
+            </button>
+          </form>
+
+          {/* Right side */}
+          <div className="flex items-center gap-4 shrink-0">
+            {/* Cart */}
+            <Link href="/cart" className="flex items-center gap-1.5 hover:text-yellow-300 transition-colors">
+              <div className="relative">
+                <ShoppingCart size={20} />
+                {totalItems > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-yellow-400 text-gray-900 text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                    {totalItems > 9 ? "9+" : totalItems}
+                  </span>
+                )}
+              </div>
+              <span className="hidden sm:block text-sm font-medium">Корзина</span>
             </Link>
 
-            {/* Search */}
-            <form onSubmit={handleSearch} className="flex-1 flex items-center gap-2 max-w-xl">
-              <div className="relative flex-1">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Mahsulot qidiring..."
-                  className="w-full border border-gray-300 rounded-lg pl-4 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-gray-50"
-                />
-                <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary">
-                  <Search size={18} />
+            {/* Sellers */}
+            <Link
+              href="/seller"
+              className="hidden md:flex items-center gap-1 hover:text-yellow-300 transition-colors text-sm font-medium"
+            >
+              <User size={16} />
+              Продавцы
+            </Link>
+
+            {/* User */}
+            {isAuthenticated ? (
+              <div className="hidden md:flex items-center gap-2 text-sm">
+                <User size={16} />
+                <span className="text-white/90 max-w-[100px] truncate">{user?.name?.split(" ")[0]}</span>
+                <button
+                  onClick={() => logout()}
+                  className="text-white/60 hover:text-white text-xs"
+                >
+                  ▼
                 </button>
               </div>
-            </form>
-
-            {/* Right actions */}
-            <div className="flex items-center gap-3 shrink-0">
-              {/* Cart */}
-              <Link href="/cart" className="relative flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-primary transition-colors">
-                <div className="relative">
-                  <ShoppingCart size={22} />
-                  {totalItems > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                      {totalItems > 99 ? "99+" : totalItems}
-                    </span>
-                  )}
-                </div>
-                <span className="hidden sm:block">Savat</span>
-              </Link>
-
-              {/* Mobile menu button */}
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-1 text-gray-600 hover:text-primary"
+            ) : (
+              <a
+                href={getLoginUrl()}
+                className="hidden md:flex items-center gap-1 hover:text-yellow-300 transition-colors text-sm"
               >
-                {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-              </button>
+                <User size={16} />
+                <span>Войти</span>
+              </a>
+            )}
+
+            {/* Language */}
+            <div className="hidden lg:flex items-center gap-1 text-sm text-white/80 cursor-pointer hover:text-white select-none">
+              <span>🇷🇺</span>
+              <span>RU</span>
+              <ChevronDown size={12} />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Category nav - koyu gri */}
-      <div className="bg-gray-800 text-white hidden md:block">
-        <div className="container">
-          <nav className="flex items-center gap-0.5 overflow-x-auto py-0">
-            <Link href="/catalog" className="px-3 py-2.5 text-sm font-semibold hover:bg-primary transition-colors whitespace-nowrap">
-              Barcha tovarlar
+      {/* ===== CATEGORY NAV BAR - DARKER RED ===== */}
+      <nav style={{ backgroundColor: "#a80000" }} className="text-white border-t border-red-900">
+        <div className="container flex items-center overflow-x-auto scrollbar-hide">
+          <Link
+            href="/"
+            className={`px-3 py-2.5 text-sm font-medium whitespace-nowrap hover:bg-red-900 transition-colors ${location === "/" ? "bg-red-900" : ""}`}
+          >
+            Главная
+          </Link>
+          <Link
+            href="/catalog"
+            className={`px-3 py-2.5 text-sm font-medium whitespace-nowrap hover:bg-red-900 transition-colors ${location === "/catalog" ? "bg-red-900" : ""}`}
+          >
+            Каталог
+          </Link>
+          {topCategories.map((cat) => (
+            <Link
+              key={cat.id}
+              href={`/category/${cat.slug}`}
+              className={`px-3 py-2.5 text-sm font-medium whitespace-nowrap hover:bg-red-900 transition-colors ${location === `/category/${cat.slug}` ? "bg-red-900" : ""}`}
+            >
+              {cat.name}
             </Link>
-            {mainCategories.map(cat => (
-              <Link
-                key={cat.id}
-                href={`/category/${cat.slug}`}
-                className="px-3 py-2.5 text-sm hover:bg-primary transition-colors whitespace-nowrap flex items-center gap-1"
-              >
-                <span>{cat.icon}</span>
-                <span>{cat.name}</span>
-              </Link>
-            ))}
-            {categories.length > 7 && (
-              <Link href="/catalog" className="px-3 py-2.5 text-sm hover:bg-primary transition-colors whitespace-nowrap">
-                Barchasi →
-              </Link>
-            )}
-            <div className="flex-1" />
-            <Link href="/about" className="px-3 py-2.5 text-sm hover:bg-primary transition-colors whitespace-nowrap">
-              О нас
+          ))}
+          {settings.address && (
+            <Link
+              href="/about"
+              className="px-3 py-2.5 text-sm font-medium whitespace-nowrap hover:bg-red-900 transition-colors flex items-center gap-1"
+            >
+              <MapPin size={13} />
+              Адреса
             </Link>
-            <Link href="/seller" className="px-3 py-2.5 text-sm hover:bg-primary transition-colors whitespace-nowrap text-yellow-300">
-              Sotuvchi bo'lish
-            </Link>
-          </nav>
+          )}
+          <Link
+            href="/about"
+            className={`px-3 py-2.5 text-sm font-medium whitespace-nowrap hover:bg-red-900 transition-colors ${location === "/about" ? "bg-red-900" : ""}`}
+          >
+            О нас
+          </Link>
         </div>
-      </div>
-
-      {/* Mobile menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-b border-gray-200 shadow-lg">
-          <div className="container py-3">
-            <nav className="flex flex-col gap-0.5">
-              <Link
-                href="/catalog"
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2.5 text-sm font-semibold hover:bg-gray-100 rounded text-gray-800"
-              >
-                Barcha tovarlar
-              </Link>
-              {categories.map(cat => (
-                <Link
-                  key={cat.id}
-                  href={`/category/${cat.slug}`}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="px-3 py-2.5 text-sm hover:bg-gray-100 rounded flex items-center gap-2 text-gray-700"
-                >
-                  <span>{cat.icon}</span>
-                  <span>{cat.name}</span>
-                </Link>
-              ))}
-              <hr className="my-1 border-gray-200" />
-              <Link
-                href="/about"
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2.5 text-sm hover:bg-gray-100 rounded text-gray-700"
-              >
-                О нас
-              </Link>
-              <Link
-                href="/seller"
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2.5 text-sm hover:bg-gray-100 rounded text-primary font-medium"
-              >
-                Sotuvchi bo'lish
-              </Link>
-            </nav>
-          </div>
-        </div>
-      )}
+      </nav>
     </header>
   );
 }

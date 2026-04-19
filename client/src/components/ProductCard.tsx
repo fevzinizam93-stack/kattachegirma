@@ -23,7 +23,7 @@ interface ProductCardProps {
 
 function formatPrice(price: string | number) {
   const num = typeof price === "string" ? parseFloat(price) : price;
-  return new Intl.NumberFormat("uz-UZ").format(num) + " so'm";
+  return new Intl.NumberFormat("ru-RU").format(num) + " сум";
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
@@ -40,7 +40,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       imageUrl: product.imageUrl ?? undefined,
       slug: product.slug,
     });
-    toast.success("Savatga qo'shildi!", {
+    toast.success("Добавлено в корзину!", {
       description: product.name,
       duration: 2000,
     });
@@ -48,66 +48,96 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   const discountPercent = product.discount ?? 0;
   const hasDiscount = discountPercent > 0 && product.originalPrice;
+  const inStock = !product.stock || product.stock > 0;
 
   return (
     <Link href={`/product/${product.slug}`}>
-      <div className="product-card bg-white rounded-xl border border-border overflow-hidden cursor-pointer h-full flex flex-col">
-        {/* Image */}
-        <div className="relative aspect-square bg-gray-50 overflow-hidden">
-          {product.imageUrl ? (
-            <img
-              src={product.imageUrl}
-              alt={product.name}
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-5xl bg-gray-100">
-              🏠
-            </div>
-          )}
-          {/* Badges */}
-          <div className="absolute top-2 left-2 flex flex-col gap-1">
-            {hasDiscount && (
-              <span className="discount-badge">-{discountPercent}%</span>
-            )}
-            {product.isNew && (
-              <span className="new-badge">YANGI</span>
+      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden cursor-pointer h-full flex flex-col hover:shadow-md transition-shadow">
+        {/* Image area */}
+        <div className="relative bg-gray-50" style={{ paddingBottom: "75%" }}>
+          <div className="absolute inset-0">
+            {product.imageUrl ? (
+              <img
+                src={product.imageUrl}
+                alt={product.name}
+                className="w-full h-full object-contain p-2"
+                loading="lazy"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-5xl text-gray-300">
+                📦
+              </div>
             )}
           </div>
+
+          {/* Discount badge - top left, green */}
+          {hasDiscount && (
+            <div
+              className="absolute top-2 left-2 text-white text-xs font-bold px-1.5 py-0.5 rounded"
+              style={{ backgroundColor: "#2e7d32" }}
+            >
+              -{discountPercent}%
+            </div>
+          )}
+
+          {/* НОВИНКА badge - top left below discount, green */}
+          {product.isNew && (
+            <div
+              className="absolute text-white text-[10px] font-bold px-1.5 py-0.5 rounded"
+              style={{
+                backgroundColor: "#388e3c",
+                top: hasDiscount ? "30px" : "8px",
+                left: "8px",
+              }}
+            >
+              НОВИНКА
+            </div>
+          )}
+
+          {/* Wishlist icon - top right */}
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+            className="absolute top-2 right-2 text-gray-300 hover:text-red-500 transition-colors"
+          >
+            ♡
+          </button>
         </div>
 
         {/* Content */}
-        <div className="p-3 flex flex-col flex-1">
+        <div className="p-2.5 flex flex-col flex-1">
+          {/* Brand */}
           {product.brand && (
-            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-1">
+            <p className="text-[11px] text-gray-500 font-semibold uppercase tracking-wide mb-0.5">
               {product.brand}
             </p>
           )}
-          <h3 className="text-sm font-semibold text-foreground line-clamp-2 flex-1 mb-2">
+
+          {/* Name */}
+          <h3 className="text-xs font-medium text-gray-800 line-clamp-2 flex-1 mb-2 leading-snug">
             {product.name}
           </h3>
 
           {/* Price */}
-          <div className="mb-3">
-            <div className="text-base font-black text-primary">
+          <div className="mb-2">
+            <div className="text-sm font-black" style={{ color: "#cc0000" }}>
               {formatPrice(product.price)}
             </div>
             {hasDiscount && product.originalPrice && (
-              <div className="text-xs text-muted-foreground line-through">
+              <div className="text-xs text-gray-400 line-through">
                 {formatPrice(product.originalPrice)}
               </div>
             )}
           </div>
 
-          {/* Add to cart */}
+          {/* В корзину button */}
           <button
             onClick={handleAddToCart}
-            disabled={!product.stock || product.stock <= 0}
-            className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-2 px-3 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!inStock}
+            className="w-full flex items-center justify-center gap-1.5 text-white py-1.5 px-2 rounded text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ backgroundColor: inStock ? "#cc0000" : "#aaa" }}
           >
-            <ShoppingCart size={16} />
-            {product.stock && product.stock > 0 ? "Savatga" : "Tugagan"}
+            <ShoppingCart size={13} />
+            {inStock ? "В корзину" : "Нет в наличии"}
           </button>
         </div>
       </div>

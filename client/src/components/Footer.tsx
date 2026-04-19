@@ -6,7 +6,7 @@ export default function Footer() {
   const categories = categoriesData ?? [];
 
   return (
-    <footer className="bg-gray-900 text-white mt-12">
+    <footer className="text-white mt-8" style={{ backgroundColor: '#cc0000' }}>
       <div className="container py-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Brand */}
@@ -18,18 +18,18 @@ export default function Footer() {
                 className="h-14 w-auto object-contain rounded-lg"
               />
             </div>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-red-100">
               Uy texnikasi bo'yicha eng yaxshi narxlar. Sifatli mahsulotlar, tez yetkazib berish.
             </p>
           </div>
 
           {/* Categories */}
           <div>
-            <h4 className="font-bold mb-3 text-sm uppercase tracking-wide text-gray-300">Kategoriyalar</h4>
+            <h4 className="font-bold mb-3 text-sm uppercase tracking-wide text-white">Kategoriyalar</h4>
             <ul className="space-y-1">
               {categories.slice(0, 6).map(cat => (
                 <li key={cat.id}>
-                  <Link href={`/category/${cat.slug}`} className="text-sm text-gray-400 hover:text-white transition-colors">
+                  <Link href={`/category/${cat.slug}`} className="text-sm text-red-100 hover:text-white transition-colors">
                     {cat.icon} {cat.name}
                   </Link>
                 </li>
@@ -39,17 +39,17 @@ export default function Footer() {
 
           {/* Info */}
           <div>
-            <h4 className="font-bold mb-3 text-sm uppercase tracking-wide text-gray-300">Ma'lumot</h4>
+            <h4 className="font-bold mb-3 text-sm uppercase tracking-wide text-white">Ma'lumot</h4>
             <ul className="space-y-1">
-              <li><Link href="/catalog" className="text-sm text-gray-400 hover:text-white transition-colors">Barcha mahsulotlar</Link></li>
-              <li><Link href="/cart" className="text-sm text-gray-400 hover:text-white transition-colors">Savat</Link></li>
-              <li><span className="text-sm text-gray-400">Telefon: Tez orada</span></li>
-              <li><span className="text-sm text-gray-400">Manzil: Tez orada</span></li>
+              <li><Link href="/catalog" className="text-sm text-red-100 hover:text-white transition-colors">Barcha mahsulotlar</Link></li>
+              <li><Link href="/cart" className="text-sm text-red-100 hover:text-white transition-colors">Savat</Link></li>
+              <li><span className="text-sm text-red-100">Telefon: Tez orada</span></li>
+              <li><span className="text-sm text-red-100">Manzil: Tez orada</span></li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-gray-800 mt-8 pt-6 text-center text-xs text-gray-500">
+        <div className="border-t border-red-700 mt-8 pt-6 text-center text-xs text-red-200">
           © {new Date().getFullYear()} Katta Chegirma. Barcha huquqlar himoyalangan.
         </div>
       </div>
