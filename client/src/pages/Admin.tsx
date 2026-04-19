@@ -1,6 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { Edit, MapPin, Package, Plus, Settings, ShoppingBag, Store, Trash2, Users, X } from "lucide-react";
+import { Edit, FolderOpen, ImagePlus, MapPin, Package, Plus, Settings, ShoppingBag, Store, Trash2, Upload, Users, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -11,7 +11,7 @@ function formatPrice(price: string | number) {
   return new Intl.NumberFormat("ru-RU").format(num) + " so'm";
 }
 
-type Tab = "products" | "orders" | "sellers" | "settings";
+type Tab = "products" | "categories" | "orders" | "sellers" | "settings";
 
 interface ProductForm {
   id?: number;
@@ -45,6 +45,12 @@ export default function Admin() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<ProductForm>(emptyForm);
   const [editId, setEditId] = useState<number | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
+
+  // Category form state
+  const [showCatForm, setShowCatForm] = useState(false);
+  const [catForm, setCatForm] = useState({ id: 0, name: "", slug: "", icon: "" });
+  const [catEditId, setCatEditId] = useState<number | null>(null);
 
   // Store settings state
   const [settingsForm, setSettingsForm] = useState({
@@ -126,6 +132,39 @@ export default function Admin() {
     onError: (e) => toast.error("Xatolik: " + e.message),
   });
 
+  const upsertCategory = trpc.categories.upsert.useMutation({
+    onSuccess: () => {
+      toast.success(catEditId ? "Категория обновлена!" : "Категория добавлена!");
+      utils.categories.list.invalidate();
+      setShowCatForm(false);
+      setCatForm({ id: 0, name: "", slug: "", icon: "" });
+      setCatEditId(null);
+    },
+    onError: (e) => toast.error("Ошибка: " + e.message),
+  });
+
+  const deleteCategory = trpc.categories.delete.useMutation({
+    onSuccess: () => { toast.success("Категория удалена!"); utils.categories.list.invalidate(); },
+    onError: (e) => toast.error("Ошибка: " + e.message),
+  });
+
+  const handleImageUpload = async (file: File) => {
+    setImageUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("image", file);
+      const res = await fetch("/api/upload/image", { method: "POST", body: fd, credentials: "include" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Upload failed");
+      setForm(f => ({ ...f, imageUrl: data.url }));
+      toast.success("Фото загружено!");
+    } catch (e: any) {
+      toast.error("Ошибка загрузки: " + e.message);
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
   if (loading) return <div className="container py-20 text-center">Yuklanmoqda...</div>;
 
   if (!user) {
@@ -185,10 +224,11 @@ export default function Admin() {
   };
 
   const tabConfig = [
-    { key: "products" as Tab, icon: Package, label: "Mahsulotlar" },
-    { key: "orders" as Tab, icon: ShoppingBag, label: "Buyurtmalar" },
-    { key: "sellers" as Tab, icon: Users, label: "Sotuvchilar" },
-    { key: "settings" as Tab, icon: Settings, label: "Sozlamalar" },
+    { key: "products" as Tab, icon: Package, label: "Товары" },
+    { key: "categories" as Tab, icon: FolderOpen, label: "Категории" },
+    { key: "orders" as Tab, icon: ShoppingBag, label: "Заказы" },
+    { key: "sellers" as Tab, icon: Users, label: "Продавцы" },
+    { key: "settings" as Tab, icon: Settings, label: "Настройки" },
   ];
 
   return (
@@ -278,9 +318,22 @@ export default function Admin() {
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="10" min={0} />
                       </div>
                       <div className="col-span-2">
-                        <label className="block text-sm font-semibold mb-1">Rasm URL</label>
-                        <input value={form.imageUrl} onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="https://..." />
+                        <label className="block text-sm font-semibold mb-1">Фото товара</label>
+                        <div className="flex items-start gap-3">
+                          {form.imageUrl && (
+                            <img src={form.imageUrl} alt="preview" className="w-16 h-16 rounded-lg object-cover border border-gray-200 shrink-0" />
+                          )}
+                          <div className="flex-1 space-y-2">
+                            <label className={`flex items-center justify-center gap-2 w-full border-2 border-dashed border-gray-300 rounded-lg px-3 py-3 text-sm cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors ${imageUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                              <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
+                              <Upload size={16} className="text-gray-400" />
+                              <span className="text-gray-500">{imageUploading ? 'Загрузка...' : 'Выбрать фото с компьютера'}</span>
+                            </label>
+                            {form.imageUrl && (
+                              <p className="text-xs text-green-600 truncate">✓ Фото загружено</p>
+                            )}
+                          </div>
+                        </div>
                       </div>
                       <div className="col-span-2">
                         <label className="block text-sm font-semibold mb-1">Tavsif</label>
@@ -402,6 +455,136 @@ export default function Admin() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* ==================== CATEGORIES TAB ==================== */}
+        {tab === "categories" && (
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-black text-lg text-gray-900">Категории ({categories.length})</h2>
+              <button
+                onClick={() => { setShowCatForm(true); setCatForm({ id: 0, name: "", slug: "", icon: "" }); setCatEditId(null); }}
+                className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
+              >
+                <Plus size={16} /> Добавить
+              </button>
+            </div>
+
+            {/* Category Form Modal */}
+            {showCatForm && (
+              <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                <div className="bg-white rounded-2xl w-full max-w-md">
+                  <div className="flex items-center justify-between p-5 border-b border-gray-200">
+                    <h3 className="font-black text-lg">{catEditId ? "Редактировать категорию" : "Новая категория"}</h3>
+                    <button onClick={() => { setShowCatForm(false); setCatEditId(null); }} className="hover:text-red-500"><X size={20} /></button>
+                  </div>
+                  <div className="p-5 space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold mb-1">Название *</label>
+                      <input
+                        value={catForm.name}
+                        onChange={e => {
+                          const name = e.target.value;
+                          const slug = name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\u0400-\u04ff-]/g, "").replace(/[\u0400-\u04ff]/g, c => c.charCodeAt(0).toString(36));
+                          setCatForm(f => ({ ...f, name, slug: f.slug || slug }));
+                        }}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        placeholder="Например: Холодильники"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold mb-1">Slug (URL)</label>
+                      <input
+                        value={catForm.slug}
+                        onChange={e => setCatForm(f => ({ ...f, slug: e.target.value }))}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        placeholder="holodilniki"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold mb-1">Иконка (эмодзи)</label>
+                      <input
+                        value={catForm.icon}
+                        onChange={e => setCatForm(f => ({ ...f, icon: e.target.value }))}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        placeholder="❄️"
+                      />
+                    </div>
+                    <div className="flex gap-3 pt-1">
+                      <button
+                        onClick={() => {
+                          if (!catForm.name || !catForm.slug) { toast.error("Название и slug обязательны"); return; }
+                          upsertCategory.mutate(catEditId ? { id: catEditId, name: catForm.name, slug: catForm.slug, icon: catForm.icon } : catForm);
+                        }}
+                        disabled={upsertCategory.isPending}
+                        className="flex-1 bg-primary text-white py-2.5 rounded-xl font-bold hover:bg-primary/90 transition-colors disabled:opacity-50"
+                      >
+                        {catEditId ? "Сохранить" : "Добавить"}
+                      </button>
+                      <button
+                        onClick={() => { setShowCatForm(false); setCatEditId(null); }}
+                        className="px-6 border border-gray-200 py-2.5 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+                      >
+                        Отмена
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Categories table */}
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              {categories.length === 0 ? (
+                <div className="p-8 text-center text-gray-400">
+                  <FolderOpen size={40} className="mx-auto mb-3 opacity-40" />
+                  <p>Категорий нет</p>
+                </div>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="text-left px-4 py-3 font-semibold">#</th>
+                      <th className="text-left px-4 py-3 font-semibold">Название</th>
+                      <th className="text-left px-4 py-3 font-semibold">Slug</th>
+                      <th className="text-left px-4 py-3 font-semibold">Иконка</th>
+                      <th className="text-right px-4 py-3 font-semibold">Действия</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {categories.map(cat => (
+                      <tr key={cat.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                        <td className="px-4 py-3 text-gray-400">{cat.id}</td>
+                        <td className="px-4 py-3 font-semibold">{cat.name}</td>
+                        <td className="px-4 py-3 text-gray-500 font-mono text-xs">{cat.slug}</td>
+                        <td className="px-4 py-3 text-xl">{cat.icon ?? "—"}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => {
+                                setCatForm({ id: cat.id, name: cat.name, slug: cat.slug, icon: cat.icon ?? "" });
+                                setCatEditId(cat.id);
+                                setShowCatForm(true);
+                              }}
+                              className="p-1.5 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
+                            >
+                              <Edit size={15} />
+                            </button>
+                            <button
+                              onClick={() => { if (confirm("Удалить категорию \"" + cat.name + "\"?")) deleteCategory.mutate({ id: cat.id }); }}
+                              className="p-1.5 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
           </div>
         )}
 
