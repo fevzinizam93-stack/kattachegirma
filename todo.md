@@ -46,13 +46,13 @@
 - [x] orders.list admin guard testi
 
 ## Yeni Görevler (v2)
-- [ ] Beyaz tema - sadece üst bar kırmızı
-- [ ] Mağaza ayarları (lokasyon, açıklama, telefon) - DB ve admin paneli
-- [ ] Satıcı tablosu - DB şeması
-- [ ] Ürünlere satıcı telefon ve Telegram alanları ekle
-- [ ] Satıcı paneli sayfası (/seller) - kayıt, ürün ekleme
-- [ ] Ürün detay sayfası yeniden tasarla (sol açıklama, sağ fotoğraf)
-- [ ] "Успей по скидке" butonu
-- [ ] Hakkımızda sayfası (/about) - açıklama + fotoğraf
-- [ ] Navbar'a "О нас" linki ekle
-- [ ] Admin paneline mağaza ayarları bölümü ekle
+- [x] Beyaz tema - sadece üst bar kırmızı
+- [x] Mağaza ayarları (lokasyon, açıklama, telefon) - DB ve admin paneli
+- [x] Satıcı tablosu - DB şeması
+- [x] Ürünlere satıcı telefon ve Telegram alanları ekle
+- [x] Satıcı paneli sayfası (/seller) - kayıt, ürün ekleme
+- [x] Ürün detay sayfası yeniden tasarla (sol fotoğraf, sağ açıklama)
+- [x] "Успей по скидке" butonu
+- [x] Hakkımızda sayfası (/about) - açıklama + fotoğraf
+- [x] Navbar'a "О нас" linki ekle
+- [x] Admin paneline mağaza ayarları bölümü ekle

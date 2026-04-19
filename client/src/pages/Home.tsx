@@ -23,40 +23,43 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Banner */}
-      <section className="hero-gradient text-white py-12 md:py-20">
+      {/* Hero Banner - белый фон */}
+      <section className="bg-white border-b border-gray-100 py-8 md:py-12">
         <div className="container">
-          <div className="max-w-2xl">
-            {/* Logo in hero */}
-            <div className="mb-6">
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            {/* Logo */}
+            <div className="shrink-0">
               <img
                 src="/manus-storage/kattachegirma-logo_b5417617.png"
                 alt="Katta Chegirma - Texnomagister"
-                className="h-20 md:h-24 w-auto object-contain rounded-xl"
+                className="h-28 md:h-36 w-auto object-contain"
               />
             </div>
-            <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-4 py-1.5 text-sm font-medium mb-4">
-              <Zap size={14} className="text-yellow-300" />
-              Katta chegirmalar!
-            </div>
-            <h1 className="text-3xl md:text-5xl font-black mb-4 leading-tight">
-              Uy texnikasi<br />
-              <span className="text-yellow-300">eng arzon narxda</span>
-            </h1>
-            <p className="text-white/80 text-lg mb-8">
-              Elektr supurgidan tortib to televizorgacha — barchasi bir joyda, eng qulay narxlarda.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/catalog">
-                <button className="bg-white text-primary font-bold px-6 py-3 rounded-xl hover:bg-gray-100 transition-colors flex items-center gap-2">
-                  Xarid qilish <ArrowRight size={18} />
-                </button>
-              </Link>
-              <Link href="/catalog">
-                <button className="border-2 border-white text-white font-bold px-6 py-3 rounded-xl hover:bg-white/10 transition-colors">
-                  Katalog
-                </button>
-              </Link>
+            {/* Text */}
+            <div className="flex-1 text-center md:text-left">
+              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary rounded-full px-4 py-1.5 text-sm font-semibold mb-4">
+                <Zap size={14} />
+                Katta chegirmalar!
+              </div>
+              <h1 className="text-3xl md:text-5xl font-black mb-4 leading-tight text-gray-900">
+                Uy texnikasi<br />
+                <span className="text-primary">eng arzon narxda</span>
+              </h1>
+              <p className="text-gray-500 text-lg mb-6">
+                Elektr supurgidan tortib to televizorgacha — barchasi bir joyda, eng qulay narxlarda.
+              </p>
+              <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+                <Link href="/catalog">
+                  <button className="bg-primary text-white font-bold px-6 py-3 rounded-xl hover:bg-primary/90 transition-colors flex items-center gap-2">
+                    Xarid qilish <ArrowRight size={18} />
+                  </button>
+                </Link>
+                <Link href="/catalog">
+                  <button className="border-2 border-primary text-primary font-bold px-6 py-3 rounded-xl hover:bg-primary/5 transition-colors">
+                    Katalog
+                  </button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -130,9 +133,9 @@ export default function Home() {
         )}
       </section>
 
-      {/* Promo Banner */}
+      {/* Promo Banner - kırmızı */}
       <section className="container pb-8">
-        <div className="hero-gradient rounded-2xl p-8 text-white flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="bg-primary rounded-2xl p-8 text-white flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
             <h3 className="text-2xl font-black mb-2">Yangi mahsulotlar keldi!</h3>
             <p className="text-white/80">Eng so'nggi texnologiyalar eng qulay narxlarda</p>
