@@ -18,6 +18,23 @@ import Admin from "./pages/Admin";
 import About from "./pages/About";
 import SellerPanel from "./pages/SellerPanel";
 import Profile from "./pages/Profile";
+import AuthModal from "./components/AuthModal";
+import { createContext, useContext, useState } from "react";
+
+// Global auth modal context so any page can open it
+interface AuthModalContextType {
+  openLogin: () => void;
+  openRegister: () => void;
+}
+
+export const AuthModalContext = createContext<AuthModalContextType>({
+  openLogin: () => {},
+  openRegister: () => {},
+});
+
+export function useAuthModal() {
+  return useContext(AuthModalContext);
+}
 
 function Router() {
   const [location] = useLocation();
@@ -52,20 +69,29 @@ function Router() {
 }
 
 function App() {
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authTab, setAuthTab] = useState<"login" | "register">("login");
+
+  const openLogin = () => { setAuthTab("login"); setAuthOpen(true); };
+  const openRegister = () => { setAuthTab("register"); setAuthOpen(true); };
+
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">
         <CartProvider>
-          <TooltipProvider>
-            <Toaster />
-            <div className="flex flex-col min-h-screen">
-              <Navbar />
-              <main className="flex-1">
-                <Router />
-              </main>
-              <Footer />
-            </div>
-          </TooltipProvider>
+          <AuthModalContext.Provider value={{ openLogin, openRegister }}>
+            <TooltipProvider>
+              <Toaster />
+              <div className="flex flex-col min-h-screen">
+                <Navbar onOpenAuth={openLogin} />
+                <main className="flex-1">
+                  <Router />
+                </main>
+                <Footer />
+              </div>
+              <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} defaultTab={authTab} />
+            </TooltipProvider>
+          </AuthModalContext.Provider>
         </CartProvider>
       </ThemeProvider>
     </ErrorBoundary>

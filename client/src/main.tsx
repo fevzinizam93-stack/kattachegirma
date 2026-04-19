@@ -10,15 +10,9 @@ import "./index.css";
 
 const queryClient = new QueryClient();
 
-const redirectToLoginIfUnauthorized = (error: unknown) => {
-  if (!(error instanceof TRPCClientError)) return;
-  if (typeof window === "undefined") return;
-
-  const isUnauthorized = error.message === UNAUTHED_ERR_MSG;
-
-  if (!isUnauthorized) return;
-
-  window.location.href = getLoginUrl();
+const redirectToLoginIfUnauthorized = (_error: unknown) => {
+  // Disabled: we use our own email/password auth modal instead of Manus OAuth
+  // Do not redirect to Manus OAuth on unauthorized errors
 };
 
 queryClient.getQueryCache().subscribe(event => {

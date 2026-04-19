@@ -4,16 +4,17 @@ import { trpc } from "@/lib/trpc";
 import { ChevronDown, MapPin, Search, ShoppingCart, User } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import AuthModal from "./AuthModal";
 
-export default function Navbar() {
+interface NavbarProps {
+  onOpenAuth?: () => void;
+}
+
+export default function Navbar({ onOpenAuth }: NavbarProps) {
   const { totalItems } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [, navigate] = useLocation();
   const [location] = useLocation();
-  const [authOpen, setAuthOpen] = useState(false);
-  const [authTab, setAuthTab] = useState<"login" | "register">("login");
 
   const { data: categoriesData } = trpc.categories.list.useQuery();
   const { data: settingsRaw } = trpc.storeSettings.getAll.useQuery();
@@ -115,7 +116,7 @@ export default function Navbar() {
               </div>
             ) : (
               <button
-                onClick={() => { setAuthTab("login"); setAuthOpen(true); }}
+                onClick={() => onOpenAuth?.()}
                 className="hidden md:flex items-center gap-1 hover:text-yellow-300 transition-colors text-sm"
               >
                 <User size={16} />
@@ -175,8 +176,6 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Auth Modal */}
-      <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} defaultTab={authTab} />
     </header>
   );
 }

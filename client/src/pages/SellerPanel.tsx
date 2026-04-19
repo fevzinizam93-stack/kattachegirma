@@ -1,6 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { getLoginUrl } from "@/const";
+import { useAuthModal } from "@/App";
 import { CheckCircle, Package, Plus, Store, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -12,6 +12,7 @@ function formatPrice(price: string | number) {
 
 export default function SellerPanel() {
   const { user, isAuthenticated, loading } = useAuth();
+  const { openLogin } = useAuthModal();
   const utils = trpc.useUtils();
 
   // Seller profile state
@@ -100,14 +101,14 @@ export default function SellerPanel() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white rounded-2xl shadow-sm p-8 max-w-md w-full text-center">
           <Store size={48} className="text-primary mx-auto mb-4" />
-          <h2 className="text-2xl font-black text-gray-900 mb-2">Sotuvchi bo'lish</h2>
-          <p className="text-gray-500 mb-6">Mahsulotlaringizni sotish uchun tizimga kiring</p>
-          <a
-            href={getLoginUrl()}
+          <h2 className="text-2xl font-black text-gray-900 mb-2">Стать продавцом</h2>
+          <p className="text-gray-500 mb-6">Для продажи товаров необходимо войти в систему</p>
+          <button
+            onClick={openLogin}
             className="block w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors"
           >
-            Kirish
-          </a>
+            Войти
+          </button>
         </div>
       </div>
     );

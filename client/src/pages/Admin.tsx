@@ -4,7 +4,7 @@ import { Edit, MapPin, Package, Plus, Settings, ShoppingBag, Store, Trash2, User
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
-import { getLoginUrl } from "@/const";
+import { useAuthModal } from "@/App";
 
 function formatPrice(price: string | number) {
   const num = typeof price === "string" ? parseFloat(price) : price;
@@ -40,6 +40,7 @@ const emptyForm: ProductForm = {
 
 export default function Admin() {
   const { user, loading } = useAuth();
+  const { openLogin } = useAuthModal();
   const [tab, setTab] = useState<Tab>("products");
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<ProductForm>(emptyForm);
@@ -130,8 +131,8 @@ export default function Admin() {
   if (!user) {
     return (
       <div className="container py-20 text-center">
-        <h2 className="text-xl font-bold mb-4">Kirish talab etiladi</h2>
-        <a href={getLoginUrl()} className="bg-primary text-white px-6 py-3 rounded-xl font-bold inline-block">Kirish</a>
+        <h2 className="text-xl font-bold mb-4">Для доступа необходимо войти</h2>
+        <button onClick={openLogin} className="bg-primary text-white px-6 py-3 rounded-xl font-bold inline-block">Войти</button>
       </div>
     );
   }
