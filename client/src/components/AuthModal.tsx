@@ -2,6 +2,7 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { X, Eye, EyeOff, User, Mail, Lock } from "lucide-react";
+import { useLocation } from "wouter";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -15,12 +16,22 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
   const [form, setForm] = useState({ name: "", email: "", password: "" });
 
   const utils = trpc.useUtils();
+  const [, navigate] = useLocation();
+
+  const handleLoginSuccess = (role: string) => {
+    utils.auth.me.invalidate();
+    onClose();
+    if (role === "admin") {
+      navigate("/admin");
+    } else {
+      navigate("/profile");
+    }
+  };
 
   const loginMutation = trpc.auth.login.useMutation({
-    onSuccess: () => {
-      toast.success("Muvaffaqiyatli kirildi! / Успешный вход!");
-      utils.auth.me.invalidate();
-      onClose();
+    onSuccess: (data) => {
+      toast.success("Успешный вход!");
+      handleLoginSuccess(data.user.role);
     },
     onError: (err) => {
       toast.error(err.message);
@@ -28,10 +39,9 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
   });
 
   const registerMutation = trpc.auth.register.useMutation({
-    onSuccess: () => {
-      toast.success("Ro'yxatdan o'tildi! / Регистрация успешна!");
-      utils.auth.me.invalidate();
-      onClose();
+    onSuccess: (data) => {
+      toast.success("Регистрация успешна!");
+      handleLoginSuccess(data.user.role);
     },
     onError: (err) => {
       toast.error(err.message);
