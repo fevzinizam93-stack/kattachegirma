@@ -142,13 +142,15 @@ export async function getProducts(opts?: { categoryId?: number; search?: string;
   const conditions = [];
   if (opts?.categoryId) conditions.push(eq(products.categoryId, opts.categoryId));
   if (opts?.search) {
-    const q = `%${opts.search}%`;
+    const q = `%${opts.search.toLowerCase()}%`;
     conditions.push(or(
-      like(products.name, q),
-      like(products.brand, q),
-      like(products.description, q),
-      like(products.price, q),
-      like(products.slug, q),
+      sql`LOWER(${products.name}) LIKE ${q}`,
+      sql`LOWER(${products.brand}) LIKE ${q}`,
+      sql`LOWER(${products.description}) LIKE ${q}`,
+      sql`LOWER(${products.slug}) LIKE ${q}`,
+      sql`LOWER(COALESCE(${(products as any).nameUz}, '')) LIKE ${q}`,
+      sql`LOWER(COALESCE(${(products as any).descriptionUz}, '')) LIKE ${q}`,
+      sql`CAST(${products.price} AS CHAR) LIKE ${q}`,
     ));
   }
   if (opts?.featured) conditions.push(eq(products.isFeatured, true));
@@ -200,13 +202,15 @@ export async function countProducts(opts?: { categoryId?: number; search?: strin
   const conditions = [];
   if (opts?.categoryId) conditions.push(eq(products.categoryId, opts.categoryId));
   if (opts?.search) {
-    const q = `%${opts.search}%`;
+    const q = `%${opts.search.toLowerCase()}%`;
     conditions.push(or(
-      like(products.name, q),
-      like(products.brand, q),
-      like(products.description, q),
-      like(products.price, q),
-      like(products.slug, q),
+      sql`LOWER(${products.name}) LIKE ${q}`,
+      sql`LOWER(${products.brand}) LIKE ${q}`,
+      sql`LOWER(${products.description}) LIKE ${q}`,
+      sql`LOWER(${products.slug}) LIKE ${q}`,
+      sql`LOWER(COALESCE(${(products as any).nameUz}, '')) LIKE ${q}`,
+      sql`LOWER(COALESCE(${(products as any).descriptionUz}, '')) LIKE ${q}`,
+      sql`CAST(${products.price} AS CHAR) LIKE ${q}`,
     ));
   }
   if (opts?.approvedOnly) conditions.push(eq(products.isApproved, true));
