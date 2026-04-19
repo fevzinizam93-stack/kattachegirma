@@ -112,3 +112,39 @@ describe("orders.list - admin guard", () => {
     await expect(caller.orders.list()).rejects.toThrow();
   });
 });
+
+describe("sellers.register - auth guard", () => {
+  it("throws UNAUTHORIZED for unauthenticated user", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.sellers.register({ name: "Test Seller", phone: "+998901234567" })
+    ).rejects.toThrow();
+  });
+});
+
+describe("sellers.list - admin guard", () => {
+  it("throws FORBIDDEN for regular user", async () => {
+    const ctx: TrpcContext = {
+      user: {
+        id: 2, openId: "regular-user", email: "user@test.com",
+        name: "User", loginMethod: "manus", role: "user",
+        createdAt: new Date(), updatedAt: new Date(), lastSignedIn: new Date(),
+      },
+      req: { protocol: "https", headers: {} } as TrpcContext["req"],
+      res: { clearCookie: () => {} } as TrpcContext["res"],
+    };
+    const caller = appRouter.createCaller(ctx);
+    await expect(caller.sellers.list()).rejects.toThrow();
+  });
+});
+
+describe("storeSettings.getAll", () => {
+  it("returns an object (public access)", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.storeSettings.getAll();
+    expect(typeof result).toBe("object");
+    expect(result).not.toBeNull();
+  });
+});

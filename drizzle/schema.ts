@@ -16,7 +16,7 @@ export const users = mysqlTable("users", {
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  role: mysqlEnum("role", ["user", "admin", "seller"]).default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -35,6 +35,32 @@ export const categories = mysqlTable("categories", {
 
 export type Category = typeof categories.$inferSelect;
 
+// Store settings table
+export const storeSettings = mysqlTable("store_settings", {
+  id: int("id").autoincrement().primaryKey(),
+  key: varchar("key", { length: 128 }).notNull().unique(),
+  value: text("value"),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type StoreSetting = typeof storeSettings.$inferSelect;
+
+// Sellers table
+export const sellers = mysqlTable("sellers", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId"),
+  name: varchar("name", { length: 256 }).notNull(),
+  phone: varchar("phone", { length: 32 }),
+  telegram: varchar("telegram", { length: 128 }),
+  description: text("description"),
+  isApproved: boolean("isApproved").default(false),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Seller = typeof sellers.$inferSelect;
+export type InsertSeller = typeof sellers.$inferInsert;
+
 export const products = mysqlTable("products", {
   id: int("id").autoincrement().primaryKey(),
   name: varchar("name", { length: 256 }).notNull(),
@@ -51,6 +77,12 @@ export const products = mysqlTable("products", {
   isNew: boolean("isNew").default(false),
   isFeatured: boolean("isFeatured").default(false),
   specs: json("specs").$type<Record<string, string>>().default({}),
+  // Seller info
+  sellerId: int("sellerId"),
+  sellerPhone: varchar("sellerPhone", { length: 32 }),
+  sellerTelegram: varchar("sellerTelegram", { length: 128 }),
+  sellerName: varchar("sellerName", { length: 256 }),
+  isApproved: boolean("isApproved").default(true),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

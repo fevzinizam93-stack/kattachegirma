@@ -22,7 +22,7 @@ export default function Home() {
   const categories = categoriesData ?? [];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Hero Banner */}
       <section className="hero-gradient text-white py-12 md:py-20">
         <div className="container">

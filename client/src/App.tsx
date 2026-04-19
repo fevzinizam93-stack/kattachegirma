@@ -15,6 +15,8 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import SearchResults from "./pages/SearchResults";
 import Admin from "./pages/Admin";
+import About from "./pages/About";
+import SellerPanel from "./pages/SellerPanel";
 
 function Router() {
   const [location] = useLocation();
@@ -39,6 +41,8 @@ function Router() {
         {() => <SearchResults query={searchQuery} />}
       </Route>
       <Route path="/admin" component={Admin} />
+      <Route path="/about" component={About} />
+      <Route path="/seller" component={SellerPanel} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

@@ -16,14 +16,29 @@ import {
   createOrder,
   getAllOrders,
   updateOrderStatus,
-  seedInitialData,
   upsertCategory,
+  getAllStoreSettings,
+  setStoreSetting,
+  getAllSellers,
+  getSellerByUserId,
+  createSeller,
+  updateSeller,
+  approveSeller,
+  getSellerProducts,
 } from "./db";
 import { storagePut } from "./storage";
 
 // Admin guard middleware
 const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
   if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+  return next({ ctx });
+});
+
+// Seller guard middleware
+const sellerProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if (ctx.user.role !== "seller" && ctx.user.role !== "admin") {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Seller access required" });
+  }
   return next({ ctx });
 });
 
@@ -41,7 +56,6 @@ export const appRouter = router({
   // ---- Categories ----
   categories: router({
     list: publicProcedure.query(async () => {
-      await seedInitialData();
       return getAllCategories();
     }),
     upsert: adminProcedure
@@ -59,6 +73,20 @@ export const appRouter = router({
         search: z.string().optional(),
         featured: z.boolean().optional(),
         limit: z.number().default(20),
+        offset: z.number().default(0),
+      }))
+      .query(async ({ input }) => {
+        const items = await getProducts({ ...input, approvedOnly: true });
+        const total = await countProducts({ categoryId: input.categoryId, search: input.search, approvedOnly: true });
+        return { items, total };
+      }),
+
+    // Admin: all products including unapproved
+    adminList: adminProcedure
+      .input(z.object({
+        categoryId: z.number().optional(),
+        search: z.string().optional(),
+        limit: z.number().default(50),
         offset: z.number().default(0),
       }))
       .query(async ({ input }) => {
@@ -90,6 +118,11 @@ export const appRouter = router({
         isNew: z.boolean().default(false),
         isFeatured: z.boolean().default(false),
         specs: z.record(z.string(), z.string()).optional(),
+        sellerPhone: z.string().optional(),
+        sellerTelegram: z.string().optional(),
+        sellerName: z.string().optional(),
+        sellerId: z.number().optional(),
+        isApproved: z.boolean().default(true),
       }))
       .mutation(async ({ input }) => {
         const id = await createProduct({
@@ -116,6 +149,11 @@ export const appRouter = router({
         isNew: z.boolean().optional(),
         isFeatured: z.boolean().optional(),
         specs: z.record(z.string(), z.string()).optional(),
+        sellerPhone: z.string().optional(),
+        sellerTelegram: z.string().optional(),
+        sellerName: z.string().optional(),
+        sellerId: z.number().optional(),
+        isApproved: z.boolean().optional(),
       }))
       .mutation(async ({ input }) => {
         const { id, ...data } = input;
@@ -144,6 +182,46 @@ export const appRouter = router({
         await updateProduct(input.productId, { imageUrl: url });
         return { url };
       }),
+
+    // Seller: create product (pending approval)
+    sellerCreate: sellerProcedure
+      .input(z.object({
+        name: z.string(),
+        slug: z.string(),
+        description: z.string().optional(),
+        categoryId: z.number(),
+        brand: z.string().optional(),
+        price: z.string(),
+        originalPrice: z.string().optional(),
+        discount: z.number().default(0),
+        imageUrl: z.string().optional(),
+        stock: z.number().default(0),
+        isNew: z.boolean().default(false),
+        specs: z.record(z.string(), z.string()).optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const seller = await getSellerByUserId(ctx.user.id);
+        if (!seller) throw new TRPCError({ code: "FORBIDDEN", message: "Seller profile not found" });
+        const id = await createProduct({
+          ...input,
+          images: [],
+          specs: (input.specs ?? {}) as Record<string, string>,
+          sellerId: seller.id,
+          sellerName: seller.name,
+          sellerPhone: seller.phone ?? undefined,
+          sellerTelegram: seller.telegram ?? undefined,
+          isApproved: false,
+          isFeatured: false,
+        });
+        return { id };
+      }),
+
+    // Seller: list own products
+    sellerList: sellerProcedure.query(async ({ ctx }) => {
+      const seller = await getSellerByUserId(ctx.user.id);
+      if (!seller) return [];
+      return getSellerProducts(seller.id);
+    }),
   }),
 
   // ---- Orders ----
@@ -178,6 +256,74 @@ export const appRouter = router({
       }))
       .mutation(async ({ input }) => {
         await updateOrderStatus(input.id, input.status);
+        return { success: true };
+      }),
+  }),
+
+  // ---- Store Settings ----
+  storeSettings: router({
+    getAll: publicProcedure.query(async () => {
+      return getAllStoreSettings();
+    }),
+    set: adminProcedure
+      .input(z.object({ key: z.string(), value: z.string() }))
+      .mutation(async ({ input }) => {
+        await setStoreSetting(input.key, input.value);
+        return { success: true };
+      }),
+    setMany: adminProcedure
+      .input(z.record(z.string(), z.string()))
+      .mutation(async ({ input }) => {
+        for (const [key, value] of Object.entries(input)) {
+          await setStoreSetting(key, value);
+        }
+        return { success: true };
+      }),
+  }),
+
+  // ---- Sellers ----
+  sellers: router({
+    // Get current user's seller profile
+    me: protectedProcedure.query(async ({ ctx }) => {
+      return getSellerByUserId(ctx.user.id);
+    }),
+
+    // Register as seller
+    register: protectedProcedure
+      .input(z.object({
+        name: z.string().min(2),
+        phone: z.string().min(7),
+        telegram: z.string().optional(),
+        description: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const existing = await getSellerByUserId(ctx.user.id);
+        if (existing) {
+          await updateSeller(existing.id, input);
+          return { id: existing.id, isNew: false };
+        }
+        const id = await createSeller({ ...input, userId: ctx.user.id, isApproved: false });
+        return { id, isNew: true };
+      }),
+
+    // Admin: list all sellers
+    list: adminProcedure.query(async () => {
+      return getAllSellers();
+    }),
+
+    // Admin: approve seller
+    approve: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await approveSeller(input.id);
+        return { success: true };
+      }),
+
+    // Admin: approve product
+    approveProduct: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await updateProduct(input.id, { isApproved: true });
         return { success: true };
       }),
   }),

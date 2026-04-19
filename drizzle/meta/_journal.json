@@ -15,6 +15,13 @@
       "when": 1776607454989,
       "tag": "0001_sweet_spot",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1776613604738,
+      "tag": "0002_smart_gunslinger",
+      "breakpoints": true
     }
   ]
 }

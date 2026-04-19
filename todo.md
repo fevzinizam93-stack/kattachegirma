@@ -44,3 +44,15 @@
 - [x] products.create admin guard testi
 - [x] orders.create validasyon testi
 - [x] orders.list admin guard testi
+
+## Yeni Görevler (v2)
+- [ ] Beyaz tema - sadece üst bar kırmızı
+- [ ] Mağaza ayarları (lokasyon, açıklama, telefon) - DB ve admin paneli
+- [ ] Satıcı tablosu - DB şeması
+- [ ] Ürünlere satıcı telefon ve Telegram alanları ekle
+- [ ] Satıcı paneli sayfası (/seller) - kayıt, ürün ekleme
+- [ ] Ürün detay sayfası yeniden tasarla (sol açıklama, sağ fotoğraf)
+- [ ] "Успей по скидке" butonu
+- [ ] Hakkımızda sayfası (/about) - açıklama + fotoğraf
+- [ ] Navbar'a "О нас" linki ekle
+- [ ] Admin paneline mağaza ayarları bölümü ekle
