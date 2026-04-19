@@ -56,3 +56,20 @@
 - [x] Hakkımızda sayfası (/about) - açıklama + fotoğraf
 - [x] Navbar'a "О нас" linki ekle
 - [x] Admin paneline mağaza ayarları bölümü ekle
+
+## v3 - Giriş/Kayıt ve Kullanıcı Sistemi
+
+- [ ] Veritabanı: users tablosuna passwordHash alanı ekle
+- [ ] Veritabanı: favorites tablosu (userId, productId)
+- [ ] Backend: email+şifre ile kayıt (register) endpoint'i
+- [ ] Backend: email+şifre ile giriş (login) endpoint'i - JWT cookie
+- [ ] Backend: Admin giriş endpoint'i (email+şifre, role=admin kontrolü)
+- [ ] Backend: favoriler ekle/kaldır/listele
+- [ ] Backend: kullanıcı sipariş geçmişi
+- [ ] Frontend: Navbar'a "Войти" butonu ekle
+- [ ] Frontend: Giriş/Kayıt modal sayfası
+- [ ] Frontend: Kullanıcı profil sayfası (sipariş geçmişi, favoriler)
+- [ ] Frontend: Ürün kartlarına favori (kalp) butonu ekle
+- [ ] Frontend: Admin paneli - katalog yönetimi
+- [ ] Frontend: Admin paneli - adres yönetimi
+- [ ] Admin kullanıcısını DB'ye ekle (kullanıcı bilgileri gelince)

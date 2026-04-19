@@ -15,8 +15,10 @@ import {
   countProducts,
   createOrder,
   getAllOrders,
+  getOrdersByUserId,
   updateOrderStatus,
   upsertCategory,
+  deleteCategory,
   getAllStoreSettings,
   setStoreSetting,
   getAllSellers,
@@ -25,8 +27,19 @@ import {
   updateSeller,
   approveSeller,
   getSellerProducts,
+  registerUser,
+  loginUser,
+  getUserById,
+  getFavoritesByUserId,
+  addFavorite,
+  removeFavorite,
+  isFavorite,
+  getProductById as getProductByIdDb,
+  promoteToAdmin,
 } from "./db";
 import { storagePut } from "./storage";
+import { SignJWT } from "jose";
+import { ENV } from "./_core/env";
 
 // Admin guard middleware
 const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -51,6 +64,59 @@ export const appRouter = router({
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return { success: true } as const;
     }),
+
+    // Email/password registration
+    register: publicProcedure
+      .input(z.object({
+        name: z.string().min(2),
+        email: z.string().email(),
+        password: z.string().min(6),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        try {
+          const user = await registerUser(input);
+          // Create JWT session
+          const secret = new TextEncoder().encode(ENV.cookieSecret);
+          const token = await new SignJWT({ userId: user.id, role: user.role })
+            .setProtectedHeader({ alg: "HS256" })
+            .setExpirationTime("30d")
+            .sign(secret);
+          const cookieOptions = getSessionCookieOptions(ctx.req);
+          ctx.res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: 30 * 24 * 60 * 60 * 1000 });
+          return { success: true, user: { id: user.id, name: user.name, email: user.email, role: user.role } };
+        } catch (e: any) {
+          if (e.message === "EMAIL_EXISTS") {
+            throw new TRPCError({ code: "CONFLICT", message: "Bu email allaqachon ro'yxatdan o'tgan / Этот email уже зарегистрирован" });
+          }
+          throw e;
+        }
+      }),
+
+    // Email/password login
+    login: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        password: z.string(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        try {
+          const user = await loginUser(input.email, input.password);
+          // Create JWT session
+          const secret = new TextEncoder().encode(ENV.cookieSecret);
+          const token = await new SignJWT({ userId: user.id, role: user.role })
+            .setProtectedHeader({ alg: "HS256" })
+            .setExpirationTime("30d")
+            .sign(secret);
+          const cookieOptions = getSessionCookieOptions(ctx.req);
+          ctx.res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: 30 * 24 * 60 * 60 * 1000 });
+          return { success: true, user: { id: user.id, name: user.name, email: user.email, role: user.role } };
+        } catch (e: any) {
+          if (e.message === "INVALID_CREDENTIALS") {
+            throw new TRPCError({ code: "UNAUTHORIZED", message: "Email yoki parol noto'g'ri / Неверный email или пароль" });
+          }
+          throw e;
+        }
+      }),
   }),
 
   // ---- Categories ----
@@ -62,6 +128,12 @@ export const appRouter = router({
       .input(z.object({ id: z.number().optional(), name: z.string(), slug: z.string(), icon: z.string().optional() }))
       .mutation(async ({ input }) => {
         return upsertCategory(input);
+      }),
+    delete: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await deleteCategory(input.id);
+        return { success: true };
       }),
   }),
 
@@ -239,6 +311,7 @@ export const appRouter = router({
           imageUrl: z.string().optional(),
         })),
         totalAmount: z.string(),
+        userId: z.number().optional(),
       }))
       .mutation(async ({ input }) => {
         const id = await createOrder(input);
@@ -249,6 +322,11 @@ export const appRouter = router({
       return getAllOrders();
     }),
 
+    // User: get own orders
+    myOrders: protectedProcedure.query(async ({ ctx }) => {
+      return getOrdersByUserId(ctx.user.id);
+    }),
+
     updateStatus: adminProcedure
       .input(z.object({
         id: z.number(),
@@ -257,6 +335,37 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         await updateOrderStatus(input.id, input.status);
         return { success: true };
+      }),
+  }),
+
+  // ---- Favorites ----
+  favorites: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      const favs = await getFavoritesByUserId(ctx.user.id);
+      // Get product details for each favorite
+      const productIds = favs.map(f => f.productId);
+      const productDetails = await Promise.all(productIds.map(id => getProductByIdDb(id)));
+      return productDetails.filter(Boolean);
+    }),
+
+    add: protectedProcedure
+      .input(z.object({ productId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        await addFavorite(ctx.user.id, input.productId);
+        return { success: true };
+      }),
+
+    remove: protectedProcedure
+      .input(z.object({ productId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        await removeFavorite(ctx.user.id, input.productId);
+        return { success: true };
+      }),
+
+    check: protectedProcedure
+      .input(z.object({ productId: z.number() }))
+      .query(async ({ input, ctx }) => {
+        return isFavorite(ctx.user.id, input.productId);
       }),
   }),
 
@@ -319,14 +428,20 @@ export const appRouter = router({
         return { success: true };
       }),
 
-    // Admin: approve product
+     // Admin: approve product
     approveProduct: adminProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         await updateProduct(input.id, { isApproved: true });
         return { success: true };
       }),
+    // Admin: promote user to admin by email
+    promoteUser: adminProcedure
+      .input(z.object({ email: z.string().email() }))
+      .mutation(async ({ input }) => {
+        await promoteToAdmin(input.email);
+        return { success: true };
+      }),
   }),
 });
-
 export type AppRouter = typeof appRouter;

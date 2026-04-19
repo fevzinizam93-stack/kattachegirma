@@ -1,7 +1,8 @@
 import { and, desc, eq, ilike, like, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { categories, InsertOrder, InsertProduct, InsertSeller, InsertUser, orders, products, sellers, storeSettings, users } from "../drizzle/schema";
+import { categories, favorites, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, orders, products, sellers, storeSettings, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
+import bcrypt from "bcryptjs";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -51,6 +52,58 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getUserById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function registerUser(data: { name: string; email: string; password: string }): Promise<{ id: number; email: string; name: string; role: string }> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const existing = await getUserByEmail(data.email);
+  if (existing) throw new Error("EMAIL_EXISTS");
+  const passwordHash = await bcrypt.hash(data.password, 10);
+  const openId = `local_${data.email}_${Date.now()}`;
+  const result = await db.insert(users).values({
+    openId,
+    name: data.name,
+    email: data.email,
+    passwordHash,
+    loginMethod: "email",
+    role: "user",
+    lastSignedIn: new Date(),
+  });
+  const insertId = (result as any)[0]?.insertId as number;
+  return { id: insertId, email: data.email, name: data.name, role: "user" };
+}
+
+export async function loginUser(email: string, password: string) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const user = await getUserByEmail(email);
+  if (!user || !user.passwordHash) throw new Error("INVALID_CREDENTIALS");
+  const valid = await bcrypt.compare(password, user.passwordHash);
+  if (!valid) throw new Error("INVALID_CREDENTIALS");
+  // Update lastSignedIn
+  await db.update(users).set({ lastSignedIn: new Date() }).where(eq(users.id, user.id));
+  return user;
+}
+
+export async function promoteToAdmin(email: string): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(users).set({ role: "admin" }).where(eq(users.email, email));
+}
+
 // ---- Categories ----
 export async function getAllCategories() {
   const db = await getDb();
@@ -74,6 +127,12 @@ export async function upsertCategory(data: { id?: number; name: string; slug: st
   }
   const result = await db.insert(categories).values({ name: data.name, slug: data.slug, icon: data.icon });
   return (result as any)[0]?.insertId as number;
+}
+
+export async function deleteCategory(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.delete(categories).where(eq(categories.id, id));
 }
 
 // ---- Products ----
@@ -153,10 +212,45 @@ export async function getAllOrders() {
   return db.select().from(orders).orderBy(desc(orders.createdAt));
 }
 
+export async function getOrdersByUserId(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(orders).where(eq(orders.userId, userId)).orderBy(desc(orders.createdAt));
+}
+
 export async function updateOrderStatus(id: number, status: "pending" | "confirmed" | "delivered" | "cancelled") {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   await db.update(orders).set({ status }).where(eq(orders.id, id));
+}
+
+// ---- Favorites ----
+export async function getFavoritesByUserId(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(favorites).where(eq(favorites.userId, userId)).orderBy(desc(favorites.createdAt));
+}
+
+export async function addFavorite(userId: number, productId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  // Check if already exists
+  const existing = await db.select().from(favorites).where(and(eq(favorites.userId, userId), eq(favorites.productId, productId))).limit(1);
+  if (existing.length > 0) return;
+  await db.insert(favorites).values({ userId, productId });
+}
+
+export async function removeFavorite(userId: number, productId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.delete(favorites).where(and(eq(favorites.userId, userId), eq(favorites.productId, productId)));
+}
+
+export async function isFavorite(userId: number, productId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+  const result = await db.select().from(favorites).where(and(eq(favorites.userId, userId), eq(favorites.productId, productId))).limit(1);
+  return result.length > 0;
 }
 
 // ---- Store Settings ----

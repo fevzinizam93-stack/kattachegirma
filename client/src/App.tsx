@@ -17,6 +17,7 @@ import SearchResults from "./pages/SearchResults";
 import Admin from "./pages/Admin";
 import About from "./pages/About";
 import SellerPanel from "./pages/SellerPanel";
+import Profile from "./pages/Profile";
 
 function Router() {
   const [location] = useLocation();
@@ -43,6 +44,7 @@ function Router() {
       <Route path="/admin" component={Admin} />
       <Route path="/about" component={About} />
       <Route path="/seller" component={SellerPanel} />
+      <Route path="/profile" component={Profile} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

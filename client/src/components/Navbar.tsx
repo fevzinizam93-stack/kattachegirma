@@ -1,10 +1,10 @@
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { ChevronDown, MapPin, Search, ShoppingCart, User } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
+import AuthModal from "./AuthModal";
 
 export default function Navbar() {
   const { totalItems } = useCart();
@@ -12,6 +12,8 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [, navigate] = useLocation();
   const [location] = useLocation();
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authTab, setAuthTab] = useState<"login" | "register">("login");
 
   const { data: categoriesData } = trpc.categories.list.useQuery();
   const { data: settingsRaw } = trpc.storeSettings.getAll.useQuery();
@@ -98,24 +100,27 @@ export default function Navbar() {
 
             {/* User */}
             {isAuthenticated ? (
-              <div className="hidden md:flex items-center gap-2 text-sm">
-                <User size={16} />
-                <span className="text-white/90 max-w-[100px] truncate">{user?.name?.split(" ")[0]}</span>
-                <button
-                  onClick={() => logout()}
-                  className="text-white/60 hover:text-white text-xs"
-                >
-                  ▼
-                </button>
+              <div className="hidden md:flex items-center gap-2 text-sm relative group">
+                <Link href="/profile" className="flex items-center gap-1.5 hover:text-yellow-300 transition-colors cursor-pointer">
+                  <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
+                    {user?.name?.charAt(0)?.toUpperCase() ?? "U"}
+                  </div>
+                  <span className="text-white/90 max-w-[100px] truncate">{user?.name?.split(" ")[0]}</span>
+                </Link>
+                {user?.role === "admin" && (
+                  <Link href="/admin" className="text-yellow-300 text-xs hover:underline">
+                    Admin
+                  </Link>
+                )}
               </div>
             ) : (
-              <a
-                href={getLoginUrl()}
+              <button
+                onClick={() => { setAuthTab("login"); setAuthOpen(true); }}
                 className="hidden md:flex items-center gap-1 hover:text-yellow-300 transition-colors text-sm"
               >
                 <User size={16} />
                 <span>Войти</span>
-              </a>
+              </button>
             )}
 
             {/* Language */}
@@ -169,6 +174,9 @@ export default function Navbar() {
           </Link>
         </div>
       </nav>
+
+      {/* Auth Modal */}
+      <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} defaultTab={authTab} />
     </header>
   );
 }
