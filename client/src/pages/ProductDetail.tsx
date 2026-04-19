@@ -1,4 +1,5 @@
 import { useCart } from "@/contexts/CartContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { ChevronRight, MessageCircle, Minus, Phone, Plus, ShoppingCart, Star, Tag, Truck } from "lucide-react";
 import { useState } from "react";
@@ -9,15 +10,15 @@ interface ProductDetailProps {
   slug: string;
 }
 
-function formatPrice(price: string | number) {
-  const num = typeof price === "string" ? parseFloat(price) : price;
-  return new Intl.NumberFormat("ru-RU").format(num) + " so'm";
-}
-
 export default function ProductDetail({ slug }: ProductDetailProps) {
   const [quantity, setQuantity] = useState(1);
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const { addItem } = useCart();
+  const { lang, t } = useLanguage();
+  const formatPrice = (price: string | number) => {
+    const num = typeof price === "string" ? parseFloat(price) : price;
+    return new Intl.NumberFormat("ru-RU").format(num) + " " + t.common_sum;
+  };
 
   const { data: product, isLoading } = trpc.products.bySlug.useQuery({ slug });
   const { data: categoriesData } = trpc.categories.list.useQuery();
@@ -52,10 +53,10 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">😕</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Mahsulot topilmadi</h2>
-          <p className="text-gray-500 mb-6">Bu mahsulot mavjud emas yoki o'chirilgan.</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">{t.detail_not_found}</h2>
+          <p className="text-gray-500 mb-6">{t.detail_not_found_desc}</p>
           <Link href="/catalog" className="bg-primary text-white px-6 py-2.5 rounded-lg hover:bg-primary/90 transition-colors font-semibold">
-            Katalogga qaytish
+            {t.nav_catalog}
           </Link>
         </div>
       </div>
@@ -67,15 +68,16 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
   const telegramUsername = product.sellerTelegram?.replace("@", "").replace("https://t.me/", "");
 
   const handleAddToCart = () => {
+    const displayName = (lang === "uz" && (product as any).nameUz) ? (product as any).nameUz : product.name;
     addItem({
       productId: product.id,
-      name: product.name,
+      name: displayName,
       price: parseFloat(product.price),
       quantity,
       imageUrl: product.imageUrl ?? undefined,
       slug: product.slug,
     });
-    toast.success(`${quantity} ta mahsulot savatga qo'shildi!`, {
+    toast.success(lang === "uz" ? `${quantity} ta mahsulot savatga qo'shildi!` : `${quantity} шт. добавлено в корзину!`, {
       description: product.name,
     });
   };
@@ -86,9 +88,9 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
       <div className="bg-white border-b border-gray-200">
         <div className="container py-3">
           <div className="flex items-center gap-1 text-sm text-gray-500 flex-wrap">
-            <Link href="/" className="hover:text-primary transition-colors">Bosh sahifa</Link>
+            <Link href="/" className="hover:text-primary transition-colors">{t.nav_home}</Link>
             <ChevronRight size={14} />
-            <Link href="/catalog" className="hover:text-primary transition-colors">Katalog</Link>
+            <Link href="/catalog" className="hover:text-primary transition-colors">{t.nav_catalog}</Link>
             {category && (
               <>
                 <ChevronRight size={14} />
@@ -178,7 +180,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
 
               {/* Product name */}
               <h1 className="text-2xl md:text-3xl font-black text-gray-900 mb-3 leading-tight">
-                {product.name}
+                {(lang === "uz" && (product as any).nameUz) ? (product as any).nameUz : product.name}
               </h1>
 
               {/* Rating */}
@@ -195,20 +197,20 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                   <div>
                     <div className="flex items-center gap-1.5 mb-1">
                       <Tag size={13} className="text-gray-400" />
-                      <span className="text-gray-400 text-xs">Старая цена</span>
+                      <span className="text-gray-400 text-xs">{t.detail_old_price}</span>
                     </div>
                     <div className="text-gray-400 line-through text-base mb-2">
                       {formatPrice(product.originalPrice)}
                     </div>
                     <div className="flex items-center gap-1.5 mb-1">
                       <Tag size={13} className="text-primary" />
-                      <span className="text-primary text-xs font-bold">Новая цена со скидкой</span>
+                      <span className="text-primary text-xs font-bold">{t.detail_new_price}</span>
                     </div>
                     <div className="text-3xl font-black text-primary">
                       {formatPrice(product.price)}
                     </div>
                     <div className="mt-2 inline-flex items-center gap-1 bg-primary/10 text-primary text-sm font-bold px-3 py-1 rounded-full">
-                      Tejash: {formatPrice(parseFloat(product.originalPrice) - parseFloat(product.price))}
+                      {t.detail_saving}: {formatPrice(parseFloat(product.originalPrice) - parseFloat(product.price))}
                     </div>
                   </div>
                 ) : (
@@ -222,7 +224,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
               <div className="flex items-center gap-2 mb-5">
                 <div className={`w-2.5 h-2.5 rounded-full ${(product.stock ?? 0) > 0 ? 'bg-green-500' : 'bg-red-500'}`} />
                 <span className={`text-sm font-semibold ${(product.stock ?? 0) > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {(product.stock ?? 0) > 0 ? `Mavjud (${product.stock} dona)` : "Tugagan"}
+                  {(product.stock ?? 0) > 0 ? `${t.detail_in_stock} (${product.stock})` : t.detail_out_of_stock}
                 </span>
               </div>
 
@@ -246,7 +248,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                       <Plus size={16} />
                     </button>
                   </div>
-                  <span className="text-xs text-gray-400">dona</span>
+                  <span className="text-xs text-gray-400">{t.detail_pcs}</span>
                 </div>
               )}
 
@@ -261,14 +263,14 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 }`}
               >
                 <ShoppingCart size={22} />
-                Успей по скидке!
+                {(product.stock ?? 0) === 0 ? t.detail_out_of_stock : t.card_add_to_cart}
               </button>
 
               {/* Seller contact */}
               {(product.sellerPhone || product.sellerTelegram) && (
                 <div className="border border-gray-200 rounded-xl p-4 mb-4 bg-gray-50">
                   <p className="text-sm font-bold text-gray-700 mb-3">
-                    {product.sellerName ? `Sotuvchi: ${product.sellerName}` : "Sotuvchi bilan bog'lanish"}
+                    {product.sellerName ? `${t.detail_seller}: ${product.sellerName}` : t.detail_contact_seller}
                   </p>
                   <div className="flex flex-col gap-2">
                     {product.sellerPhone && (
@@ -299,8 +301,8 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
               <div className="flex items-center gap-2.5 text-sm text-gray-500 bg-gray-50 rounded-lg p-3 border border-gray-100">
                 <Truck size={18} className="text-primary shrink-0" />
                 <div>
-                  <span className="font-semibold text-gray-700">Tez yetkazib berish</span>
-                  <span className="text-gray-400"> — Butun O'zbekiston bo'ylab</span>
+                  <span className="font-semibold text-gray-700">{t.detail_delivery}</span>
+                  <span className="text-gray-400"> — {t.detail_delivery_desc}</span>
                 </div>
               </div>
             </div>
@@ -313,10 +315,10 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
             <div className="bg-white rounded-2xl shadow-sm p-6">
               <h2 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
                 <span className="w-1 h-6 bg-primary rounded-full inline-block" />
-                Mahsulot haqida
+                {t.detail_about}
               </h2>
               <p className="text-gray-600 leading-relaxed text-sm whitespace-pre-line">
-                {product.description}
+                {(lang === "uz" && (product as any).descriptionUz) ? (product as any).descriptionUz : product.description}
               </p>
             </div>
           )}
@@ -325,7 +327,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
             <div className="bg-white rounded-2xl shadow-sm p-6">
               <h2 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
                 <span className="w-1 h-6 bg-primary rounded-full inline-block" />
-                Texnik xususiyatlar
+                {t.detail_specs}
               </h2>
               <div className="space-y-1">
                 {Object.entries(specs).map(([key, value]) => (

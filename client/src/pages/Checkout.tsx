@@ -1,16 +1,15 @@
 import { useCart } from "@/contexts/CartContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { CheckCircle, MapPin, Phone, User } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
 
-function formatPrice(price: number) {
-  return new Intl.NumberFormat("uz-UZ").format(price) + " so'm";
-}
-
 export default function Checkout() {
   const { items, totalAmount, clearCart } = useCart();
+  const { t } = useLanguage();
+  const formatPrice = (price: number) => new Intl.NumberFormat("ru-RU").format(price) + " " + t.common_sum;
   const [, navigate] = useLocation();
   const [success, setSuccess] = useState(false);
   const [orderId, setOrderId] = useState<number | null>(null);
@@ -29,7 +28,7 @@ export default function Checkout() {
       clearCart();
     },
     onError: (err) => {
-      toast.error("Xatolik yuz berdi: " + err.message);
+      toast.error(t.common_error + ": " + err.message);
     },
   });
 
@@ -61,9 +60,9 @@ export default function Checkout() {
   if (items.length === 0 && !success) {
     return (
       <div className="container py-20 text-center">
-        <h2 className="text-xl font-bold mb-4">Savat bo'sh</h2>
+        <h2 className="text-xl font-bold mb-4">{t.cart_empty}</h2>
         <Link href="/catalog">
-          <button className="bg-primary text-primary-foreground px-6 py-3 rounded-xl font-bold">Xarid qilish</button>
+          <button className="bg-primary text-primary-foreground px-6 py-3 rounded-xl font-bold">{t.cart_go_catalog}</button>
         </Link>
       </div>
     );
@@ -74,14 +73,12 @@ export default function Checkout() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white rounded-2xl border border-border p-10 text-center max-w-md w-full mx-4">
           <CheckCircle size={64} className="mx-auto text-green-500 mb-4" />
-          <h2 className="text-2xl font-black mb-2">Buyurtma qabul qilindi!</h2>
-          <p className="text-muted-foreground mb-2">Buyurtma raqami: <strong>#{orderId}</strong></p>
-          <p className="text-sm text-muted-foreground mb-6">
-            Tez orada siz bilan bog'lanamiz va yetkazib berish vaqtini tasdiqlаymiz.
-          </p>
+          <h2 className="text-2xl font-black mb-2">{t.checkout_success}</h2>
+          <p className="text-muted-foreground mb-2">{t.profile_order_number}<strong>#{orderId}</strong></p>
+          <p className="text-sm text-muted-foreground mb-6">{t.checkout_success_desc}</p>
           <Link href="/">
             <button className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors">
-              Bosh sahifaga qaytish
+              {t.checkout_back_home}
             </button>
           </Link>
         </div>
@@ -93,7 +90,7 @@ export default function Checkout() {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b border-border">
         <div className="container py-4">
-          <h1 className="text-xl font-black">Buyurtma berish</h1>
+          <h1 className="text-xl font-black">{t.checkout_title}</h1>
         </div>
       </div>
 
@@ -102,13 +99,13 @@ export default function Checkout() {
           {/* Form */}
           <div className="lg:col-span-2">
             <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-border p-6 space-y-5">
-              <h2 className="font-black text-lg">Yetkazib berish ma'lumotlari</h2>
+              <h2 className="font-black text-lg">{t.checkout_address}</h2>
 
               {/* Name */}
               <div>
                 <label className="block text-sm font-semibold mb-1.5">
                   <User size={14} className="inline mr-1" />
-                  Ism va familiya *
+                  {t.checkout_name} *
                 </label>
                 <input
                   type="text"
@@ -124,7 +121,7 @@ export default function Checkout() {
               <div>
                 <label className="block text-sm font-semibold mb-1.5">
                   <Phone size={14} className="inline mr-1" />
-                  Telefon raqami *
+                  {t.checkout_phone} *
                 </label>
                 <input
                   type="tel"
@@ -140,7 +137,7 @@ export default function Checkout() {
               <div>
                 <label className="block text-sm font-semibold mb-1.5">
                   <MapPin size={14} className="inline mr-1" />
-                  Yetkazib berish manzili *
+                  {t.checkout_address} *
                 </label>
                 <textarea
                   value={form.deliveryAddress}
@@ -161,7 +158,7 @@ export default function Checkout() {
                 disabled={createOrder.isPending}
                 className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {createOrder.isPending ? "Yuborilmoqda..." : "Buyurtmani tasdiqlash"}
+                {createOrder.isPending ? t.common_loading : t.checkout_submit}
               </button>
             </form>
           </div>
@@ -169,7 +166,7 @@ export default function Checkout() {
           {/* Summary */}
           <div>
             <div className="bg-white rounded-2xl border border-border p-5 sticky top-24">
-              <h2 className="font-black text-lg mb-4">Buyurtma ({items.length} ta)</h2>
+              <h2 className="font-black text-lg mb-4">{t.cart_checkout} ({items.length})</h2>
               <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
                 {items.map(item => (
                   <div key={item.productId} className="flex gap-3">
@@ -189,7 +186,7 @@ export default function Checkout() {
               </div>
               <div className="border-t border-border pt-3">
                 <div className="flex justify-between font-black text-lg">
-                  <span>Jami:</span>
+                  <span>{t.cart_total}:</span>
                   <span className="text-primary">{formatPrice(totalAmount)}</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">Yetkazib berish narxi alohida kelishiladi</p>

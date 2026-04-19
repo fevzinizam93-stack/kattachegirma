@@ -1,12 +1,13 @@
 import ProductCard from "@/components/ProductCard";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { Filter, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
-import { Link } from "wouter";
 
 const LIMIT = 12;
 
 export default function Catalog() {
+  const { t } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>();
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -45,15 +46,15 @@ export default function Catalog() {
         <div className="container py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-black">Barcha mahsulotlar</h1>
-              <p className="text-sm text-muted-foreground">{total} ta mahsulot topildi</p>
+              <h1 className="text-xl font-black">{t.catalog_title}</h1>
+              <p className="text-sm text-muted-foreground">{total} {t.catalog_products_found}</p>
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
               className="md:hidden flex items-center gap-2 border border-border px-3 py-2 rounded-lg text-sm font-medium hover:bg-accent"
             >
               <SlidersHorizontal size={16} />
-              Filtr
+              {t.catalog_filter_apply}
             </button>
           </div>
 
@@ -63,11 +64,11 @@ export default function Catalog() {
               type="text"
               value={searchInput}
               onChange={e => setSearchInput(e.target.value)}
-              placeholder="Mahsulot nomi yoki brend..."
+              placeholder={t.catalog_search_placeholder}
               className="flex-1 border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
             />
             <button type="submit" className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors">
-              Qidirish
+              <Filter size={16} />
             </button>
             {search && (
               <button
@@ -89,7 +90,7 @@ export default function Catalog() {
             <div className="bg-white rounded-xl border border-border p-4 sticky top-24">
               <h3 className="font-bold text-sm mb-3 flex items-center gap-2">
                 <Filter size={16} />
-                Kategoriyalar
+                {t.nav_catalog}
               </h3>
               <ul className="space-y-1">
                 <li>
@@ -97,7 +98,7 @@ export default function Catalog() {
                     onClick={() => handleCategoryChange(undefined)}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${!selectedCategory ? 'bg-primary text-primary-foreground font-semibold' : 'hover:bg-accent'}`}
                   >
-                    Barchasi
+                    {t.catalog_all_categories}
                   </button>
                 </li>
                 {categories.map(cat => (
@@ -126,8 +127,7 @@ export default function Catalog() {
             ) : products.length === 0 ? (
               <div className="text-center py-20">
                 <div className="text-5xl mb-4">🔍</div>
-                <h3 className="text-lg font-bold mb-2">Mahsulot topilmadi</h3>
-                <p className="text-muted-foreground text-sm">Boshqa kalit so'z bilan qidirib ko'ring</p>
+                <h3 className="text-lg font-bold mb-2">{t.catalog_no_products}</h3>
               </div>
             ) : (
               <>
@@ -145,7 +145,7 @@ export default function Catalog() {
                       disabled={page === 0}
                       className="px-4 py-2 border border-border rounded-lg text-sm font-medium hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      ← Oldingi
+                      ←
                     </button>
                     <span className="px-4 py-2 text-sm text-muted-foreground">
                       {page + 1} / {totalPages}
@@ -155,7 +155,7 @@ export default function Catalog() {
                       disabled={page >= totalPages - 1}
                       className="px-4 py-2 border border-border rounded-lg text-sm font-medium hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Keyingi →
+                      →
                     </button>
                   </div>
                 )}

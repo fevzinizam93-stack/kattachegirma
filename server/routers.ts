@@ -190,8 +190,10 @@ export const appRouter = router({
     create: adminProcedure
       .input(z.object({
         name: z.string(),
+        nameUz: z.string().optional(),
         slug: z.string(),
         description: z.string().optional(),
+        descriptionUz: z.string().optional(),
         categoryId: z.number(),
         brand: z.string().optional(),
         price: z.string(),
@@ -222,8 +224,10 @@ export const appRouter = router({
       .input(z.object({
         id: z.number(),
         name: z.string().optional(),
+        nameUz: z.string().optional(),
         slug: z.string().optional(),
         description: z.string().optional(),
+        descriptionUz: z.string().optional(),
         categoryId: z.number().optional(),
         brand: z.string().optional(),
         price: z.string().optional(),

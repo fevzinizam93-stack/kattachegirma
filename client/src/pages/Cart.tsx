@@ -1,24 +1,23 @@
 import { useCart } from "@/contexts/CartContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
 import { Link } from "wouter";
 
-function formatPrice(price: number) {
-  return new Intl.NumberFormat("uz-UZ").format(price) + " so'm";
-}
-
 export default function Cart() {
   const { items, removeItem, updateQuantity, totalAmount, totalItems } = useCart();
+  const { t } = useLanguage();
+  const formatPrice = (price: number) => new Intl.NumberFormat("ru-RU").format(price) + " " + t.common_sum;
 
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center py-20">
           <ShoppingCart size={64} className="mx-auto text-gray-300 mb-4" />
-          <h2 className="text-xl font-black mb-2">Savat bo'sh</h2>
-          <p className="text-muted-foreground text-sm mb-6">Mahsulot qo'shing va buyurtma bering</p>
+          <h2 className="text-xl font-black mb-2">{t.cart_empty}</h2>
+          <p className="text-muted-foreground text-sm mb-6">{t.cart_empty_desc}</p>
           <Link href="/catalog">
             <button className="bg-primary text-primary-foreground px-6 py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors">
-              Xarid qilish
+              {t.cart_go_catalog}
             </button>
           </Link>
         </div>
@@ -32,7 +31,7 @@ export default function Cart() {
         <div className="container py-4">
           <h1 className="text-xl font-black flex items-center gap-2">
             <ShoppingCart size={22} className="text-primary" />
-            Savat ({totalItems} ta mahsulot)
+            {t.cart_title} ({totalItems})
           </h1>
         </div>
       </div>
@@ -94,7 +93,7 @@ export default function Cart() {
           {/* Order summary */}
           <div>
             <div className="bg-white rounded-xl border border-border p-5 sticky top-24">
-              <h2 className="font-black text-lg mb-4">Buyurtma xulosasi</h2>
+              <h2 className="font-black text-lg mb-4">{t.cart_total}</h2>
               <div className="space-y-2 mb-4">
                 {items.map(item => (
                   <div key={item.productId} className="flex justify-between text-sm">
@@ -105,18 +104,18 @@ export default function Cart() {
               </div>
               <div className="border-t border-border pt-3 mb-5">
                 <div className="flex justify-between font-black text-lg">
-                  <span>Jami:</span>
+                  <span>{t.cart_total}:</span>
                   <span className="text-primary">{formatPrice(totalAmount)}</span>
                 </div>
               </div>
               <Link href="/checkout">
                 <button className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors text-center block">
-                  Buyurtma berish
+                  {t.cart_checkout}
                 </button>
               </Link>
               <Link href="/catalog">
                 <button className="w-full mt-2 border border-border py-3 rounded-xl font-medium hover:bg-accent transition-colors text-sm text-center block">
-                  Xaridni davom ettirish
+                  {t.cart_continue}
                 </button>
               </Link>
             </div>

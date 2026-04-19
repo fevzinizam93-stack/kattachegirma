@@ -16,8 +16,10 @@ type Tab = "products" | "categories" | "orders" | "sellers" | "settings";
 interface ProductForm {
   id?: number;
   name: string;
+  nameUz: string;
   slug: string;
   description: string;
+  descriptionUz: string;
   categoryId: number;
   brand: string;
   price: string;
@@ -34,7 +36,7 @@ interface ProductForm {
 }
 
 const emptyForm: ProductForm = {
-  name: "", slug: "", description: "", categoryId: 0, brand: "",
+  name: "", nameUz: "", slug: "", description: "", descriptionUz: "", categoryId: 0, brand: "",
   price: "", originalPrice: "", discount: 0, imageUrl: "", images: [], stock: 0,
   isNew: false, isFeatured: false, sellerPhone: "", sellerTelegram: "", sellerName: "",
 };
@@ -246,7 +248,8 @@ export default function Admin() {
   const handleEdit = (p: typeof products[0]) => {
     const existingImages: string[] = (p as any).images ?? (p.imageUrl ? [p.imageUrl] : []);
     setForm({
-      name: p.name, slug: p.slug, description: p.description ?? "",
+      name: p.name, nameUz: (p as any).nameUz ?? "", slug: p.slug,
+      description: p.description ?? "", descriptionUz: (p as any).descriptionUz ?? "",
       categoryId: p.categoryId, brand: p.brand ?? "", price: p.price,
       originalPrice: p.originalPrice ?? "", discount: p.discount ?? 0,
       imageUrl: p.imageUrl ?? "", images: existingImages, stock: p.stock ?? 0,
@@ -323,10 +326,15 @@ export default function Admin() {
                   </div>
                   <form onSubmit={handleSubmit} className="p-5 space-y-4">
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="col-span-2">
-                        <label className="block text-sm font-semibold mb-1">Nomi *</label>
+                      <div>
+                        <label className="block text-sm font-semibold mb-1">Nomi (RU) *</label>
                         <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="Mahsulot nomi" />
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="Название на русском" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold mb-1">Nomi (UZ)</label>
+                        <input value={form.nameUz} onChange={e => setForm(f => ({ ...f, nameUz: e.target.value }))}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="O'zbek tilidagi nomi" />
                       </div>
                       <div>
                         <label className="block text-sm font-semibold mb-1">Kategoriya *</label>
@@ -423,9 +431,14 @@ export default function Admin() {
                         )}
                       </div>
                       <div className="col-span-2">
-                        <label className="block text-sm font-semibold mb-1">Tavsif</label>
+                        <label className="block text-sm font-semibold mb-1">Tavsif (RU)</label>
                         <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                          rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" placeholder="Mahsulot haqida..." />
+                          rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" placeholder="Описание на русском..." />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block text-sm font-semibold mb-1">Tavsif (UZ)</label>
+                        <textarea value={form.descriptionUz} onChange={e => setForm(f => ({ ...f, descriptionUz: e.target.value }))}
+                          rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" placeholder="O'zbek tilidagi tavsif..." />
                       </div>
                       {/* Seller info */}
                       <div className="col-span-2 border-t border-gray-100 pt-3">
