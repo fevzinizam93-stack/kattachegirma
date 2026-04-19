@@ -75,9 +75,15 @@ export const appRouter = router({
       .mutation(async ({ input, ctx }) => {
         try {
           const user = await registerUser(input);
-          // Create JWT session
+          // Create JWT session with fields expected by sdk.verifySession: openId, appId, name
           const secret = new TextEncoder().encode(ENV.cookieSecret);
-          const token = await new SignJWT({ userId: user.id, role: user.role })
+          const token = await new SignJWT({
+            openId: user.openId ?? `local_${user.email}`,
+            appId: ENV.appId,
+            name: user.name ?? user.email,
+            role: user.role,
+            userId: user.id,
+          })
             .setProtectedHeader({ alg: "HS256" })
             .setExpirationTime("30d")
             .sign(secret);
@@ -86,7 +92,7 @@ export const appRouter = router({
           return { success: true, user: { id: user.id, name: user.name, email: user.email, role: user.role } };
         } catch (e: any) {
           if (e.message === "EMAIL_EXISTS") {
-            throw new TRPCError({ code: "CONFLICT", message: "Bu email allaqachon ro'yxatdan o'tgan / Этот email уже зарегистрирован" });
+            throw new TRPCError({ code: "CONFLICT", message: "Этот email уже зарегистрирован" });
           }
           throw e;
         }
@@ -101,9 +107,15 @@ export const appRouter = router({
       .mutation(async ({ input, ctx }) => {
         try {
           const user = await loginUser(input.email, input.password);
-          // Create JWT session
+          // Create JWT session with fields expected by sdk.verifySession: openId, appId, name
           const secret = new TextEncoder().encode(ENV.cookieSecret);
-          const token = await new SignJWT({ userId: user.id, role: user.role })
+          const token = await new SignJWT({
+            openId: user.openId ?? `local_${user.email}`,
+            appId: ENV.appId,
+            name: user.name ?? user.email,
+            role: user.role,
+            userId: user.id,
+          })
             .setProtectedHeader({ alg: "HS256" })
             .setExpirationTime("30d")
             .sign(secret);
@@ -112,7 +124,7 @@ export const appRouter = router({
           return { success: true, user: { id: user.id, name: user.name, email: user.email, role: user.role } };
         } catch (e: any) {
           if (e.message === "INVALID_CREDENTIALS") {
-            throw new TRPCError({ code: "UNAUTHORIZED", message: "Email yoki parol noto'g'ri / Неверный email или пароль" });
+            throw new TRPCError({ code: "UNAUTHORIZED", message: "Неверный email или пароль" });
           }
           throw e;
         }

@@ -66,7 +66,7 @@ export async function getUserById(id: number) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-export async function registerUser(data: { name: string; email: string; password: string }): Promise<{ id: number; email: string; name: string; role: string }> {
+export async function registerUser(data: { name: string; email: string; password: string }): Promise<{ id: number; email: string; name: string; role: string; openId: string }> {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   const existing = await getUserByEmail(data.email);
@@ -83,7 +83,7 @@ export async function registerUser(data: { name: string; email: string; password
     lastSignedIn: new Date(),
   });
   const insertId = (result as any)[0]?.insertId as number;
-  return { id: insertId, email: data.email, name: data.name, role: "user" };
+  return { id: insertId, email: data.email, name: data.name, role: "user", openId };
 }
 
 export async function loginUser(email: string, password: string) {
