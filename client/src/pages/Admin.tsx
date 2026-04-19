@@ -24,6 +24,7 @@ interface ProductForm {
   originalPrice: string;
   discount: number;
   imageUrl: string;
+  images: string[]; // all images including main
   stock: number;
   isNew: boolean;
   isFeatured: boolean;
@@ -34,7 +35,7 @@ interface ProductForm {
 
 const emptyForm: ProductForm = {
   name: "", slug: "", description: "", categoryId: 0, brand: "",
-  price: "", originalPrice: "", discount: 0, imageUrl: "", stock: 0,
+  price: "", originalPrice: "", discount: 0, imageUrl: "", images: [], stock: 0,
   isNew: false, isFeatured: false, sellerPhone: "", sellerTelegram: "", sellerName: "",
 };
 
@@ -46,6 +47,7 @@ export default function Admin() {
   const [form, setForm] = useState<ProductForm>(emptyForm);
   const [editId, setEditId] = useState<number | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
+  const [uploadingCount, setUploadingCount] = useState(0);
 
   // Category form state
   const [showCatForm, setShowCatForm] = useState(false);
@@ -156,13 +158,54 @@ export default function Admin() {
       const res = await fetch("/api/upload/image", { method: "POST", body: fd, credentials: "include" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Upload failed");
-      setForm(f => ({ ...f, imageUrl: data.url }));
+      setForm(f => ({
+        ...f,
+        imageUrl: f.imageUrl || data.url, // first image becomes main
+        images: [...f.images, data.url],
+      }));
       toast.success("Фото загружено!");
     } catch (e: any) {
       toast.error("Ошибка загрузки: " + e.message);
     } finally {
       setImageUploading(false);
     }
+  };
+
+  const handleMultipleImageUpload = async (files: FileList) => {
+    setUploadingCount(files.length);
+    setImageUploading(true);
+    try {
+      const fd = new FormData();
+      Array.from(files).forEach(f => fd.append("images", f));
+      const res = await fetch("/api/upload/images", { method: "POST", body: fd, credentials: "include" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Upload failed");
+      const newUrls: string[] = data.urls;
+      setForm(f => ({
+        ...f,
+        imageUrl: f.imageUrl || newUrls[0], // first uploaded becomes main if none set
+        images: [...f.images, ...newUrls],
+      }));
+      toast.success(`Загружено ${newUrls.length} фото!`);
+    } catch (e: any) {
+      toast.error("Ошибка загрузки: " + e.message);
+    } finally {
+      setImageUploading(false);
+      setUploadingCount(0);
+    }
+  };
+
+  const removeImage = (url: string) => {
+    setForm(f => {
+      const newImages = f.images.filter(i => i !== url);
+      const newMain = f.imageUrl === url ? (newImages[0] ?? "") : f.imageUrl;
+      return { ...f, images: newImages, imageUrl: newMain };
+    });
+  };
+
+  const setMainImage = (url: string) => {
+    setForm(f => ({ ...f, imageUrl: url }));
+    toast.success("Главное фото установлено!");
   };
 
   if (loading) return <div className="container py-20 text-center">Yuklanmoqda...</div>;
@@ -201,11 +244,12 @@ export default function Admin() {
   };
 
   const handleEdit = (p: typeof products[0]) => {
+    const existingImages: string[] = (p as any).images ?? (p.imageUrl ? [p.imageUrl] : []);
     setForm({
       name: p.name, slug: p.slug, description: p.description ?? "",
       categoryId: p.categoryId, brand: p.brand ?? "", price: p.price,
       originalPrice: p.originalPrice ?? "", discount: p.discount ?? 0,
-      imageUrl: p.imageUrl ?? "", stock: p.stock ?? 0,
+      imageUrl: p.imageUrl ?? "", images: existingImages, stock: p.stock ?? 0,
       isNew: p.isNew ?? false, isFeatured: p.isFeatured ?? false,
       sellerPhone: (p as any).sellerPhone ?? "",
       sellerTelegram: (p as any).sellerTelegram ?? "",
@@ -318,22 +362,65 @@ export default function Admin() {
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="10" min={0} />
                       </div>
                       <div className="col-span-2">
-                        <label className="block text-sm font-semibold mb-1">Фото товара</label>
-                        <div className="flex items-start gap-3">
-                          {form.imageUrl && (
-                            <img src={form.imageUrl} alt="preview" className="w-16 h-16 rounded-lg object-cover border border-gray-200 shrink-0" />
-                          )}
-                          <div className="flex-1 space-y-2">
-                            <label className={`flex items-center justify-center gap-2 w-full border-2 border-dashed border-gray-300 rounded-lg px-3 py-3 text-sm cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors ${imageUploading ? 'opacity-50 pointer-events-none' : ''}`}>
-                              <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
-                              <Upload size={16} className="text-gray-400" />
-                              <span className="text-gray-500">{imageUploading ? 'Загрузка...' : 'Выбрать фото с компьютера'}</span>
-                            </label>
-                            {form.imageUrl && (
-                              <p className="text-xs text-green-600 truncate">✓ Фото загружено</p>
-                            )}
+                        <label className="block text-sm font-semibold mb-1">Фотографии товара ({form.images.length}/10)</label>
+                        {/* Image gallery */}
+                        {form.images.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {form.images.map((url, idx) => (
+                              <div key={idx} className="relative group">
+                                <img
+                                  src={url}
+                                  alt={`Фото ${idx + 1}`}
+                                  className={`w-20 h-20 rounded-lg object-cover border-2 cursor-pointer transition-all ${
+                                    form.imageUrl === url ? 'border-primary ring-2 ring-primary/30' : 'border-gray-200 hover:border-primary/50'
+                                  }`}
+                                  onClick={() => setMainImage(url)}
+                                  title="Нажмите чтобы сделать главным"
+                                />
+                                {form.imageUrl === url && (
+                                  <span className="absolute top-1 left-1 bg-primary text-white text-xs px-1 py-0.5 rounded font-bold">Главное</span>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => removeImage(url)}
+                                  className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
                           </div>
-                        </div>
+                        )}
+                        {/* Upload button */}
+                        {form.images.length < 10 && (
+                          <label className={`flex items-center justify-center gap-2 w-full border-2 border-dashed border-gray-300 rounded-lg px-3 py-3 text-sm cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors ${imageUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              className="hidden"
+                              onChange={e => {
+                                const files = e.target.files;
+                                if (!files || files.length === 0) return;
+                                if (files.length === 1) {
+                                  handleImageUpload(files[0]);
+                                } else {
+                                  handleMultipleImageUpload(files);
+                                }
+                                e.target.value = "";
+                              }}
+                            />
+                            <Upload size={16} className="text-gray-400" />
+                            <span className="text-gray-500">
+                              {imageUploading
+                                ? `Загрузка${uploadingCount > 1 ? ` ${uploadingCount} фото` : ''}...`
+                                : 'Добавить фото (можно выбрать несколько)'}
+                            </span>
+                          </label>
+                        )}
+                        {form.images.length > 0 && (
+                          <p className="text-xs text-gray-400 mt-1">Нажмите на фото чтобы сделать его главным · Обведение — главное фото</p>
+                        )}
                       </div>
                       <div className="col-span-2">
                         <label className="block text-sm font-semibold mb-1">Tavsif</label>

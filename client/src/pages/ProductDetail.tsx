@@ -16,6 +16,7 @@ function formatPrice(price: string | number) {
 
 export default function ProductDetail({ slug }: ProductDetailProps) {
   const [quantity, setQuantity] = useState(1);
+  const [activeImageIdx, setActiveImageIdx] = useState(0);
   const { addItem } = useCart();
 
   const { data: product, isLoading } = trpc.products.bySlug.useQuery({ slug });
@@ -106,33 +107,58 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
           <div className="grid md:grid-cols-2 gap-0">
 
             {/* LEFT: Фотография */}
-            <div className="relative bg-gray-50 flex items-center justify-center p-8 min-h-[320px] md:min-h-[460px] border-r border-gray-100">
-              {/* Badges */}
-              <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
-                {hasDiscount && (
-                  <span className="bg-primary text-white text-sm font-bold px-3 py-1 rounded-full shadow">
-                    -{product.discount}%
-                  </span>
-                )}
-                {product.isNew && (
-                  <span className="bg-green-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow">
-                    YANGI
-                  </span>
-                )}
-              </div>
-
-              {product.imageUrl ? (
-                <img
-                  src={product.imageUrl}
-                  alt={product.name}
-                  className="max-w-full max-h-[380px] object-contain rounded-xl drop-shadow-sm"
-                />
-              ) : (
-                <div className="w-full h-64 bg-gray-200 rounded-xl flex items-center justify-center">
-                  <span className="text-gray-400 text-8xl">📦</span>
+            {(() => {
+              const allImages: string[] = (product as any).images?.length
+                ? (product as any).images
+                : product.imageUrl ? [product.imageUrl] : [];
+              const activeUrl = allImages[activeImageIdx] ?? product.imageUrl;
+              return (
+                <div className="border-r border-gray-100">
+                  {/* Main image */}
+                  <div className="relative bg-gray-50 flex items-center justify-center p-8 min-h-[320px] md:min-h-[400px]">
+                    <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+                      {hasDiscount && (
+                        <span className="bg-primary text-white text-sm font-bold px-3 py-1 rounded-full shadow">
+                          -{product.discount}%
+                        </span>
+                      )}
+                      {product.isNew && (
+                        <span className="bg-green-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow">
+                          YANGI
+                        </span>
+                      )}
+                    </div>
+                    {activeUrl ? (
+                      <img
+                        src={activeUrl}
+                        alt={product.name}
+                        className="max-w-full max-h-[360px] object-contain rounded-xl drop-shadow-sm transition-all duration-200"
+                      />
+                    ) : (
+                      <div className="w-full h-64 bg-gray-200 rounded-xl flex items-center justify-center">
+                        <span className="text-gray-400 text-8xl">📦</span>
+                      </div>
+                    )}
+                  </div>
+                  {/* Thumbnails */}
+                  {allImages.length > 1 && (
+                    <div className="flex gap-2 p-3 bg-gray-50 border-t border-gray-100 overflow-x-auto">
+                      {allImages.map((url, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setActiveImageIdx(idx)}
+                          className={`shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                            idx === activeImageIdx ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200 hover:border-primary/50'
+                          }`}
+                        >
+                          <img src={url} alt={`Фото ${idx + 1}`} className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              );
+            })()}
 
             {/* RIGHT: Описание и кнопки */}
             <div className="p-6 md:p-8 flex flex-col">

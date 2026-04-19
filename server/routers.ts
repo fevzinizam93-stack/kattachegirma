@@ -198,6 +198,7 @@ export const appRouter = router({
         originalPrice: z.string().optional(),
         discount: z.number().default(0),
         imageUrl: z.string().optional(),
+        images: z.array(z.string()).optional(),
         stock: z.number().default(0),
         isNew: z.boolean().default(false),
         isFeatured: z.boolean().default(false),
@@ -211,7 +212,7 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         const id = await createProduct({
           ...input,
-          images: [],
+          images: input.images ?? [],
           specs: (input.specs ?? {}) as Record<string, string>,
         });
         return { id };
@@ -229,6 +230,7 @@ export const appRouter = router({
         originalPrice: z.string().optional(),
         discount: z.number().optional(),
         imageUrl: z.string().optional(),
+        images: z.array(z.string()).optional(),
         stock: z.number().optional(),
         isNew: z.boolean().optional(),
         isFeatured: z.boolean().optional(),
