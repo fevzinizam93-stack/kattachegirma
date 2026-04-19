@@ -141,7 +141,16 @@ export async function getProducts(opts?: { categoryId?: number; search?: string;
   if (!db) return [];
   const conditions = [];
   if (opts?.categoryId) conditions.push(eq(products.categoryId, opts.categoryId));
-  if (opts?.search) conditions.push(or(like(products.name, `%${opts.search}%`), like(products.brand, `%${opts.search}%`)));
+  if (opts?.search) {
+    const q = `%${opts.search}%`;
+    conditions.push(or(
+      like(products.name, q),
+      like(products.brand, q),
+      like(products.description, q),
+      like(products.price, q),
+      like(products.slug, q),
+    ));
+  }
   if (opts?.featured) conditions.push(eq(products.isFeatured, true));
   if (opts?.approvedOnly) conditions.push(eq(products.isApproved, true));
   const query = db.select().from(products);
@@ -190,7 +199,16 @@ export async function countProducts(opts?: { categoryId?: number; search?: strin
   if (!db) return 0;
   const conditions = [];
   if (opts?.categoryId) conditions.push(eq(products.categoryId, opts.categoryId));
-  if (opts?.search) conditions.push(or(like(products.name, `%${opts.search}%`), like(products.brand, `%${opts.search}%`)));
+  if (opts?.search) {
+    const q = `%${opts.search}%`;
+    conditions.push(or(
+      like(products.name, q),
+      like(products.brand, q),
+      like(products.description, q),
+      like(products.price, q),
+      like(products.slug, q),
+    ));
+  }
   if (opts?.approvedOnly) conditions.push(eq(products.isApproved, true));
   const query = db.select({ count: sql<number>`count(*)` }).from(products);
   if (conditions.length > 0) query.where(and(...conditions));
