@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `categories` (`id` int AUTO_INCREMENT NOT NULL, `name` varchar(128) NOT NULL, `slug` varchar(128) NOT NULL, `icon` varchar(64), `createdAt` timestamp NOT NULL DEFAULT (now()), CONSTRAINT `categories_id` PRIMARY KEY(`id`), CONSTRAINT `categories_slug_unique` UNIQUE(`slug`))",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute CREATE TABLE IF NOT EXISTS `categories` (`id` int AUTO_INCREMENT NOT NULL, `name` varchar(128) NOT NULL, `slug` varchar(128) NOT NULL, `icon` varchar(64), `createdAt` timestamp NOT NULL DEFAULT (now()), CONSTRAINT `categories_id` PRIMARY KEY(`id`), CONSTRAINT `categories_slug_unique` UNIQUE(`slug`))",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 185
+}

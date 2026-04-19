@@ -1,0 +1,183 @@
+import ProductCard from "@/components/ProductCard";
+import { trpc } from "@/lib/trpc";
+import { ChevronRight } from "lucide-react";
+import { useState } from "react";
+import { Link } from "wouter";
+
+const LIMIT = 12;
+
+interface CategoryPageProps {
+  slug: string;
+}
+
+export default function CategoryPage({ slug }: CategoryPageProps) {
+  const [page, setPage] = useState(0);
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [brandFilter, setBrandFilter] = useState("");
+
+  const { data: categoriesData } = trpc.categories.list.useQuery();
+  const categories = categoriesData ?? [];
+  const category = categories.find(c => c.slug === slug);
+
+  const { data, isLoading } = trpc.products.list.useQuery({
+    categoryId: category?.id,
+    limit: LIMIT,
+    offset: page * LIMIT,
+  });
+
+  const allProducts = data?.items ?? [];
+  const total = data?.total ?? 0;
+
+  // Client-side price/brand filter
+  const filtered = allProducts.filter(p => {
+    const price = parseFloat(p.price);
+    if (minPrice && price < parseFloat(minPrice)) return false;
+    if (maxPrice && price > parseFloat(maxPrice)) return false;
+    if (brandFilter && !p.brand?.toLowerCase().includes(brandFilter.toLowerCase())) return false;
+    return true;
+  });
+
+  const brands = Array.from(new Set(allProducts.map(p => p.brand).filter(Boolean))) as string[];
+  const totalPages = Math.ceil(total / LIMIT);
+
+  if (!category && categoriesData) {
+    return (
+      <div className="container py-20 text-center">
+        <div className="text-5xl mb-4">😕</div>
+        <h2 className="text-xl font-bold">Kategoriya topilmadi</h2>
+        <Link href="/catalog" className="text-primary hover:underline mt-2 inline-block">Katalogga qaytish</Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Breadcrumb */}
+      <div className="bg-white border-b border-border">
+        <div className="container py-3">
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <Link href="/" className="hover:text-primary">Bosh sahifa</Link>
+            <ChevronRight size={14} />
+            <Link href="/catalog" className="hover:text-primary">Katalog</Link>
+            <ChevronRight size={14} />
+            <span className="text-foreground font-medium">{category?.name ?? slug}</span>
+          </div>
+          <h1 className="text-xl font-black mt-2 flex items-center gap-2">
+            <span>{category?.icon}</span>
+            <span>{category?.name ?? slug}</span>
+          </h1>
+          <p className="text-sm text-muted-foreground">{total} ta mahsulot</p>
+        </div>
+      </div>
+
+      <div className="container py-6">
+        <div className="flex gap-6">
+          {/* Filters sidebar */}
+          <aside className="w-56 shrink-0 hidden md:block">
+            <div className="bg-white rounded-xl border border-border p-4 sticky top-24 space-y-5">
+              {/* Price filter */}
+              <div>
+                <h4 className="font-bold text-sm mb-3">Narx (so'm)</h4>
+                <div className="space-y-2">
+                  <input
+                    type="number"
+                    placeholder="Dan"
+                    value={minPrice}
+                    onChange={e => setMinPrice(e.target.value)}
+                    className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Gacha"
+                    value={maxPrice}
+                    onChange={e => setMaxPrice(e.target.value)}
+                    className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  />
+                </div>
+              </div>
+
+              {/* Brand filter */}
+              {brands.length > 0 && (
+                <div>
+                  <h4 className="font-bold text-sm mb-3">Brend</h4>
+                  <div className="space-y-1">
+                    <button
+                      onClick={() => setBrandFilter("")}
+                      className={`w-full text-left px-3 py-1.5 rounded-lg text-sm transition-colors ${!brandFilter ? 'bg-primary text-primary-foreground font-semibold' : 'hover:bg-accent'}`}
+                    >
+                      Barchasi
+                    </button>
+                    {brands.map(brand => (
+                      <button
+                        key={brand}
+                        onClick={() => setBrandFilter(brand)}
+                        className={`w-full text-left px-3 py-1.5 rounded-lg text-sm transition-colors ${brandFilter === brand ? 'bg-primary text-primary-foreground font-semibold' : 'hover:bg-accent'}`}
+                      >
+                        {brand}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Reset */}
+              {(minPrice || maxPrice || brandFilter) && (
+                <button
+                  onClick={() => { setMinPrice(""); setMaxPrice(""); setBrandFilter(""); }}
+                  className="w-full border border-primary text-primary px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary/5 transition-colors"
+                >
+                  Filtrni tozalash
+                </button>
+              )}
+            </div>
+          </aside>
+
+          {/* Products */}
+          <div className="flex-1 min-w-0">
+            {isLoading ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <div key={i} className="bg-white rounded-xl border border-border h-72 animate-pulse" />
+                ))}
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="text-center py-20">
+                <div className="text-5xl mb-4">📦</div>
+                <h3 className="text-lg font-bold mb-2">Mahsulot topilmadi</h3>
+                <p className="text-muted-foreground text-sm">Filtrlarni o'zgartiring</p>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {filtered.map(p => (
+                    <ProductCard key={p.id} product={p} />
+                  ))}
+                </div>
+                {totalPages > 1 && (
+                  <div className="flex justify-center gap-2 mt-8">
+                    <button
+                      onClick={() => setPage(p => Math.max(0, p - 1))}
+                      disabled={page === 0}
+                      className="px-4 py-2 border border-border rounded-lg text-sm font-medium hover:bg-accent disabled:opacity-50"
+                    >
+                      ← Oldingi
+                    </button>
+                    <span className="px-4 py-2 text-sm text-muted-foreground">{page + 1} / {totalPages}</span>
+                    <button
+                      onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                      disabled={page >= totalPages - 1}
+                      className="px-4 py-2 border border-border rounded-lg text-sm font-medium hover:bg-accent disabled:opacity-50"
+                    >
+                      Keyingi →
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
