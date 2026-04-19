@@ -6,20 +6,20 @@ const conn = await mysql.createConnection(process.env.DATABASE_URL);
 
 // Insert categories
 const categories = [
-  { name: "Changyutgichlar", slug: "changyutgichlar", icon: "🧹" },
-  { name: "Kir yuvish mashinalari", slug: "kir-yuvish-mashinalari", icon: "🫧" },
-  { name: "Muzlatgichlar", slug: "muzlatgichlar", icon: "🧊" },
-  { name: "Televizorlar", slug: "televizorlar", icon: "📺" },
-  { name: "Konditsionerlar", slug: "konditsionerlar", icon: "❄️" },
-  { name: "Idish yuvish mashinalari", slug: "idish-yuvish-mashinalari", icon: "🍽️" },
-  { name: "Mikroto'lqinli pechlar", slug: "mikrotoqinli-pechlar", icon: "📡" },
-  { name: "Elektr pechlar", slug: "elektr-pechlar", icon: "🔥" },
-  { name: "Havo tozalagichlar", slug: "havo-tozalagichlar", icon: "💨" },
-  { name: "Suv isitgichlar", slug: "suv-isitgichlar", icon: "🚿" },
-  { name: "Blenderlar", slug: "blenderlar", icon: "🥤" },
-  { name: "Elektr choynaklar", slug: "elektr-choynaklar", icon: "☕" },
-  { name: "Dazmollar", slug: "dazmollar", icon: "👔" },
-  { name: "Muzqaymoq mashinalari", slug: "muzqaymoq-mashinalari", icon: "🍦" },
+  { name: "Пылесосы", slug: "changyutgichlar", icon: "🧹" },
+  { name: "Стиральные машины", slug: "kir-yuvish-mashinalari", icon: "🫧" },
+  { name: "Холодильники", slug: "muzlatgichlar", icon: "🧊" },
+  { name: "Телевизоры", slug: "televizorlar", icon: "📺" },
+  { name: "Кондиционеры", slug: "konditsionerlar", icon: "❄️" },
+  { name: "Посудомоечные машины", slug: "idish-yuvish-mashinalari", icon: "🍽️" },
+  { name: "Микроволновые печи", slug: "mikrotoqinli-pechlar", icon: "📡" },
+  { name: "Электрические плиты", slug: "elektr-pechlar", icon: "🔥" },
+  { name: "Воздухоочистители", slug: "havo-tozalagichlar", icon: "💨" },
+  { name: "Водонагреватели", slug: "suv-isitgichlar", icon: "🚿" },
+  { name: "Блендеры", slug: "blenderlar", icon: "🥤" },
+  { name: "Электрочайники", slug: "elektr-choynaklar", icon: "☕" },
+  { name: "Утюги", slug: "dazmollar", icon: "👔" },
+  { name: "Мороженицы", slug: "muzqaymoq-mashinalari", icon: "🍦" },
 ];
 
 for (const cat of categories) {
