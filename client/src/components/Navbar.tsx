@@ -1,7 +1,7 @@
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { ChevronDown, MapPin, Search, ShoppingCart, User } from "lucide-react";
+import { ChevronDown, Search, ShoppingCart, User } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 
@@ -16,18 +16,14 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
   const [, navigate] = useLocation();
   const [location] = useLocation();
 
-  const { data: categoriesData } = trpc.categories.list.useQuery();
   const { data: settingsRaw } = trpc.storeSettings.getAll.useQuery();
 
-  const categories = categoriesData ?? [];
   const settings: Record<string, string> = {};
   if (Array.isArray(settingsRaw)) {
     (settingsRaw as { key: string; value: string }[]).forEach((s) => {
       settings[s.key] = s.value;
     });
   }
-
-  const topCategories = categories.slice(0, 6);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,8 +54,30 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
             </div>
           </Link>
 
+          {/* Nav links: Главная, Каталог, О нас */}
+          <div className="hidden md:flex items-center gap-1 shrink-0">
+            <Link
+              href="/"
+              className={`px-3 py-1.5 text-sm font-medium rounded hover:bg-white/10 transition-colors whitespace-nowrap ${location === "/" ? "bg-white/20" : ""}`}
+            >
+              Главная
+            </Link>
+            <Link
+              href="/catalog"
+              className={`px-3 py-1.5 text-sm font-medium rounded hover:bg-white/10 transition-colors whitespace-nowrap ${location === "/catalog" ? "bg-white/20" : ""}`}
+            >
+              Каталог
+            </Link>
+            <Link
+              href="/about"
+              className={`px-3 py-1.5 text-sm font-medium rounded hover:bg-white/10 transition-colors whitespace-nowrap ${location === "/about" ? "bg-white/20" : ""}`}
+            >
+              О нас
+            </Link>
+          </div>
+
           {/* Search bar */}
-          <form onSubmit={handleSearch} className="flex-1 flex max-w-2xl">
+          <form onSubmit={handleSearch} className="flex-1 flex">
             <input
               type="text"
               value={searchQuery}
@@ -76,7 +94,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           </form>
 
           {/* Right side */}
-          <div className="flex items-center gap-4 shrink-0">
+          <div className="flex items-center gap-3 shrink-0">
             {/* Cart */}
             <Link href="/cart" className="flex items-center gap-1.5 hover:text-yellow-300 transition-colors">
               <div className="relative">
@@ -88,15 +106,6 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                 )}
               </div>
               <span className="hidden sm:block text-sm font-medium">Корзина</span>
-            </Link>
-
-            {/* Sellers */}
-            <Link
-              href="/seller"
-              className="hidden md:flex items-center gap-1 hover:text-yellow-300 transition-colors text-sm font-medium"
-            >
-              <User size={16} />
-              Продавцы
             </Link>
 
             {/* User */}
@@ -133,49 +142,6 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           </div>
         </div>
       </div>
-
-      {/* ===== CATEGORY NAV BAR - DARKER RED ===== */}
-      <nav style={{ backgroundColor: "#a80000" }} className="text-white border-t border-red-900">
-        <div className="container flex items-center overflow-x-auto scrollbar-hide">
-          <Link
-            href="/"
-            className={`px-3 py-2.5 text-sm font-medium whitespace-nowrap hover:bg-red-900 transition-colors ${location === "/" ? "bg-red-900" : ""}`}
-          >
-            Главная
-          </Link>
-          <Link
-            href="/catalog"
-            className={`px-3 py-2.5 text-sm font-medium whitespace-nowrap hover:bg-red-900 transition-colors ${location === "/catalog" ? "bg-red-900" : ""}`}
-          >
-            Каталог
-          </Link>
-          {topCategories.map((cat) => (
-            <Link
-              key={cat.id}
-              href={`/category/${cat.slug}`}
-              className={`px-3 py-2.5 text-sm font-medium whitespace-nowrap hover:bg-red-900 transition-colors ${location === `/category/${cat.slug}` ? "bg-red-900" : ""}`}
-            >
-              {cat.name}
-            </Link>
-          ))}
-          {settings.address && (
-            <Link
-              href="/about"
-              className="px-3 py-2.5 text-sm font-medium whitespace-nowrap hover:bg-red-900 transition-colors flex items-center gap-1"
-            >
-              <MapPin size={13} />
-              Адреса
-            </Link>
-          )}
-          <Link
-            href="/about"
-            className={`px-3 py-2.5 text-sm font-medium whitespace-nowrap hover:bg-red-900 transition-colors ${location === "/about" ? "bg-red-900" : ""}`}
-          >
-            О нас
-          </Link>
-        </div>
-      </nav>
-
     </header>
   );
 }
