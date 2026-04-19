@@ -1,3 +1,4 @@
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, Home } from "lucide-react";
@@ -5,10 +6,11 @@ import { useLocation } from "wouter";
 
 export default function NotFound() {
   const [, setLocation] = useLocation();
+  const { lang } = useLanguage();
 
-  const handleGoHome = () => {
-    setLocation("/");
-  };
+  const text = lang === "uz"
+    ? { title: "Sahifa topilmadi", desc: "Kechirasiz, siz qidirayotgan sahifa mavjud emas.\nU ko'chirilgan yoki o'chirilgan bo'lishi mumkin.", btn: "Bosh sahifaga" }
+    : { title: "Страница не найдена", desc: "Извините, запрашиваемая страница не существует.\nВозможно, она была перемещена или удалена.", btn: "На главную" };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
@@ -20,31 +22,16 @@ export default function NotFound() {
               <AlertCircle className="relative h-16 w-16 text-red-500" />
             </div>
           </div>
-
           <h1 className="text-4xl font-bold text-slate-900 mb-2">404</h1>
-
-          <h2 className="text-xl font-semibold text-slate-700 mb-4">
-            Page Not Found
-          </h2>
-
-          <p className="text-slate-600 mb-8 leading-relaxed">
-            Sorry, the page you are looking for doesn't exist.
-            <br />
-            It may have been moved or deleted.
-          </p>
-
-          <div
-            id="not-found-button-group"
-            className="flex flex-col sm:flex-row gap-3 justify-center"
+          <h2 className="text-xl font-semibold text-slate-700 mb-4">{text.title}</h2>
+          <p className="text-slate-600 mb-8 leading-relaxed whitespace-pre-line">{text.desc}</p>
+          <Button
+            onClick={() => setLocation("/")}
+            className="bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
           >
-            <Button
-              onClick={handleGoHome}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
-            >
-              <Home className="w-4 h-4 mr-2" />
-              Go Home
-            </Button>
-          </div>
+            <Home className="w-4 h-4 mr-2" />
+            {text.btn}
+          </Button>
         </CardContent>
       </Card>
     </div>

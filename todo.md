@@ -103,14 +103,14 @@
 - [x] Frontend: поддержка любого языка и цифр
 
 ## v8 - Двуязычность (RU/UZ)
-- [ ] Создать LanguageContext с переключением ru/uz и сохранением в localStorage
-- [ ] Создать словари переводов для всех строк интерфейса (ru/uz)
-- [ ] Применить переводы: Navbar, Footer, Home, Catalog, CategoryPage
-- [ ] Применить переводы: ProductDetail, Cart, Checkout, SearchResults
-- [ ] Применить переводы: About, Profile, AuthModal, NotFound
-- [ ] Применить переводы: Admin panel (Товары, Категории, Заказы, Настройки)
-- [ ] Кнопка языка в Navbar — работающий дропдаун RU/UZ
-- [ ] БД: добавить поля name_uz, description_uz в таблицу products
-- [ ] Миграция схемы: pnpm drizzle-kit generate + apply SQL
-- [ ] Admin: поля для ввода названия и описания на двух языках
-- [ ] ProductDetail/ProductCard: показывать название/описание на выбранном языке
+- [x] Создать LanguageContext с переключением ru/uz и сохранением в localStorage
+- [x] Создать словари переводов для всех строк интерфейса (ru/uz)
+- [x] Применить переводы: Navbar, Footer, Home, Catalog, CategoryPage
+- [x] Применить переводы: ProductDetail, Cart, Checkout, SearchResults
+- [x] Применить переводы: About, Profile, AuthModal, NotFound
+- [x] Применить переводы: Admin panel (Товары, Категории, Заказы, Настройки)
+- [x] Кнопка языка в Navbar — работающий дропдаун RU/UZ
+- [x] БД: добавить поля name_uz, description_uz в таблицу products
+- [x] Миграция схемы: pnpm drizzle-kit generate + apply SQL
+- [x] Admin: поля для ввода названия и описания на двух языках
+- [x] ProductDetail/ProductCard: показывать название/описание на выбранном языке
