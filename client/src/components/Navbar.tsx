@@ -36,11 +36,11 @@ export default function Navbar() {
           <div className="flex items-center gap-4 py-3">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 shrink-0">
-              <div className="bg-primary text-primary-foreground font-black text-lg px-2 py-1 rounded">KC</div>
-              <div className="hidden sm:block">
-                <div className="font-black text-primary text-base leading-tight">Katta Chegirma!!!</div>
-                <div className="text-xs text-muted-foreground leading-tight">Arzon narxlar</div>
-              </div>
+              <img
+                src="/manus-storage/kattachegirma-logo_b5417617.png"
+                alt="Katta Chegirma - Texnomagister"
+                className="h-12 w-auto object-contain"
+              />
             </Link>
 
             {/* Search */}

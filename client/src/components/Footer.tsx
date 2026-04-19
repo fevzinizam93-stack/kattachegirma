@@ -12,11 +12,11 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <div className="bg-primary text-primary-foreground font-black text-lg px-2 py-1 rounded">KC</div>
-              <div>
-                <div className="font-black text-white text-base">Katta Chegirma!!!</div>
-                <div className="text-xs text-gray-400">Arzon narxlar</div>
-              </div>
+              <img
+                src="/manus-storage/kattachegirma-logo_b5417617.png"
+                alt="Katta Chegirma - Texnomagister"
+                className="h-14 w-auto object-contain rounded-lg"
+              />
             </div>
             <p className="text-sm text-gray-400">
               Uy texnikasi bo'yicha eng yaxshi narxlar. Sifatli mahsulotlar, tez yetkazib berish.

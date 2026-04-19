@@ -27,6 +27,14 @@ export default function Home() {
       <section className="hero-gradient text-white py-12 md:py-20">
         <div className="container">
           <div className="max-w-2xl">
+            {/* Logo in hero */}
+            <div className="mb-6">
+              <img
+                src="/manus-storage/kattachegirma-logo_b5417617.png"
+                alt="Katta Chegirma - Texnomagister"
+                className="h-20 md:h-24 w-auto object-contain rounded-xl"
+              />
+            </div>
             <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-4 py-1.5 text-sm font-medium mb-4">
               <Zap size={14} className="text-yellow-300" />
               Katta chegirmalar!
