@@ -38,6 +38,7 @@ import {
   promoteToAdmin,
 } from "./db";
 import { storagePut } from "./storage";
+import { invokeLLM } from "./_core/llm";
 import { SignJWT } from "jose";
 import { ENV } from "./_core/env";
 
@@ -304,6 +305,52 @@ export const appRouter = router({
           isFeatured: false,
         });
         return { id };
+      }),
+
+    // Admin: auto-translate product name/description from RU to UZ
+    translate: adminProcedure
+      .input(z.object({
+        name: z.string(),
+        description: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const prompt = [
+          "Translate the following product information from Russian to Uzbek (Latin script, as used in modern Uzbekistan).",
+          "Return ONLY a JSON object with keys \"nameUz\" and \"descriptionUz\". No extra text.",
+          "",
+          `Name (Russian): ${input.name}`,
+          input.description ? `Description (Russian): ${input.description}` : "",
+        ].filter(Boolean).join("\n");
+
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: "You are a professional Russian-to-Uzbek translator. Output only valid JSON." },
+            { role: "user", content: prompt },
+          ],
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "product_translation",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  nameUz: { type: "string", description: "Product name in Uzbek" },
+                  descriptionUz: { type: "string", description: "Product description in Uzbek" },
+                },
+                required: ["nameUz", "descriptionUz"],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+
+        const content = response.choices?.[0]?.message?.content ?? "{}";
+        const parsed = JSON.parse(typeof content === "string" ? content : JSON.stringify(content));
+        return {
+          nameUz: parsed.nameUz ?? "",
+          descriptionUz: parsed.descriptionUz ?? "",
+        };
       }),
 
     // Seller: list own products

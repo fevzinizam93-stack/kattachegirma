@@ -50,6 +50,7 @@ export default function Admin() {
   const [editId, setEditId] = useState<number | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
   const [uploadingCount, setUploadingCount] = useState(0);
+  const [isTranslating, setIsTranslating] = useState(false);
 
   // Category form state
   const [showCatForm, setShowCatForm] = useState(false);
@@ -130,6 +131,24 @@ export default function Admin() {
     onSuccess: () => { toast.success("Mahsulot tasdiqlandi!"); utils.products.list.invalidate(); },
     onError: (e) => toast.error(e.message),
   });
+
+  const translateProduct = trpc.products.translate.useMutation({
+    onSuccess: (data) => {
+      setForm(f => ({ ...f, nameUz: data.nameUz, descriptionUz: data.descriptionUz }));
+      toast.success("Перевод выполнен!");
+      setIsTranslating(false);
+    },
+    onError: (e) => {
+      toast.error("Ошибка перевода: " + e.message);
+      setIsTranslating(false);
+    },
+  });
+
+  const handleTranslate = () => {
+    if (!form.name.trim()) { toast.error("Сначала введите название на русском"); return; }
+    setIsTranslating(true);
+    translateProduct.mutate({ name: form.name, description: form.description || undefined });
+  };
 
   const saveSettings = trpc.storeSettings.setMany.useMutation({
     onSuccess: () => { toast.success("Sozlamalar saqlandi!"); utils.storeSettings.getAll.invalidate(); },
@@ -335,6 +354,34 @@ export default function Admin() {
                         <label className="block text-sm font-semibold mb-1">Nomi (UZ)</label>
                         <input value={form.nameUz} onChange={e => setForm(f => ({ ...f, nameUz: e.target.value }))}
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="O'zbek tilidagi nomi" />
+                      </div>
+                      {/* Auto-translate button */}
+                      <div className="col-span-2">
+                        <button
+                          type="button"
+                          onClick={handleTranslate}
+                          disabled={isTranslating || !form.name.trim()}
+                          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+                        >
+                          {isTranslating ? (
+                            <>
+                              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                              </svg>
+                              Перевожу...
+                            </>
+                          ) : (
+                            <>
+                              🌐 Автоперевод RU → UZ
+                            </>
+                          )}
+                        </button>
+                        <p className="text-xs text-gray-400 mt-1">
+                          {isTranslating
+                            ? "Перевод занимает 5–15 секунд..."
+                            : "Нажмите, чтобы автоматически заполнить поля «Название (UZ)» и «Описание (UZ)» на основе русского текста"}
+                        </p>
                       </div>
                       <div>
                         <label className="block text-sm font-semibold mb-1">Kategoriya *</label>

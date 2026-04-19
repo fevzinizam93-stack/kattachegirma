@@ -114,3 +114,8 @@
 - [x] Миграция схемы: pnpm drizzle-kit generate + apply SQL
 - [x] Admin: поля для ввода названия и описания на двух языках
 - [x] ProductDetail/ProductCard: показывать название/описание на выбранном языке
+
+## v9 - Автоперевод товаров (RU → UZ)
+- [x] Server: tRPC процедура products.translate использующая invokeLLM
+- [x] Admin: кнопка «Перевести» рядом с полями UZ в форме товара
+- [x] Admin: индикатор загрузки во время перевода
