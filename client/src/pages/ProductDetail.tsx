@@ -158,6 +158,18 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                       ))}
                     </div>
                   )}
+                  {/* Description under photo — visible on desktop left column and on mobile */}
+                  {product.description && (
+                    <div className="p-4 md:p-6 border-t border-gray-100">
+                      <h2 className="text-base font-black text-gray-900 mb-3 flex items-center gap-2">
+                        <span className="w-1 h-5 bg-primary rounded-full inline-block" />
+                        {t.detail_about}
+                      </h2>
+                      <p className="text-gray-700 leading-relaxed text-sm whitespace-pre-line">
+                        {(lang === "uz" && (product as any).descriptionUz) ? (product as any).descriptionUz : product.description}
+                      </p>
+                    </div>
+                  )}
                 </div>
               );
             })()}
@@ -252,19 +264,30 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 </div>
               )}
 
-              {/* "Uspey po skidke" button */}
-              <button
-                onClick={handleAddToCart}
-                disabled={(product.stock ?? 0) === 0}
-                className={`w-full py-4 rounded-xl font-black text-lg flex items-center justify-center gap-3 transition-all mb-4 ${
-                  (product.stock ?? 0) === 0
-                    ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    : "bg-primary text-white hover:bg-primary/90 active:scale-95 shadow-lg shadow-primary/25"
-                }`}
-              >
-                <ShoppingCart size={22} />
-                {(product.stock ?? 0) === 0 ? t.detail_out_of_stock : t.card_add_to_cart}
-              </button>
+              {/* Buttons row: Cart + Discount urgency */}
+              <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                <button
+                  onClick={handleAddToCart}
+                  disabled={(product.stock ?? 0) === 0}
+                  className={`flex-1 py-4 rounded-xl font-black text-base flex items-center justify-center gap-2 transition-all ${
+                    (product.stock ?? 0) === 0
+                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      : "bg-primary text-white hover:bg-primary/90 active:scale-95 shadow-lg shadow-primary/25"
+                  }`}
+                >
+                  <ShoppingCart size={20} />
+                  {(product.stock ?? 0) === 0 ? t.detail_out_of_stock : t.card_add_to_cart}
+                </button>
+                {(product.stock ?? 0) > 0 && (
+                  <button
+                    onClick={handleAddToCart}
+                    className="flex-1 py-4 rounded-xl font-black text-base flex items-center justify-center gap-2 transition-all bg-orange-500 hover:bg-orange-600 active:scale-95 text-white shadow-lg shadow-orange-500/25"
+                  >
+                    <Tag size={20} />
+                    {t.detail_buy_discount}
+                  </button>
+                )}
+              </div>
 
               {/* Seller contact */}
               {(product.sellerPhone || product.sellerTelegram) && (
@@ -309,22 +332,24 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
           </div>
         </div>
 
-        {/* Description + Specs */}
+        {/* Description + Specs — full width below main card */}
         <div className="grid md:grid-cols-2 gap-6">
+          {/* LEFT: Description */}
           {product.description && (
-            <div className="bg-white rounded-2xl shadow-sm p-6">
+            <div className="bg-white rounded-2xl shadow-sm p-6 order-1">
               <h2 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
                 <span className="w-1 h-6 bg-primary rounded-full inline-block" />
                 {t.detail_about}
               </h2>
-              <p className="text-gray-600 leading-relaxed text-sm whitespace-pre-line">
+              <p className="text-gray-700 leading-relaxed text-sm whitespace-pre-line">
                 {(lang === "uz" && (product as any).descriptionUz) ? (product as any).descriptionUz : product.description}
               </p>
             </div>
           )}
 
+          {/* RIGHT: Specs */}
           {Object.keys(specs).length > 0 && (
-            <div className="bg-white rounded-2xl shadow-sm p-6">
+            <div className="bg-white rounded-2xl shadow-sm p-6 order-2">
               <h2 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
                 <span className="w-1 h-6 bg-primary rounded-full inline-block" />
                 {t.detail_specs}
@@ -339,6 +364,9 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
               </div>
             </div>
           )}
+
+          {/* If no specs but has description, show description full width */}
+          {!product.description && Object.keys(specs).length === 0 && null}
         </div>
       </div>
     </div>

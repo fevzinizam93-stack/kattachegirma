@@ -82,6 +82,7 @@ export interface Translations {
   detail_delivery_desc: string;
   detail_about: string;
   detail_specs: string;
+  detail_buy_discount: string;
 
   // Cart
   cart_title: string;
@@ -280,6 +281,7 @@ const ru: Translations = {
   detail_delivery_desc: "По всему Узбекистану",
   detail_about: "О товаре",
   detail_specs: "Технические характеристики",
+  detail_buy_discount: "Успей по скидке",
 
   // Cart
   cart_title: "Корзина",
@@ -478,6 +480,7 @@ const uz: Translations = {
   detail_delivery_desc: "Butun O'zbekiston bo'ylab",
   detail_about: "Mahsulot haqida",
   detail_specs: "Texnik xususiyatlar",
+  detail_buy_discount: "Chegirmaga olish",
 
   // Cart
   cart_title: "Savat",
