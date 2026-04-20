@@ -23,7 +23,9 @@ interface ProductForm {
   categoryId: number;
   brand: string;
   price: string;
+  priceUsd: string;
   originalPrice: string;
+  originalPriceUsd: string;
   discount: number;
   imageUrl: string;
   images: string[]; // all images including main
@@ -37,7 +39,7 @@ interface ProductForm {
 
 const emptyForm: ProductForm = {
   name: "", nameUz: "", slug: "", description: "", descriptionUz: "", categoryId: 0, brand: "",
-  price: "", originalPrice: "", discount: 0, imageUrl: "", images: [], stock: 0,
+  price: "", priceUsd: "", originalPrice: "", originalPriceUsd: "", discount: 0, imageUrl: "", images: [], stock: 0,
   isNew: false, isFeatured: false, sellerPhone: "", sellerTelegram: "", sellerName: "",
 };
 
@@ -51,6 +53,7 @@ export default function Admin() {
   const [imageUploading, setImageUploading] = useState(false);
   const [uploadingCount, setUploadingCount] = useState(0);
   const [isTranslating, setIsTranslating] = useState(false);
+  const [exchangeRate, setExchangeRate] = useState<number>(12700); // UZS per 1 USD
 
   // Category form state
   const [showCatForm, setShowCatForm] = useState(false);
@@ -270,7 +273,10 @@ export default function Admin() {
       name: p.name, nameUz: (p as any).nameUz ?? "", slug: p.slug,
       description: p.description ?? "", descriptionUz: (p as any).descriptionUz ?? "",
       categoryId: p.categoryId, brand: p.brand ?? "", price: p.price,
-      originalPrice: p.originalPrice ?? "", discount: p.discount ?? 0,
+      priceUsd: p.price ? String(Math.round(parseFloat(p.price) / exchangeRate)) : "",
+      originalPrice: p.originalPrice ?? "",
+      originalPriceUsd: p.originalPrice ? String(Math.round(parseFloat(p.originalPrice) / exchangeRate)) : "",
+      discount: p.discount ?? 0,
       imageUrl: p.imageUrl ?? "", images: existingImages, stock: p.stock ?? 0,
       isNew: p.isNew ?? false, isFeatured: p.isFeatured ?? false,
       sellerPhone: (p as any).sellerPhone ?? "",
@@ -396,15 +402,57 @@ export default function Admin() {
                         <input value={form.brand} onChange={e => setForm(f => ({ ...f, brand: e.target.value }))}
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="SAMSUNG, LG..." />
                       </div>
-                      <div>
-                        <label className="block text-sm font-semibold mb-1">Narx (so'm) *</label>
-                        <input type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="500000" />
+                      {/* Exchange rate row */}
+                      <div className="col-span-2">
+                        <div className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
+                          <span className="text-sm font-semibold text-blue-800">💱 Курс доллара:</span>
+                          <input
+                            type="number"
+                            value={exchangeRate}
+                            onChange={e => setExchangeRate(Number(e.target.value) || 12700)}
+                            className="w-28 border border-blue-300 rounded-lg px-2 py-1 text-sm font-bold text-blue-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            min={1}
+                          />
+                          <span className="text-sm text-blue-700">сум за 1 USD</span>
+                        </div>
                       </div>
+                      {/* Price USD → UZS */}
                       <div>
-                        <label className="block text-sm font-semibold mb-1">Eski narx (so'm)</label>
-                        <input type="number" value={form.originalPrice} onChange={e => setForm(f => ({ ...f, originalPrice: e.target.value }))}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="700000" />
+                        <label className="block text-sm font-semibold mb-1">💵 Цена (USD) *</label>
+                        <input
+                          type="number"
+                          value={form.priceUsd}
+                          onChange={e => {
+                            const usd = e.target.value;
+                            const uzs = usd ? String(Math.round(Number(usd) * exchangeRate)) : "";
+                            setForm(f => ({ ...f, priceUsd: usd, price: uzs }));
+                          }}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                          placeholder="e.g. 150"
+                          min={0}
+                        />
+                        {form.priceUsd && (
+                          <p className="text-xs text-gray-500 mt-1">= {Number(form.price).toLocaleString("ru-RU")} so'm</p>
+                        )}
+                      </div>
+                      {/* Original price USD → UZS */}
+                      <div>
+                        <label className="block text-sm font-semibold mb-1">💵 Старая цена (USD)</label>
+                        <input
+                          type="number"
+                          value={form.originalPriceUsd}
+                          onChange={e => {
+                            const usd = e.target.value;
+                            const uzs = usd ? String(Math.round(Number(usd) * exchangeRate)) : "";
+                            setForm(f => ({ ...f, originalPriceUsd: usd, originalPrice: uzs }));
+                          }}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                          placeholder="e.g. 200"
+                          min={0}
+                        />
+                        {form.originalPriceUsd && (
+                          <p className="text-xs text-gray-500 mt-1">= {Number(form.originalPrice).toLocaleString("ru-RU")} so'm</p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-semibold mb-1">Chegirma (%)</label>
@@ -564,6 +612,7 @@ export default function Admin() {
                           </td>
                           <td className="px-4 py-3">
                             <p className="font-bold text-primary">{formatPrice(p.price)}</p>
+                            <p className="text-xs text-gray-500 font-medium">${Math.round(parseFloat(p.price) / exchangeRate)}</p>
                             {p.discount ? <p className="text-xs text-gray-400">-{p.discount}%</p> : null}
                           </td>
                           <td className="px-4 py-3">
