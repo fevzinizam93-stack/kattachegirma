@@ -83,10 +83,32 @@ export default function Catalog() {
         </div>
       </div>
 
-      <div className="container py-6">
-        <div className="flex gap-6">
-          {/* Sidebar filters */}
-          <aside className={`w-56 shrink-0 ${showFilters ? 'block' : 'hidden'} md:block`}>
+      {/* Mobile category chips */}
+      <div className="md:hidden bg-white border-b border-gray-100 overflow-x-auto">
+        <div className="flex gap-2 px-3 py-2 w-max">
+          <button
+            onClick={() => handleCategoryChange(undefined)}
+            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors touch-manipulation ${!selectedCategory ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600'}`}
+          >
+            {t.catalog_all_categories}
+          </button>
+          {categories.map(cat => (
+            <button
+              key={cat.id}
+              onClick={() => handleCategoryChange(cat.id)}
+              className={`shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors touch-manipulation ${selectedCategory === cat.id ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600'}`}
+            >
+              <span>{cat.icon}</span>
+              <span>{cat.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="container py-3">
+        <div className="flex gap-4">
+          {/* Sidebar filters - desktop only */}
+          <aside className={`w-52 shrink-0 ${showFilters ? 'block' : 'hidden'} md:block`}>
             <div className="bg-white rounded-xl border border-border p-4 sticky top-24">
               <h3 className="font-bold text-sm mb-3 flex items-center gap-2">
                 <Filter size={16} />
@@ -119,19 +141,19 @@ export default function Catalog() {
           {/* Products grid */}
           <div className="flex-1 min-w-0">
             {isLoading ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
                 {Array.from({ length: 12 }).map((_, i) => (
-                  <div key={i} className="bg-white rounded-xl border border-border h-72 animate-pulse" />
+                  <div key={i} className="bg-white rounded-xl border border-border h-64 animate-pulse" />
                 ))}
               </div>
             ) : products.length === 0 ? (
-              <div className="text-center py-20">
+              <div className="text-center py-16">
                 <div className="text-5xl mb-4">🔍</div>
                 <h3 className="text-lg font-bold mb-2">{t.catalog_no_products}</h3>
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
                   {products.map(p => (
                     <ProductCard key={p.id} product={p} />
                   ))}

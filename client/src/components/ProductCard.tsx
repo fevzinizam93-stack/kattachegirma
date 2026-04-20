@@ -57,40 +57,37 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   return (
     <Link href={`/product/${product.slug}`}>
-      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden cursor-pointer h-full flex flex-col hover:shadow-md transition-shadow">
-        <div className="relative bg-gray-50" style={{ paddingBottom: "75%" }}>
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden cursor-pointer h-full flex flex-col active:scale-[0.98] transition-transform touch-manipulation">
+        <div className="relative bg-gray-50" style={{ paddingBottom: "70%" }}>
           <div className="absolute inset-0">
             {product.imageUrl ? (
-              <img src={product.imageUrl} alt={displayName} className="w-full h-full object-contain p-2" loading="lazy" />
+              <img src={product.imageUrl} alt={displayName} className="w-full h-full object-contain p-1.5" loading="lazy" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-5xl text-gray-300">📦</div>
+              <div className="w-full h-full flex items-center justify-center text-4xl text-gray-300">📦</div>
             )}
           </div>
-          {hasDiscount && (
-            <div className="absolute top-2 left-2 text-white text-xs font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: "#2e7d32" }}>
-              -{discountPercent}%
-            </div>
-          )}
-          {product.isNew && (
-            <div className="absolute text-white text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: "#388e3c", top: hasDiscount ? "30px" : "8px", left: "8px" }}>
-              {t.card_new}
-            </div>
-          )}
-          <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); }} className="absolute top-2 right-2 text-gray-300 hover:text-red-500 transition-colors">♡</button>
+          <div className="absolute top-1.5 left-1.5 flex flex-col gap-1">
+            {hasDiscount && (
+              <span className="text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-none" style={{ backgroundColor: "#2e7d32" }}>-{discountPercent}%</span>
+            )}
+            {product.isNew && (
+              <span className="text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-none" style={{ backgroundColor: "#388e3c" }}>{t.card_new}</span>
+            )}
+          </div>
         </div>
 
-        <div className="p-2.5 flex flex-col flex-1">
-          {product.brand && <p className="text-[11px] text-gray-500 font-semibold uppercase tracking-wide mb-0.5">{product.brand}</p>}
-          <h3 className="text-xs font-medium text-gray-800 line-clamp-2 flex-1 mb-2 leading-snug">{displayName}</h3>
-          <div className="mb-2">
-            <div className="text-sm font-black" style={{ color: "#cc0000" }}>{formatPrice(product.price, t.common_sum)}</div>
+        <div className="p-2 flex flex-col flex-1">
+          {product.brand && <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-0.5 truncate">{product.brand}</p>}
+          <h3 className="text-[11px] font-medium text-gray-800 line-clamp-2 flex-1 mb-1.5 leading-snug">{displayName}</h3>
+          <div className="mb-1.5">
+            <div className="text-sm font-black leading-tight" style={{ color: "#cc0000" }}>{formatPrice(product.price, t.common_sum)}</div>
             {hasDiscount && product.originalPrice && (
-              <div className="text-xs text-gray-400 line-through">{formatPrice(product.originalPrice, t.common_sum)}</div>
+              <div className="text-[10px] text-gray-400 line-through leading-tight">{formatPrice(product.originalPrice, t.common_sum)}</div>
             )}
           </div>
-          <button onClick={handleAddToCart} disabled={!inStock} className="w-full flex items-center justify-center gap-1.5 text-white py-1.5 px-2 rounded text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed" style={{ backgroundColor: inStock ? "#cc0000" : "#aaa" }}>
-            <ShoppingCart size={13} />
-            {inStock ? t.card_add_to_cart : t.detail_out_of_stock}
+          <button onClick={handleAddToCart} disabled={!inStock} className="w-full flex items-center justify-center gap-1 text-white py-1.5 px-1 rounded-lg text-[11px] font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:opacity-80 touch-manipulation" style={{ backgroundColor: inStock ? "#cc0000" : "#aaa" }}>
+            <ShoppingCart size={12} />
+            <span className="truncate">{inStock ? t.card_add_to_cart : t.detail_out_of_stock}</span>
           </button>
         </div>
       </div>

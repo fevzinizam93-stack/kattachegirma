@@ -19,6 +19,7 @@ import About from "./pages/About";
 import SellerPanel from "./pages/SellerPanel";
 import Profile from "./pages/Profile";
 import AuthModal from "./components/AuthModal";
+import MobileBottomNav from "./components/MobileBottomNav";
 import { createContext, useContext, useState } from "react";
 
 // Global auth modal context so any page can open it
@@ -84,10 +85,11 @@ function App() {
               <Toaster />
               <div className="flex flex-col min-h-screen">
                 <Navbar onOpenAuth={openLogin} />
-                <main className="flex-1">
+                <main className="flex-1 pb-14 md:pb-0">
                   <Router />
                 </main>
-                <Footer />
+                <div className="hidden md:block"><Footer /></div>
+                <MobileBottomNav />
               </div>
               <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} defaultTab={authTab} />
             </TooltipProvider>

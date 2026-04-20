@@ -103,10 +103,10 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
         </div>
       </div>
 
-      <div className="container py-6">
+      <div className="container py-3">
         {/* Main product card */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-6">
-          <div className="grid md:grid-cols-2 gap-0">
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-4">
+          <div className="grid md:grid-cols-2 gap-0 divide-y md:divide-y-0 md:divide-x divide-gray-100">
 
             {/* LEFT: Фотография */}
             {(() => {
@@ -117,7 +117,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
               return (
                 <div className="border-r border-gray-100">
                   {/* Main image */}
-                  <div className="relative bg-gray-50 flex items-center justify-center p-8 min-h-[320px] md:min-h-[400px]">
+                  <div className="relative bg-gray-50 flex items-center justify-center p-4 min-h-[220px] md:min-h-[380px]">
                     <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
                       {hasDiscount && (
                         <span className="bg-primary text-white text-sm font-bold px-3 py-1 rounded-full shadow">
@@ -134,7 +134,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                       <img
                         src={activeUrl}
                         alt={product.name}
-                        className="max-w-full max-h-[360px] object-contain rounded-xl drop-shadow-sm transition-all duration-200"
+                        className="max-w-full max-h-[260px] md:max-h-[340px] object-contain rounded-xl drop-shadow-sm transition-all duration-200"
                       />
                     ) : (
                       <div className="w-full h-64 bg-gray-200 rounded-xl flex items-center justify-center">
@@ -163,7 +163,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
             })()}
 
             {/* RIGHT: Описание и кнопки */}
-            <div className="p-6 md:p-8 flex flex-col">
+            <div className="p-4 md:p-6 flex flex-col">
               {/* Brand & Category badges */}
               <div className="flex items-center gap-2 mb-3 flex-wrap">
                 {product.brand && (
@@ -179,7 +179,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
               </div>
 
               {/* Product name */}
-              <h1 className="text-2xl md:text-3xl font-black text-gray-900 mb-3 leading-tight">
+              <h1 className="text-xl md:text-3xl font-black text-gray-900 mb-2 leading-tight">
                 {(lang === "uz" && (product as any).nameUz) ? (product as any).nameUz : product.name}
               </h1>
 
@@ -192,7 +192,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
               </div>
 
               {/* Price block */}
-              <div className="bg-gray-50 rounded-xl p-4 mb-5 border border-gray-100">
+              <div className="bg-gray-50 rounded-xl p-3 mb-4 border border-gray-100">
                 {hasDiscount && product.originalPrice ? (
                   <div>
                     <div className="flex items-center gap-1.5 mb-1">
@@ -206,7 +206,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                       <Tag size={13} className="text-primary" />
                       <span className="text-primary text-xs font-bold">{t.detail_new_price}</span>
                     </div>
-                    <div className="text-3xl font-black text-primary">
+                    <div className="text-2xl md:text-3xl font-black text-primary">
                       {formatPrice(product.price)}
                     </div>
                     <div className="mt-2 inline-flex items-center gap-1 bg-primary/10 text-primary text-sm font-bold px-3 py-1 rounded-full">
@@ -214,7 +214,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                     </div>
                   </div>
                 ) : (
-                  <div className="text-3xl font-black text-gray-900">
+                  <div className="text-2xl md:text-3xl font-black text-gray-900">
                     {formatPrice(product.price)}
                   </div>
                 )}

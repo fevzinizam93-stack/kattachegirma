@@ -94,11 +94,11 @@ export default function Checkout() {
         </div>
       </div>
 
-      <div className="container py-6">
-        <div className="grid lg:grid-cols-3 gap-6">
+      <div className="container py-3">
+        <div className="grid lg:grid-cols-3 gap-4">
           {/* Form */}
           <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-border p-6 space-y-5">
+            <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-200 p-4 space-y-4">
               <h2 className="font-black text-lg">{t.checkout_address}</h2>
 
               {/* Name */}
@@ -165,16 +165,16 @@ export default function Checkout() {
 
           {/* Summary */}
           <div>
-            <div className="bg-white rounded-2xl border border-border p-5 sticky top-24">
+            <div className="bg-white rounded-2xl border border-gray-200 p-4 lg:sticky lg:top-24">
               <h2 className="font-black text-lg mb-4">{t.cart_checkout} ({items.length})</h2>
-              <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
+              <div className="space-y-2 mb-3 max-h-48 overflow-y-auto">
                 {items.map(item => (
                   <div key={item.productId} className="flex gap-3">
-                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-50 border border-border shrink-0">
+                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-50 border border-gray-100 shrink-0">
                       {item.imageUrl ? (
                         <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-lg">🏠</div>
+                        <div className="w-full h-full flex items-center justify-center text-base">📦</div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">

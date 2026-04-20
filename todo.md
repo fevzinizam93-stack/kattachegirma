@@ -125,3 +125,14 @@
 - [x] Сохранить TELEGRAM_BOT_TOKEN и TELEGRAM_ADMIN_CHAT_ID как secrets
 - [x] Подключить notifyNewOrder к orders.create процедуре
 - [x] Протестировать отправку сообщения в бот
+
+## v11 - Мобильная адаптация (iPhone/Android)
+- [ ] Нижний мобильный навбар (Главная, Каталог, Поиск, Корзина, Профиль)
+- [ ] Navbar: мобильный хедер с поиском и иконками
+- [ ] ProductCard: компактный вид для мобильных (2 колонки)
+- [ ] Home: компактные секции, горизонтальный скролл категорий
+- [ ] Catalog: фильтры в нижнем sheet, 2 колонки
+- [ ] ProductDetail: мобильный layout
+- [ ] Cart/Checkout: мобильный layout
+- [ ] SearchResults: мобильный layout
+- [ ] Глобальные стили: touch-friendly кнопки, правильные отступы
