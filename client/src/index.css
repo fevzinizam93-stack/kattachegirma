@@ -225,3 +225,26 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Mobile touch-friendly utilities */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Ensure minimum tap target size on mobile */
+@media (max-width: 767px) {
+  button, a, [role="button"] {
+    min-height: 40px;
+  }
+  input, textarea, select {
+    font-size: 16px; /* Prevents iOS auto-zoom on focus */
+  }
+}

@@ -52,11 +52,11 @@ export default function SearchResults({ query }: SearchResultsProps) {
         </div>
       </div>
 
-      <div className="container py-6">
+      <div className="container py-3 pb-24 md:pb-6">
         {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
             {Array.from({ length: 10 }).map((_, i) => (
-              <div key={i} className="bg-white rounded-xl border border-gray-100 h-72 animate-pulse" />
+              <div key={i} className="bg-white rounded-xl border border-gray-100 h-56 animate-pulse" />
             ))}
           </div>
         ) : products.length === 0 ? (
@@ -83,7 +83,7 @@ export default function SearchResults({ query }: SearchResultsProps) {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
             {products.map(p => (
               <ProductCard key={p.id} product={p} />
             ))}
