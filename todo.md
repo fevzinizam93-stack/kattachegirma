@@ -119,3 +119,9 @@
 - [x] Server: tRPC процедура products.translate использующая invokeLLM
 - [x] Admin: кнопка «Перевести» рядом с полями UZ в форме товара
 - [x] Admin: индикатор загрузки во время перевода
+
+## v10 - Telegram бот уведомления о заказах
+- [x] Создать server/telegram.ts с функцией notifyNewOrder
+- [x] Сохранить TELEGRAM_BOT_TOKEN и TELEGRAM_ADMIN_CHAT_ID как secrets
+- [x] Подключить notifyNewOrder к orders.create процедуре
+- [x] Протестировать отправку сообщения в бот

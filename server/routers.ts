@@ -4,6 +4,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { notifyNewOrder } from "./telegram";
 import {
   getAllCategories,
   getProducts,
@@ -380,6 +381,18 @@ export const appRouter = router({
       }))
       .mutation(async ({ input }) => {
         const id = await createOrder(input);
+        // Send Telegram notification (non-blocking)
+        notifyNewOrder({
+          id,
+          phone: input.customerPhone,
+          address: input.deliveryAddress,
+          items: input.items.map(item => ({
+            productName: item.name,
+            quantity: item.quantity,
+            price: String(item.price),
+          })),
+          total: input.totalAmount,
+        }).catch(e => console.error("[Telegram] notify failed:", e));
         return { id };
       }),
 
