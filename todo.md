@@ -190,3 +190,6 @@
 - [x] Создать хук useAnalytics в client/src/hooks/useAnalytics.ts
 - [x] Встроить трекинг page_view в App.tsx, product_view в ProductCard, add_to_cart в Cart, order_placed в Checkout
 - [x] Создать страницу /admin/analytics с дашбордом (просмотры, топ товаров, конверсии, воронка)
+
+## Баг: Описание товара не отображается на странице товара
+- [x] Добавить блок description/descriptionUz в ProductDetail.tsx под основной информацией

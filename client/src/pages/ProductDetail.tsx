@@ -159,14 +159,14 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                     </div>
                   )}
                   {/* Description under photo — visible on desktop left column and on mobile */}
-                  {product.description && (
+                  {((product as any).descriptionUz || product.description) && (
                     <div className="p-4 md:p-6 border-t border-gray-100">
                       <h2 className="text-base font-black text-gray-900 mb-3 flex items-center gap-2">
                         <span className="w-1 h-5 bg-primary rounded-full inline-block" />
                         {t.detail_about}
                       </h2>
                       <p className="text-gray-700 leading-relaxed text-sm whitespace-pre-line">
-                        {(lang === "uz" && (product as any).descriptionUz) ? (product as any).descriptionUz : product.description}
+                        {(lang === "uz" && (product as any).descriptionUz) ? (product as any).descriptionUz : (product.description || (product as any).descriptionUz)}
                       </p>
                     </div>
                   )}
@@ -335,14 +335,14 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
         {/* Description + Specs — full width below main card */}
         <div className="grid md:grid-cols-2 gap-6">
           {/* LEFT: Description */}
-          {product.description && (
+          {((product as any).descriptionUz || product.description) && (
             <div className="bg-white rounded-2xl shadow-sm p-6 order-1">
               <h2 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
                 <span className="w-1 h-6 bg-primary rounded-full inline-block" />
                 {t.detail_about}
               </h2>
               <p className="text-gray-700 leading-relaxed text-sm whitespace-pre-line">
-                {(lang === "uz" && (product as any).descriptionUz) ? (product as any).descriptionUz : product.description}
+                {(lang === "uz" && (product as any).descriptionUz) ? (product as any).descriptionUz : (product.description || (product as any).descriptionUz)}
               </p>
             </div>
           )}
