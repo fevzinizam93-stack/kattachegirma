@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Закрываем служебные и приватные разделы
+Disallow: /admin
+Disallow: /api/
+Disallow: /profile
+Disallow: /cart
+Disallow: /checkout
+Disallow: /seller
+
+# Карта сайта
+Sitemap: https://www.kattachegirma.uz/sitemap.xml
