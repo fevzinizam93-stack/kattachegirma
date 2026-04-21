@@ -16,6 +16,7 @@ import Checkout from "./pages/Checkout";
 import SearchResults from "./pages/SearchResults";
 import Admin from "./pages/Admin";
 import About from "./pages/About";
+import Bestsellers from "./pages/Bestsellers";
 import SellerPanel from "./pages/SellerPanel";
 import Profile from "./pages/Profile";
 import AuthModal from "./components/AuthModal";
@@ -61,6 +62,7 @@ function Router() {
       </Route>
       <Route path="/admin" component={Admin} />
       <Route path="/about" component={About} />
+      <Route path="/bestsellers" component={Bestsellers} />
       <Route path="/seller" component={SellerPanel} />
       <Route path="/profile" component={Profile} />
       <Route path="/404" component={NotFound} />

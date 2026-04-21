@@ -37,6 +37,8 @@ import {
   isFavorite,
   getProductById as getProductByIdDb,
   promoteToAdmin,
+  getHitProducts,
+  toggleProductHit,
 } from "./db";
 import { storagePut } from "./storage";
 import { invokeLLM } from "./_core/llm";
@@ -360,6 +362,21 @@ export const appRouter = router({
       if (!seller) return [];
       return getSellerProducts(seller.id);
     }),
+
+    // Public: get hit products (bestsellers)
+    getHits: publicProcedure
+      .input(z.object({ limit: z.number().optional() }))
+      .query(async ({ input }) => {
+        return getHitProducts(input.limit);
+      }),
+
+    // Admin: toggle isHit flag
+    toggleHit: adminProcedure
+      .input(z.object({ id: z.number(), isHit: z.boolean() }))
+      .mutation(async ({ input }) => {
+        await toggleProductHit(input.id, input.isHit);
+        return { success: true };
+      }),
   }),
 
   // ---- Orders ----

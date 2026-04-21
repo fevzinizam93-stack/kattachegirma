@@ -115,6 +115,9 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
               <Link href="/" className={`px-3 py-1.5 text-sm font-medium rounded hover:bg-white/10 transition-colors whitespace-nowrap ${location === "/" ? "bg-white/20" : ""}`}>{t.nav_home}</Link>
               <Link href="/catalog" className={`px-3 py-1.5 text-sm font-medium rounded hover:bg-white/10 transition-colors whitespace-nowrap ${location === "/catalog" ? "bg-white/20" : ""}`}>{t.nav_catalog}</Link>
               <Link href="/about" className={`px-3 py-1.5 text-sm font-medium rounded hover:bg-white/10 transition-colors whitespace-nowrap ${location === "/about" ? "bg-white/20" : ""}`}>{t.nav_about}</Link>
+              <Link href="/bestsellers" className={`px-3 py-1.5 text-sm font-medium rounded hover:bg-white/10 transition-colors whitespace-nowrap flex items-center gap-1 ${location === "/bestsellers" ? "bg-white/20" : ""}`}>
+                <span className="text-yellow-300">🔥</span>{lang === "uz" ? "Hitlar" : "Хиты"}
+              </Link>
             </div>
             <div className="flex-1 relative">
               <form onSubmit={handleSearch} className="flex">

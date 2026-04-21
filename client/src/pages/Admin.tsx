@@ -32,6 +32,7 @@ interface ProductForm {
   stock: number;
   isNew: boolean;
   isFeatured: boolean;
+  isHit: boolean;
   sellerPhone: string;
   sellerTelegram: string;
   sellerName: string;
@@ -40,7 +41,7 @@ interface ProductForm {
 const emptyForm: ProductForm = {
   name: "", nameUz: "", slug: "", description: "", descriptionUz: "", categoryId: 0, brand: "",
   price: "", priceUsd: "", originalPrice: "", originalPriceUsd: "", discount: 0, imageUrl: "", images: [], stock: 0,
-  isNew: false, isFeatured: false, sellerPhone: "", sellerTelegram: "", sellerName: "",
+  isNew: false, isFeatured: false, isHit: false, sellerPhone: "", sellerTelegram: "", sellerName: "",
 };
 
 export default function Admin() {
@@ -278,7 +279,7 @@ export default function Admin() {
       originalPriceUsd: p.originalPrice ? String(Math.round(parseFloat(p.originalPrice) / exchangeRate)) : "",
       discount: p.discount ?? 0,
       imageUrl: p.imageUrl ?? "", images: existingImages, stock: p.stock ?? 0,
-      isNew: p.isNew ?? false, isFeatured: p.isFeatured ?? false,
+      isNew: p.isNew ?? false, isFeatured: p.isFeatured ?? false, isHit: (p as any).isHit ?? false,
       sellerPhone: (p as any).sellerPhone ?? "",
       sellerTelegram: (p as any).sellerTelegram ?? "",
       sellerName: (p as any).sellerName ?? "",
@@ -563,6 +564,10 @@ export default function Admin() {
                           <input type="checkbox" checked={form.isFeatured} onChange={e => setForm(f => ({ ...f, isFeatured: e.target.checked }))} className="rounded" />
                           Tavsiya etilgan
                         </label>
+                        <label className="flex items-center gap-2 text-sm cursor-pointer">
+                          <input type="checkbox" checked={form.isHit} onChange={e => setForm(f => ({ ...f, isHit: e.target.checked }))} className="rounded accent-orange-500" />
+                          <span className="text-orange-600 font-semibold">🔥 Хит продаж</span>
+                        </label>
                       </div>
                     </div>
                     <div className="flex gap-3 pt-2">
@@ -625,6 +630,7 @@ export default function Admin() {
                               {(p as any).isApproved === false && <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">Tekshirilmoqda</span>}
                               {p.isFeatured && <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">Tavsiya</span>}
                               {p.isNew && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Yangi</span>}
+                              {(p as any).isHit && <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">🔥 Hit</span>}
                             </div>
                           </td>
                           <td className="px-4 py-3">

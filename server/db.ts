@@ -338,3 +338,17 @@ export async function getSellerProducts(sellerId: number) {
   if (!db) return [];
   return db.select().from(products).where(eq(products.sellerId, sellerId)).orderBy(desc(products.createdAt));
 }
+
+export async function getHitProducts(limit?: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const query = db.select().from(products).where(eq(products.isHit, true)).orderBy(desc(products.createdAt));
+  if (limit) query.limit(limit);
+  return query;
+}
+
+export async function toggleProductHit(id: number, isHit: boolean) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(products).set({ isHit }).where(eq(products.id, id));
+}

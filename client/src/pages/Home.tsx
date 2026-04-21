@@ -1,16 +1,18 @@
 import ProductCard from "@/components/ProductCard";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
-import { ArrowRight, Tag } from "lucide-react";
+import { ArrowRight, Flame, Tag } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 export default function Home() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [, navigate] = useLocation();
 
   const { data: featuredData, isLoading: featuredLoading } = trpc.products.list.useQuery({ featured: true, limit: 10, offset: 0 });
   const { data: newData, isLoading: newLoading } = trpc.products.list.useQuery({ limit: 10, offset: 0 });
   const { data: categoriesData } = trpc.categories.list.useQuery();
+  const { data: hitsData } = trpc.products.getHits.useQuery({ limit: 8 });
+  const hitProducts = hitsData ?? [];
 
   const featuredProducts = featuredData?.items ?? [];
   const newProducts = newData?.items ?? [];
@@ -52,6 +54,26 @@ export default function Home() {
             ))}
           </div>
         </div>
+      )}
+
+      {/* Bestsellers / Hits widget */}
+      {hitProducts.length > 0 && (
+        <section className="container py-3">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Flame size={20} className="text-orange-500" />
+              <h2 className="text-base md:text-lg font-black text-gray-900">
+                {lang === "uz" ? "Sotuvdagi hitlar" : "Хиты продаж"}
+              </h2>
+            </div>
+            <Link href="/bestsellers" className="text-sm font-semibold hover:underline flex items-center gap-1" style={{ color: "#cc0000" }}>
+              {t.home_view_all} <ArrowRight size={14} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
+            {hitProducts.map((p) => <ProductCard key={p.id} product={p} />)}
+          </div>
+        </section>
       )}
 
       {/* Featured products */}
