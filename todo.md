@@ -177,3 +177,8 @@
 - [x] Добавить огненный промо-баннер на главную страницу (Home.tsx) под навбаром
 - [x] Добавить значок 🔥 на карточки товаров (ProductCard.tsx) для isHit товаров
 - [x] Добавить поле hitOrder в форму Admin.tsx
+
+## SEO - Исправление sitemap.xml
+- [x] Диагностировать ошибку sitemap.xml в Google Search Console
+- [x] Создать динамический endpoint /sitemap.xml на сервере с реальными URL товаров
+- [x] Проверить доступность sitemap.xml на production
