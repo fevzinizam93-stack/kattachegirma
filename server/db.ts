@@ -1,6 +1,6 @@
-import { and, asc, desc, eq, ilike, like, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, ilike, like, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { categories, favorites, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, orders, products, sellers, storeSettings, users } from "../drizzle/schema";
+import { analyticsEvents, categories, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, orders, products, sellers, storeSettings, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import bcrypt from "bcryptjs";
 
@@ -352,4 +352,66 @@ export async function toggleProductHit(id: number, isHit: boolean) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   await db.update(products).set({ isHit }).where(eq(products.id, id));
+}
+
+// ---- Analytics ----
+export async function trackEvent(event: InsertAnalyticsEvent) {
+  const db = await getDb();
+  if (!db) return;
+  try {
+    await db.insert(analyticsEvents).values(event);
+  } catch (e) {
+    console.warn("[Analytics] Failed to track event:", e);
+  }
+}
+
+export async function getAnalyticsStats(days = 30) {
+  const db = await getDb();
+  if (!db) return null;
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+  // Total counts by event type
+  const eventCounts = await db
+    .select({ eventType: analyticsEvents.eventType, total: count() })
+    .from(analyticsEvents)
+    .where(gte(analyticsEvents.createdAt, since))
+    .groupBy(analyticsEvents.eventType);
+
+  // Top viewed products
+  const topProducts = await db
+    .select({ productId: analyticsEvents.productId, productName: analyticsEvents.productName, views: count() })
+    .from(analyticsEvents)
+    .where(and(eq(analyticsEvents.eventType, "product_view"), gte(analyticsEvents.createdAt, since)))
+    .groupBy(analyticsEvents.productId, analyticsEvents.productName)
+    .orderBy(desc(count()))
+    .limit(10);
+
+  // Daily page views (last 14 days)
+  const dailyViews = await db
+    .select({
+      date: sql<string>`DATE(${analyticsEvents.createdAt})`,
+      views: count(),
+    })
+    .from(analyticsEvents)
+    .where(and(eq(analyticsEvents.eventType, "page_view"), gte(analyticsEvents.createdAt, since)))
+    .groupBy(sql`DATE(${analyticsEvents.createdAt})`)
+    .orderBy(sql`DATE(${analyticsEvents.createdAt})`);
+
+  // Funnel: views → add_to_cart → orders
+  const funnelCounts = eventCounts.reduce((acc, row) => {
+    acc[row.eventType] = Number(row.total);
+    return acc;
+  }, {} as Record<string, number>);
+
+  return {
+    eventCounts,
+    topProducts,
+    dailyViews,
+    funnel: {
+      pageViews: funnelCounts["page_view"] ?? 0,
+      productViews: funnelCounts["product_view"] ?? 0,
+      addToCart: funnelCounts["add_to_cart"] ?? 0,
+      orders: funnelCounts["order_placed"] ?? 0,
+    },
+  };
 }

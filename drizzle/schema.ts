@@ -121,3 +121,19 @@ export const favorites = mysqlTable("favorites", {
 
 export type Favorite = typeof favorites.$inferSelect;
 export type InsertFavorite = typeof favorites.$inferInsert;
+
+// Analytics events table
+export const analyticsEvents = mysqlTable("analytics_events", {
+  id: int("id").autoincrement().primaryKey(),
+  eventType: varchar("eventType", { length: 64 }).notNull(), // page_view, product_view, add_to_cart, order_placed, search
+  productId: int("productId"),
+  productName: varchar("productName", { length: 256 }),
+  page: varchar("page", { length: 256 }),
+  sessionId: varchar("sessionId", { length: 64 }),
+  userId: int("userId"),
+  meta: json("meta").$type<Record<string, string | number>>().default({}),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AnalyticsEvent = typeof analyticsEvents.$inferSelect;
+export type InsertAnalyticsEvent = typeof analyticsEvents.$inferInsert;

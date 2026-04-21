@@ -39,6 +39,8 @@ import {
   promoteToAdmin,
   getHitProducts,
   toggleProductHit,
+  trackEvent,
+  getAnalyticsStats,
 } from "./db";
 import { storagePut } from "./storage";
 import { invokeLLM } from "./_core/llm";
@@ -540,6 +542,39 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         await promoteToAdmin(input.email);
         return { success: true };
+      }),
+  }),
+
+  // ---- Analytics ----
+  analytics: router({
+    // Public: track any event (fire-and-forget)
+    track: publicProcedure
+      .input(z.object({
+        eventType: z.enum(["page_view", "product_view", "add_to_cart", "order_placed", "search"]),
+        productId: z.number().optional(),
+        productName: z.string().optional(),
+        page: z.string().optional(),
+        sessionId: z.string().optional(),
+        meta: z.record(z.string(), z.union([z.string(), z.number()])).optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        await trackEvent({
+          eventType: input.eventType,
+          productId: input.productId ?? null,
+          productName: input.productName ?? null,
+          page: input.page ?? null,
+          sessionId: input.sessionId ?? null,
+          userId: ctx.user?.id ?? null,
+          meta: (input.meta ?? {}) as Record<string, string | number>,
+        });
+        return { ok: true };
+      }),
+
+    // Admin: get stats dashboard
+    stats: adminProcedure
+      .input(z.object({ days: z.number().min(1).max(90).default(30) }))
+      .query(async ({ input }) => {
+        return getAnalyticsStats(input.days);
       }),
   }),
 });

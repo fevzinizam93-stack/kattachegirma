@@ -182,3 +182,11 @@
 - [x] Диагностировать ошибку sitemap.xml в Google Search Console
 - [x] Создать динамический endpoint /sitemap.xml на сервере с реальными URL товаров
 - [x] Проверить доступность sitemap.xml на production
+
+## Аналитика поведения пользователей
+- [x] Создать таблицу analytics_events в drizzle/schema.ts (event_type, product_id, product_name, page, session_id, user_id, meta, created_at)
+- [x] Применить миграцию через SQL
+- [x] Добавить trackEvent (public) и getAnalyticsStats (admin) в server/routers.ts
+- [x] Создать хук useAnalytics в client/src/hooks/useAnalytics.ts
+- [x] Встроить трекинг page_view в App.tsx, product_view в ProductCard, add_to_cart в Cart, order_placed в Checkout
+- [x] Создать страницу /admin/analytics с дашбордом (просмотры, топ товаров, конверсии, воронка)

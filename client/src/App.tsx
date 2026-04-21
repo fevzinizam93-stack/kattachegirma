@@ -15,6 +15,7 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import SearchResults from "./pages/SearchResults";
 import Admin from "./pages/Admin";
+import AdminAnalytics from "./pages/AdminAnalytics";
 import About from "./pages/About";
 import Bestsellers from "./pages/Bestsellers";
 import SellerPanel from "./pages/SellerPanel";
@@ -61,6 +62,7 @@ function Router() {
         {() => <SearchResults query={searchQuery} />}
       </Route>
       <Route path="/admin" component={Admin} />
+      <Route path="/admin/analytics" component={AdminAnalytics} />
       <Route path="/about" component={About} />
       <Route path="/bestsellers" component={Bestsellers} />
       <Route path="/seller" component={SellerPanel} />
