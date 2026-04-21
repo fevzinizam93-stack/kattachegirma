@@ -51,8 +51,12 @@ export default function ProductCard({ product }: ProductCardProps) {
     });
   };
 
-  const discountPercent = product.discount ?? 0;
-  const hasDiscount = discountPercent > 0 && product.originalPrice;
+  const origPrice = product.originalPrice ? parseFloat(product.originalPrice) : null;
+  const currPrice = parseFloat(product.price);
+  const hasDiscount = origPrice !== null && origPrice > currPrice;
+  const discountPercent = hasDiscount && origPrice
+    ? Math.round(((origPrice - currPrice) / origPrice) * 100)
+    : (product.discount ?? 0);
   const inStock = !product.stock || product.stock > 0;
 
   return (
