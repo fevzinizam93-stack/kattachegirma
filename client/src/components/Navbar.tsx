@@ -105,7 +105,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           <div className="container py-2 flex items-center gap-3">
             <Link href="/" className="shrink-0 flex items-center gap-2 min-w-fit">
               <div className="bg-white rounded p-1 flex items-center justify-center w-10 h-10">
-                <img src="/manus-storage/kattachegirma-logo_b5417617.png" alt="KC" width="32" height="32" className="h-8 w-auto object-contain" loading="eager" fetchPriority="high" />
+                <img src="/manus-storage/kattachegirma-logo_b5417617.png" alt="KC" className="h-8 w-auto object-contain" />
               </div>
               <div>
                 <div className="font-black text-sm leading-tight">Katta Chegirma<span className="text-yellow-300">!!!</span></div>
@@ -157,7 +157,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                           className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors text-left border-b border-gray-50 ${selectedIndex === idx ? "bg-red-50" : ""}`}
                           onClick={() => { navigate(`/product/${product.slug}`); setShowDropdown(false); setSearchQuery(""); }}>
                           <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
-                            {product.imageUrl ? <img src={product.imageUrl} alt="" width="48" height="48" className="w-full h-full object-contain p-1" loading="lazy" decoding="async" /> : <span className="text-xl">📦</span>}
+                            {product.imageUrl ? <img src={product.imageUrl} alt="" className="w-full h-full object-contain p-1" /> : <span className="text-xl">📦</span>}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-medium text-gray-900 truncate">{getProductName(product)}</div>
@@ -236,7 +236,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           <div className="flex items-center gap-2 px-3 pt-2 pb-1">
             <Link href="/" className="flex items-center gap-1.5 flex-1 min-w-0">
               <div className="bg-white rounded p-0.5 flex items-center justify-center w-8 h-8 shrink-0">
-                <img src="/manus-storage/kattachegirma-logo_b5417617.png" alt="KC" width="24" height="24" className="h-6 w-auto object-contain" loading="eager" />
+                <img src="/manus-storage/kattachegirma-logo_b5417617.png" alt="KC" className="h-6 w-auto object-contain" />
               </div>
               <span className="font-black text-sm leading-tight truncate">Katta Chegirma<span className="text-yellow-300">!!!</span></span>
             </Link>
@@ -300,7 +300,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                         className={`w-full flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 transition-colors text-left border-b border-gray-50 ${selectedIndex === idx ? "bg-red-50" : ""}`}
                         onClick={() => { navigate(`/product/${product.slug}`); setShowDropdown(false); setSearchQuery(""); inputRef.current?.blur(); }}>
                         <div className="w-9 h-9 rounded bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
-                          {product.imageUrl ? <img src={product.imageUrl} alt="" width="40" height="40" className="w-full h-full object-contain p-0.5" loading="lazy" decoding="async" /> : <span className="text-lg">📦</span>}
+                          {product.imageUrl ? <img src={product.imageUrl} alt="" className="w-full h-full object-contain p-0.5" /> : <span className="text-lg">📦</span>}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-medium text-gray-900 truncate">{getProductName(product)}</div>

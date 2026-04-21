@@ -13,7 +13,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <img src="/manus-storage/kattachegirma-logo_b5417617.png" alt="Katta Chegirma" width="56" height="56" className="h-14 w-auto object-contain rounded-lg" loading="lazy" decoding="async" />
+              <img src="/manus-storage/kattachegirma-logo_b5417617.png" alt="Katta Chegirma" className="h-14 w-auto object-contain rounded-lg" />
             </div>
             <p className="text-sm text-red-100">{t.footer_tagline}</p>
           </div>
