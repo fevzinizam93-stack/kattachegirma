@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike, like, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, like, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { categories, favorites, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, orders, products, sellers, storeSettings, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
@@ -339,10 +339,11 @@ export async function getSellerProducts(sellerId: number) {
   return db.select().from(products).where(eq(products.sellerId, sellerId)).orderBy(desc(products.createdAt));
 }
 
-export async function getHitProducts(limit?: number) {
+export async function getHitProducts(limit?: number, sortByOrder?: boolean) {
   const db = await getDb();
   if (!db) return [];
-  const query = db.select().from(products).where(eq(products.isHit, true)).orderBy(desc(products.createdAt));
+  const orderCol = sortByOrder ? asc(products.hitOrder) : desc(products.createdAt);
+  const query = db.select().from(products).where(eq(products.isHit, true)).orderBy(orderCol);
   if (limit) query.limit(limit);
   return query;
 }

@@ -38,6 +38,40 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 🔥 Fire Promo Banner — Хиты продаж */}
+      {hitProducts.length > 0 && (
+        <Link href="/bestsellers">
+          <div className="relative overflow-hidden cursor-pointer" style={{ background: "linear-gradient(135deg, #bf360c 0%, #e64a19 40%, #ff6d00 70%, #ffab40 100%)" }}>
+            {/* Animated fire particles */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <div className="absolute -top-4 left-[5%] text-4xl opacity-30 animate-bounce" style={{ animationDelay: "0s", animationDuration: "2s" }}>🔥</div>
+              <div className="absolute -top-2 left-[20%] text-3xl opacity-25 animate-bounce" style={{ animationDelay: "0.4s", animationDuration: "2.5s" }}>🔥</div>
+              <div className="absolute -top-4 right-[15%] text-5xl opacity-20 animate-bounce" style={{ animationDelay: "0.8s", animationDuration: "1.8s" }}>🔥</div>
+              <div className="absolute -top-2 right-[35%] text-2xl opacity-30 animate-bounce" style={{ animationDelay: "1.2s", animationDuration: "2.2s" }}>🔥</div>
+              <div className="absolute top-0 left-[55%] text-3xl opacity-20 animate-bounce" style={{ animationDelay: "0.6s", animationDuration: "2.8s" }}>🔥</div>
+            </div>
+            <div className="container relative z-10">
+              <div className="flex items-center justify-between py-3 md:py-4">
+                <div className="flex items-center gap-3">
+                  <div className="text-3xl md:text-4xl leading-none">🔥</div>
+                  <div>
+                    <div className="text-white font-black text-lg md:text-2xl leading-tight drop-shadow">
+                      {lang === "uz" ? "Sotuvdagi HITLAR!" : "ХИТЫ ПРОДАЖ!"}
+                    </div>
+                    <div className="text-orange-100 text-xs md:text-sm font-medium">
+                      {lang === "uz" ? "Eng ko'p sotilgan mahsulotlar" : "Самые популярные товары по лучшим ценам"}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 bg-white/20 hover:bg-white/30 transition-colors text-white font-bold text-sm md:text-base px-4 py-2 rounded-full backdrop-blur-sm border border-white/30 shrink-0">
+                  {lang === "uz" ? "Ko'rish" : "Смотреть"} <ArrowRight size={16} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </Link>
+      )}
+
       {/* Mobile horizontal category scroll */}
       {categories.length > 0 && (
         <div className="md:hidden bg-white border-b border-gray-100 overflow-x-auto scrollbar-hide">

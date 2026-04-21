@@ -168,3 +168,12 @@
 - [x] Добавить ссылку «Хиты продаж» в Navbar
 - [x] Добавить виджет «Хиты продаж» на главную страницу Home.tsx
 - [x] Билингвальные переводы RU/UZ для нового раздела
+
+## v17 - Улучшения Хиты продаж
+- [x] Добавить поле hitOrder (integer) в таблицу products в drizzle/schema.ts
+- [x] Сгенерировать и применить миграцию SQL для hitOrder
+- [x] Обновить tRPC products.getHits — сортировать по hitOrder ASC
+- [x] Обновить tRPC products.create/update — принимать hitOrder
+- [x] Добавить огненный промо-баннер на главную страницу (Home.tsx) под навбаром
+- [x] Добавить значок 🔥 на карточки товаров (ProductCard.tsx) для isHit товаров
+- [x] Добавить поле hitOrder в форму Admin.tsx

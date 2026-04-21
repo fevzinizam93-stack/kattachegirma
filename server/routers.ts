@@ -208,6 +208,8 @@ export const appRouter = router({
         stock: z.number().default(0),
         isNew: z.boolean().default(false),
         isFeatured: z.boolean().default(false),
+        isHit: z.boolean().default(false),
+        hitOrder: z.number().default(0),
         specs: z.record(z.string(), z.string()).optional(),
         sellerPhone: z.string().optional(),
         sellerTelegram: z.string().optional(),
@@ -242,6 +244,8 @@ export const appRouter = router({
         stock: z.number().optional(),
         isNew: z.boolean().optional(),
         isFeatured: z.boolean().optional(),
+        isHit: z.boolean().optional(),
+        hitOrder: z.number().optional(),
         specs: z.record(z.string(), z.string()).optional(),
         sellerPhone: z.string().optional(),
         sellerTelegram: z.string().optional(),
@@ -367,7 +371,7 @@ export const appRouter = router({
     getHits: publicProcedure
       .input(z.object({ limit: z.number().optional() }))
       .query(async ({ input }) => {
-        return getHitProducts(input.limit);
+        return getHitProducts(input.limit, true);
       }),
 
     // Admin: toggle isHit flag

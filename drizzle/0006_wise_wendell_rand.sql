@@ -1,0 +1,1 @@
+ALTER TABLE `products` ADD `hitOrder` int DEFAULT 0;

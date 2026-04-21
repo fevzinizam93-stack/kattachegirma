@@ -16,6 +16,7 @@ interface Product {
   imageUrl?: string | null;
   isNew?: boolean | null;
   isFeatured?: boolean | null;
+  isHit?: boolean | null;
   stock?: number | null;
 }
 
@@ -76,6 +77,9 @@ export default function ProductCard({ product }: ProductCardProps) {
             )}
             {product.isNew && (
               <span className="text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-none" style={{ backgroundColor: "#388e3c" }}>{t.card_new}</span>
+            )}
+            {product.isHit && (
+              <span className="text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-none flex items-center gap-0.5" style={{ backgroundColor: "#e65100" }}>🔥 {lang === "uz" ? "Hit" : "Хит"}</span>
             )}
           </div>
         </div>

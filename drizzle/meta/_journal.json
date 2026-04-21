@@ -43,6 +43,13 @@
       "when": 1776772897111,
       "tag": "0005_nervous_butterfly",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1776778124096,
+      "tag": "0006_wise_wendell_rand",
+      "breakpoints": true
     }
   ]
 }

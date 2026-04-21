@@ -33,6 +33,7 @@ interface ProductForm {
   isNew: boolean;
   isFeatured: boolean;
   isHit: boolean;
+  hitOrder: number;
   sellerPhone: string;
   sellerTelegram: string;
   sellerName: string;
@@ -41,7 +42,7 @@ interface ProductForm {
 const emptyForm: ProductForm = {
   name: "", nameUz: "", slug: "", description: "", descriptionUz: "", categoryId: 0, brand: "",
   price: "", priceUsd: "", originalPrice: "", originalPriceUsd: "", discount: 0, imageUrl: "", images: [], stock: 0,
-  isNew: false, isFeatured: false, isHit: false, sellerPhone: "", sellerTelegram: "", sellerName: "",
+  isNew: false, isFeatured: false, isHit: false, hitOrder: 0, sellerPhone: "", sellerTelegram: "", sellerName: "",
 };
 
 export default function Admin() {
@@ -279,7 +280,7 @@ export default function Admin() {
       originalPriceUsd: p.originalPrice ? String(Math.round(parseFloat(p.originalPrice) / exchangeRate)) : "",
       discount: p.discount ?? 0,
       imageUrl: p.imageUrl ?? "", images: existingImages, stock: p.stock ?? 0,
-      isNew: p.isNew ?? false, isFeatured: p.isFeatured ?? false, isHit: (p as any).isHit ?? false,
+      isNew: p.isNew ?? false, isFeatured: p.isFeatured ?? false, isHit: (p as any).isHit ?? false, hitOrder: (p as any).hitOrder ?? 0,
       sellerPhone: (p as any).sellerPhone ?? "",
       sellerTelegram: (p as any).sellerTelegram ?? "",
       sellerName: (p as any).sellerName ?? "",
@@ -569,6 +570,20 @@ export default function Admin() {
                           <span className="text-orange-600 font-semibold">🔥 Хит продаж</span>
                         </label>
                       </div>
+                      {form.isHit && (
+                        <div className="col-span-2">
+                          <label className="block text-sm font-semibold mb-1 text-orange-700">🔥 Порядок отображения в хитах (1 = первый)</label>
+                          <input
+                            type="number"
+                            value={form.hitOrder}
+                            onChange={e => setForm(f => ({ ...f, hitOrder: parseInt(e.target.value) || 0 }))}
+                            className="w-full border border-orange-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 bg-orange-50"
+                            placeholder="0"
+                            min={0}
+                          />
+                          <p className="text-xs text-gray-400 mt-1">Товары с меньшим номером отображаются раньше</p>
+                        </div>
+                      )}
                     </div>
                     <div className="flex gap-3 pt-2">
                       <button type="submit" disabled={createProduct.isPending || updateProduct.isPending}
