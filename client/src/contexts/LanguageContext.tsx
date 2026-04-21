@@ -252,12 +252,12 @@ const ru: Translations = {
   catalog_products_found: "товаров найдено",
 
   // Product card
-  card_add_to_cart: "В корзину",
+  card_add_to_cart: "Успей по скидке",
   card_new: "НОВИНКА",
   card_in_cart: "В корзине",
 
   // Product detail
-  detail_add_to_cart: "В корзину",
+  detail_add_to_cart: "Успей по скидке",
   detail_buy_now: "Успей по скидке!",
   detail_description: "Описание",
   detail_brand: "Бренд",
@@ -451,12 +451,12 @@ const uz: Translations = {
   catalog_products_found: "ta mahsulot topildi",
 
   // Product card
-  card_add_to_cart: "Savatga",
+  card_add_to_cart: "chegirmada olish",
   card_new: "YANGI",
   card_in_cart: "Savatda",
 
   // Product detail
-  detail_add_to_cart: "Savatga qo'shish",
+  detail_add_to_cart: "chegirmada olish",
   detail_buy_now: "Chegirmaga ulgurasiz!",
   detail_description: "Tavsif",
   detail_brand: "Brend",
@@ -480,7 +480,7 @@ const uz: Translations = {
   detail_delivery_desc: "Butun O'zbekiston bo'ylab",
   detail_about: "Mahsulot haqida",
   detail_specs: "Texnik xususiyatlar",
-  detail_buy_discount: "Chegirmaga olish",
+  detail_buy_discount: "chegirmada olish",
 
   // Cart
   cart_title: "Savat",

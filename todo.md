@@ -146,3 +146,8 @@
 ## v13 - ProductDetail улучшения
 - [x] ProductDetail: описание товара показывать слева под фото (видно на desktop и mobile)
 - [x] ProductDetail: кнопка «Успей по скидке» / «Chegirmaga olish» рядом с корзиной
+
+## v14 - Переименование кнопки «В корзину»
+- [x] LanguageContext: изменить card_add_to_cart на «Успей по скидке» / «chegirmada olish»
+- [x] ProductCard: кнопка показывает «Успей по скидке»
+- [x] ProductDetail: основная кнопка корзины показывает «Успей по скидке»
