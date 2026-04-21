@@ -1,13 +1,51 @@
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
-import { ChevronRight, MessageCircle, Minus, Phone, Plus, ShoppingCart, Star, Tag, Truck } from "lucide-react";
+import { ChevronDown, ChevronRight, MessageCircle, Minus, Phone, Plus, ShoppingCart, Star, Tag, Truck } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 
 interface ProductDetailProps {
   slug: string;
+}
+
+function AccordionSection({
+  title,
+  defaultOpen = true,
+  children,
+}: {
+  title: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+
+  return (
+    <div className="border border-gray-200 rounded-xl overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left"
+      >
+        <span className="flex items-center gap-2 font-black text-gray-900 text-base">
+          <span className="w-1 h-5 bg-primary rounded-full inline-block" />
+          {title}
+        </span>
+        <ChevronDown
+          size={18}
+          className={`text-gray-500 transition-transform duration-200 ${open ? "rotate-180" : "rotate-0"}`}
+        />
+      </button>
+      <div
+        className={`transition-all duration-200 overflow-hidden ${open ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"}`}
+      >
+        <div className="px-4 py-4">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function ProductDetail({ slug }: ProductDetailProps) {
@@ -303,44 +341,39 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
               </div>
             </div>
 
-            {/* ===== RIGHT COLUMN: Description + Specs ===== */}
-            <div className="flex flex-col p-4 md:p-6">
+            {/* ===== RIGHT COLUMN: Description + Specs (accordion) ===== */}
+            <div className="flex flex-col gap-3 p-4 md:p-6">
 
-              {/* Description */}
+              {/* Description accordion */}
               {descriptionText ? (
-                <div className="mb-6">
-                  <h2 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
-                    <span className="w-1 h-6 bg-primary rounded-full inline-block" />
-                    {t.detail_about}
-                  </h2>
+                <AccordionSection title={t.detail_about} defaultOpen={true}>
                   <p className="text-gray-700 leading-relaxed text-sm whitespace-pre-line">
                     {descriptionText}
                   </p>
-                </div>
+                </AccordionSection>
               ) : (
-                <div className="mb-6 flex flex-col items-center justify-center text-center py-12 text-gray-400">
-                  <span className="text-5xl mb-3">📋</span>
-                  <p className="text-sm">{lang === "uz" ? "Tavsif hali qo'shilmagan" : "Описание пока не добавлено"}</p>
-                </div>
+                <AccordionSection title={t.detail_about} defaultOpen={true}>
+                  <div className="flex flex-col items-center justify-center text-center py-8 text-gray-400">
+                    <span className="text-4xl mb-2">📋</span>
+                    <p className="text-sm">{lang === "uz" ? "Tavsif hali qo'shilmagan" : "Описание пока не добавлено"}</p>
+                  </div>
+                </AccordionSection>
               )}
 
-              {/* Specs */}
+              {/* Specs accordion */}
               {Object.keys(specs).length > 0 && (
-                <div>
-                  <h2 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
-                    <span className="w-1 h-6 bg-primary rounded-full inline-block" />
-                    {t.detail_specs}
-                  </h2>
-                  <div className="space-y-1">
+                <AccordionSection title={t.detail_specs} defaultOpen={true}>
+                  <div className="space-y-0">
                     {Object.entries(specs).map(([key, value]) => (
                       <div key={key} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
                         <span className="text-gray-500 text-sm">{key}</span>
-                        <span className="text-gray-900 text-sm font-semibold">{value}</span>
+                        <span className="text-gray-900 text-sm font-semibold text-right ml-4">{value}</span>
                       </div>
                     ))}
                   </div>
-                </div>
+                </AccordionSection>
               )}
+
             </div>
 
           </div>
