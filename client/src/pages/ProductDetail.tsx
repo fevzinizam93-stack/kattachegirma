@@ -66,9 +66,16 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
   const hasDiscount = (product.discount ?? 0) > 0 && product.originalPrice;
   const specs = (product.specs as Record<string, string> | null) ?? {};
   const telegramUsername = product.sellerTelegram?.replace("@", "").replace("https://t.me/", "");
+  const displayName = (lang === "uz" && (product as any).nameUz) ? (product as any).nameUz : product.name;
+  const descriptionText = (lang === "uz" && (product as any).descriptionUz)
+    ? (product as any).descriptionUz
+    : (product.description || (product as any).descriptionUz);
+  const allImages: string[] = (product as any).images?.length
+    ? (product as any).images
+    : product.imageUrl ? [product.imageUrl] : [];
+  const activeUrl = allImages[activeImageIdx] ?? product.imageUrl;
 
   const handleAddToCart = () => {
-    const displayName = (lang === "uz" && (product as any).nameUz) ? (product as any).nameUz : product.name;
     addItem({
       productId: product.id,
       name: displayName,
@@ -78,7 +85,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
       slug: product.slug,
     });
     toast.success(lang === "uz" ? `${quantity} ta mahsulot savatga qo'shildi!` : `${quantity} шт. добавлено в корзину!`, {
-      description: product.name,
+      description: displayName,
     });
   };
 
@@ -103,70 +110,16 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
         </div>
       </div>
 
-      <div className="container py-3">
-        {/* Main product card */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-4">
+      <div className="container py-4">
+        {/* Main product card — 2 columns: LEFT photo block, RIGHT description */}
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div className="grid md:grid-cols-2 gap-0 divide-y md:divide-y-0 md:divide-x divide-gray-100">
 
-            {/* LEFT: Фотография */}
-            {(() => {
-              const allImages: string[] = (product as any).images?.length
-                ? (product as any).images
-                : product.imageUrl ? [product.imageUrl] : [];
-              const activeUrl = allImages[activeImageIdx] ?? product.imageUrl;
-              return (
-                <div className="border-r border-gray-100">
-                  {/* Main image */}
-                  <div className="relative bg-gray-50 flex items-center justify-center p-4 min-h-[220px] md:min-h-[380px]">
-                    <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
-                      {hasDiscount && (
-                        <span className="bg-primary text-white text-sm font-bold px-3 py-1 rounded-full shadow">
-                          -{product.discount}%
-                        </span>
-                      )}
-                      {product.isNew && (
-                        <span className="bg-green-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow">
-                          YANGI
-                        </span>
-                      )}
-                    </div>
-                    {activeUrl ? (
-                      <img
-                        src={activeUrl}
-                        alt={product.name}
-                        className="max-w-full max-h-[260px] md:max-h-[340px] object-contain rounded-xl drop-shadow-sm transition-all duration-200"
-                      />
-                    ) : (
-                      <div className="w-full h-64 bg-gray-200 rounded-xl flex items-center justify-center">
-                        <span className="text-gray-400 text-8xl">📦</span>
-                      </div>
-                    )}
-                  </div>
-                  {/* Thumbnails */}
-                  {allImages.length > 1 && (
-                    <div className="flex gap-2 p-3 bg-gray-50 border-t border-gray-100 overflow-x-auto">
-                      {allImages.map((url, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => setActiveImageIdx(idx)}
-                          className={`shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
-                            idx === activeImageIdx ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200 hover:border-primary/50'
-                          }`}
-                        >
-                          <img src={url} alt={`Фото ${idx + 1}`} className="w-full h-full object-cover" />
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  {/* Description removed from left column — shown in full-width section below */}
-                </div>
-              );
-            })()}
+            {/* ===== LEFT COLUMN: Name → Photo → Button → Contacts ===== */}
+            <div className="flex flex-col p-4 md:p-6">
 
-            {/* RIGHT: Описание и кнопки */}
-            <div className="p-4 md:p-6 flex flex-col">
               {/* Brand & Category badges */}
-              <div className="flex items-center gap-2 mb-3 flex-wrap">
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
                 {product.brand && (
                   <span className="bg-gray-100 text-gray-600 text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">
                     {product.brand}
@@ -179,38 +132,80 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 )}
               </div>
 
-              {/* Product name */}
-              <h1 className="text-xl md:text-3xl font-black text-gray-900 mb-2 leading-tight">
-                {(lang === "uz" && (product as any).nameUz) ? (product as any).nameUz : product.name}
+              {/* Product name — ABOVE photo */}
+              <h1 className="text-xl md:text-2xl font-black text-gray-900 mb-3 leading-tight">
+                {displayName}
               </h1>
 
               {/* Rating */}
-              <div className="flex items-center gap-1 mb-4">
+              <div className="flex items-center gap-1 mb-3">
                 {[1,2,3,4,5].map(i => (
-                  <Star key={i} size={15} className={i <= 4 ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} />
+                  <Star key={i} size={14} className={i <= 4 ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} />
                 ))}
                 <span className="text-xs text-gray-400 ml-1">(4.0)</span>
               </div>
+
+              {/* Photo */}
+              <div className="relative bg-gray-50 flex items-center justify-center rounded-xl min-h-[220px] md:min-h-[320px] mb-3 overflow-hidden">
+                <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
+                  {hasDiscount && (
+                    <span className="bg-primary text-white text-sm font-bold px-3 py-1 rounded-full shadow">
+                      -{product.discount}%
+                    </span>
+                  )}
+                  {product.isNew && (
+                    <span className="bg-green-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow">
+                      YANGI
+                    </span>
+                  )}
+                  {(product as any).isHit && (
+                    <span className="bg-orange-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow">
+                      🔥 Hit
+                    </span>
+                  )}
+                </div>
+                {activeUrl ? (
+                  <img
+                    src={activeUrl}
+                    alt={product.name}
+                    className="max-w-full max-h-[260px] md:max-h-[300px] object-contain rounded-xl drop-shadow-sm transition-all duration-200"
+                  />
+                ) : (
+                  <div className="w-full h-64 bg-gray-200 rounded-xl flex items-center justify-center">
+                    <span className="text-gray-400 text-8xl">📦</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Thumbnails */}
+              {allImages.length > 1 && (
+                <div className="flex gap-2 mb-4 overflow-x-auto">
+                  {allImages.map((url, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setActiveImageIdx(idx)}
+                      className={`shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${
+                        idx === activeImageIdx ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200 hover:border-primary/50'
+                      }`}
+                    >
+                      <img src={url} alt={`Фото ${idx + 1}`} className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {/* Price block */}
               <div className="bg-gray-50 rounded-xl p-3 mb-4 border border-gray-100">
                 {hasDiscount && product.originalPrice ? (
                   <div>
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <Tag size={13} className="text-gray-400" />
-                      <span className="text-gray-400 text-xs">{t.detail_old_price}</span>
-                    </div>
-                    <div className="text-gray-400 line-through text-base mb-2">
+                    <div className="text-gray-400 line-through text-sm mb-1">
                       {formatPrice(product.originalPrice)}
-                    </div>
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <Tag size={13} className="text-primary" />
-                      <span className="text-primary text-xs font-bold">{t.detail_new_price}</span>
                     </div>
                     <div className="text-2xl md:text-3xl font-black text-primary">
                       {formatPrice(product.price)}
                     </div>
-                    <div className="mt-2 inline-flex items-center gap-1 bg-primary/10 text-primary text-sm font-bold px-3 py-1 rounded-full">
+                    <div className="mt-1 inline-flex items-center gap-1 bg-primary/10 text-primary text-xs font-bold px-2.5 py-1 rounded-full">
+                      <Tag size={11} />
                       {t.detail_saving}: {formatPrice(parseFloat(product.originalPrice) - parseFloat(product.price))}
                     </div>
                   </div>
@@ -222,7 +217,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
               </div>
 
               {/* Stock */}
-              <div className="flex items-center gap-2 mb-5">
+              <div className="flex items-center gap-2 mb-4">
                 <div className={`w-2.5 h-2.5 rounded-full ${(product.stock ?? 0) > 0 ? 'bg-green-500' : 'bg-red-500'}`} />
                 <span className={`text-sm font-semibold ${(product.stock ?? 0) > 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {(product.stock ?? 0) > 0 ? `${t.detail_in_stock} (${product.stock})` : t.detail_out_of_stock}
@@ -253,23 +248,21 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 </div>
               )}
 
-              {/* Buttons row: Cart only */}
-              <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                <button
-                  onClick={handleAddToCart}
-                  disabled={(product.stock ?? 0) === 0}
-                  className={`flex-1 py-4 rounded-xl font-black text-base flex items-center justify-center gap-2 transition-all ${
-                    (product.stock ?? 0) === 0
-                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                      : "bg-primary text-white hover:bg-primary/90 active:scale-95 shadow-lg shadow-primary/25"
-                  }`}
-                >
-                  <ShoppingCart size={20} />
-                  {(product.stock ?? 0) === 0 ? t.detail_out_of_stock : t.card_add_to_cart}
-                </button>
-              </div>
+              {/* Buy button — BELOW photo */}
+              <button
+                onClick={handleAddToCart}
+                disabled={(product.stock ?? 0) === 0}
+                className={`w-full py-4 rounded-xl font-black text-base flex items-center justify-center gap-2 transition-all mb-4 ${
+                  (product.stock ?? 0) === 0
+                    ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                    : "bg-primary text-white hover:bg-primary/90 active:scale-95 shadow-lg shadow-primary/25"
+                }`}
+              >
+                <ShoppingCart size={20} />
+                {(product.stock ?? 0) === 0 ? t.detail_out_of_stock : t.card_add_to_cart}
+              </button>
 
-              {/* Seller contact */}
+              {/* Seller contacts — BELOW button */}
               {(product.sellerPhone || product.sellerTelegram) && (
                 <div className="border border-gray-200 rounded-xl p-4 mb-4 bg-gray-50">
                   <p className="text-sm font-bold text-gray-700 mb-3">
@@ -309,44 +302,48 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Description + Specs — full width below main card */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* LEFT: Description */}
-          {((product as any).descriptionUz || product.description) && (
-            <div className="bg-white rounded-2xl shadow-sm p-6 order-1">
-              <h2 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
-                <span className="w-1 h-6 bg-primary rounded-full inline-block" />
-                {t.detail_about}
-              </h2>
-              <p className="text-gray-700 leading-relaxed text-sm whitespace-pre-line">
-                {(lang === "uz" && (product as any).descriptionUz) ? (product as any).descriptionUz : (product.description || (product as any).descriptionUz)}
-              </p>
-            </div>
-          )}
+            {/* ===== RIGHT COLUMN: Description + Specs ===== */}
+            <div className="flex flex-col p-4 md:p-6">
 
-          {/* RIGHT: Specs */}
-          {Object.keys(specs).length > 0 && (
-            <div className="bg-white rounded-2xl shadow-sm p-6 order-2">
-              <h2 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
-                <span className="w-1 h-6 bg-primary rounded-full inline-block" />
-                {t.detail_specs}
-              </h2>
-              <div className="space-y-1">
-                {Object.entries(specs).map(([key, value]) => (
-                  <div key={key} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                    <span className="text-gray-500 text-sm">{key}</span>
-                    <span className="text-gray-900 text-sm font-semibold">{value}</span>
+              {/* Description */}
+              {descriptionText ? (
+                <div className="mb-6">
+                  <h2 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
+                    <span className="w-1 h-6 bg-primary rounded-full inline-block" />
+                    {t.detail_about}
+                  </h2>
+                  <p className="text-gray-700 leading-relaxed text-sm whitespace-pre-line">
+                    {descriptionText}
+                  </p>
+                </div>
+              ) : (
+                <div className="mb-6 flex flex-col items-center justify-center text-center py-12 text-gray-400">
+                  <span className="text-5xl mb-3">📋</span>
+                  <p className="text-sm">{lang === "uz" ? "Tavsif hali qo'shilmagan" : "Описание пока не добавлено"}</p>
+                </div>
+              )}
+
+              {/* Specs */}
+              {Object.keys(specs).length > 0 && (
+                <div>
+                  <h2 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
+                    <span className="w-1 h-6 bg-primary rounded-full inline-block" />
+                    {t.detail_specs}
+                  </h2>
+                  <div className="space-y-1">
+                    {Object.entries(specs).map(([key, value]) => (
+                      <div key={key} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                        <span className="text-gray-500 text-sm">{key}</span>
+                        <span className="text-gray-900 text-sm font-semibold">{value}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </div>
-          )}
 
-          {/* If no specs but has description, show description full width */}
-          {!product.description && Object.keys(specs).length === 0 && null}
+          </div>
         </div>
       </div>
     </div>
