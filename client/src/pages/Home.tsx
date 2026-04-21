@@ -42,13 +42,7 @@ export default function Home() {
         {hitProducts.length > 0 && (
           <Link href="/bestsellers">
             <div className="relative overflow-hidden cursor-pointer border-t border-orange-100" style={{ background: "linear-gradient(90deg, #fff3e0 0%, #ffe0b2 40%, #ffcc80 70%, #ffb74d 100%)" }}>
-              {/* Subtle fire particles */}
-              <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-0 left-[8%] text-2xl opacity-20 animate-bounce" style={{ animationDelay: "0s", animationDuration: "2s" }}>🔥</div>
-                <div className="absolute top-0 left-[30%] text-xl opacity-15 animate-bounce" style={{ animationDelay: "0.5s", animationDuration: "2.5s" }}>🔥</div>
-                <div className="absolute top-0 right-[20%] text-2xl opacity-20 animate-bounce" style={{ animationDelay: "1s", animationDuration: "1.8s" }}>🔥</div>
-                <div className="absolute top-0 right-[40%] text-lg opacity-15 animate-bounce" style={{ animationDelay: "0.7s", animationDuration: "2.2s" }}>🔥</div>
-              </div>
+
               <div className="container relative z-10">
                 <div className="flex items-center justify-between py-2">
                   <div className="flex items-center gap-2">

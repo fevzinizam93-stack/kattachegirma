@@ -182,3 +182,12 @@
 - [x] Диагностировать ошибку sitemap.xml в Google Search Console
 - [x] Создать динамический endpoint /sitemap.xml на сервере с реальными URL товаров
 - [x] Проверить доступность sitemap.xml на production
+
+## PageSpeed оптимизация (мобильные 31→70+, десктоп 47→80+)
+- [ ] Добавить preconnect для внешних ресурсов (Google Fonts, CDN)
+- [ ] Добавить font-display: swap для Google Fonts
+- [ ] Добавить width/height атрибуты на все img теги (предотвращение CLS)
+- [ ] Убрать animate-bounce с огненного баннера (снижает производительность)
+- [ ] Добавить loading="lazy" на все изображения товаров кроме первых 5 (LCP)
+- [ ] Настроить Vite code splitting и минификацию
+- [ ] Добавить meta viewport и dns-prefetch
