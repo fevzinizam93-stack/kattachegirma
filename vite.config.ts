@@ -167,6 +167,33 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // React core — loaded first, cached longest
+          if (id.includes("node_modules/react/") || id.includes("node_modules/react-dom/")) {
+            return "react-vendor";
+          }
+          // tRPC + TanStack Query — data layer
+          if (id.includes("node_modules/@trpc/") || id.includes("node_modules/@tanstack/") || id.includes("node_modules/superjson")) {
+            return "trpc-vendor";
+          }
+          // Radix UI + shadcn utilities — UI primitives
+          if (id.includes("node_modules/@radix-ui/") || id.includes("node_modules/class-variance-authority") || id.includes("node_modules/clsx") || id.includes("node_modules/tailwind-merge")) {
+            return "ui-vendor";
+          }
+          // Heavy chart/animation libs — lazy loaded
+          if (id.includes("node_modules/recharts") || id.includes("node_modules/framer-motion")) {
+            return "charts-vendor";
+          }
+          // Remaining node_modules → shared vendor chunk
+          if (id.includes("node_modules/")) {
+            return "vendor";
+          }
+        },
+      },
+    },
   },
   server: {
     host: true,

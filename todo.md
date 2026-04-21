@@ -191,3 +191,6 @@
 - [ ] Добавить loading="lazy" на все изображения товаров кроме первых 5 (LCP)
 - [ ] Настроить Vite code splitting и минификацию
 - [ ] Добавить meta viewport и dns-prefetch
+
+## Code Splitting (JS бандл)
+- [x] Добавить manualChunks в vite.config.ts: react-vendor, ui-vendor, trpc-vendor, app
