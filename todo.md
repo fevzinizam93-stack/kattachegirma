@@ -194,3 +194,8 @@
 
 ## Code Splitting (JS бандл)
 - [x] Добавить manualChunks в vite.config.ts: react-vendor, ui-vendor, trpc-vendor, app
+
+## SEO - Главная страница (/)
+- [x] Добавить H1 на главную страницу (скрытый для SEO)
+- [x] Добавить H2 на главную страницу (заголовки секций)
+- [x] Исправить document.title: 17 → 30–60 символов

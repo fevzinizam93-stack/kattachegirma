@@ -1,4 +1,5 @@
 import ProductCard from "@/components/ProductCard";
+import { useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { ArrowRight, Flame, Tag } from "lucide-react";
@@ -18,8 +19,22 @@ export default function Home() {
   const newProducts = newData?.items ?? [];
   const categories = categoriesData ?? [];
 
+  // SEO: set page title (30–60 chars)
+  useEffect(() => {
+    document.title = lang === "uz"
+      ? "Katta Chegirma — Arzon uy texnikasi O'zbekistonda"
+      : "Katta Chegirma — Дешёвая техника в Узбекистане";
+  }, [lang]);
+
   return (
     <div className="min-h-screen bg-gray-100">
+      {/* SEO: visually hidden H1 — required for search engines */}
+      <h1 className="sr-only">
+        {lang === "uz"
+          ? "Katta Chegirma — O'zbekistonda eng arzon uy texnikasi va elektronika"
+          : "Katta Chegirma — Самая дешёвая бытовая техника и электроника в Узбекистане"}
+      </h1>
+
       {/* Banner + Hits strip combined on white background */}
       <section className="bg-white border-b border-gray-200">
         {/* Top row: БОЛЬШИЕ СКИДКИ + lowest prices + view all */}
@@ -106,6 +121,9 @@ export default function Home() {
 
       {/* Featured products */}
       <section className="container py-3">
+        <h2 className="sr-only">
+          {lang === "uz" ? "Aksiyali mahsulotlar" : "Акционные товары"}
+        </h2>
         {featuredLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
             {Array.from({ length: 10 }).map((_, i) => <div key={i} className="bg-white rounded-lg border border-gray-200 h-56 animate-pulse" />)}
