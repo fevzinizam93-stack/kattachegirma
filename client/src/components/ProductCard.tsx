@@ -80,9 +80,16 @@ export default function ProductCard({ product }: ProductCardProps) {
           {product.brand && <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-0.5 truncate">{product.brand}</p>}
           <h3 className="text-[11px] font-medium text-gray-800 line-clamp-2 flex-1 mb-1.5 leading-snug">{displayName}</h3>
           <div className="mb-1.5">
-            <div className="text-sm font-black leading-tight" style={{ color: "#cc0000" }}>{formatPrice(product.price, t.common_sum)}</div>
-            {hasDiscount && product.originalPrice && (
-              <div className="text-[10px] text-gray-400 line-through leading-tight">{formatPrice(product.originalPrice, t.common_sum)}</div>
+            {hasDiscount && product.originalPrice ? (
+              <>
+                <div className="flex items-center justify-between gap-1 mb-0.5">
+                  <span className="text-[10px] text-gray-400 line-through leading-tight">{formatPrice(product.originalPrice, t.common_sum)}</span>
+                  <span className="text-[9px] font-bold text-white px-1 py-0.5 rounded shrink-0" style={{ backgroundColor: "#2e7d32" }}>-{discountPercent}%</span>
+                </div>
+                <div className="text-sm font-black leading-tight" style={{ color: "#cc0000" }}>{formatPrice(product.price, t.common_sum)}</div>
+              </>
+            ) : (
+              <div className="text-sm font-black leading-tight" style={{ color: "#cc0000" }}>{formatPrice(product.price, t.common_sum)}</div>
             )}
           </div>
           <button onClick={handleAddToCart} disabled={!inStock} className="w-full flex items-center justify-center gap-1 text-white py-1.5 px-1 rounded-lg text-[11px] font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:opacity-80 touch-manipulation" style={{ backgroundColor: inStock ? "#cc0000" : "#aaa" }}>
