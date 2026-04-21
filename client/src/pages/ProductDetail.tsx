@@ -158,18 +158,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                       ))}
                     </div>
                   )}
-                  {/* Description under photo — visible on desktop left column and on mobile */}
-                  {((product as any).descriptionUz || product.description) && (
-                    <div className="p-4 md:p-6 border-t border-gray-100">
-                      <h2 className="text-base font-black text-gray-900 mb-3 flex items-center gap-2">
-                        <span className="w-1 h-5 bg-primary rounded-full inline-block" />
-                        {t.detail_about}
-                      </h2>
-                      <p className="text-gray-700 leading-relaxed text-sm whitespace-pre-line">
-                        {(lang === "uz" && (product as any).descriptionUz) ? (product as any).descriptionUz : (product.description || (product as any).descriptionUz)}
-                      </p>
-                    </div>
-                  )}
+                  {/* Description removed from left column — shown in full-width section below */}
                 </div>
               );
             })()}
@@ -264,7 +253,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 </div>
               )}
 
-              {/* Buttons row: Cart + Discount urgency */}
+              {/* Buttons row: Cart only */}
               <div className="flex flex-col sm:flex-row gap-3 mb-4">
                 <button
                   onClick={handleAddToCart}
@@ -278,15 +267,6 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                   <ShoppingCart size={20} />
                   {(product.stock ?? 0) === 0 ? t.detail_out_of_stock : t.card_add_to_cart}
                 </button>
-                {(product.stock ?? 0) > 0 && (
-                  <button
-                    onClick={handleAddToCart}
-                    className="flex-1 py-4 rounded-xl font-black text-base flex items-center justify-center gap-2 transition-all bg-orange-500 hover:bg-orange-600 active:scale-95 text-white shadow-lg shadow-orange-500/25"
-                  >
-                    <Tag size={20} />
-                    {t.detail_buy_discount}
-                  </button>
-                )}
               </div>
 
               {/* Seller contact */}
