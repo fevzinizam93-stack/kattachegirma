@@ -171,26 +171,14 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // React core — loaded first, cached longest
-          if (id.includes("node_modules/react/") || id.includes("node_modules/react-dom/")) {
-            return "react-vendor";
-          }
-          // tRPC + TanStack Query — data layer
-          if (id.includes("node_modules/@trpc/") || id.includes("node_modules/@tanstack/") || id.includes("node_modules/superjson")) {
-            return "trpc-vendor";
-          }
-          // Radix UI + shadcn utilities — UI primitives
-          if (id.includes("node_modules/@radix-ui/") || id.includes("node_modules/class-variance-authority") || id.includes("node_modules/clsx") || id.includes("node_modules/tailwind-merge")) {
-            return "ui-vendor";
-          }
-          // Heavy chart/animation libs — lazy loaded
-          if (id.includes("node_modules/recharts") || id.includes("node_modules/framer-motion")) {
-            return "charts-vendor";
-          }
-          // Remaining node_modules → shared vendor chunk
-          if (id.includes("node_modules/")) {
-            return "vendor";
-          }
+          if (id.includes("node_modules/react/") || id.includes("node_modules/react-dom/")) return "vendor-react";
+          if (id.includes("node_modules/wouter")) return "vendor-router";
+          if (id.includes("node_modules/@radix-ui/")) return "vendor-ui";
+          if (id.includes("node_modules/@tanstack/") || id.includes("node_modules/@trpc/")) return "vendor-trpc";
+          if (id.includes("node_modules/lucide-react")) return "vendor-icons";
+          if (id.includes("node_modules/recharts") || id.includes("node_modules/d3-")) return "vendor-charts";
+          if (id.includes("node_modules/date-fns") || id.includes("node_modules/zod") || id.includes("node_modules/superjson")) return "vendor-utils";
+          if (id.includes("node_modules/")) return "vendor-misc";
         },
       },
     },
