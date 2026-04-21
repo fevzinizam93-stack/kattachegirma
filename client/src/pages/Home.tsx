@@ -20,8 +20,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Banner */}
+      {/* Banner + Hits strip combined on white background */}
       <section className="bg-white border-b border-gray-200">
+        {/* Top row: БОЛЬШИЕ СКИДКИ + lowest prices + view all */}
         <div className="container py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-white font-black text-base md:text-2xl px-4 py-2 md:px-5 md:py-2.5 rounded-full" style={{ backgroundColor: "#cc0000" }}>
@@ -36,41 +37,40 @@ export default function Home() {
             </Link>
           </div>
         </div>
-      </section>
 
-      {/* 🔥 Fire Promo Banner — Хиты продаж */}
-      {hitProducts.length > 0 && (
-        <Link href="/bestsellers">
-          <div className="relative overflow-hidden cursor-pointer" style={{ background: "linear-gradient(135deg, #bf360c 0%, #e64a19 40%, #ff6d00 70%, #ffab40 100%)" }}>
-            {/* Animated fire particles */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              <div className="absolute -top-4 left-[5%] text-4xl opacity-30 animate-bounce" style={{ animationDelay: "0s", animationDuration: "2s" }}>🔥</div>
-              <div className="absolute -top-2 left-[20%] text-3xl opacity-25 animate-bounce" style={{ animationDelay: "0.4s", animationDuration: "2.5s" }}>🔥</div>
-              <div className="absolute -top-4 right-[15%] text-5xl opacity-20 animate-bounce" style={{ animationDelay: "0.8s", animationDuration: "1.8s" }}>🔥</div>
-              <div className="absolute -top-2 right-[35%] text-2xl opacity-30 animate-bounce" style={{ animationDelay: "1.2s", animationDuration: "2.2s" }}>🔥</div>
-              <div className="absolute top-0 left-[55%] text-3xl opacity-20 animate-bounce" style={{ animationDelay: "0.6s", animationDuration: "2.8s" }}>🔥</div>
-            </div>
-            <div className="container relative z-10">
-              <div className="flex items-center justify-between py-3 md:py-4">
-                <div className="flex items-center gap-3">
-                  <div className="text-3xl md:text-4xl leading-none">🔥</div>
-                  <div>
-                    <div className="text-white font-black text-lg md:text-2xl leading-tight drop-shadow">
-                      {lang === "uz" ? "Sotuvdagi HITLAR!" : "ХИТЫ ПРОДАЖ!"}
-                    </div>
-                    <div className="text-orange-100 text-xs md:text-sm font-medium">
-                      {lang === "uz" ? "Eng ko'p sotilgan mahsulotlar" : "Самые популярные товары по лучшим ценам"}
+        {/* 🔥 Hits strip — orange row on white background */}
+        {hitProducts.length > 0 && (
+          <Link href="/bestsellers">
+            <div className="relative overflow-hidden cursor-pointer border-t border-orange-100" style={{ background: "linear-gradient(90deg, #fff3e0 0%, #ffe0b2 40%, #ffcc80 70%, #ffb74d 100%)" }}>
+              {/* Subtle fire particles */}
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-0 left-[8%] text-2xl opacity-20 animate-bounce" style={{ animationDelay: "0s", animationDuration: "2s" }}>🔥</div>
+                <div className="absolute top-0 left-[30%] text-xl opacity-15 animate-bounce" style={{ animationDelay: "0.5s", animationDuration: "2.5s" }}>🔥</div>
+                <div className="absolute top-0 right-[20%] text-2xl opacity-20 animate-bounce" style={{ animationDelay: "1s", animationDuration: "1.8s" }}>🔥</div>
+                <div className="absolute top-0 right-[40%] text-lg opacity-15 animate-bounce" style={{ animationDelay: "0.7s", animationDuration: "2.2s" }}>🔥</div>
+              </div>
+              <div className="container relative z-10">
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl leading-none">🔥</span>
+                    <div>
+                      <span className="font-black text-base md:text-lg leading-tight" style={{ color: "#bf360c" }}>
+                        {lang === "uz" ? "Sotuvdagi HITLAR!" : "ХИТЫ ПРОДАЖ!"}
+                      </span>
+                      <span className="hidden md:inline text-sm font-medium ml-3" style={{ color: "#e65100" }}>
+                        {lang === "uz" ? "Eng ko'p sotilgan mahsulotlar" : "Самые популярные товары по лучшим ценам"}
+                      </span>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-2 bg-white/20 hover:bg-white/30 transition-colors text-white font-bold text-sm md:text-base px-4 py-2 rounded-full backdrop-blur-sm border border-white/30 shrink-0">
-                  {lang === "uz" ? "Ko'rish" : "Смотреть"} <ArrowRight size={16} />
+                  <div className="flex items-center gap-1.5 font-bold text-sm px-3 py-1.5 rounded-full border shrink-0" style={{ color: "#bf360c", borderColor: "#e65100", backgroundColor: "rgba(255,255,255,0.6)" }}>
+                    {lang === "uz" ? "Ko'rish" : "Смотреть"} <ArrowRight size={14} />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </Link>
-      )}
+          </Link>
+        )}
+      </section>
 
       {/* Mobile horizontal category scroll */}
       {categories.length > 0 && (
