@@ -41,6 +41,12 @@ import {
   toggleProductHit,
   trackEvent,
   getAnalyticsStats,
+  insertReview,
+  getApprovedReviewsByProduct,
+  getAllReviews,
+  setReviewStatus,
+  deleteReview,
+  getReviewCountsByProduct,
 } from "./db";
 import { storagePut } from "./storage";
 import { invokeLLM } from "./_core/llm";
@@ -575,6 +581,67 @@ export const appRouter = router({
       .input(z.object({ days: z.number().min(1).max(90).default(30) }))
       .query(async ({ input }) => {
         return getAnalyticsStats(input.days);
+      }),
+  }),
+  reviews: router({
+    // Public: list approved reviews for a product
+    listByProduct: publicProcedure
+      .input(z.object({ productId: z.number() }))
+      .query(async ({ input }) => {
+        return getApprovedReviewsByProduct(input.productId);
+      }),
+
+    // Public: get rating summary
+    summary: publicProcedure
+      .input(z.object({ productId: z.number() }))
+      .query(async ({ input }) => {
+        return getReviewCountsByProduct(input.productId);
+      }),
+
+    // Public: submit a review (starts as pending)
+    submit: publicProcedure
+      .input(z.object({
+        productId: z.number(),
+        authorName: z.string().min(1).max(256),
+        rating: z.number().min(1).max(5),
+        comment: z.string().min(3).max(2000),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        await insertReview({
+          productId: input.productId,
+          authorName: input.authorName,
+          rating: input.rating,
+          comment: input.comment,
+          status: "pending",
+          userId: ctx.user?.id ?? null,
+        });
+        return { ok: true };
+      }),
+
+    // Admin: list all reviews (optionally filtered by status)
+    adminList: adminProcedure
+      .input(z.object({ status: z.enum(["pending", "approved", "hidden"]).optional() }))
+      .query(async ({ input }) => {
+        return getAllReviews(input.status);
+      }),
+
+    // Admin: set review status
+    adminSetStatus: adminProcedure
+      .input(z.object({
+        id: z.number(),
+        status: z.enum(["pending", "approved", "hidden"]),
+      }))
+      .mutation(async ({ input }) => {
+        await setReviewStatus(input.id, input.status);
+        return { ok: true };
+      }),
+
+    // Admin: delete review
+    adminDelete: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await deleteReview(input.id);
+        return { ok: true };
       }),
   }),
 });

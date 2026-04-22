@@ -57,6 +57,13 @@
       "when": 1776791695430,
       "tag": "0007_little_invisible_woman",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1776850562517,
+      "tag": "0008_hesitant_shiver_man",
+      "breakpoints": true
     }
   ]
 }

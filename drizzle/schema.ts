@@ -137,3 +137,18 @@ export const analyticsEvents = mysqlTable("analytics_events", {
 
 export type AnalyticsEvent = typeof analyticsEvents.$inferSelect;
 export type InsertAnalyticsEvent = typeof analyticsEvents.$inferInsert;
+
+// Reviews table
+export const reviews = mysqlTable("reviews", {
+  id: int("id").autoincrement().primaryKey(),
+  productId: int("productId").notNull(),
+  authorName: varchar("authorName", { length: 256 }).notNull(),
+  userId: int("userId"),
+  rating: int("rating").notNull(), // 1-5
+  comment: text("comment").notNull(),
+  status: mysqlEnum("status", ["pending", "approved", "hidden"]).default("pending").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Review = typeof reviews.$inferSelect;
+export type InsertReview = typeof reviews.$inferInsert;

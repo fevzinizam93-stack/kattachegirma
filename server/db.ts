@@ -1,6 +1,6 @@
 import { and, asc, count, desc, eq, gte, ilike, like, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { analyticsEvents, categories, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, orders, products, sellers, storeSettings, users } from "../drizzle/schema";
+import { analyticsEvents, categories, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, orders, products, reviews, InsertReview, sellers, storeSettings, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import bcrypt from "bcryptjs";
 
@@ -414,4 +414,52 @@ export async function getAnalyticsStats(days = 30) {
       orders: funnelCounts["order_placed"] ?? 0,
     },
   };
+}
+
+// ---- Reviews ----
+export async function insertReview(data: InsertReview) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(reviews).values(data);
+}
+
+export async function getApprovedReviewsByProduct(productId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(reviews)
+    .where(and(eq(reviews.productId, productId), eq(reviews.status, "approved")))
+    .orderBy(desc(reviews.createdAt));
+}
+
+export async function getAllReviews(status?: "pending" | "approved" | "hidden") {
+  const db = await getDb();
+  if (!db) return [];
+  if (status) {
+    return db.select().from(reviews)
+      .where(eq(reviews.status, status))
+      .orderBy(desc(reviews.createdAt));
+  }
+  return db.select().from(reviews).orderBy(desc(reviews.createdAt));
+}
+
+export async function setReviewStatus(id: number, status: "pending" | "approved" | "hidden") {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(reviews).set({ status }).where(eq(reviews.id, id));
+}
+
+export async function deleteReview(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(reviews).where(eq(reviews.id, id));
+}
+
+export async function getReviewCountsByProduct(productId: number) {
+  const db = await getDb();
+  if (!db) return { count: 0, avgRating: 0 };
+  const rows = await db.select().from(reviews)
+    .where(and(eq(reviews.productId, productId), eq(reviews.status, "approved")));
+  if (rows.length === 0) return { count: 0, avgRating: 0 };
+  const avg = rows.reduce((sum, r) => sum + r.rating, 0) / rows.length;
+  return { count: rows.length, avgRating: Math.round(avg * 10) / 10 };
 }

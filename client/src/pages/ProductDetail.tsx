@@ -1,7 +1,7 @@
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
-import { ChevronDown, ChevronRight, MessageCircle, Minus, Phone, Plus, ShoppingCart, Star, Tag, Truck } from "lucide-react";
+import { ChevronDown, ChevronRight, MessageCircle, Minus, Phone, Plus, ShoppingCart, Star, Tag, Truck, Send } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -382,6 +382,184 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
             </div>
 
           </div>
+        </div>
+
+        {/* ===== REVIEWS SECTION ===== */}
+        <ReviewsSection productId={product.id} lang={lang} />
+
+      </div>
+    </div>
+  );
+}
+
+// ---- Reviews Section Component ----
+function StarRating({ value, onChange }: { value: number; onChange?: (v: number) => void }) {
+  const [hover, setHover] = useState(0);
+  return (
+    <div className="flex gap-0.5">
+      {[1,2,3,4,5].map(i => (
+        <button
+          key={i}
+          type="button"
+          onClick={() => onChange?.(i)}
+          onMouseEnter={() => onChange && setHover(i)}
+          onMouseLeave={() => onChange && setHover(0)}
+          className={onChange ? "cursor-pointer" : "cursor-default"}
+        >
+          <Star
+            size={onChange ? 22 : 14}
+            className={i <= (hover || value) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ReviewsSection({ productId, lang }: { productId: number; lang: string }) {
+  const [authorName, setAuthorName] = useState("");
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  const { data: reviewsList = [] } = trpc.reviews.listByProduct.useQuery({ productId });
+  const { data: summary } = trpc.reviews.summary.useQuery({ productId });
+  const submitMutation = trpc.reviews.submit.useMutation({
+    onSuccess: () => {
+      setSubmitted(true);
+      setAuthorName("");
+      setRating(5);
+      setComment("");
+    },
+    onError: (err) => {
+      toast.error(err.message);
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!authorName.trim() || !comment.trim()) return;
+    submitMutation.mutate({ productId, authorName: authorName.trim(), rating, comment: comment.trim() });
+  };
+
+  const formatDate = (d: Date | string) =>
+    new Date(d).toLocaleDateString(lang === "uz" ? "uz-UZ" : "ru-RU", { day: "2-digit", month: "long", year: "numeric" });
+
+  return (
+    <div className="bg-white rounded-2xl shadow-sm mt-3 overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+        <div className="flex items-center gap-3">
+          <h2 className="text-base font-black text-gray-900">
+            {lang === "uz" ? "Xaridorlar sharhlari" : "Отзывы покупателей"}
+          </h2>
+          {(summary?.count ?? 0) > 0 && (
+            <div className="flex items-center gap-1.5 bg-yellow-50 border border-yellow-200 px-2.5 py-1 rounded-full">
+              <Star size={13} className="text-yellow-400 fill-yellow-400" />
+              <span className="text-sm font-bold text-yellow-700">{summary!.avgRating}</span>
+              <span className="text-xs text-yellow-600">({summary!.count})</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-100">
+        {/* Left: review list */}
+        <div className="p-4">
+          {reviewsList.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-10 text-gray-400">
+              <Star size={36} className="mb-2 text-gray-200" />
+              <p className="text-sm">{lang === "uz" ? "Hali sharhlar yo'q" : "Отзывов пока нет"}</p>
+              <p className="text-xs mt-1">{lang === "uz" ? "Birinchi bo'lib sharh qoldiring!" : "Будьте первым!"}</p>
+            </div>
+          ) : (
+            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+              {reviewsList.map((r) => (
+                <div key={r.id} className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-semibold text-sm text-gray-800">{r.authorName}</span>
+                    <span className="text-[11px] text-gray-400">{formatDate(r.createdAt)}</span>
+                  </div>
+                  <StarRating value={r.rating} />
+                  <p className="text-sm text-gray-700 mt-1.5 leading-relaxed">{r.comment}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Right: submit form */}
+        <div className="p-4">
+          <h3 className="text-sm font-bold text-gray-800 mb-3">
+            {lang === "uz" ? "Sharh qoldiring" : "Оставить отзыв"}
+          </h3>
+          {submitted ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
+                <Star size={24} className="text-green-500 fill-green-500" />
+              </div>
+              <p className="font-bold text-gray-800 text-sm">
+                {lang === "uz" ? "Rahmat!" : "Спасибо за отзыв!"}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                {lang === "uz" ? "Sharh moderatsiyadan o'tgach e'lon qilinadi." : "Отзыв появится после проверки модератором."}
+              </p>
+              <button
+                onClick={() => setSubmitted(false)}
+                className="mt-3 text-xs text-primary underline"
+              >
+                {lang === "uz" ? "Yana sharh qoldirish" : "Оставить ещё один отзыв"}
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                  {lang === "uz" ? "Ismingiz" : "Ваше имя"}
+                </label>
+                <input
+                  type="text"
+                  value={authorName}
+                  onChange={e => setAuthorName(e.target.value)}
+                  placeholder={lang === "uz" ? "Ismingizni kiriting" : "Введите ваше имя"}
+                  required
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                  {lang === "uz" ? "Baho" : "Оценка"}
+                </label>
+                <StarRating value={rating} onChange={setRating} />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                  {lang === "uz" ? "Sharh" : "Комментарий"}
+                </label>
+                <textarea
+                  value={comment}
+                  onChange={e => setComment(e.target.value)}
+                  placeholder={lang === "uz" ? "Fikringizni yozing..." : "Напишите ваш отзыв..."}
+                  required
+                  rows={4}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={submitMutation.isPending}
+                className="w-full py-2.5 bg-primary text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all disabled:opacity-60"
+              >
+                <Send size={14} />
+                {submitMutation.isPending
+                  ? (lang === "uz" ? "Yuborilmoqda..." : "Отправка...")
+                  : (lang === "uz" ? "Sharh yuborish" : "Отправить отзыв")}
+              </button>
+              <p className="text-[11px] text-gray-400 text-center">
+                {lang === "uz" ? "Sharhlar moderatsiyadan o'tadi" : "Отзывы проходят модерацию перед публикацией"}
+              </p>
+            </form>
+          )}
         </div>
       </div>
     </div>

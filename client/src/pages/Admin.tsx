@@ -1,6 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { BarChart3, Edit, FolderOpen, ImagePlus, MapPin, Package, Plus, Settings, ShoppingBag, Store, Trash2, Upload, Users, X } from "lucide-react";
+import { BarChart3, Edit, FolderOpen, ImagePlus, MapPin, Package, Plus, Settings, ShoppingBag, Star, Store, Trash2, Upload, Users, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -329,6 +329,11 @@ export default function Admin() {
           <Link href="/admin/analytics">
             <button className="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-colors bg-white border border-gray-200 hover:bg-gray-50 text-gray-700">
               <BarChart3 size={16} /> Аналитика
+            </button>
+          </Link>
+          <Link href="/admin/reviews">
+            <button className="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-colors bg-white border border-gray-200 hover:bg-gray-50 text-gray-700">
+              <Star size={16} /> Отзывы
             </button>
           </Link>
         </div>

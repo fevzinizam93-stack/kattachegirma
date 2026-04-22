@@ -206,3 +206,10 @@
 - [x] ProductDetail: раскрывающийся блок «Описание товара» (по умолчанию открыт)
 - [x] ProductDetail: раскрывающийся блок «Характеристики» (по умолчанию открыт)
 - [x] Анимация раскрытия/закрытия (плавная)
+
+## v23 - Система отзывов с модерацией
+- [x] DB: таблица reviews (id, productId, authorName, rating, comment, status: pending/approved/hidden, createdAt)
+- [x] tRPC: reviews.submit (публичная), reviews.listByProduct (только approved), reviews.admin.list, reviews.admin.setStatus, reviews.admin.delete
+- [x] ProductDetail: секция «Отзывы» — список одобренных + форма добавления
+- [x] Admin: страница /admin/reviews — таблица всех отзывов с кнопками одобрить/скрыть/удалить
+- [x] Admin: навигационная ссылка на раздел отзывов
