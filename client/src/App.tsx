@@ -1,3 +1,4 @@
+import { createContext, useContext, useState, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
@@ -14,16 +15,16 @@ import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import SearchResults from "./pages/SearchResults";
-import Admin from "./pages/Admin";
-import AdminAnalytics from "./pages/AdminAnalytics";
-import AdminReviews from "./pages/AdminReviews";
-import About from "./pages/About";
-import Bestsellers from "./pages/Bestsellers";
-import SellerPanel from "./pages/SellerPanel";
-import Profile from "./pages/Profile";
-import AuthModal from "./components/AuthModal";
 import MobileBottomNav from "./components/MobileBottomNav";
-import { createContext, useContext, useState } from "react";
+// Heavy pages loaded lazily — only when user navigates to them
+const Admin = lazy(() => import("./pages/Admin"));
+const AdminAnalytics = lazy(() => import("./pages/AdminAnalytics"));
+const AdminReviews = lazy(() => import("./pages/AdminReviews"));
+const About = lazy(() => import("./pages/About"));
+const Bestsellers = lazy(() => import("./pages/Bestsellers"));
+const SellerPanel = lazy(() => import("./pages/SellerPanel"));
+const Profile = lazy(() => import("./pages/Profile"));
+const AuthModal = lazy(() => import("./components/AuthModal"));
 
 // Global auth modal context so any page can open it
 interface AuthModalContextType {
@@ -92,12 +93,16 @@ function App() {
               <div className="flex flex-col min-h-screen">
                 <Navbar onOpenAuth={openLogin} />
                 <main className="flex-1 pb-14 md:pb-0">
-                  <Router />
+                  <Suspense fallback={<div className="min-h-[60vh] flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
+                    <Router />
+                  </Suspense>
                 </main>
                 <div className="hidden md:block"><Footer /></div>
                 <MobileBottomNav />
               </div>
-              <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} defaultTab={authTab} />
+              <Suspense fallback={null}>
+                <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} defaultTab={authTab} />
+              </Suspense>
             </TooltipProvider>
           </AuthModalContext.Provider>
         </CartProvider>
