@@ -167,6 +167,45 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    cssCodeSplit: true,
+    minify: "esbuild",
+    target: "es2020",
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Core React runtime — always needed, load first
+          "vendor-react": ["react", "react-dom"],
+          // tRPC + React Query — needed on every page
+          "vendor-trpc": ["@trpc/client", "@trpc/react-query", "@tanstack/react-query", "superjson"],
+          // Radix UI components — UI library
+          "vendor-radix": [
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-dropdown-menu",
+            "@radix-ui/react-select",
+            "@radix-ui/react-tooltip",
+            "@radix-ui/react-accordion",
+            "@radix-ui/react-tabs",
+            "@radix-ui/react-slot",
+            "@radix-ui/react-label",
+            "@radix-ui/react-checkbox",
+            "@radix-ui/react-switch",
+            "@radix-ui/react-separator",
+            "@radix-ui/react-avatar",
+            "@radix-ui/react-progress",
+            "@radix-ui/react-popover",
+            "@radix-ui/react-collapsible",
+          ],
+          // Lucide icons — large icon library
+          "vendor-icons": ["lucide-react"],
+          // Charts — only used in analytics
+          "vendor-charts": ["recharts"],
+          // Router
+          "vendor-router": ["wouter"],
+          // Sonner toasts
+          "vendor-sonner": ["sonner"],
+        },
+      },
+    },
   },
   server: {
     host: true,
