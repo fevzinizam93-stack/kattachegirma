@@ -218,3 +218,6 @@
 - [x] DB: добавить колонку view_count (int, default 0) в таблицу products
 - [x] tRPC: products.incrementView (publicProcedure, увеличивает счётчик +1 и возвращает новое значение)
 - [x] ProductDetail: вызывать incrementView при открытии страницы, показывать "👁 N просмотров"
+
+## v27 - Telegram-уведомление при новом отзыве
+- [x] server/routers.ts: после insertReview вызывать notifyTelegram с данными отзыва (товар, имя, оценка, текст)

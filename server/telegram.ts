@@ -37,6 +37,33 @@ export async function sendTelegramMessage(text: string): Promise<boolean> {
   }
 }
 
+export async function notifyNewReview(review: {
+  productName: string;
+  authorName: string;
+  rating: number;
+  comment: string;
+  adminUrl?: string;
+}): Promise<void> {
+  const stars = "⭐".repeat(review.rating) + "☆".repeat(5 - review.rating);
+  const message = [
+    `💬 <b>Новый отзыв на сайте!</b>`,
+    ``,
+    `📦 <b>Товар:</b> ${review.productName}`,
+    `👤 <b>Покупатель:</b> ${review.authorName}`,
+    `${stars} <b>Оценка:</b> ${review.rating}/5`,
+    ``,
+    `📝 <b>Отзыв:</b>`,
+    review.comment,
+    ``,
+    `⚠️ <i>Отзыв ожидает модерации. Одобрите или скройте в админ-панели.</i>`,
+    review.adminUrl ? `🔗 <a href="${review.adminUrl}">Открыть панель отзывов</a>` : ``,
+    ``,
+    `⏰ ${new Date().toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" })}`,
+  ].filter(Boolean).join("\n");
+
+  await sendTelegramMessage(message);
+}
+
 export async function notifyNewOrder(order: {
   id: number;
   phone: string;

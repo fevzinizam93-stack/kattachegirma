@@ -4,7 +4,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { notifyNewOrder } from "./telegram";
+import { notifyNewOrder, notifyNewReview } from "./telegram";
 import {
   getAllCategories,
   getProducts,
@@ -623,6 +623,14 @@ export const appRouter = router({
           status: "pending",
           userId: ctx.user?.id ?? null,
         });
+        // Notify admin via Telegram (fire-and-forget, don't block response)
+        const product = await getProductById(input.productId);
+        notifyNewReview({
+          productName: product?.name ?? `Товар #${input.productId}`,
+          authorName: input.authorName,
+          rating: input.rating,
+          comment: input.comment,
+        }).catch(() => {}); // ignore errors
         return { ok: true };
       }),
 
