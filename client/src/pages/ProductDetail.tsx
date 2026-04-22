@@ -51,6 +51,8 @@ function AccordionSection({
 export default function ProductDetail({ slug }: ProductDetailProps) {
   const [quantity, setQuantity] = useState(1);
   const [activeImageIdx, setActiveImageIdx] = useState(0);
+  const [zoomed, setZoomed] = useState(false);
+  const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
   const { addItem } = useCart();
   const { lang, t } = useLanguage();
   const formatPrice = (price: string | number) => {
@@ -183,7 +185,18 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
               </div>
 
               {/* Photo — takes up most of the space */}
-              <div className="relative bg-gray-50 flex items-center justify-center rounded-xl overflow-hidden mb-1.5 flex-1" style={{minHeight: "300px"}}>
+              <div
+                className="relative bg-gray-50 flex items-center justify-center rounded-xl overflow-hidden mb-1.5 flex-1 cursor-zoom-in"
+                style={{minHeight: "300px"}}
+                onMouseEnter={() => setZoomed(true)}
+                onMouseLeave={() => setZoomed(false)}
+                onMouseMove={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const x = ((e.clientX - rect.left) / rect.width) * 100;
+                  const y = ((e.clientY - rect.top) / rect.height) * 100;
+                  setZoomPos({ x, y });
+                }}
+              >
                 <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
                   {hasDiscount && (
                     <span className="bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow">
@@ -205,8 +218,12 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                   <img
                     src={activeUrl}
                     alt={product.name}
-                    className="w-full h-full object-contain rounded-xl drop-shadow-sm transition-all duration-200"
-                    style={{maxHeight: "380px"}}
+                    className="w-full h-full object-contain rounded-xl drop-shadow-sm transition-transform duration-300 ease-out"
+                    style={{
+                      maxHeight: "380px",
+                      transform: zoomed ? `scale(2)` : "scale(1)",
+                      transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
+                    }}
                   />
                 ) : (
                   <div className="w-full h-48 bg-gray-200 rounded-xl flex items-center justify-center">
