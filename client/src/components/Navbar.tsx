@@ -157,7 +157,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                           className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors text-left border-b border-gray-50 ${selectedIndex === idx ? "bg-red-50" : ""}`}
                           onClick={() => { navigate(`/product/${product.slug}`); setShowDropdown(false); setSearchQuery(""); }}>
                           <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
-                            {product.imageUrl ? <img src={product.imageUrl} alt="" className="w-full h-full object-contain p-1" loading="lazy" decoding="async" /> : <span className="text-xl">📦</span>}
+                            {product.imageUrl ? <img src={product.imageUrl} alt="" className="w-full h-full object-contain p-1" /> : <span className="text-xl">📦</span>}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-medium text-gray-900 truncate">{getProductName(product)}</div>

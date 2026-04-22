@@ -1,43 +1,29 @@
 import { Toaster } from "@/components/ui/sonner";
-import { createContext, useContext, useState, lazy, Suspense } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import NotFound from "@/pages/NotFound";
 import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { CartProvider } from "./contexts/CartContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import Home from "./pages/Home";
+import Catalog from "./pages/Catalog";
+import CategoryPage from "./pages/CategoryPage";
+import ProductDetail from "./pages/ProductDetail";
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import SearchResults from "./pages/SearchResults";
+import Admin from "./pages/Admin";
+import AdminAnalytics from "./pages/AdminAnalytics";
+import AdminReviews from "./pages/AdminReviews";
+import About from "./pages/About";
+import Bestsellers from "./pages/Bestsellers";
+import SellerPanel from "./pages/SellerPanel";
+import Profile from "./pages/Profile";
+import AuthModal from "./components/AuthModal";
 import MobileBottomNav from "./components/MobileBottomNav";
-const AuthModal = lazy(() => import("./components/AuthModal"));
-
-// Lazy-loaded pages — each page becomes its own JS chunk
-const Home = lazy(() => import("./pages/Home"));
-const Catalog = lazy(() => import("./pages/Catalog"));
-const CategoryPage = lazy(() => import("./pages/CategoryPage"));
-const ProductDetail = lazy(() => import("./pages/ProductDetail"));
-const Cart = lazy(() => import("./pages/Cart"));
-const Checkout = lazy(() => import("./pages/Checkout"));
-const SearchResults = lazy(() => import("./pages/SearchResults"));
-const Admin = lazy(() => import("./pages/Admin"));
-const AdminAnalytics = lazy(() => import("./pages/AdminAnalytics"));
-const AdminReviews = lazy(() => import("./pages/AdminReviews"));
-const About = lazy(() => import("./pages/About"));
-const Bestsellers = lazy(() => import("./pages/Bestsellers"));
-const SellerPanel = lazy(() => import("./pages/SellerPanel"));
-const Profile = lazy(() => import("./pages/Profile"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-
-// Minimal page skeleton shown while lazy chunks load
-function PageSkeleton() {
-  return (
-    <div className="min-h-[60vh] flex items-center justify-center">
-      <div className="flex flex-col items-center gap-3">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-        <span className="text-xs text-gray-400">Загрузка...</span>
-      </div>
-    </div>
-  );
-}
+import { createContext, useContext, useState } from "react";
 
 // Global auth modal context so any page can open it
 interface AuthModalContextType {
@@ -62,32 +48,30 @@ function Router() {
   const searchQuery = searchParams.get("q") ?? "";
 
   return (
-    <Suspense fallback={<PageSkeleton />}>
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/catalog" component={Catalog} />
-        <Route path="/category/:slug">
-          {(params) => <CategoryPage slug={params.slug} />}
-        </Route>
-        <Route path="/product/:slug">
-          {(params) => <ProductDetail slug={params.slug} />}
-        </Route>
-        <Route path="/cart" component={Cart} />
-        <Route path="/checkout" component={Checkout} />
-        <Route path="/search">
-          {() => <SearchResults query={searchQuery} />}
-        </Route>
-        <Route path="/admin" component={Admin} />
-        <Route path="/admin/analytics" component={AdminAnalytics} />
-        <Route path="/admin/reviews" component={AdminReviews} />
-        <Route path="/about" component={About} />
-        <Route path="/bestsellers" component={Bestsellers} />
-        <Route path="/seller" component={SellerPanel} />
-        <Route path="/profile" component={Profile} />
-        <Route path="/404" component={NotFound} />
-        <Route component={NotFound} />
-      </Switch>
-    </Suspense>
+    <Switch>
+      <Route path="/" component={Home} />
+      <Route path="/catalog" component={Catalog} />
+      <Route path="/category/:slug">
+        {(params) => <CategoryPage slug={params.slug} />}
+      </Route>
+      <Route path="/product/:slug">
+        {(params) => <ProductDetail slug={params.slug} />}
+      </Route>
+      <Route path="/cart" component={Cart} />
+      <Route path="/checkout" component={Checkout} />
+      <Route path="/search">
+        {() => <SearchResults query={searchQuery} />}
+      </Route>
+      <Route path="/admin" component={Admin} />
+      <Route path="/admin/analytics" component={AdminAnalytics} />
+      <Route path="/admin/reviews" component={AdminReviews} />
+      <Route path="/about" component={About} />
+      <Route path="/bestsellers" component={Bestsellers} />
+      <Route path="/seller" component={SellerPanel} />
+      <Route path="/profile" component={Profile} />
+      <Route path="/404" component={NotFound} />
+      <Route component={NotFound} />
+    </Switch>
   );
 }
 
