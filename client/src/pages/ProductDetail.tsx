@@ -2,7 +2,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { ChevronDown, ChevronRight, MessageCircle, Minus, Phone, Plus, ShoppingCart, Star, Tag, Truck, Send } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 
@@ -64,6 +64,30 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
   const { data: categoriesData } = trpc.categories.list.useQuery();
   const categories = categoriesData ?? [];
   const category = categories.find(c => c.id === product?.categoryId);
+
+  const [liveViewCount, setLiveViewCount] = useState<number | null>(null);
+  const incrementView = trpc.products.incrementView.useMutation({
+    onSuccess: (data) => setLiveViewCount(data.viewCount),
+    onError: () => {
+      // Fallback: show stored viewCount from product data
+      const stored = (product as any)?.viewCount;
+      if (stored != null) setLiveViewCount(stored);
+    },
+  });
+  useEffect(() => {
+    if (!product?.id) return;
+    // Deduplicate: only increment once per browser session per product
+    const key = `viewed_${product.id}`;
+    if (sessionStorage.getItem(key)) {
+      // Already counted this session — just show stored count
+      const stored = (product as any)?.viewCount;
+      if (stored != null) setLiveViewCount(stored);
+      return;
+    }
+    sessionStorage.setItem(key, "1");
+    incrementView.mutate({ productId: product.id });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product?.id]);
 
   if (isLoading) {
     return (
@@ -176,12 +200,20 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 {displayName}
               </h1>
 
-              {/* Rating — tiny */}
-              <div className="flex items-center gap-0.5 mb-1.5">
-                {[1,2,3,4,5].map(i => (
-                  <Star key={i} size={10} className={i <= 4 ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} />
-                ))}
-                <span className="text-[10px] text-gray-400 ml-1">(4.0)</span>
+              {/* Rating + View count — tiny */}
+              <div className="flex items-center justify-between gap-0.5 mb-1.5">
+                <div className="flex items-center gap-0.5">
+                  {[1,2,3,4,5].map(i => (
+                    <Star key={i} size={10} className={i <= 4 ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} />
+                  ))}
+                  <span className="text-[10px] text-gray-400 ml-1">(4.0)</span>
+                </div>
+                {liveViewCount !== null && (
+                  <span className="flex items-center gap-0.5 text-[10px] text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded-full border border-gray-100">
+                    <span>👁</span>
+                    <span>{liveViewCount.toLocaleString("ru-RU")} просм.</span>
+                  </span>
+                )}
               </div>
 
               {/* Photo — takes up most of the space */}

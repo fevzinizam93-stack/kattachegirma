@@ -463,3 +463,14 @@ export async function getReviewCountsByProduct(productId: number) {
   const avg = rows.reduce((sum, r) => sum + r.rating, 0) / rows.length;
   return { count: rows.length, avgRating: Math.round(avg * 10) / 10 };
 }
+
+// ---- View Counter ----
+export async function incrementViewCount(productId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  await db.update(products)
+    .set({ viewCount: sql`COALESCE(viewCount, 0) + 1` })
+    .where(eq(products.id, productId));
+  const rows = await db.select({ viewCount: products.viewCount }).from(products).where(eq(products.id, productId));
+  return rows[0]?.viewCount ?? 0;
+}

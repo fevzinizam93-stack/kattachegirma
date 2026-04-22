@@ -64,6 +64,13 @@
       "when": 1776850562517,
       "tag": "0008_hesitant_shiver_man",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1776866812191,
+      "tag": "0009_mysterious_monster_badoon",
+      "breakpoints": true
     }
   ]
 }

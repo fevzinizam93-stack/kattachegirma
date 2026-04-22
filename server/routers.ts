@@ -47,6 +47,7 @@ import {
   setReviewStatus,
   deleteReview,
   getReviewCountsByProduct,
+  incrementViewCount,
 } from "./db";
 import { storagePut } from "./storage";
 import { invokeLLM } from "./_core/llm";
@@ -197,6 +198,13 @@ export const appRouter = router({
         const product = await getProductBySlug(input.slug);
         if (!product) throw new TRPCError({ code: "NOT_FOUND" });
         return product;
+      }),
+
+    incrementView: publicProcedure
+      .input(z.object({ productId: z.number() }))
+      .mutation(async ({ input }) => {
+        const newCount = await incrementViewCount(input.productId);
+        return { viewCount: newCount };
       }),
 
     create: adminProcedure
