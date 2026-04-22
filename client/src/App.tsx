@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/sonner";
+import { createContext, useContext, useState, lazy, Suspense } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -6,9 +7,8 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { CartProvider } from "./contexts/CartContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-const AuthModal = lazy(() => import("./components/AuthModal"));
 import MobileBottomNav from "./components/MobileBottomNav";
-import { createContext, useContext, useState, lazy, Suspense } from "react";
+const AuthModal = lazy(() => import("./components/AuthModal"));
 
 // Lazy-loaded pages — each page becomes its own JS chunk
 const Home = lazy(() => import("./pages/Home"));
