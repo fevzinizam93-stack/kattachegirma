@@ -221,3 +221,9 @@
 
 ## v27 - Telegram-уведомление при новом отзыве
 - [x] server/routers.ts: после insertReview вызывать notifyTelegram с данными отзыва (товар, имя, оценка, текст)
+
+## v28 - Безопасная мобильная оптимизация (только сервер + HTML)
+- [x] server/index.ts или express: добавить gzip/brotli сжатие через compression middleware
+- [x] server/index.ts: добавить Cache-Control заголовки для статических файлов (1 год для assets/*)
+- [x] client/index.html: добавить dns-prefetch, preconnect для API и Google Fonts
+- [x] client/index.html: добавить <link rel="preload"> для главного JS и CSS файлов
