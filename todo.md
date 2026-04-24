@@ -227,3 +227,6 @@
 - [x] server/index.ts: добавить Cache-Control заголовки для статических файлов (1 год для assets/*)
 - [x] client/index.html: добавить dns-prefetch, preconnect для API и Google Fonts
 - [x] client/index.html: добавить <link rel="preload"> для главного JS и CSS файлов
+
+## v29 - Кнопки «Поделиться» WhatsApp/Telegram
+- [x] ProductDetail: добавить кнопки «Поделиться в WhatsApp» и «Поделиться в Telegram» под контактами продавца
