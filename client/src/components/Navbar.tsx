@@ -108,14 +108,14 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
               <img src="/manus-storage/kattachegirma-logo_b5417617.png" alt="KC" className="h-9 w-auto object-contain" />
             </div>
             <div className="leading-tight">
-              <div className="font-black text-sm text-gray-900">Katta<span className="text-red-600"> Chegirma</span><span className="text-red-600">!!!</span></div>
+              <div className="font-black text-sm text-gray-900">Katta Chegirma!!!</div>
             </div>
           </Link>
 
           {/* Catalog button — yellow pill like Yandex Market */}
           <Link
             href="/catalog"
-            className="shrink-0 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold text-sm px-4 py-2 rounded-full transition-colors whitespace-nowrap"
+            className="shrink-0 bg-red-600 hover:bg-red-700 text-white font-bold text-sm px-4 py-2 rounded-full transition-colors whitespace-nowrap"
           >
             {t.nav_catalog}
           </Link>
@@ -258,7 +258,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
             <div className="flex items-center justify-center w-8 h-8 shrink-0">
               <img src="/manus-storage/kattachegirma-logo_b5417617.png" alt="KC" className="h-8 w-auto object-contain" />
             </div>
-            <span className="font-black text-sm leading-tight truncate text-gray-900">Katta<span className="text-red-600"> Chegirma!!!</span></span>
+            <span className="font-black text-sm leading-tight truncate text-gray-900">Katta Chegirma!!!</span>
           </Link>
 
           {/* Lang switcher mobile */}
