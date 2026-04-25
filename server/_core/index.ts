@@ -35,6 +35,15 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
 
+  // Redirect non-www to www for canonical SEO (301 permanent)
+  app.use((req, res, next) => {
+    const host = req.headers.host || "";
+    if (host === "kattachegirma.uz" || host === "kattachegirma.uz:3000") {
+      return res.redirect(301, `https://www.kattachegirma.uz${req.originalUrl}`);
+    }
+    next();
+  });
+
   // Enable gzip compression for all responses (reduces transfer size ~70%)
   app.use(compression({ level: 6, threshold: 1024 }));
 

@@ -254,3 +254,8 @@
 - [x] ProductDetail.tsx: добавить динамический document.title с названием товара
 - [x] sitemap.xml: домен уже был www.kattachegirma.uz — проверено
 - [x] robots.txt: создан с правильным доменом www.kattachegirma.uz
+
+## v41 - Исправление «Страница с переадресацией» в Google Search Console
+- [x] index.html: добавить canonical link rel="canonical" href="https://www.kattachegirma.uz/"
+- [x] index.html: добавить og:url с www доменом
+- [x] server/_core/index.ts: добавить 301 редирект с kattachegirma.uz на www.kattachegirma.uz
