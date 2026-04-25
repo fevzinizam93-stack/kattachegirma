@@ -104,8 +104,8 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
         <div className="container py-2.5 flex items-center gap-4">
           {/* Logo */}
           <Link href="/" className="shrink-0 flex items-center gap-2 min-w-fit">
-            <div className="bg-red-600 rounded-lg p-1 flex items-center justify-center w-9 h-9">
-              <img src="/manus-storage/kattachegirma-logo_b5417617.png" alt="KC" className="h-7 w-auto object-contain" />
+            <div className="flex items-center justify-center w-9 h-9">
+              <img src="/manus-storage/kattachegirma-logo_b5417617.png" alt="KC" className="h-9 w-auto object-contain" />
             </div>
             <div className="leading-tight">
               <div className="font-black text-sm text-gray-900">Katta<span className="text-red-600"> Chegirma</span><span className="text-red-600">!!!</span></div>
@@ -255,8 +255,8 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
         {/* Top row: logo + icons */}
         <div className="flex items-center gap-2 px-3 pt-2 pb-1">
           <Link href="/" className="flex items-center gap-1.5 flex-1 min-w-0">
-            <div className="bg-red-600 rounded-lg p-0.5 flex items-center justify-center w-8 h-8 shrink-0">
-              <img src="/manus-storage/kattachegirma-logo_b5417617.png" alt="KC" className="h-6 w-auto object-contain" />
+            <div className="flex items-center justify-center w-8 h-8 shrink-0">
+              <img src="/manus-storage/kattachegirma-logo_b5417617.png" alt="KC" className="h-8 w-auto object-contain" />
             </div>
             <span className="font-black text-sm leading-tight truncate text-gray-900">Katta<span className="text-red-600"> Chegirma!!!</span></span>
           </Link>
