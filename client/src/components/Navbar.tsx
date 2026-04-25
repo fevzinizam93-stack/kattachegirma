@@ -122,7 +122,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
 
           {/* Search bar — red border */}
           <div className="flex-1 relative">
-            <form onSubmit={handleSearch} className="flex items-center border-2 border-red-500 rounded-full overflow-hidden bg-white focus-within:border-red-600 transition-colors">
+            <form onSubmit={handleSearch} className="flex items-center border-2 border-red-500 rounded-full bg-white focus-within:border-red-600 transition-colors overflow-hidden h-10">
               <Search size={16} className="ml-4 text-gray-400 shrink-0" />
               <input
                 ref={inputRef}
@@ -140,7 +140,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                   <X size={14} />
                 </button>
               )}
-              <button type="submit" className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 text-sm font-medium transition-colors shrink-0">
+              <button type="submit" className="bg-red-600 hover:bg-red-700 text-white px-5 self-stretch flex items-center justify-center text-sm font-medium transition-colors shrink-0">
                 <Search size={15} />
               </button>
             </form>
@@ -305,7 +305,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
 
         {/* Search row */}
         <div className="px-3 pb-2 relative">
-          <form onSubmit={handleSearch} className="flex items-center border-2 border-red-500 rounded-full overflow-hidden bg-white focus-within:border-red-600 transition-colors">
+          <form onSubmit={handleSearch} className="flex items-center border-2 border-red-500 rounded-full bg-white focus-within:border-red-600 transition-colors overflow-hidden h-9">
             <Search size={14} className="ml-3 text-gray-400 shrink-0" />
             <input
               ref={inputRef}
@@ -323,7 +323,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                 <X size={14} />
               </button>
             )}
-            <button type="submit" className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 shrink-0 transition-colors">
+            <button type="submit" className="bg-red-600 hover:bg-red-700 text-white px-3 self-stretch flex items-center justify-center shrink-0 transition-colors">
               <Search size={15} />
             </button>
           </form>
