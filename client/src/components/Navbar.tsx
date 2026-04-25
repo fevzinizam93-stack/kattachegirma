@@ -158,7 +158,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                     {results.map((product, idx) => (
                       <button key={product.id} type="button"
                         className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors text-left border-b border-gray-50 ${selectedIndex === idx ? "bg-red-50" : ""}`}
-                        onClick={() => { navigate(`/product/${product.slug}`); setShowDropdown(false); setSearchQuery(""); }}>
+                        onMouseDown={(e) => { e.preventDefault(); navigate(`/product/${product.slug}`); setShowDropdown(false); setSearchQuery(""); }}>
                         <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
                           {product.imageUrl ? <img src={product.imageUrl} alt="" className="w-full h-full object-contain p-1" loading="lazy" /> : <span className="text-xl">📦</span>}
                         </div>
@@ -173,7 +173,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                       </button>
                     ))}
                     <button type="button" className="w-full px-4 py-2.5 text-sm text-red-600 font-medium hover:bg-red-50 transition-colors text-center border-b border-gray-100"
-                      onClick={() => { navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`); setShowDropdown(false); }}>
+                      onMouseDown={(e) => { e.preventDefault(); navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`); setShowDropdown(false); }}>
                       {t.nav_show_all_results} «{searchQuery}» →
                     </button>
                   </div>
@@ -341,7 +341,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                   {results.map((product, idx) => (
                     <button key={product.id} type="button"
                       className={`w-full flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 transition-colors text-left border-b border-gray-50 ${selectedIndex === idx ? "bg-red-50" : ""}`}
-                      onClick={() => { navigate(`/product/${product.slug}`); setShowDropdown(false); setSearchQuery(""); inputRef.current?.blur(); }}>
+                      onMouseDown={(e) => { e.preventDefault(); navigate(`/product/${product.slug}`); setShowDropdown(false); setSearchQuery(""); inputRef.current?.blur(); }}>
                       <div className="w-9 h-9 rounded bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
                         {product.imageUrl ? <img src={product.imageUrl} alt="" className="w-full h-full object-contain p-0.5" loading="lazy" /> : <span className="text-lg">📦</span>}
                       </div>
@@ -355,7 +355,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                     </button>
                   ))}
                   <button type="button" className="w-full px-4 py-2.5 text-sm text-red-600 font-medium hover:bg-red-50 transition-colors text-center"
-                    onClick={() => { navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`); setShowDropdown(false); inputRef.current?.blur(); }}>
+                    onMouseDown={(e) => { e.preventDefault(); navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`); setShowDropdown(false); inputRef.current?.blur(); }}>
                     {t.nav_show_all_results} «{searchQuery}» →
                   </button>
                 </div>
