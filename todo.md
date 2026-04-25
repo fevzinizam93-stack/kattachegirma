@@ -269,3 +269,6 @@
 - [x] db.ts: добавлена функция getSlugExists для проверки уникальности slug
 - [x] routers.ts: в create mutation — автосуффикс -2/-3 при дубликате slug
 - [x] Admin.tsx: предпросмотр URL /product/{slug} под полем названия в реальном времени
+
+## v44 - Ссылка «О нас» в шапке
+- [x] Navbar.tsx: добавлена ссылка «О нас» / «Biz haqimizda» рядом с «Каталог»

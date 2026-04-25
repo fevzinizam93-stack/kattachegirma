@@ -112,12 +112,22 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
             </div>
           </Link>
 
-          {/* Catalog button — yellow pill like Yandex Market */}
+          {/* Catalog button */}
           <Link
             href="/catalog"
             className="shrink-0 bg-red-600 hover:bg-red-700 text-white font-bold text-sm px-4 py-2 rounded-full transition-colors whitespace-nowrap"
           >
             {t.nav_catalog}
+          </Link>
+
+          {/* About link */}
+          <Link
+            href="/about"
+            className={`shrink-0 text-sm font-medium px-3 py-2 rounded-full transition-colors whitespace-nowrap ${
+              location === "/about" ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            }`}
+          >
+            {lang === "uz" ? "Biz haqimizda" : "О нас"}
           </Link>
 
           {/* Search bar — red border */}
