@@ -240,3 +240,10 @@
 - [x] Активный пункт выделяется красным цветом (иконка + текст)
 - [x] Интегрировать MobileBottomNav в App.tsx
 - [x] Добавить pb-16 md:pb-0 к основному контенту чтобы не перекрывался навбаром
+
+## v36 - Оптимизация производительности
+- [x] vite.config.ts: добавить function-based manualChunks для vendor splitting (react, trpc, radix, icons, router)
+- [ ] App.tsx: сделать Home, Catalog, CategoryPage, ProductDetail, Cart, Checkout, SearchResults lazy-loaded (отложено — они в критическом пути)
+- [x] ProductCard: убрать useAnalytics из компонента (вызывается на каждой карточке — N мутаций при загрузке)
+- [x] DB: добавить connection pool (mysql2 createPool вместо одиночного соединения)
+- [x] server: добавить HTTP/2 push hints или preload headers для критических ресурсов

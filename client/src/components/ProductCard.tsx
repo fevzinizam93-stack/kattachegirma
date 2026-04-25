@@ -1,6 +1,5 @@
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAnalytics } from "@/hooks/useAnalytics";
 import { ShoppingCart } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -33,14 +32,12 @@ function formatPrice(price: string | number, sumLabel: string) {
 export default function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
   const { lang, t } = useLanguage();
-  const { track } = useAnalytics();
 
   const displayName = (lang === "uz" && product.nameUz) ? product.nameUz : product.name;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    track("add_to_cart", { productId: product.id, productName: product.name });
     addItem({
       productId: product.id,
       name: displayName,
@@ -63,17 +60,13 @@ export default function ProductCard({ product }: ProductCardProps) {
     : (product.discount ?? 0);
   const inStock = !product.stock || product.stock > 0;
 
-  const handleProductClick = () => {
-    track("product_view", { productId: product.id, productName: product.name });
-  };
-
   return (
-    <Link href={`/product/${product.slug}`} onClick={handleProductClick}>
+    <Link href={`/product/${product.slug}`}>
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden cursor-pointer h-full flex flex-col active:scale-[0.98] transition-transform touch-manipulation">
         <div className="relative bg-gray-50" style={{ paddingBottom: "70%" }}>
           <div className="absolute inset-0">
             {product.imageUrl ? (
-              <img src={product.imageUrl} alt={displayName} className="w-full h-full object-contain p-1.5" loading="lazy" />
+              <img src={product.imageUrl} alt={displayName} className="w-full h-full object-contain p-1.5" loading="lazy" decoding="async" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-4xl text-gray-300">📦</div>
             )}
