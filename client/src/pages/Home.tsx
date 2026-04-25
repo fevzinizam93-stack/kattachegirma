@@ -12,8 +12,8 @@ export default function Home() {
   // SEO: dynamic document.title based on language (30-60 chars)
   useEffect(() => {
     document.title = lang === "uz"
-      ? "Katta Chegirma — Arzon uy texnikasi Toshkent"
-      : "Катта Чегирма — Дешевая техника в Ташкенте";
+      ? "Katta Chegirma — Uy texnikasi chegirmada Toshkent"
+      : "Катта Чегирма — Бытовая техника со скидкой";
   }, [lang]);
 
   const { data: featuredData, isLoading: featuredLoading } = trpc.products.list.useQuery({ featured: true, limit: 10, offset: 0 });
