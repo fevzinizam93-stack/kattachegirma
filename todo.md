@@ -240,3 +240,8 @@
 - [x] Активный пункт выделяется красным цветом (иконка + текст)
 - [x] Интегрировать MobileBottomNav в App.tsx
 - [x] Добавить pb-16 md:pb-0 к основному контенту чтобы не перекрывался навбаром
+
+## v38 - SEO düzeltmeleri
+- [x] index.html: title'ı 30-60 karakter arasına ayarla (44 karakter — ✅)
+- [x] Home.tsx: useEffect ile document.title ayarla (dil bazlı RU/UZ)
+- [x] Home.tsx: görünmez H1 başlığı ekle (sr-only)

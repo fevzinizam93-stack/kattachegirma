@@ -2,11 +2,19 @@ import ProductCard from "@/components/ProductCard";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { ArrowRight, Flame, Tag } from "lucide-react";
+import { useEffect } from "react";
 import { Link, useLocation } from "wouter";
 
 export default function Home() {
   const { t, lang } = useLanguage();
   const [, navigate] = useLocation();
+
+  // SEO: dynamic document.title based on language (30-60 chars)
+  useEffect(() => {
+    document.title = lang === "uz"
+      ? "Katta Chegirma — Arzon uy texnikasi Toshkent"
+      : "Катта Чегирма — Дешевая техника в Ташкенте";
+  }, [lang]);
 
   const { data: featuredData, isLoading: featuredLoading } = trpc.products.list.useQuery({ featured: true, limit: 10, offset: 0 });
   const { data: newData, isLoading: newLoading } = trpc.products.list.useQuery({ limit: 10, offset: 0 });
@@ -20,6 +28,12 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      {/* SEO: visually hidden H1 for search engines */}
+      <h1 className="sr-only">
+        {lang === "uz"
+          ? "Katta Chegirma — Oʻzbekistonda eng arzon uy texnikasi"
+          : "Катта Чегирма — Дешевая бытовая техника в Узбекистане"}
+      </h1>
       {/* Banner + Hits strip combined on white background */}
       <section className="bg-white border-b border-gray-200">
         {/* Top row: БОЛЬШИЕ СКИДКИ + lowest prices + view all */}
