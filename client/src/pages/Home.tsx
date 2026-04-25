@@ -2,7 +2,7 @@ import ProductCard from "@/components/ProductCard";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { ArrowRight, Flame, Tag } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 
 export default function Home() {
@@ -21,6 +21,8 @@ export default function Home() {
   const { data: categoriesData } = trpc.categories.list.useQuery();
   const { data: hitsData } = trpc.products.getHits.useQuery({ limit: 8 });
   const hitProducts = hitsData ?? [];
+  const { data: activeBanners } = trpc.banners.listActive.useQuery();
+  const banners = activeBanners ?? [];
 
   const featuredProducts = featuredData?.items ?? [];
   const newProducts = newData?.items ?? [];
@@ -34,6 +36,17 @@ export default function Home() {
           ? "Katta Chegirma — Oʻzbekistonda eng arzon uy texnikasi"
           : "Катта Чегирма — Дешевая бытовая техника в Узбекистане"}
       </h1>
+      {/* Promo Banners from admin */}
+      {banners.length > 0 && (
+        <section className="container pt-3">
+          <div className="flex flex-col gap-2">
+            {banners.map(banner => (
+              <PromoBanner key={banner.id} banner={banner} lang={lang} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Banner + Hits strip combined on white background */}
       <section className="bg-white border-b border-gray-200">
         {/* Top row: БОЛЬШИЕ СКИДКИ + lowest prices + view all */}
@@ -163,4 +176,75 @@ export default function Home() {
       )}
     </div>
   );
+}
+
+// ---- PromoBanner component ----
+interface BannerData {
+  id: number;
+  title: string;
+  titleUz?: string | null;
+  description?: string | null;
+  descriptionUz?: string | null;
+  bgColor: string;
+  textColor: string;
+  link?: string | null;
+  linkText?: string | null;
+  linkTextUz?: string | null;
+  endsAt?: Date | null;
+}
+
+function PromoBanner({ banner, lang }: { banner: BannerData; lang: string }) {
+  const [timeLeft, setTimeLeft] = useState("");
+
+  useEffect(() => {
+    if (!banner.endsAt) return;
+    const update = () => {
+      const diff = new Date(banner.endsAt!).getTime() - Date.now();
+      if (diff <= 0) { setTimeLeft(""); return; }
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      if (d > 0) setTimeLeft(lang === "uz" ? `${d} kun ${h} soat` : `${d} д ${h} ч`);
+      else setTimeLeft(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`);
+    };
+    update();
+    const id = setInterval(update, 1000);
+    return () => clearInterval(id);
+  }, [banner.endsAt, lang]);
+
+  const title = lang === "uz" && banner.titleUz ? banner.titleUz : banner.title;
+  const desc = lang === "uz" && banner.descriptionUz ? banner.descriptionUz : banner.description;
+  const btnText = lang === "uz" && banner.linkTextUz ? banner.linkTextUz : (banner.linkText || (lang === "uz" ? "Ko'rish" : "Смотреть"));
+
+  const inner = (
+    <div
+      className="rounded-2xl px-4 py-3 flex items-center justify-between gap-3 shadow-sm"
+      style={{ backgroundColor: banner.bgColor, color: banner.textColor }}
+    >
+      <div className="flex-1 min-w-0">
+        <div className="font-black text-base md:text-lg leading-tight">{title}</div>
+        {desc && <div className="text-sm opacity-90 mt-0.5 truncate">{desc}</div>}
+        {timeLeft && (
+          <div className="mt-1 flex items-center gap-1.5 text-xs font-bold opacity-80">
+            <span>⏰</span>
+            <span>{lang === "uz" ? "Tugashiga:" : "Осталось:"} {timeLeft}</span>
+          </div>
+        )}
+      </div>
+      {banner.link && (
+        <div
+          className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full border border-current whitespace-nowrap"
+          style={{ color: banner.textColor }}
+        >
+          {btnText} →
+        </div>
+      )}
+    </div>
+  );
+
+  if (banner.link) {
+    return <Link href={banner.link}>{inner}</Link>;
+  }
+  return inner;
 }

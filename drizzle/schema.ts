@@ -153,3 +153,25 @@ export const reviews = mysqlTable("reviews", {
 
 export type Review = typeof reviews.$inferSelect;
 export type InsertReview = typeof reviews.$inferInsert;
+
+// Promotional banners table
+export const banners = mysqlTable("banners", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 256 }).notNull(),
+  titleUz: varchar("titleUz", { length: 256 }),
+  description: text("description"),
+  descriptionUz: text("descriptionUz"),
+  bgColor: varchar("bgColor", { length: 32 }).default("#dc2626").notNull(),
+  textColor: varchar("textColor", { length: 32 }).default("#ffffff").notNull(),
+  link: varchar("link", { length: 512 }),
+  linkText: varchar("linkText", { length: 128 }),
+  linkTextUz: varchar("linkTextUz", { length: 128 }),
+  endsAt: timestamp("endsAt"),
+  isActive: boolean("isActive").default(true).notNull(),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Banner = typeof banners.$inferSelect;
+export type InsertBanner = typeof banners.$inferInsert;

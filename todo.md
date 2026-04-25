@@ -272,3 +272,11 @@
 
 ## v44 - Ссылка «О нас» в шапке
 - [x] Navbar.tsx: добавлена ссылка «О нас» / «Biz haqimizda» рядом с «Каталог»
+
+## v45 - Акционные баннеры
+- [x] drizzle/schema.ts: добавлена таблица banners
+- [x] DB миграция: применена через migrate-banners.mjs
+- [x] db.ts: добавлены getActiveBanners, createBanner, updateBanner, deleteBanner
+- [x] routers.ts: добавлен banners router (listActive, create, update, delete)
+- [x] Admin.tsx: добавлена вкладка «Баннеры» с формой + цветовым предпросмотром
+- [x] Home.tsx: баннеры отображаются с обратным отсчётом

@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, gte, ilike, like, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool } from "mysql2";
-import { analyticsEvents, categories, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, orders, products, reviews, InsertReview, sellers, storeSettings, users } from "../drizzle/schema";
+import { analyticsEvents, banners, Banner, InsertBanner, categories, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, orders, products, reviews, InsertReview, sellers, storeSettings, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import bcrypt from "bcryptjs";
 
@@ -491,4 +491,41 @@ export async function incrementViewCount(productId: number): Promise<number> {
     .where(eq(products.id, productId));
   const rows = await db.select({ viewCount: products.viewCount }).from(products).where(eq(products.id, productId));
   return rows[0]?.viewCount ?? 0;
+}
+
+// ---- Banners ----
+export async function getActiveBanners(): Promise<Banner[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const now = new Date();
+  const rows = await db.select().from(banners)
+    .where(eq(banners.isActive, true))
+    .orderBy(asc(banners.sortOrder), desc(banners.createdAt));
+  // Filter out expired banners (endsAt < now)
+  return rows.filter(b => !b.endsAt || b.endsAt > now);
+}
+
+export async function getAllBanners(): Promise<Banner[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(banners).orderBy(asc(banners.sortOrder), desc(banners.createdAt));
+}
+
+export async function createBanner(data: Omit<InsertBanner, "id" | "createdAt" | "updatedAt">): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(banners).values(data);
+  return (result[0] as { insertId: number }).insertId;
+}
+
+export async function updateBanner(id: number, data: Partial<Omit<InsertBanner, "id" | "createdAt" | "updatedAt">>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  await db.update(banners).set(data).where(eq(banners.id, id));
+}
+
+export async function deleteBanner(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  await db.delete(banners).where(eq(banners.id, id));
 }
