@@ -2,12 +2,18 @@ import ProductCard from "@/components/ProductCard";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { Filter, SlidersHorizontal } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const LIMIT = 12;
 
 export default function Catalog() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+
+  useEffect(() => {
+    document.title = lang === "uz"
+      ? "Katalog — Barcha uy texnikasi | Katta Chegirma"
+      : "Каталог товаров — Бытовая техника";
+  }, [lang]);
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>();
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");

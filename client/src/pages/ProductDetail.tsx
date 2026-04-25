@@ -89,6 +89,58 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product?.id]);
 
+  // SEO: dynamic title based on product name (bilingual)
+  useEffect(() => {
+    if (!product) {
+      document.title = lang === "uz"
+        ? "Mahsulot | Katta Chegirma"
+        : "Товар | Катта Чегирма";
+      return;
+    }
+    const name = (lang === "uz" && (product as any).nameUz) ? (product as any).nameUz : product.name;
+    const brand = product.brand ? `${product.brand} ` : "";
+    const suffix = lang === "uz" ? " — Toshkentda sotib olish" : " — купить в Ташкенте";
+    const titleRaw = `${brand}${name}${suffix}`;
+    // Truncate at word boundary if > 60 chars
+    document.title = titleRaw.length > 60
+      ? titleRaw.slice(0, 60).replace(/\s+\S*$/, "") + "…"
+      : titleRaw;
+  }, [product, lang]);
+
+  // SEO: Schema.org Product JSON-LD
+  useEffect(() => {
+    if (!product) return;
+    const name = (lang === "uz" && (product as any).nameUz) ? (product as any).nameUz : product.name;
+    const price = parseFloat(product.price);
+    const inStock = !product.stock || product.stock > 0;
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": name,
+      "description": (product as any).description || name,
+      "brand": product.brand ? { "@type": "Brand", "name": product.brand } : undefined,
+      "sku": String(product.id),
+      "image": product.imageUrl || undefined,
+      "offers": {
+        "@type": "Offer",
+        "priceCurrency": "UZS",
+        "price": price,
+        "availability": inStock
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
+        "seller": { "@type": "Organization", "name": "Katta Chegirma" },
+        "url": `https://www.kattachegirma.uz/product/${product.slug}`
+      }
+    };
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.id = "product-schema";
+    script.textContent = JSON.stringify(schema);
+    document.getElementById("product-schema")?.remove();
+    document.head.appendChild(script);
+    return () => { document.getElementById("product-schema")?.remove(); };
+  }, [product, lang]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">

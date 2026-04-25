@@ -2,6 +2,7 @@ import { trpc } from "@/lib/trpc";
 import { useLanguage } from "@/contexts/LanguageContext";
 import ProductCard from "@/components/ProductCard";
 import { Flame } from "lucide-react";
+import { useEffect } from "react";
 
 const content = {
   ru: {
@@ -21,6 +22,12 @@ const content = {
 export default function Bestsellers() {
   const { lang } = useLanguage();
   const c = content[lang];
+
+  useEffect(() => {
+    document.title = lang === "uz"
+      ? "Sotuvdagi hitlar — Eng mashhur mahsulotlar"
+      : "Хиты продаж — Популярная техника";
+  }, [lang]);
   const { data: hits, isLoading } = trpc.products.getHits.useQuery({});
 
   return (

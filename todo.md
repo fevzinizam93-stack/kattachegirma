@@ -245,3 +245,12 @@
 - [x] index.html: title'ı 30-60 karakter arasına ayarla (44 karakter — ✅)
 - [x] Home.tsx: useEffect ile document.title ayarla (dil bazlı RU/UZ)
 - [x] Home.tsx: görünmez H1 başlığı ekle (sr-only)
+
+## v40 - SEO расширение
+- [x] Catalog.tsx: добавить useEffect с document.title (RU/UZ, 30-60 символов)
+- [x] Bestsellers.tsx: добавить useEffect с document.title (RU/UZ, 30-60 символов)
+- [x] Cart.tsx: добавить useEffect с document.title (RU/UZ, 30-60 символов)
+- [x] ProductDetail.tsx: добавить Schema.org JSON-LD Product разметку (name, price, brand, availability)
+- [x] ProductDetail.tsx: добавить динамический document.title с названием товара
+- [x] sitemap.xml: домен уже был www.kattachegirma.uz — проверено
+- [x] robots.txt: создан с правильным доменом www.kattachegirma.uz
