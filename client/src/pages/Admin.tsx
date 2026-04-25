@@ -261,7 +261,11 @@ export default function Admin() {
       toast.error("Nom, narx va kategoriya majburiy");
       return;
     }
-    const slug = form.slug || form.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+    // Transliterate Cyrillic and generate safe slug; fallback to timestamp if result is empty
+    const cyrMap: Record<string, string> = { а:"a",б:"b",в:"v",г:"g",д:"d",е:"e",ё:"yo",ж:"zh",з:"z",и:"i",й:"y",к:"k",л:"l",м:"m",н:"n",о:"o",п:"p",р:"r",с:"s",т:"t",у:"u",ф:"f",х:"kh",ц:"ts",ч:"ch",ш:"sh",щ:"sch",ъ:"",ы:"y",ь:"",э:"e",ю:"yu",я:"ya" };
+    const translit = (s: string) => s.toLowerCase().split("").map(c => cyrMap[c] ?? c).join("");
+    const rawSlug = translit(form.name).replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-").replace(/^-|-$/g, "");
+    const slug = form.slug || rawSlug || `product-${Date.now()}`;
     if (editId) {
       updateProduct.mutate({ id: editId, ...form, slug });
     } else {

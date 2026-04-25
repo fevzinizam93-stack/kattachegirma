@@ -259,3 +259,8 @@
 - [x] index.html: добавить canonical link rel="canonical" href="https://www.kattachegirma.uz/"
 - [x] index.html: добавить og:url с www доменом
 - [x] server/_core/index.ts: добавить 301 редирект с kattachegirma.uz на www.kattachegirma.uz
+
+## v42 - Исправление ошибки при добавлении описания товара
+- [x] routers.ts: ограничений нет — z.string().optional() без max
+- [x] drizzle/schema.ts: description уже text() — проверено
+- [x] Admin.tsx: исправлена генерация slug — транслитерация кириллицы + fallback на timestamp
