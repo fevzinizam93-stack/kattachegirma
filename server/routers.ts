@@ -48,6 +48,7 @@ import {
   deleteReview,
   getReviewCountsByProduct,
   incrementViewCount,
+  getSlugExists,
 } from "./db";
 import { storagePut } from "./storage";
 import { invokeLLM } from "./_core/llm";
@@ -238,7 +239,14 @@ export const appRouter = router({
         const cyrMap: Record<string, string> = { а:"a",б:"b",в:"v",г:"g",д:"d",е:"e",ё:"yo",ж:"zh",з:"z",и:"i",й:"y",к:"k",л:"l",м:"m",н:"n",о:"o",п:"p",р:"r",с:"s",т:"t",у:"u",ф:"f",х:"kh",ц:"ts",ч:"ch",ш:"sh",щ:"sch",ъ:"",ы:"y",ь:"",э:"e",ю:"yu",я:"ya" };
         const translit = (s: string) => s.toLowerCase().split("").map(c => cyrMap[c] ?? c).join("");
         const rawSlug = translit(input.slug).replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-").replace(/^-|-$/g, "");
-        const safeSlug = rawSlug || `product-${Date.now()}`;
+        const baseSlug = rawSlug || `product-${Date.now()}`;
+        // Ensure slug uniqueness: add -2, -3, ... suffix if slug already exists
+        let safeSlug = baseSlug;
+        let suffix = 2;
+        while (await getSlugExists(safeSlug)) {
+          safeSlug = `${baseSlug}-${suffix++}`;
+          if (suffix > 100) { safeSlug = `${baseSlug}-${Date.now()}`; break; }
+        }
         const id = await createProduct({
           ...input,
           slug: safeSlug,

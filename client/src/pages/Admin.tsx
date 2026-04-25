@@ -371,6 +371,12 @@ export default function Admin() {
                         <label className="block text-sm font-semibold mb-1">Nomi (RU) *</label>
                         <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="Название на русском" />
+                        {form.name && (() => {
+                          const cm: Record<string, string> = { а:"a",б:"b",в:"v",г:"g",д:"d",е:"e",ё:"yo",ж:"zh",з:"z",и:"i",й:"y",к:"k",л:"l",м:"m",н:"n",о:"o",п:"p",р:"r",с:"s",т:"t",у:"u",ф:"f",х:"kh",ц:"ts",ч:"ch",ш:"sh",щ:"sch",ъ:"",ы:"y",ь:"",э:"e",ю:"yu",я:"ya" };
+                          const autoSlug = form.name.toLowerCase().split("").map(c => cm[c] ?? c).join("").replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-").replace(/^-|-$/g, "") || "product-...";
+                          const preview = form.slug || autoSlug;
+                          return <p className="mt-1 text-xs text-gray-400">URL: <span className="font-mono text-gray-600">/product/{preview}</span>{form.slug && <span className="ml-1 text-blue-500">(ручной)</span>}</p>;
+                        })()}
                       </div>
                       <div>
                         <label className="block text-sm font-semibold mb-1">Nomi (UZ)</label>

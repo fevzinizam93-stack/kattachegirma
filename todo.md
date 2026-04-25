@@ -264,3 +264,8 @@
 - [x] routers.ts: ограничений нет — z.string().optional() без max
 - [x] drizzle/schema.ts: description уже text() — проверено
 - [x] Admin.tsx: исправлена генерация slug — транслитерация кириллицы + fallback на timestamp
+
+## v43 - Slug дедупликация и предпросмотр
+- [x] db.ts: добавлена функция getSlugExists для проверки уникальности slug
+- [x] routers.ts: в create mutation — автосуффикс -2/-3 при дубликате slug
+- [x] Admin.tsx: предпросмотр URL /product/{slug} под полем названия в реальном времени
