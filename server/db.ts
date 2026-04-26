@@ -404,16 +404,16 @@ export async function getAnalyticsStats(days = 30) {
     .orderBy(desc(count()))
     .limit(10);
 
-  // Daily page views (last 14 days)
+  // Daily page views — use raw SQL alias to avoid MySQL GROUP BY issue with table-qualified column
   const dailyViews = await db
     .select({
-      date: sql<string>`DATE(${analyticsEvents.createdAt})`,
+      date: sql<string>`DATE(createdAt)`,
       views: count(),
     })
     .from(analyticsEvents)
     .where(and(eq(analyticsEvents.eventType, "page_view"), gte(analyticsEvents.createdAt, since)))
-    .groupBy(sql`DATE(${analyticsEvents.createdAt})`)
-    .orderBy(sql`DATE(${analyticsEvents.createdAt})`);
+    .groupBy(sql`DATE(createdAt)`)
+    .orderBy(sql`DATE(createdAt)`);
 
   // Funnel: views → add_to_cart → orders
   const funnelCounts = eventCounts.reduce((acc, row) => {

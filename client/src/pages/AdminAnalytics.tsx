@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { BarChart3, Eye, ShoppingCart, Package, TrendingUp, Users } from "lucide-react";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { BarChart3, Eye, ShoppingCart, Package, TrendingUp, Users, Lock, Loader2 } from "lucide-react";
+import { Link } from "wouter";
 
 function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: number; color: string }) {
   return (
@@ -34,8 +36,19 @@ function FunnelBar({ label, value, max, color }: { label: string; value: number;
 
 export default function AdminAnalytics() {
   const { lang } = useLanguage();
+  const { user, loading: authLoading } = useAuth();
   const [days, setDays] = useState(30);
-  const { data: stats, isLoading } = trpc.analytics.stats.useQuery({ days });
+
+  const isAdmin = user?.role === "admin";
+
+  const { data: stats, isLoading: statsLoading, error } = trpc.analytics.stats.useQuery(
+    { days },
+    {
+      enabled: isAdmin,
+      retry: false,
+      refetchOnWindowFocus: false,
+    }
+  );
 
   const t = {
     title: lang === "uz" ? "Analitika" : "Аналитика",
@@ -53,22 +66,71 @@ export default function AdminAnalytics() {
     noData: lang === "uz" ? "Ma'lumot yo'q" : "Нет данных",
     loading: lang === "uz" ? "Yuklanmoqda..." : "Загрузка...",
     convRate: lang === "uz" ? "Konversiya" : "Конверсия",
+    notAdmin: lang === "uz" ? "Bu sahifaga kirish uchun admin huquqlari kerak." : "Для доступа к этой странице нужны права администратора.",
+    goAdmin: lang === "uz" ? "Admin paneliga qaytish" : "Вернуться в панель администратора",
+    errorTitle: lang === "uz" ? "Ma'lumotlarni yuklashda xatolik" : "Ошибка загрузки данных",
+    errorDesc: lang === "uz" ? "Qayta urinib ko'ring yoki sahifani yangilang." : "Попробуйте ещё раз или обновите страницу.",
   };
 
-  if (isLoading) {
+  // 1. Auth is still loading
+  if (authLoading) {
     return (
       <div className="p-6 flex items-center justify-center min-h-64">
-        <div className="text-gray-400 text-sm">{t.loading}</div>
+        <Loader2 size={28} className="animate-spin text-gray-400" />
       </div>
     );
   }
 
-  const funnel = stats?.funnel ?? { pageViews: 0, productViews: 0, addToCart: 0, orders: 0 };
+  // 2. Not an admin
+  if (!isAdmin) {
+    return (
+      <div className="p-6 flex flex-col items-center justify-center min-h-64 gap-4">
+        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+          <Lock size={28} className="text-red-500" />
+        </div>
+        <p className="text-gray-600 text-center max-w-xs">{t.notAdmin}</p>
+        <Link href="/admin" className="text-sm font-semibold text-primary hover:underline">
+          {t.goAdmin}
+        </Link>
+      </div>
+    );
+  }
+
+  // 3. Stats are loading (admin confirmed, query is running)
+  if (statsLoading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-64">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 size={28} className="animate-spin text-primary" />
+          <p className="text-gray-400 text-sm">{t.loading}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 4. Error state
+  if (error || !stats) {
+    return (
+      <div className="p-6 flex flex-col items-center justify-center min-h-64 gap-3">
+        <BarChart3 size={32} className="text-gray-300" />
+        <p className="text-gray-700 font-semibold">{t.errorTitle}</p>
+        <p className="text-gray-400 text-sm text-center">{t.errorDesc}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
+        >
+          {lang === "uz" ? "Yangilash" : "Обновить"}
+        </button>
+      </div>
+    );
+  }
+
+  const funnel = stats.funnel ?? { pageViews: 0, productViews: 0, addToCart: 0, orders: 0 };
   const convRate = funnel.pageViews > 0 ? ((funnel.orders / funnel.pageViews) * 100).toFixed(2) : "0.00";
   const maxFunnel = funnel.pageViews || 1;
 
   // Build simple bar chart from daily views
-  const dailyViews = stats?.dailyViews ?? [];
+  const dailyViews = stats.dailyViews ?? [];
   const maxViews = dailyViews.length > 0 ? Math.max(...dailyViews.map(d => Number(d.views))) : 1;
 
   return (
@@ -121,7 +183,7 @@ export default function AdminAnalytics() {
             <Package size={16} style={{ color: "#cc0000" }} />
             {t.topProducts}
           </h2>
-          {!stats?.topProducts?.length ? (
+          {!stats.topProducts?.length ? (
             <p className="text-xs text-gray-400 text-center py-6">{t.noData}</p>
           ) : (
             <ol className="space-y-2">
