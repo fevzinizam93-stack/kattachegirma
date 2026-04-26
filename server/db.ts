@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, gte, ilike, like, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool } from "mysql2";
-import { analyticsEvents, banners, Banner, InsertBanner, categories, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, orders, products, reviews, InsertReview, sellers, storeSettings, users } from "../drizzle/schema";
+import { analyticsEvents, banners, Banner, InsertBanner, categories, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, orders, products, reviews, InsertReview, sellers, storeSettings, telegramRecipients, TelegramRecipient, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import bcrypt from "bcryptjs";
 
@@ -528,4 +528,36 @@ export async function deleteBanner(id: number): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("DB unavailable");
   await db.delete(banners).where(eq(banners.id, id));
+}
+
+// ---- Telegram Recipients ----
+export async function getTelegramRecipients(): Promise<TelegramRecipient[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(telegramRecipients).orderBy(asc(telegramRecipients.createdAt));
+}
+
+export async function getActiveTelegramRecipients(): Promise<TelegramRecipient[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(telegramRecipients).where(eq(telegramRecipients.isActive, true));
+}
+
+export async function addTelegramRecipient(chatId: string, name: string): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(telegramRecipients).values({ chatId, name, isActive: true });
+  return (result[0] as { insertId: number }).insertId;
+}
+
+export async function toggleTelegramRecipient(id: number, isActive: boolean): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  await db.update(telegramRecipients).set({ isActive }).where(eq(telegramRecipients.id, id));
+}
+
+export async function deleteTelegramRecipient(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  await db.delete(telegramRecipients).where(eq(telegramRecipients.id, id));
 }

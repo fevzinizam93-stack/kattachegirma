@@ -1,16 +1,16 @@
 /**
  * Telegram Bot notification helper
- * Sends order notifications to the admin's Telegram chat
+ * Sends order notifications to the admin's Telegram chat AND all active recipients from DB
  */
+
+import { getActiveTelegramRecipients } from "./db";
 
 const TELEGRAM_API = "https://api.telegram.org";
 
-export async function sendTelegramMessage(text: string): Promise<boolean> {
+export async function sendTelegramMessageToChat(chatId: string, text: string): Promise<boolean> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
-
-  if (!token || !chatId) {
-    console.warn("[Telegram] TELEGRAM_BOT_TOKEN or TELEGRAM_ADMIN_CHAT_ID not set");
+  if (!token) {
+    console.warn("[Telegram] TELEGRAM_BOT_TOKEN not set");
     return false;
   }
 
@@ -27,14 +27,56 @@ export async function sendTelegramMessage(text: string): Promise<boolean> {
 
     if (!res.ok) {
       const err = await res.text();
-      console.error("[Telegram] sendMessage failed:", err);
+      console.error(`[Telegram] sendMessage to ${chatId} failed:`, err);
       return false;
     }
     return true;
   } catch (e) {
-    console.error("[Telegram] sendMessage error:", e);
+    console.error(`[Telegram] sendMessage to ${chatId} error:`, e);
     return false;
   }
+}
+
+/**
+ * Broadcast a message to:
+ * 1. The main admin chat (TELEGRAM_ADMIN_CHAT_ID env var)
+ * 2. All active recipients stored in the telegram_recipients DB table
+ */
+export async function broadcastTelegramMessage(text: string): Promise<void> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) {
+    console.warn("[Telegram] TELEGRAM_BOT_TOKEN not set — skipping broadcast");
+    return;
+  }
+
+  const sentTo = new Set<string>();
+
+  // 1. Always send to the main admin chat_id from env
+  const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+  if (adminChatId) {
+    await sendTelegramMessageToChat(adminChatId, text);
+    sentTo.add(adminChatId);
+  }
+
+  // 2. Send to all active recipients from DB (skip duplicates)
+  try {
+    const recipients = await getActiveTelegramRecipients();
+    for (const r of recipients) {
+      if (!sentTo.has(r.chatId)) {
+        await sendTelegramMessageToChat(r.chatId, text);
+        sentTo.add(r.chatId);
+      }
+    }
+  } catch (e) {
+    console.error("[Telegram] Failed to load recipients from DB:", e);
+  }
+}
+
+// Keep backward-compatible alias
+export async function sendTelegramMessage(text: string): Promise<boolean> {
+  const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+  if (!chatId) return false;
+  return sendTelegramMessageToChat(chatId, text);
 }
 
 export async function notifyNewReview(review: {
@@ -61,7 +103,7 @@ export async function notifyNewReview(review: {
     `⏰ ${new Date().toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" })}`,
   ].filter(Boolean).join("\n");
 
-  await sendTelegramMessage(message);
+  await broadcastTelegramMessage(message);
 }
 
 export async function notifyNewOrder(order: {
@@ -89,5 +131,5 @@ export async function notifyNewOrder(order: {
     `⏰ ${new Date().toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" })}`,
   ].join("\n");
 
-  await sendTelegramMessage(message);
+  await broadcastTelegramMessage(message);
 }

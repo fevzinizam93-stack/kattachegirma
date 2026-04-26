@@ -285,3 +285,12 @@
 - [x] v46: Исправить кнопку UZ/RU — клики не реагируют нигде в приложении
 ## v47 - Исправление аналитики
 - [x] Аналитика зависает на «Yuklanmoqda...» — ничего не показывает
+
+## v48 - Telegram уведомления нескольким получателям
+- [x] DB: таблица telegram_recipients (id, chatId, name, isActive, createdAt)
+- [x] DB миграция: применить SQL
+- [x] db.ts: getTelegramRecipients, addTelegramRecipient, deleteTelegramRecipient
+- [x] telegram.ts: обновить notifyNewOrder — рассылать всем активным получателям из БД + TELEGRAM_ADMIN_CHAT_ID
+- [x] routers.ts: tRPC процедуры telegram.listRecipients, telegram.addRecipient, telegram.deleteRecipient (только admin)
+- [x] Admin.tsx: вкладка «Уведомления» — список получателей, добавить/удалить chat_id
+- [x] Инструкция как подчинённым узнать свой chat_id

@@ -175,3 +175,15 @@ export const banners = mysqlTable("banners", {
 
 export type Banner = typeof banners.$inferSelect;
 export type InsertBanner = typeof banners.$inferInsert;
+
+// Telegram notification recipients
+export const telegramRecipients = mysqlTable("telegram_recipients", {
+  id: int("id").autoincrement().primaryKey(),
+  chatId: varchar("chatId", { length: 64 }).notNull().unique(),
+  name: varchar("name", { length: 128 }).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type TelegramRecipient = typeof telegramRecipients.$inferSelect;
+export type InsertTelegramRecipient = typeof telegramRecipients.$inferInsert;

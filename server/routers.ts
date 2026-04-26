@@ -54,6 +54,10 @@ import {
   createBanner,
   updateBanner,
   deleteBanner,
+  getTelegramRecipients,
+  addTelegramRecipient,
+  toggleTelegramRecipient,
+  deleteTelegramRecipient,
 } from "./db";
 import { storagePut } from "./storage";
 import { invokeLLM } from "./_core/llm";
@@ -740,6 +744,37 @@ export const appRouter = router({
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         await deleteBanner(input.id);
+        return { ok: true };
+      }),
+  }),
+  // ---- Telegram Recipients ----
+  telegram: router({
+    // List all recipients (admin only)
+    listRecipients: adminProcedure.query(async () => {
+      return getTelegramRecipients();
+    }),
+    // Add a new recipient (admin only)
+    addRecipient: adminProcedure
+      .input(z.object({
+        chatId: z.string().min(1).max(64),
+        name: z.string().min(1).max(128),
+      }))
+      .mutation(async ({ input }) => {
+        const id = await addTelegramRecipient(input.chatId, input.name);
+        return { ok: true, id };
+      }),
+    // Toggle active/inactive (admin only)
+    toggleRecipient: adminProcedure
+      .input(z.object({ id: z.number(), isActive: z.boolean() }))
+      .mutation(async ({ input }) => {
+        await toggleTelegramRecipient(input.id, input.isActive);
+        return { ok: true };
+      }),
+    // Delete a recipient (admin only)
+    deleteRecipient: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await deleteTelegramRecipient(input.id);
         return { ok: true };
       }),
   }),
