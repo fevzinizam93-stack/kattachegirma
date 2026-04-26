@@ -24,6 +24,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const langMenuRef = useRef<HTMLDivElement>(null);
+  const langMenuMobileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(searchQuery), 300);
@@ -44,7 +45,10 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
       ) {
         setShowDropdown(false);
       }
-      if (langMenuRef.current && !langMenuRef.current.contains(e.target as Node)) {
+      if (
+        langMenuRef.current && !langMenuRef.current.contains(e.target as Node) &&
+        langMenuMobileRef.current && !langMenuMobileRef.current.contains(e.target as Node)
+      ) {
         setShowLangMenu(false);
       }
     };
@@ -272,7 +276,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           </Link>
 
           {/* Lang switcher mobile */}
-          <div className="relative shrink-0" ref={langMenuRef}>
+          <div className="relative shrink-0" ref={langMenuMobileRef}>
             <button onClick={() => setShowLangMenu((v) => !v)} className="flex items-center gap-0.5 text-xs text-gray-700 cursor-pointer select-none px-1.5 py-1 rounded hover:bg-gray-100 transition-colors">
               <span>{lang === "ru" ? "🇷🇺" : "🇺🇿"}</span>
               <span className="font-medium">{lang === "ru" ? "RU" : "UZ"}</span>
