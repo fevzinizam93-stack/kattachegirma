@@ -11,7 +11,7 @@ function formatPrice(price: string | number) {
   return new Intl.NumberFormat("ru-RU").format(num) + " so'm";
 }
 
-type Tab = "products" | "categories" | "orders" | "sellers" | "settings" | "banners" | "notifications";
+type Tab = "products" | "categories" | "orders" | "sellers" | "moderation" | "settings" | "banners" | "notifications";
 
 interface BannerForm {
   id?: number;
@@ -122,6 +122,21 @@ export default function Admin() {
   });
   const allBanners = bannersData ?? [];
 
+  // Moderation
+  const { data: pendingProductsData, isLoading: pendingLoading } = trpc.sellers.pendingProducts.useQuery(undefined, {
+    enabled: tab === "moderation" && user?.role === "admin",
+  });
+  const pendingProducts = pendingProductsData ?? [];
+
+  const approveProductMut = trpc.sellers.approveProduct.useMutation({
+    onSuccess: () => { utils.sellers.pendingProducts.invalidate(); toast.success("Mahsulot tasdiqlandi!"); },
+    onError: (e) => toast.error(e.message),
+  });
+  const rejectProductMut = trpc.sellers.rejectProduct.useMutation({
+    onSuccess: () => { utils.sellers.pendingProducts.invalidate(); toast.success("Mahsulot rad etildi"); },
+    onError: (e) => toast.error(e.message),
+  });
+
   // Telegram recipients
   const { data: telegramRecipientsData, isLoading: telegramLoading } = trpc.telegram.listRecipients.useQuery(undefined, {
     enabled: tab === "notifications" && user?.role === "admin",
@@ -204,6 +219,14 @@ export default function Admin() {
 
   const approveSeller = trpc.sellers.approve.useMutation({
     onSuccess: () => { toast.success("Sotuvchi tasdiqlandi!"); utils.sellers.list.invalidate(); },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const blockSeller = trpc.sellers.blockSeller.useMutation({
+    onSuccess: (_data, vars) => {
+      toast.success(vars.blocked ? "Sotuvchi bloklandi" : "Sotuvchi blokdan chiqarildi");
+      utils.sellers.list.invalidate();
+    },
     onError: (e) => toast.error(e.message),
   });
 
@@ -381,6 +404,7 @@ export default function Admin() {
     { key: "categories" as Tab, icon: FolderOpen, label: "Категории" },
     { key: "orders" as Tab, icon: ShoppingBag, label: "Заказы" },
     { key: "sellers" as Tab, icon: Users, label: "Продавцы" },
+    { key: "moderation" as Tab, icon: Store, label: `Модерация${pendingProducts.length > 0 ? ` (${pendingProducts.length})` : ""}` },
     { key: "banners" as Tab, icon: ImagePlus, label: "Баннеры" },
     { key: "notifications" as Tab, icon: Bell, label: "Уведомления" },
     { key: "settings" as Tab, icon: Settings, label: "Настройки" },
@@ -982,30 +1006,102 @@ export default function Admin() {
                           {seller.telegram && <p className="text-xs text-blue-600">{seller.telegram}</p>}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {seller.isApproved ? (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {!seller.isApproved && (
+                          <button
+                            onClick={() => approveSeller.mutate({ id: seller.id })}
+                            className="bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-green-600 transition-colors"
+                          >
+                            Tasdiqlash
+                          </button>
+                        )}
+                        {seller.isApproved && (
                           <span className="bg-green-50 text-green-700 text-xs font-bold px-3 py-1 rounded-full">Tasdiqlangan</span>
+                        )}
+                        {(seller as any).isBlocked ? (
+                          <button
+                            onClick={() => blockSeller.mutate({ id: seller.id, blocked: false })}
+                            className="bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-amber-600 transition-colors"
+                          >
+                            Blokdan chiqarish
+                          </button>
                         ) : (
-                          <>
-                            <button
-                              onClick={() => approveSeller.mutate({ id: seller.id })}
-                              className="bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-green-600 transition-colors"
-                            >
-                              Tasdiqlash
-                            </button>
-                            <button
-                              onClick={() => { if (confirm("Sotuvchini rad etasizmi?")) approveSeller.mutate({ id: seller.id }); }}
-                              className="bg-red-50 text-red-600 text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-red-100 transition-colors"
-                            >
-                              Rad etish
-                            </button>
-                          </>
+                          <button
+                            onClick={() => { if (confirm("Sotuvchini bloklaysizmi?")) blockSeller.mutate({ id: seller.id, blocked: true }); }}
+                            className="bg-red-50 text-red-600 text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-red-100 transition-colors"
+                          >
+                            Bloklash
+                          </button>
                         )}
                       </div>
                     </div>
                     {seller.description && (
                       <p className="text-sm text-gray-500 mt-2 ml-13">{seller.description}</p>
                     )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ==================== MODERATION TAB ==================== */}
+        {tab === "moderation" && (
+          <div>
+            <h2 className="font-black text-lg mb-4 text-gray-900">
+              Moderatsiya — tekshirilayotgan mahsulotlar ({pendingProducts.length})
+            </h2>
+            {pendingLoading ? (
+              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">Yuklanmoqda...</div>
+            ) : pendingProducts.length === 0 ? (
+              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-400">
+                <Package size={40} className="mx-auto mb-3 opacity-40" />
+                <p>Tekshirish uchun mahsulot yo'q</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {pendingProducts.map(p => (
+                  <div key={p.id} className="bg-white rounded-xl border border-gray-200 p-4">
+                    <div className="flex gap-4">
+                      {p.imageUrl ? (
+                        <img src={p.imageUrl} alt={p.name} className="w-20 h-20 object-cover rounded-xl border border-gray-100 flex-shrink-0" />
+                      ) : (
+                        <div className="w-20 h-20 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                          <Package size={28} className="text-gray-300" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-gray-900">{p.name}</p>
+                        <p className="text-sm text-gray-500">{p.brand && `${p.brand} · `}{formatPrice(p.price)}</p>
+                        {p.sellerName && (
+                          <p className="text-xs text-blue-600 mt-0.5">Sotuvchi: {p.sellerName} {p.sellerPhone && `(${p.sellerPhone})`}</p>
+                        )}
+                        {p.description && (
+                          <p className="text-xs text-gray-400 mt-1 line-clamp-2">{p.description}</p>
+                        )}
+                        {p.discount && p.discount > 0 ? (
+                          <span className="inline-block bg-red-50 text-red-600 text-xs font-bold px-2 py-0.5 rounded-full mt-1">-{p.discount}% chegirma</span>
+                        ) : (
+                          <span className="inline-block bg-gray-50 text-gray-500 text-xs font-bold px-2 py-0.5 rounded-full mt-1">Chegirmasiz</span>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-2 flex-shrink-0">
+                        <button
+                          onClick={() => approveProductMut.mutate({ id: p.id })}
+                          disabled={approveProductMut.isPending}
+                          className="bg-green-500 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50"
+                        >
+                          Tasdiqlash
+                        </button>
+                        <button
+                          onClick={() => { if (confirm(`"${p.name}" rad etilsinmi?`)) rejectProductMut.mutate({ id: p.id }); }}
+                          disabled={rejectProductMut.isPending}
+                          className="bg-red-50 text-red-600 text-xs font-bold px-4 py-2 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
+                        >
+                          Rad etish
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>

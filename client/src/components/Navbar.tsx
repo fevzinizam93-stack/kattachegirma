@@ -134,6 +134,14 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
             {lang === "uz" ? "Biz haqimizda" : "О нас"}
           </Link>
 
+          {/* Seller button */}
+          <Link
+            href="/seller/register"
+            className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors whitespace-nowrap"
+          >
+            {lang === "uz" ? "Sotuvchi bo'ling" : "Стать продавцом"}
+          </Link>
+
           {/* Search bar — red border */}
           <div className="flex-1 relative">
             <form onSubmit={handleSearch} className="flex items-center border-2 border-red-500 rounded-full bg-white focus-within:border-red-600 transition-colors overflow-hidden h-10">

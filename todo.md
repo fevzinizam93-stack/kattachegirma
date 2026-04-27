@@ -294,3 +294,20 @@
 - [x] routers.ts: tRPC процедуры telegram.listRecipients, telegram.addRecipient, telegram.deleteRecipient (только admin)
 - [x] Admin.tsx: вкладка «Уведомления» — список получателей, добавить/удалить chat_id
 - [x] Инструкция как подчинённым узнать свой chat_id
+
+## v49 - Система сторонних продавцов (маркетплейс)
+- [x] DB: добавить поле moderationStatus (pending|approved|rejected) в таблицу products
+- [x] DB: добавить поле sellerId (FK -> sellers.id, nullable) в таблицу products
+- [x] DB миграция: применить SQL
+- [x] routers.ts: процедуры для продавца (seller.myProducts, seller.addProduct, seller.updateProduct, seller.deleteProduct)
+- [x] routers.ts: процедуры модерации для админа (admin.pendingProducts, admin.approveProduct, admin.rejectProduct)
+- [x] Telegram: уведомление админу при добавлении нового товара продавцом
+- [x] SellerRegister.tsx: страница регистрации продавца (имя магазина, телефон, описание)
+- [x] SellerDashboard.tsx: панель продавца — добавить/редактировать/удалить свои товары
+- [x] Admin.tsx: вкладка «Модерация» — список товаров на проверке, одобрить/отклонить
+- [x] Admin.tsx: вкладка «Продавцы» — список продавцов, блокировка/разблокировка
+- [x] ProductDetail.tsx: предупреждение покупателю если товар от стороннего продавца
+- [x] ProductCard.tsx: метка «3rd» (сторонний продавец) на карточке товара
+- [x] Navbar.tsx: кнопка «Стать продавцом» в навбаре
+- [x] Всплывающее уведомление «Товар на проверке» после добавления продавцом (2 сек)
+- [x] Первый визит: предупреждение о сторонних продавцах (модальное окно)

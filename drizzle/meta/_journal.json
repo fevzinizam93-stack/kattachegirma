@@ -85,6 +85,20 @@
       "when": 1777222543943,
       "tag": "0011_lethal_carnage",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "5",
+      "when": 1777287442602,
+      "tag": "0012_faulty_silvermane",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "5",
+      "when": 1777288207166,
+      "tag": "0013_green_blade",
+      "breakpoints": true
     }
   ]
 }

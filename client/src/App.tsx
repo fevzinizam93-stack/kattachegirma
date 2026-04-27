@@ -23,6 +23,8 @@ const AdminReviews = lazy(() => import("./pages/AdminReviews"));
 const About = lazy(() => import("./pages/About"));
 const Bestsellers = lazy(() => import("./pages/Bestsellers"));
 const SellerPanel = lazy(() => import("./pages/SellerPanel"));
+const SellerRegister = lazy(() => import("./pages/SellerRegister"));
+const SellerDashboard = lazy(() => import("./pages/SellerDashboard"));
 const Profile = lazy(() => import("./pages/Profile"));
 const AuthModal = lazy(() => import("./components/AuthModal"));
 
@@ -69,10 +71,45 @@ function Router() {
       <Route path="/about" component={About} />
       <Route path="/bestsellers" component={Bestsellers} />
       <Route path="/seller" component={SellerPanel} />
+      <Route path="/seller/register" component={SellerRegister} />
+      <Route path="/seller/dashboard" component={SellerDashboard} />
       <Route path="/profile" component={Profile} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
+  );
+}
+
+function SellerWarningModal() {
+  const [show, setShow] = useState(() => !localStorage.getItem("seller_warning_seen"));
+  if (!show) return null;
+  return (
+    <div className="fixed inset-0 bg-black/50 z-[9999] flex items-end sm:items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+        <div className="flex items-start gap-3 mb-4">
+          <span className="text-3xl">&#9888;&#65039;</span>
+          <div>
+            <h3 className="font-black text-gray-900 text-base mb-1">Diqqat / Внимание</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              Saytimizda ba'zi mahsulotlar <strong>mustaqil sotuvchilar</strong> tomonidan taklif qilinadi.
+              Bunday mahsulotlar uchun yetkazib berish, kafolat va to'lov uchun javobgarlik sotuvchida.
+              <strong> Katta Chegirma</strong> bu mahsulotlar uchun javobgarlik olmaydi.
+            </p>
+            <p className="text-sm text-gray-500 mt-2 leading-relaxed">
+              На нашем сайте некоторые товары предлагаются <strong>сторонними продавцами</strong>.
+              Ответственность за доставку, гарантию и деньги несёт продавец.
+              <strong> Katta Chegirma</strong> не несёт ответственности за такие товары.
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={() => { localStorage.setItem("seller_warning_seen", "1"); setShow(false); }}
+          className="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary/90 transition-colors"
+        >
+          Понятно / Tushundim
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -103,6 +140,7 @@ function App() {
               <Suspense fallback={null}>
                 <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} defaultTab={authTab} />
               </Suspense>
+              <SellerWarningModal />
             </TooltipProvider>
           </AuthModalContext.Provider>
         </CartProvider>

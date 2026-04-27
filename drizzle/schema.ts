@@ -55,6 +55,7 @@ export const sellers = mysqlTable("sellers", {
   telegram: varchar("telegram", { length: 128 }),
   description: text("description"),
   isApproved: boolean("isApproved").default(false),
+  isBlocked: boolean("isBlocked").default(false),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -88,6 +89,7 @@ export const products = mysqlTable("products", {
   sellerTelegram: varchar("sellerTelegram", { length: 128 }),
   sellerName: varchar("sellerName", { length: 256 }),
   isApproved: boolean("isApproved").default(true),
+  moderationStatus: mysqlEnum("moderationStatus", ["approved", "pending", "rejected"]).default("approved").notNull(),
   viewCount: int("viewCount").default(0),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

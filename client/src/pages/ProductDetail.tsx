@@ -389,6 +389,21 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 </button>
               </div>
 
+              {/* Third-party seller warning */}
+              {product.sellerId && (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-2">
+                  <p className="text-xs font-bold text-amber-800 mb-0.5">
+                    {lang === "uz" ? "⚠️ Uchinchi tomon sotuvchi" : "⚠️ Сторонний продавец"}
+                  </p>
+                  <p className="text-[11px] text-amber-700 leading-relaxed">
+                    {lang === "uz"
+                      ? "Bu mahsulot mustaqil sotuvchi tomonidan taklif qilinmoqda. Yetkazib berish, kafolat va to'lov uchun javobgarlik sotuvchida. Katta Chegirma bu mahsulot uchun javobgarlik olmaydi."
+                      : "Этот товар предлагается сторонним продавцом. Ответственность за доставку, гарантию и деньги несёт продавец. Katta Chegirma не несёт ответственности за данный товар."
+                    }
+                  </p>
+                </div>
+              )}
+
               {/* Seller contacts — compact */}
               {(product.sellerPhone || product.sellerTelegram) && (
                 <div className="border border-gray-200 rounded-xl p-2 mb-1.5 bg-gray-50">

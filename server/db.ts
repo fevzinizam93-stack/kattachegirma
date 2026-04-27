@@ -561,3 +561,29 @@ export async function deleteTelegramRecipient(id: number): Promise<void> {
   if (!db) throw new Error("DB unavailable");
   await db.delete(telegramRecipients).where(eq(telegramRecipients.id, id));
 }
+
+// ---- Moderation ----
+export async function getPendingProducts() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(products).where(eq(products.moderationStatus, "pending")).orderBy(desc(products.createdAt));
+}
+
+export async function setProductModerationStatus(id: number, status: "approved" | "pending" | "rejected"): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  await db.update(products).set({ moderationStatus: status, isApproved: status === "approved" }).where(eq(products.id, id));
+}
+
+export async function getSellerById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(sellers).where(eq(sellers.id, id)).limit(1);
+  return rows[0] ?? null;
+}
+
+export async function setSellerBlocked(id: number, blocked: boolean): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  await db.update(sellers).set({ isBlocked: blocked }).where(eq(sellers.id, id));
+}

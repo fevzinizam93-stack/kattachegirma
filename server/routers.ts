@@ -4,7 +4,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { notifyNewOrder, notifyNewReview } from "./telegram";
+import { notifyNewOrder, notifyNewReview, broadcastTelegramMessage } from "./telegram";
 import {
   getAllCategories,
   getProducts,
@@ -27,6 +27,7 @@ import {
   createSeller,
   updateSeller,
   approveSeller,
+  setSellerBlocked,
   getSellerProducts,
   registerUser,
   loginUser,
@@ -54,6 +55,9 @@ import {
   createBanner,
   updateBanner,
   deleteBanner,
+  getPendingProducts,
+  setProductModerationStatus,
+  getSellerById,
   getTelegramRecipients,
   addTelegramRecipient,
   toggleTelegramRecipient,
@@ -324,14 +328,19 @@ export const appRouter = router({
     sellerCreate: sellerProcedure
       .input(z.object({
         name: z.string(),
+        nameUz: z.string().optional(),
         slug: z.string(),
         description: z.string().optional(),
+        descriptionUz: z.string().optional(),
         categoryId: z.number(),
         brand: z.string().optional(),
         price: z.string(),
+        priceUsd: z.string().optional(),
         originalPrice: z.string().optional(),
+        originalPriceUsd: z.string().optional(),
         discount: z.number().default(0),
         imageUrl: z.string().optional(),
+        images: z.array(z.string()).optional(),
         stock: z.number().default(0),
         isNew: z.boolean().default(false),
         specs: z.record(z.string(), z.string()).optional(),
@@ -339,18 +348,74 @@ export const appRouter = router({
       .mutation(async ({ input, ctx }) => {
         const seller = await getSellerByUserId(ctx.user.id);
         if (!seller) throw new TRPCError({ code: "FORBIDDEN", message: "Seller profile not found" });
+        if (!seller.isApproved) throw new TRPCError({ code: "FORBIDDEN", message: "Seller not approved yet" });
         const id = await createProduct({
           ...input,
-          images: [],
+          images: input.images ?? [],
           specs: (input.specs ?? {}) as Record<string, string>,
           sellerId: seller.id,
           sellerName: seller.name,
           sellerPhone: seller.phone ?? undefined,
           sellerTelegram: seller.telegram ?? undefined,
           isApproved: false,
+          moderationStatus: "pending" as const,
           isFeatured: false,
         });
+        // Notify admin via Telegram
+        const msg = [
+          `🛍 <b>Yangi mahsulot moderatsiyada!</b>`,
+          ``,
+          `📦 <b>Nomi:</b> ${input.name}`,
+          `💰 <b>Narxi:</b> ${Number(input.price).toLocaleString("ru-RU")} so'm`,
+          `👤 <b>Sotuvchi:</b> ${seller.name} (${seller.phone ?? "telefon yo'q"})`,
+          ``,
+          `⚠️ Admin panelida moderatsiya qiling.`,
+        ].join("\n");
+        broadcastTelegramMessage(msg).catch(() => {});
         return { id };
+      }),
+
+    // Seller: update own product (only pending/rejected ones)
+    sellerUpdate: sellerProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        nameUz: z.string().optional(),
+        description: z.string().optional(),
+        descriptionUz: z.string().optional(),
+        categoryId: z.number().optional(),
+        brand: z.string().optional(),
+        price: z.string().optional(),
+        priceUsd: z.string().optional(),
+        originalPrice: z.string().optional(),
+        originalPriceUsd: z.string().optional(),
+        discount: z.number().optional(),
+        imageUrl: z.string().optional(),
+        images: z.array(z.string()).optional(),
+        stock: z.number().optional(),
+        isNew: z.boolean().optional(),
+        specs: z.record(z.string(), z.string()).optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const seller = await getSellerByUserId(ctx.user.id);
+        if (!seller) throw new TRPCError({ code: "FORBIDDEN", message: "Seller profile not found" });
+        const { id, ...data } = input;
+        const product = await getProductByIdDb(id);
+        if (!product || product.sellerId !== seller.id) throw new TRPCError({ code: "FORBIDDEN", message: "Not your product" });
+        await updateProduct(id, { ...data, moderationStatus: "pending" as const, isApproved: false });
+        return { ok: true };
+      }),
+
+    // Seller: delete own product
+    sellerDelete: sellerProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        const seller = await getSellerByUserId(ctx.user.id);
+        if (!seller) throw new TRPCError({ code: "FORBIDDEN", message: "Seller profile not found" });
+        const product = await getProductByIdDb(input.id);
+        if (!product || product.sellerId !== seller.id) throw new TRPCError({ code: "FORBIDDEN", message: "Not your product" });
+        await deleteProduct(input.id);
+        return { ok: true };
       }),
 
     // Admin: auto-translate product name/description from RU to UZ
@@ -570,7 +635,28 @@ export const appRouter = router({
     approveProduct: adminProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
-        await updateProduct(input.id, { isApproved: true });
+        await updateProduct(input.id, { isApproved: true, moderationStatus: "approved" as const });
+        return { success: true };
+      }),
+
+    // Admin: reject product
+    rejectProduct: adminProcedure
+      .input(z.object({ id: z.number(), reason: z.string().optional() }))
+      .mutation(async ({ input }) => {
+        await updateProduct(input.id, { isApproved: false, moderationStatus: "rejected" as const });
+        return { success: true };
+      }),
+
+    // Admin: list pending products for moderation
+    pendingProducts: adminProcedure.query(async () => {
+      return getPendingProducts();
+    }),
+
+    // Admin: block/unblock seller
+    blockSeller: adminProcedure
+      .input(z.object({ id: z.number(), blocked: z.boolean() }))
+      .mutation(async ({ input }) => {
+        await setSellerBlocked(input.id, input.blocked);
         return { success: true };
       }),
     // Admin: promote user to admin by email
