@@ -389,20 +389,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 </button>
               </div>
 
-              {/* Third-party seller warning */}
-              {product.sellerId && (
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-2">
-                  <p className="text-xs font-bold text-amber-800 mb-0.5">
-                    {lang === "uz" ? "⚠️ Uchinchi tomon sotuvchi" : "⚠️ Сторонний продавец"}
-                  </p>
-                  <p className="text-[11px] text-amber-700 leading-relaxed">
-                    {lang === "uz"
-                      ? "Bu mahsulot mustaqil sotuvchi tomonidan taklif qilinmoqda. Yetkazib berish, kafolat va to'lov uchun javobgarlik sotuvchida. Katta Chegirma bu mahsulot uchun javobgarlik olmaydi."
-                      : "Этот товар предлагается сторонним продавцом. Ответственность за доставку, гарантию и деньги несёт продавец. Katta Chegirma не несёт ответственности за данный товар."
-                    }
-                  </p>
-                </div>
-              )}
+
 
               {/* Seller contacts — compact */}
               {(product.sellerPhone || product.sellerTelegram) && (
@@ -511,6 +498,28 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
 
         {/* ===== REVIEWS SECTION ===== */}
         <ReviewsSection productId={product.id} lang={lang} />
+
+        {/* ===== THIRD-PARTY SELLER NOTICE ===== */}
+        {product.sellerId && (
+          <div className="container pb-8">
+            <div className="border border-gray-200 rounded-2xl p-5 bg-gray-50">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 text-sm font-bold">i</div>
+                <div>
+                  <p className="font-semibold text-gray-700 text-sm mb-1">
+                    {lang === "uz" ? "Mustaqil sotuvchi mahsuloti" : "Товар стороннего продавца"}
+                  </p>
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                    {lang === "uz"
+                      ? "Bu mahsulot Katta Chegirma platformasida ro'yxatdan o'tgan mustaqil sotuvchi tomonidan taklif qilinadi. Yetkazib berish muddati, kafolat shartlari va to'lov xavfsizligi uchun javobgarlik to'liq sotuvchida. Katta Chegirma vositachi platforma sifatida ushbu mahsulot bo'yicha majburiyat olmaydi."
+                      : "Данный товар предлагается независимым продавцом, зарегистрированным на платформе Katta Chegirma. Ответственность за сроки доставки, условия гарантии и безопасность оплаты полностью лежит на продавце. Katta Chegirma как платформа-посредник не несёт обязательств по данному товару."
+                    }
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>
