@@ -1,22 +1,23 @@
 import { createContext, useContext, useState, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/NotFound";
 import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { CartProvider } from "./contexts/CartContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import Home from "./pages/Home";
-import Catalog from "./pages/Catalog";
-import CategoryPage from "./pages/CategoryPage";
-import ProductDetail from "./pages/ProductDetail";
-import Cart from "./pages/Cart";
-import Checkout from "./pages/Checkout";
-import SearchResults from "./pages/SearchResults";
 import MobileBottomNav from "./components/MobileBottomNav";
-// Heavy pages loaded lazily — only when user navigates to them
+
+// All pages are lazy-loaded for code splitting — only the current page's JS is downloaded
+const Home = lazy(() => import("./pages/Home"));
+const Catalog = lazy(() => import("./pages/Catalog"));
+const CategoryPage = lazy(() => import("./pages/CategoryPage"));
+const ProductDetail = lazy(() => import("./pages/ProductDetail"));
+const Cart = lazy(() => import("./pages/Cart"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const SearchResults = lazy(() => import("./pages/SearchResults"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 const Admin = lazy(() => import("./pages/Admin"));
 const AdminAnalytics = lazy(() => import("./pages/AdminAnalytics"));
 const AdminReviews = lazy(() => import("./pages/AdminReviews"));
@@ -27,6 +28,15 @@ const SellerDashboard = lazy(() => import("./pages/SellerDashboard"));
 const Profile = lazy(() => import("./pages/Profile"));
 const PremiumCatalog = lazy(() => import("./pages/PremiumCatalog"));
 const AuthModal = lazy(() => import("./components/AuthModal"));
+
+// Lightweight spinner shown while a page chunk is loading
+function PageLoader() {
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+}
 
 // Global auth modal context so any page can open it
 interface AuthModalContextType {
@@ -98,7 +108,7 @@ function App() {
               <div className="flex flex-col min-h-screen">
                 <Navbar onOpenAuth={openLogin} />
                 <main className="flex-1 pb-14 md:pb-0">
-                  <Suspense fallback={<div className="min-h-[60vh] flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
+                  <Suspense fallback={<PageLoader />}>
                     <Router />
                   </Suspense>
                 </main>

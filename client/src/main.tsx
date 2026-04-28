@@ -10,7 +10,20 @@ import { LanguageProvider } from "./contexts/LanguageContext";
 import { CurrencyProvider } from "./contexts/CurrencyContext";
 import "./index.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Cache data for 5 minutes — don't re-fetch on every navigation
+      staleTime: 5 * 60 * 1000,
+      // Keep unused data in memory for 10 minutes
+      gcTime: 10 * 60 * 1000,
+      // Don't retry on error (faster failure feedback)
+      retry: 1,
+      // Don't refetch when window regains focus (reduces unnecessary requests on mobile)
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const redirectToLoginIfUnauthorized = (_error: unknown) => {
   // Disabled: we use our own email/password auth modal instead of Manus OAuth

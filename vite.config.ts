@@ -167,6 +167,54 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    // Split vendor libraries into separate cacheable chunks
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // React core — rarely changes, cached aggressively
+          "vendor-react": ["react", "react-dom"],
+          // tRPC + TanStack Query — data layer
+          "vendor-trpc": ["@trpc/client", "@trpc/react-query", "@tanstack/react-query"],
+          // Radix UI primitives — large but stable
+          "vendor-radix": [
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-dropdown-menu",
+            "@radix-ui/react-select",
+            "@radix-ui/react-tooltip",
+            "@radix-ui/react-tabs",
+            "@radix-ui/react-label",
+            "@radix-ui/react-slot",
+          ],
+          // Lucide icons — large icon library
+          "vendor-icons": ["lucide-react"],
+          // Routing
+          "vendor-router": ["wouter"],
+          // Superjson serializer
+          "vendor-superjson": ["superjson"],
+          // Sonner toast notifications
+          "vendor-sonner": ["sonner"],
+          // Vaul drawer (used in mobile menu)
+          "vendor-vaul": ["vaul"],
+          // Class utilities
+          "vendor-utils": ["clsx", "class-variance-authority", "tailwind-merge"],
+          // Charts (recharts is large)
+          "vendor-charts": ["recharts"],
+          // Command palette
+          "vendor-cmdk": ["cmdk"],
+          // Additional Radix UI components
+          "vendor-radix2": [
+            "@radix-ui/react-accordion",
+            "@radix-ui/react-checkbox",
+            "@radix-ui/react-popover",
+            "@radix-ui/react-scroll-area",
+            "@radix-ui/react-separator",
+            "@radix-ui/react-switch",
+            "@radix-ui/react-toggle",
+            "@radix-ui/react-toggle-group",
+          ],
+        },
+      },
+    },
   },
   server: {
     host: true,

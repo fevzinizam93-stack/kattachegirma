@@ -16,13 +16,34 @@ export default function Home() {
       : "Катта Чегирма — Магазин бытовой техники со скидками";
   }, [lang]);
 
-  const { data: featuredData, isLoading: featuredLoading } = trpc.products.list.useQuery({ featured: true, limit: 10, offset: 0 });
-  const { data: newData, isLoading: newLoading } = trpc.products.list.useQuery({ limit: 10, offset: 0 });
-  const { data: categoriesData } = trpc.categories.list.useQuery();
-  const { data: hitsData } = trpc.products.getHits.useQuery({ limit: 8 });
+  // Hits and featured products — primary content, load first
+  const { data: hitsData } = trpc.products.getHits.useQuery(
+    { limit: 8 },
+    { staleTime: 3 * 60 * 1000 } // 3 min cache
+  );
   const hitProducts = hitsData ?? [];
-  const { data: activeBanners } = trpc.banners.listActive.useQuery();
+
+  const { data: featuredData, isLoading: featuredLoading } = trpc.products.list.useQuery(
+    { featured: true, limit: 10, offset: 0 },
+    { staleTime: 3 * 60 * 1000 }
+  );
+
+  // Secondary content — categories and banners (rarely change, cache longer)
+  const { data: categoriesData } = trpc.categories.list.useQuery(
+    undefined,
+    { staleTime: 10 * 60 * 1000 } // 10 min cache
+  );
+  const { data: activeBanners } = trpc.banners.listActive.useQuery(
+    undefined,
+    { staleTime: 5 * 60 * 1000 }
+  );
   const banners = activeBanners ?? [];
+
+  // All products — load after primary content
+  const { data: newData, isLoading: newLoading } = trpc.products.list.useQuery(
+    { limit: 10, offset: 0 },
+    { staleTime: 3 * 60 * 1000 }
+  );
 
   const featuredProducts = featuredData?.items ?? [];
   const newProducts = newData?.items ?? [];
