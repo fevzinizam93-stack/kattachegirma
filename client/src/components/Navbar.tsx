@@ -237,12 +237,6 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
 
           {/* Right icons */}
           <div className="flex items-center gap-1 shrink-0">
-            {/* Premium */}
-            <Link href="/premium" className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition-colors ${location === "/premium" ? "bg-[#1a1a2e]/10" : "hover:bg-[#1a1a2e]/10"}`}>
-              <span className="text-base leading-none text-[#d4af37]">◈</span>
-              <span className="text-[9px] font-bold text-[#d4af37] whitespace-nowrap">{lang === "uz" ? "Original" : "Оригинал"}</span>
-            </Link>
-
             {/* Bestsellers */}
             <Link href="/bestsellers" className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors ${location === "/bestsellers" ? "bg-gray-100" : ""}`}>
               <span className="text-lg leading-none">🔥</span>
