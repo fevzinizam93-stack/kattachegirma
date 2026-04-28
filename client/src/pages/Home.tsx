@@ -1,7 +1,7 @@
 import ProductCard from "@/components/ProductCard";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
-import { ArrowRight, Flame, Tag } from "lucide-react";
+import { ArrowRight, Flame } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 
@@ -53,57 +53,6 @@ export default function Home() {
         </section>
       )}
 
-      {/* Banner + Hits strip combined on white background */}
-      <section className="bg-white border-b border-gray-200">
-        {/* Top row: БОЛЬШИЕ СКИДКИ + lowest prices + view all */}
-        <div className="container py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-white font-black text-base md:text-2xl px-4 py-2 md:px-5 md:py-2.5 rounded-full" style={{ backgroundColor: "#cc0000" }}>
-              <Tag size={18} />
-              {t.home_big_discounts}
-            </div>
-            <div className="hidden md:block text-gray-600 text-sm font-medium flex-1 text-center px-6">
-              {t.home_lowest_prices}
-            </div>
-            <Link href="/catalog?featured=true" className="flex items-center gap-1 text-sm font-semibold hover:underline whitespace-nowrap" style={{ color: "#cc0000" }}>
-              {t.home_view_all} <ArrowRight size={15} />
-            </Link>
-          </div>
-        </div>
-
-        {/* 🔥 Hits strip — orange row on white background */}
-        {hitProducts.length > 0 && (
-          <Link href="/bestsellers">
-            <div className="relative overflow-hidden cursor-pointer border-t border-orange-100" style={{ background: "linear-gradient(90deg, #fff3e0 0%, #ffe0b2 40%, #ffcc80 70%, #ffb74d 100%)" }}>
-              {/* Subtle fire particles */}
-              <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-0 left-[8%] text-2xl opacity-20 animate-bounce" style={{ animationDelay: "0s", animationDuration: "2s" }}>🔥</div>
-                <div className="absolute top-0 left-[30%] text-xl opacity-15 animate-bounce" style={{ animationDelay: "0.5s", animationDuration: "2.5s" }}>🔥</div>
-                <div className="absolute top-0 right-[20%] text-2xl opacity-20 animate-bounce" style={{ animationDelay: "1s", animationDuration: "1.8s" }}>🔥</div>
-                <div className="absolute top-0 right-[40%] text-lg opacity-15 animate-bounce" style={{ animationDelay: "0.7s", animationDuration: "2.2s" }}>🔥</div>
-              </div>
-              <div className="container relative z-10">
-                <div className="flex items-center justify-between py-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl leading-none">🔥</span>
-                    <div>
-                      <span className="font-black text-base md:text-lg leading-tight" style={{ color: "#bf360c" }}>
-                        {lang === "uz" ? "Sotuvdagi HITLAR!" : "ХИТЫ ПРОДАЖ!"}
-                      </span>
-                      <span className="hidden md:inline text-sm font-medium ml-3" style={{ color: "#e65100" }}>
-                        {lang === "uz" ? "Eng ko'p sotilgan mahsulotlar" : "Самые популярные товары по лучшим ценам"}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5 font-bold text-sm px-3 py-1.5 rounded-full border shrink-0" style={{ color: "#bf360c", borderColor: "#e65100", backgroundColor: "rgba(255,255,255,0.6)" }}>
-                    {lang === "uz" ? "Ko'rish" : "Смотреть"} <ArrowRight size={14} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Link>
-        )}
-      </section>
 
       {/* Mobile horizontal category scroll */}
       {categories.length > 0 && (
