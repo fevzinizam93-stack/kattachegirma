@@ -1,16 +1,16 @@
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { trpc } from "@/lib/trpc";
 import { CheckCircle, MapPin, Phone, User } from "lucide-react";
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { Link } from "wouter";
 import { toast } from "sonner";
 
 export default function Checkout() {
   const { items, totalAmount, clearCart } = useCart();
-  const { t } = useLanguage();
-  const formatPrice = (price: number) => new Intl.NumberFormat("ru-RU").format(price) + " " + t.common_sum;
-  const [, navigate] = useLocation();
+  const { t, lang } = useLanguage();
+  const { formatPrice } = useCurrency();
   const [success, setSuccess] = useState(false);
   const [orderId, setOrderId] = useState<number | null>(null);
 
@@ -34,9 +34,12 @@ export default function Checkout() {
 
   const validate = () => {
     const errs: Record<string, string> = {};
-    if (!form.customerName.trim() || form.customerName.trim().length < 2) errs.customerName = "Ism kamida 2 ta harf bo'lishi kerak";
-    if (!form.customerPhone.trim() || form.customerPhone.trim().length < 7) errs.customerPhone = "Telefon raqami noto'g'ri";
-    if (!form.deliveryAddress.trim() || form.deliveryAddress.trim().length < 5) errs.deliveryAddress = "Manzil kamida 5 ta belgi bo'lishi kerak";
+    if (!form.customerName.trim() || form.customerName.trim().length < 2)
+      errs.customerName = lang === "uz" ? "Ism kamida 2 ta harf bo'lishi kerak" : "Имя должно содержать минимум 2 символа";
+    if (!form.customerPhone.trim() || form.customerPhone.trim().length < 7)
+      errs.customerPhone = lang === "uz" ? "Telefon raqami noto'g'ri" : "Неверный номер телефона";
+    if (!form.deliveryAddress.trim() || form.deliveryAddress.trim().length < 5)
+      errs.deliveryAddress = lang === "uz" ? "Manzil kamida 5 ta belgi bo'lishi kerak" : "Адрес должен содержать минимум 5 символов";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -111,7 +114,7 @@ export default function Checkout() {
                   type="text"
                   value={form.customerName}
                   onChange={e => setForm(f => ({ ...f, customerName: e.target.value }))}
-                  placeholder="Masalan: Alisher Karimov"
+                  placeholder={lang === "uz" ? "Masalan: Alisher Karimov" : "Например: Иван Иванов"}
                   className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary ${errors.customerName ? 'border-red-400' : 'border-border'}`}
                 />
                 {errors.customerName && <p className="text-red-500 text-xs mt-1">{errors.customerName}</p>}
@@ -142,7 +145,7 @@ export default function Checkout() {
                 <textarea
                   value={form.deliveryAddress}
                   onChange={e => setForm(f => ({ ...f, deliveryAddress: e.target.value }))}
-                  placeholder="Shahar, tuman, ko'cha, uy raqami..."
+                  placeholder={lang === "uz" ? "Shahar, tuman, ko'cha, uy raqami..." : "Город, район, улица, номер дома..."}
                   rows={3}
                   className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none ${errors.deliveryAddress ? 'border-red-400' : 'border-border'}`}
                 />
@@ -150,7 +153,9 @@ export default function Checkout() {
               </div>
 
               <div className="bg-blue-50 rounded-xl p-4 text-sm text-blue-700">
-                ℹ️ To'lov yetkazib berganda amalga oshiriladi. Hozir hech qanday to'lov talab etilmaydi.
+                ℹ️ {lang === "uz"
+                  ? "To'lov yetkazib berganda amalga oshiriladi. Hozir hech qanday to'lov talab etilmaydi."
+                  : "Оплата при доставке. Сейчас никакой оплаты не требуется."}
               </div>
 
               <button
@@ -189,7 +194,9 @@ export default function Checkout() {
                   <span>{t.cart_total}:</span>
                   <span className="text-primary">{formatPrice(totalAmount)}</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Yetkazib berish narxi alohida kelishiladi</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {lang === "uz" ? "Yetkazib berish narxi alohida kelishiladi" : "Стоимость доставки уточняется отдельно"}
+                </p>
               </div>
             </div>
           </div>

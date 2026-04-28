@@ -1,8 +1,9 @@
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { ChevronDown, Heart, Search, ShoppingCart, User, X } from "lucide-react";
+import { ChevronDown, Search, ShoppingCart, User, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 
@@ -14,10 +15,12 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
   const { totalItems } = useCart();
   const { user, isAuthenticated } = useAuth();
   const { lang, setLang, t } = useLanguage();
+  const { currency, setCurrency } = useCurrency();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
+  const [showCurrMenu, setShowCurrMenu] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [, navigate] = useLocation();
   const [location] = useLocation();
@@ -25,6 +28,8 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const langMenuRef = useRef<HTMLDivElement>(null);
   const langMenuMobileRef = useRef<HTMLDivElement>(null);
+  const currMenuRef = useRef<HTMLDivElement>(null);
+  const currMenuMobileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(searchQuery), 300);
@@ -50,6 +55,12 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
         langMenuMobileRef.current && !langMenuMobileRef.current.contains(e.target as Node)
       ) {
         setShowLangMenu(false);
+      }
+      if (
+        currMenuRef.current && !currMenuRef.current.contains(e.target as Node) &&
+        currMenuMobileRef.current && !currMenuMobileRef.current.contains(e.target as Node)
+      ) {
+        setShowCurrMenu(false);
       }
     };
     document.addEventListener("mousedown", handler);
@@ -91,6 +102,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
   const formatPrice = (price: string) => {
     const num = parseFloat(price);
     if (isNaN(num)) return price;
+    if (currency === "usd") return `$${Math.round(num / 12700).toLocaleString("en-US")}`;
     return num.toLocaleString("ru-RU") + " " + t.common_sum;
   };
 
@@ -127,14 +139,14 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           {/* Premium section button */}
           <Link
             href="/premium"
-            className={`shrink-0 text-xs font-bold px-3 py-2 rounded-full border transition-all whitespace-nowrap flex items-center gap-1.5 ${
+            className={`shrink-0 text-xs font-bold px-3 py-2 rounded-full border transition-all whitespace-nowrap flex items-center gap-1 ${
               location === "/premium"
                 ? "bg-gradient-to-r from-[#d4af37] to-[#f0d060] text-black border-[#d4af37] shadow-[0_0_14px_rgba(212,175,55,0.5)]"
                 : "bg-gradient-to-r from-[#d4af37]/90 to-[#f0d060]/90 text-black border-[#d4af37] hover:from-[#d4af37] hover:to-[#f0d060] hover:shadow-[0_0_12px_rgba(212,175,55,0.4)]"
             }`}
           >
             <span>◈</span>
-            <span>{lang === "uz" ? "Original texnika" : "Оригинал техника"}</span>
+            <span>{t.nav_premium}</span>
           </Link>
 
           {/* About link */}
@@ -144,7 +156,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
               location === "/about" ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
             }`}
           >
-            {lang === "uz" ? "Biz haqimizda" : "О нас"}
+            {t.nav_about}
           </Link>
 
           {/* Seller button */}
@@ -152,7 +164,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
             href="/seller/register"
             className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors whitespace-nowrap"
           >
-            {lang === "uz" ? "Sotuvchi bo'ling" : "Стать продавцом"}
+            {t.nav_become_seller}
           </Link>
 
           {/* Search bar — red border */}
@@ -185,7 +197,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                 {isSearching && (
                   <div className="px-4 py-3 text-sm text-gray-500 flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
-                    {lang === "uz" ? "Qidirilmoqda..." : "Поиск..."}
+                    {t.common_searching}
                   </div>
                 )}
                 {!isSearching && results.length > 0 && (
@@ -216,8 +228,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                 {!isSearching && results.length === 0 && (
                   <div className="px-4 py-6 text-center">
                     <div className="text-gray-400 text-3xl mb-2">🔍</div>
-                    <p className="text-sm text-gray-500">{t.nav_not_found_on_site} «<strong>{searchQuery}</strong>»</p>
-                    <p className="text-xs text-gray-400 mt-1">{lang === "uz" ? "Boshqa so'z bilan qidirib ko'ring" : "Попробуйте другое слово или модель"}</p>
+                    <p className="text-sm text-gray-500">«{searchQuery}» {t.common_not_found_query}</p>
                   </div>
                 )}
               </div>
@@ -227,15 +238,15 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           {/* Right icons */}
           <div className="flex items-center gap-1 shrink-0">
             {/* Premium */}
-            <Link href="/premium" className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition-colors ${location === "/premium" ? "bg-[#1a1a2e]" : "hover:bg-[#1a1a2e]/10"}`}>
+            <Link href="/premium" className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition-colors ${location === "/premium" ? "bg-[#1a1a2e]/10" : "hover:bg-[#1a1a2e]/10"}`}>
               <span className="text-base leading-none text-[#d4af37]">◈</span>
               <span className="text-[9px] font-bold text-[#d4af37] whitespace-nowrap">{lang === "uz" ? "Original" : "Оригинал"}</span>
             </Link>
 
             {/* Bestsellers */}
-            <Link href="/bestsellers" className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors ${location === "/bestsellers" ? "bg-gray-100" : ""}`}>
+            <Link href="/bestsellers" className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors ${location === "/bestsellers" ? "bg-gray-100" : ""}`}>
               <span className="text-lg leading-none">🔥</span>
-              <span className="text-[10px] text-gray-600 whitespace-nowrap">{lang === "uz" ? "Hitlar" : "Хиты"}</span>
+              <span className="text-[10px] text-gray-600 whitespace-nowrap">{t.nav_bestsellers}</span>
             </Link>
 
             {/* Cart */}
@@ -267,9 +278,33 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
               <Link href="/admin" className="text-red-600 text-xs font-bold px-2 py-1 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">Admin</Link>
             )}
 
+            {/* Currency switcher */}
+            <div className="relative" ref={currMenuRef}>
+              <button
+                onClick={() => { setShowCurrMenu((v) => !v); setShowLangMenu(false); }}
+                className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer select-none"
+              >
+                <span className="text-base leading-none">{currency === "uzs" ? "🇺🇿" : "🇺🇸"}</span>
+                <span className="text-[10px] text-gray-600 font-medium flex items-center gap-0.5">
+                  {currency === "uzs" ? "сум" : "USD"}
+                  <ChevronDown size={9} className={`transition-transform ${showCurrMenu ? "rotate-180" : ""}`} />
+                </span>
+              </button>
+              {showCurrMenu && (
+                <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden z-50 min-w-[130px]">
+                  <button onClick={() => { setCurrency("uzs"); setShowCurrMenu(false); }} className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-red-50 transition-colors ${currency === "uzs" ? "bg-red-50 text-red-700 font-semibold" : "text-gray-700"}`}>
+                    <span>🇺🇿</span><span>Сум (UZS)</span>{currency === "uzs" && <span className="ml-auto text-red-500">✓</span>}
+                  </button>
+                  <button onClick={() => { setCurrency("usd"); setShowCurrMenu(false); }} className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-red-50 transition-colors ${currency === "usd" ? "bg-red-50 text-red-700 font-semibold" : "text-gray-700"}`}>
+                    <span>🇺🇸</span><span>Доллар ($)</span>{currency === "usd" && <span className="ml-auto text-red-500">✓</span>}
+                  </button>
+                </div>
+              )}
+            </div>
+
             {/* Language switcher */}
             <div className="relative" ref={langMenuRef}>
-              <button onClick={() => setShowLangMenu((v) => !v)} className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer select-none">
+              <button onClick={() => { setShowLangMenu((v) => !v); setShowCurrMenu(false); }} className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer select-none">
                 <span className="text-base leading-none">{lang === "ru" ? "🇷🇺" : "🇺🇿"}</span>
                 <span className="text-[10px] text-gray-600 font-medium flex items-center gap-0.5">
                   {lang === "ru" ? "RU" : "UZ"}
@@ -302,9 +337,30 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
             <span className="font-black text-sm leading-tight truncate text-gray-900">Katta Chegirma!!!</span>
           </Link>
 
+          {/* Currency switcher mobile */}
+          <div className="relative shrink-0" ref={currMenuMobileRef}>
+            <button
+              onClick={() => { setShowCurrMenu((v) => !v); setShowLangMenu(false); }}
+              className="flex items-center gap-0.5 text-xs text-gray-700 cursor-pointer select-none px-1.5 py-1 rounded hover:bg-gray-100 transition-colors"
+            >
+              <span>{currency === "uzs" ? "🇺🇿" : "🇺🇸"}</span>
+              <span className="font-medium">{currency === "uzs" ? "сум" : "$"}</span>
+            </button>
+            {showCurrMenu && (
+              <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden z-50 min-w-[130px]">
+                <button onClick={() => { setCurrency("uzs"); setShowCurrMenu(false); }} className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-red-50 transition-colors ${currency === "uzs" ? "bg-red-50 text-red-700 font-semibold" : "text-gray-700"}`}>
+                  <span>🇺🇿</span><span>Сум</span>{currency === "uzs" && <span className="ml-auto text-red-500">✓</span>}
+                </button>
+                <button onClick={() => { setCurrency("usd"); setShowCurrMenu(false); }} className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-red-50 transition-colors ${currency === "usd" ? "bg-red-50 text-red-700 font-semibold" : "text-gray-700"}`}>
+                  <span>🇺🇸</span><span>Доллар ($)</span>{currency === "usd" && <span className="ml-auto text-red-500">✓</span>}
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* Lang switcher mobile */}
           <div className="relative shrink-0" ref={langMenuMobileRef}>
-            <button onClick={() => setShowLangMenu((v) => !v)} className="flex items-center gap-0.5 text-xs text-gray-700 cursor-pointer select-none px-1.5 py-1 rounded hover:bg-gray-100 transition-colors">
+            <button onClick={() => { setShowLangMenu((v) => !v); setShowCurrMenu(false); }} className="flex items-center gap-0.5 text-xs text-gray-700 cursor-pointer select-none px-1.5 py-1 rounded hover:bg-gray-100 transition-colors">
               <span>{lang === "ru" ? "🇷🇺" : "🇺🇿"}</span>
               <span className="font-medium">{lang === "ru" ? "RU" : "UZ"}</span>
             </button>
@@ -374,7 +430,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
               {isSearching && (
                 <div className="px-4 py-3 text-sm text-gray-500 flex items-center gap-2">
                   <div className="w-4 h-4 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
-                  {lang === "uz" ? "Qidirilmoqda..." : "Поиск..."}
+                  {t.common_searching}
                 </div>
               )}
               {!isSearching && results.length > 0 && (
@@ -403,7 +459,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
               )}
               {!isSearching && results.length === 0 && (
                 <div className="px-4 py-5 text-center">
-                  <p className="text-sm text-gray-500">{lang === "uz" ? `«${searchQuery}» topilmadi` : `«${searchQuery}» не найдено`}</p>
+                  <p className="text-sm text-gray-500">«{searchQuery}» {t.common_not_found_query}</p>
                 </div>
               )}
             </div>

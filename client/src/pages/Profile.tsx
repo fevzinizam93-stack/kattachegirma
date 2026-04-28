@@ -2,6 +2,7 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { Link, useLocation } from "wouter";
 import { ShoppingBag, Heart, User, LogOut, Package, ChevronRight, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
@@ -10,6 +11,7 @@ export default function Profile() {
   const [tab, setTab] = useState<"orders" | "favorites">("orders");
   const { user, logout } = useAuth();
   const { lang, t } = useLanguage();
+  const { formatPrice } = useCurrency();
   const [, navigate] = useLocation();
 
   const statusLabels: Record<string, { label: string; color: string }> = {
@@ -29,8 +31,6 @@ export default function Profile() {
     },
   });
 
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat("ru-RU").format(price) + " " + t.common_sum;
 
   if (!user) {
     return (

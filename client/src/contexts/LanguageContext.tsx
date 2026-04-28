@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode } from "react";
 
 export type Language = "ru" | "uz";
 
@@ -18,6 +18,9 @@ export interface Translations {
   nav_show_all_results: string;
   nav_not_found_on_site: string;
   nav_search_internet: string;
+  nav_premium: string;
+  nav_bestsellers: string;
+  nav_become_seller: string;
 
   // Footer
   footer_catalog: string;
@@ -35,6 +38,12 @@ export interface Translations {
   home_popular: string;
   home_new_arrivals: string;
   home_all_products: string;
+  home_bestsellers: string;
+  home_bestsellers_desc: string;
+  home_view: string;
+  home_time_left: string;
+  home_days: string;
+  home_hours: string;
 
   // Catalog
   catalog_title: string;
@@ -56,6 +65,9 @@ export interface Translations {
   card_add_to_cart: string;
   card_new: string;
   card_in_cart: string;
+  card_hit: string;
+  card_original: string;
+  card_added_to_cart: string;
 
   // Product detail
   detail_add_to_cart: string;
@@ -83,6 +95,14 @@ export interface Translations {
   detail_about: string;
   detail_specs: string;
   detail_buy_discount: string;
+  detail_no_description: string;
+  detail_reviews: string;
+  detail_no_reviews: string;
+  detail_be_first: string;
+  detail_third_party: string;
+  detail_third_party_desc: string;
+  detail_added_qty: string;
+  detail_buy_in_city: string;
 
   // Cart
   cart_title: string;
@@ -184,6 +204,58 @@ export interface Translations {
   status_delivered: string;
   status_cancelled: string;
 
+  // Seller
+  seller_become: string;
+  seller_dashboard: string;
+  seller_register_title: string;
+  seller_register_subtitle: string;
+  seller_store_name: string;
+  seller_phone: string;
+  seller_telegram: string;
+  seller_telegram_optional: string;
+  seller_description: string;
+  seller_description_optional: string;
+  seller_submit: string;
+  seller_submitting: string;
+  seller_pending_title: string;
+  seller_pending_desc: string;
+  seller_login_required: string;
+  seller_login_desc: string;
+  seller_login_btn: string;
+  seller_required_fields: string;
+  seller_submitted: string;
+  seller_store_placeholder: string;
+  seller_phone_placeholder: string;
+  seller_desc_placeholder: string;
+  seller_add_product: string;
+  seller_no_products: string;
+  seller_no_products_hint: string;
+  seller_moderation_pending: string;
+  seller_moderation_approved: string;
+  seller_moderation_rejected: string;
+  seller_upload_image: string;
+  seller_uploading: string;
+  seller_saving: string;
+  seller_update: string;
+  seller_send: string;
+  seller_product_sent: string;
+  seller_product_updated: string;
+  seller_product_deleted: string;
+  seller_image_error: string;
+  seller_confirm_delete: string;
+  seller_go_home: string;
+
+  // Premium
+  premium_title: string;
+  premium_subtitle: string;
+  premium_badge: string;
+  premium_no_products: string;
+
+  // NotFound
+  not_found_title: string;
+  not_found_desc: string;
+  not_found_home: string;
+
   // Common
   common_loading: string;
   common_error: string;
@@ -199,6 +271,8 @@ export interface Translations {
   common_sum: string;
   common_pieces: string;
   common_not_found: string;
+  common_searching: string;
+  common_not_found_query: string;
 }
 
 const ru: Translations = {
@@ -209,7 +283,7 @@ const ru: Translations = {
   nav_cart: "Корзина",
   nav_login: "Войти",
   nav_admin: "Admin",
-  nav_search_placeholder: "Поиск по названию, модели, цене, бренду...",
+  nav_search_placeholder: "Поиск по названию, модели, бренду...",
   nav_search_on_site: "Товары на сайте",
   nav_search_in_google: "Найти в Google",
   nav_search_in_yandex: "Найти в Яндексе",
@@ -217,6 +291,9 @@ const ru: Translations = {
   nav_show_all_results: "Показать все результаты для",
   nav_not_found_on_site: "На сайте ничего не найдено по",
   nav_search_internet: "Поиск в интернете",
+  nav_premium: "Premium",
+  nav_bestsellers: "Хиты",
+  nav_become_seller: "Стать продавцом",
 
   // Footer
   footer_catalog: "Каталог",
@@ -234,6 +311,12 @@ const ru: Translations = {
   home_popular: "Популярные товары",
   home_new_arrivals: "Новинки",
   home_all_products: "Все товары",
+  home_bestsellers: "Хиты продаж",
+  home_bestsellers_desc: "Самые популярные товары по лучшим ценам",
+  home_view: "Смотреть",
+  home_time_left: "Осталось:",
+  home_days: "д",
+  home_hours: "ч",
 
   // Catalog
   catalog_title: "Каталог товаров",
@@ -255,6 +338,9 @@ const ru: Translations = {
   card_add_to_cart: "Успей по скидке",
   card_new: "НОВИНКА",
   card_in_cart: "В корзине",
+  card_hit: "Хит",
+  card_original: "Оригинал",
+  card_added_to_cart: "Добавлено в корзину!",
 
   // Product detail
   detail_add_to_cart: "Успей по скидке",
@@ -282,6 +368,14 @@ const ru: Translations = {
   detail_about: "О товаре",
   detail_specs: "Технические характеристики",
   detail_buy_discount: "Успей по скидке",
+  detail_no_description: "Описание пока не добавлено",
+  detail_reviews: "Отзывы покупателей",
+  detail_no_reviews: "Отзывов пока нет",
+  detail_be_first: "Будьте первым!",
+  detail_third_party: "Товар стороннего продавца",
+  detail_third_party_desc: "Этот товар продаётся сторонним продавцом. Katta Chegirma не несёт ответственности за качество и подлинность.",
+  detail_added_qty: "шт. добавлено в корзину!",
+  detail_buy_in_city: "— купить в Ташкенте",
 
   // Cart
   cart_title: "Корзина",
@@ -383,6 +477,58 @@ const ru: Translations = {
   status_delivered: "Доставлен",
   status_cancelled: "Отменён",
 
+  // Seller
+  seller_become: "Стать продавцом",
+  seller_dashboard: "Панель продавца",
+  seller_register_title: "Станьте продавцом на Katta Chegirma",
+  seller_register_subtitle: "Продавайте свои товары миллионам покупателей",
+  seller_store_name: "Название магазина",
+  seller_phone: "Номер телефона",
+  seller_telegram: "Telegram",
+  seller_telegram_optional: "Telegram (необязательно)",
+  seller_description: "О магазине",
+  seller_description_optional: "О магазине (необязательно)",
+  seller_submit: "Подать заявку",
+  seller_submitting: "Отправка...",
+  seller_pending_title: "Заявка на рассмотрении",
+  seller_pending_desc: "Ваша заявка принята. Рассмотрение занимает от 30 минут до 2 дней. После подтверждения откроется личный кабинет.",
+  seller_login_required: "Сначала войдите в аккаунт",
+  seller_login_desc: "Для регистрации продавца нужен аккаунт",
+  seller_login_btn: "Войти / Зарегистрироваться",
+  seller_required_fields: "Название магазина и телефон обязательны",
+  seller_submitted: "Заявка отправлена! Скоро рассмотрим.",
+  seller_store_placeholder: "Например: Techno Market",
+  seller_phone_placeholder: "+998 90 123 45 67",
+  seller_desc_placeholder: "Какие товары продаёте?",
+  seller_add_product: "Добавить товар",
+  seller_no_products: "Товаров пока нет",
+  seller_no_products_hint: "Нажмите «Добавить товар»",
+  seller_moderation_pending: "На проверке",
+  seller_moderation_approved: "Одобрен",
+  seller_moderation_rejected: "Отклонён",
+  seller_upload_image: "Загрузить фото",
+  seller_uploading: "Загрузка...",
+  seller_saving: "Сохранение...",
+  seller_update: "Обновить",
+  seller_send: "Отправить",
+  seller_product_sent: "Товар отправлен на модерацию!",
+  seller_product_updated: "Товар обновлён, отправлен на модерацию",
+  seller_product_deleted: "Товар удалён",
+  seller_image_error: "Ошибка загрузки фото: ",
+  seller_confirm_delete: "Удалить этот товар?",
+  seller_go_home: "На главную",
+
+  // Premium
+  premium_title: "Premium — Оригинальная техника",
+  premium_subtitle: "Только оригинальные товары от проверенных брендов",
+  premium_badge: "Оригинал",
+  premium_no_products: "Премиум товары скоро появятся",
+
+  // NotFound
+  not_found_title: "Страница не найдена",
+  not_found_desc: "Запрошенная страница не существует",
+  not_found_home: "На главную",
+
   // Common
   common_loading: "Загрузка...",
   common_error: "Ошибка",
@@ -398,6 +544,8 @@ const ru: Translations = {
   common_sum: "сум",
   common_pieces: "шт.",
   common_not_found: "Не найдено",
+  common_searching: "Поиск...",
+  common_not_found_query: "не найдено",
 };
 
 const uz: Translations = {
@@ -408,7 +556,7 @@ const uz: Translations = {
   nav_cart: "Savat",
   nav_login: "Kirish",
   nav_admin: "Admin",
-  nav_search_placeholder: "Nom, model, narx, brend bo'yicha qidirish...",
+  nav_search_placeholder: "Nom, model, brend bo'yicha qidirish...",
   nav_search_on_site: "Saytdagi mahsulotlar",
   nav_search_in_google: "Google'da topish",
   nav_search_in_yandex: "Yandex'da topish",
@@ -416,6 +564,9 @@ const uz: Translations = {
   nav_show_all_results: "Barcha natijalarni ko'rish",
   nav_not_found_on_site: "Saytda topilmadi",
   nav_search_internet: "Internetda qidirish",
+  nav_premium: "Premium",
+  nav_bestsellers: "Hitlar",
+  nav_become_seller: "Sotuvchi bo'lish",
 
   // Footer
   footer_catalog: "Katalog",
@@ -433,6 +584,12 @@ const uz: Translations = {
   home_popular: "Mashhur mahsulotlar",
   home_new_arrivals: "Yangi mahsulotlar",
   home_all_products: "Barcha mahsulotlar",
+  home_bestsellers: "Sotuvdagi hitlar",
+  home_bestsellers_desc: "Eng ko'p sotilgan mahsulotlar",
+  home_view: "Ko'rish",
+  home_time_left: "Tugashiga:",
+  home_days: "kun",
+  home_hours: "soat",
 
   // Catalog
   catalog_title: "Mahsulotlar katalogi",
@@ -454,6 +611,9 @@ const uz: Translations = {
   card_add_to_cart: "chegirmada olish",
   card_new: "YANGI",
   card_in_cart: "Savatda",
+  card_hit: "Hit",
+  card_original: "Original",
+  card_added_to_cart: "Savatga qo'shildi!",
 
   // Product detail
   detail_add_to_cart: "chegirmada olish",
@@ -481,6 +641,14 @@ const uz: Translations = {
   detail_about: "Mahsulot haqida",
   detail_specs: "Texnik xususiyatlar",
   detail_buy_discount: "chegirmada olish",
+  detail_no_description: "Tavsif hali qo'shilmagan",
+  detail_reviews: "Xaridorlar sharhlari",
+  detail_no_reviews: "Hali sharhlar yo'q",
+  detail_be_first: "Birinchi bo'lib sharh qoldiring!",
+  detail_third_party: "Mustaqil sotuvchi mahsuloti",
+  detail_third_party_desc: "Bu mahsulot mustaqil sotuvchi tomonidan sotiladi. Katta Chegirma sifat va haqiqiylik uchun javobgar emas.",
+  detail_added_qty: "ta mahsulot savatga qo'shildi!",
+  detail_buy_in_city: "— Toshkentda sotib olish",
 
   // Cart
   cart_title: "Savat",
@@ -582,6 +750,58 @@ const uz: Translations = {
   status_delivered: "Yetkazildi",
   status_cancelled: "Bekor qilindi",
 
+  // Seller
+  seller_become: "Sotuvchi bo'lish",
+  seller_dashboard: "Sotuvchi paneli",
+  seller_register_title: "Katta Chegirmada sotuvchi bo'ling",
+  seller_register_subtitle: "Mahsulotlaringizni millionlab xaridorlarga soting",
+  seller_store_name: "Do'kon nomi",
+  seller_phone: "Telefon raqami",
+  seller_telegram: "Telegram",
+  seller_telegram_optional: "Telegram (ixtiyoriy)",
+  seller_description: "Do'kon haqida",
+  seller_description_optional: "Do'kon haqida (ixtiyoriy)",
+  seller_submit: "Ariza yuborish",
+  seller_submitting: "Yuborilmoqda...",
+  seller_pending_title: "Ariza ko'rib chiqilmoqda",
+  seller_pending_desc: "Arizangiz qabul qilindi. 30 daqiqadan 2 kungacha ko'rib chiqiladi. Tasdiqlangandan so'ng shaxsiy panelingiz ochiladi.",
+  seller_login_required: "Avval tizimga kiring",
+  seller_login_desc: "Sotuvchi bo'lish uchun akkaunt kerak",
+  seller_login_btn: "Kirish / Ro'yxatdan o'tish",
+  seller_required_fields: "Do'kon nomi va telefon raqami majburiy",
+  seller_submitted: "Ariza yuborildi! Tez orada ko'rib chiqamiz.",
+  seller_store_placeholder: "Masalan: Texno Market",
+  seller_phone_placeholder: "+998 90 123 45 67",
+  seller_desc_placeholder: "Qanday mahsulotlar sotasiz?",
+  seller_add_product: "Mahsulot qo'shish",
+  seller_no_products: "Hali mahsulot yo'q",
+  seller_no_products_hint: "«Mahsulot qo'shish» tugmasini bosing",
+  seller_moderation_pending: "Tekshirilmoqda",
+  seller_moderation_approved: "Tasdiqlangan",
+  seller_moderation_rejected: "Rad etilgan",
+  seller_upload_image: "Rasm yuklash",
+  seller_uploading: "Yuklanmoqda...",
+  seller_saving: "Saqlanmoqda...",
+  seller_update: "Yangilash",
+  seller_send: "Yuborish",
+  seller_product_sent: "Mahsulot yuborildi! Moderatsiya 30 daqiqadan 2 kungacha.",
+  seller_product_updated: "Mahsulot yangilandi, moderatsiyaga yuborildi",
+  seller_product_deleted: "Mahsulot o'chirildi",
+  seller_image_error: "Rasm yuklashda xato: ",
+  seller_confirm_delete: "Mahsulotni o'chirishni tasdiqlaysizmi?",
+  seller_go_home: "Bosh sahifaga qaytish",
+
+  // Premium
+  premium_title: "Premium — Original texnika",
+  premium_subtitle: "Faqat tekshirilgan brendlardan original mahsulotlar",
+  premium_badge: "Original",
+  premium_no_products: "Premium mahsulotlar tez orada qo'shiladi",
+
+  // NotFound
+  not_found_title: "Sahifa topilmadi",
+  not_found_desc: "So'ralgan sahifa mavjud emas",
+  not_found_home: "Bosh sahifaga",
+
   // Common
   common_loading: "Yuklanmoqda...",
   common_error: "Xato",
@@ -597,6 +817,8 @@ const uz: Translations = {
   common_sum: "so'm",
   common_pieces: "dona",
   common_not_found: "Topilmadi",
+  common_searching: "Qidirilmoqda...",
+  common_not_found_query: "topilmadi",
 };
 
 export const translations: Record<Language, Translations> = { ru, uz };

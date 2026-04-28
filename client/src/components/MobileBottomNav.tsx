@@ -6,13 +6,13 @@ import { Link, useLocation } from "wouter";
 export default function MobileBottomNav() {
   const [location] = useLocation();
   const { totalItems } = useCart();
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
 
   const labels = {
-    home: lang === "uz" ? "Asosiy" : "Главная",
-    catalog: lang === "uz" ? "Katalog" : "Каталог",
-    hits: lang === "uz" ? "Hitlar" : "Хиты",
-    cart: lang === "uz" ? "Savat" : "Корзина",
+    home: t.nav_home,
+    catalog: t.nav_catalog,
+    hits: t.nav_bestsellers,
+    cart: t.nav_cart,
   };
 
   const isActive = (path: string) => {

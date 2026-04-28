@@ -1,5 +1,6 @@
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { ShoppingCart } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -26,14 +27,12 @@ interface ProductCardProps {
   product: Product;
 }
 
-function formatPrice(price: string | number, sumLabel: string) {
-  const num = typeof price === "string" ? parseFloat(price) : price;
-  return new Intl.NumberFormat("ru-RU").format(num) + " " + sumLabel;
-}
+
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
   const { lang, t } = useLanguage();
+  const { formatPrice } = useCurrency();
 
   const displayName = (lang === "uz" && product.nameUz) ? product.nameUz : product.name;
 
@@ -48,7 +47,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       imageUrl: product.imageUrl ?? undefined,
       slug: product.slug,
     });
-    toast.success(lang === "uz" ? "Savatga qo'shildi!" : "Добавлено в корзину!", {
+    toast.success(t.card_added_to_cart, {
       description: displayName,
       duration: 2000,
     });
@@ -84,12 +83,12 @@ export default function ProductCard({ product }: ProductCardProps) {
               <span className="text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-none" style={{ backgroundColor: "#388e3c" }}>{t.card_new}</span>
             )}
             {product.isHit && (
-              <span className="text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-none flex items-center gap-0.5" style={{ backgroundColor: "#e65100" }}>🔥 {lang === "uz" ? "Hit" : "Хит"}</span>
+              <span className="text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-none flex items-center gap-0.5" style={{ backgroundColor: "#e65100" }}>🔥 {t.card_hit}</span>
             )}
           </div>
           {product.isPremium && (
             <div className="absolute top-1.5 right-1.5">
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-none flex items-center gap-0.5" style={{ background: 'linear-gradient(135deg, #1a1a2e, #2d2d4e)', color: '#d4af37', border: '1px solid #d4af37' }}>◈ {lang === "uz" ? "Original" : "Оригинал"}</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-none flex items-center gap-0.5" style={{ background: 'linear-gradient(135deg, #1a1a2e, #2d2d4e)', color: '#d4af37', border: '1px solid #d4af37' }}>◈ {t.card_original}</span>
             </div>
           )}
         </div>
@@ -101,13 +100,13 @@ export default function ProductCard({ product }: ProductCardProps) {
             {hasDiscount && product.originalPrice ? (
               <>
                 <div className="flex items-center justify-between gap-1 mb-0.5">
-                  <span className="text-[10px] text-gray-400 line-through leading-tight">{formatPrice(product.originalPrice, t.common_sum)}</span>
+                  <span className="text-[10px] text-gray-400 line-through leading-tight">{formatPrice(product.originalPrice!)}</span>
                   <span className="text-[9px] font-bold text-white px-1 py-0.5 rounded shrink-0" style={{ backgroundColor: "#2e7d32" }}>-{discountPercent}%</span>
                 </div>
-                <div className="text-sm font-black leading-tight" style={{ color: "#cc0000" }}>{formatPrice(product.price, t.common_sum)}</div>
+                <div className="text-sm font-black leading-tight" style={{ color: "#cc0000" }}>{formatPrice(product.price)}</div>
               </>
             ) : (
-              <div className="text-sm font-black leading-tight" style={{ color: "#cc0000" }}>{formatPrice(product.price, t.common_sum)}</div>
+              <div className="text-sm font-black leading-tight" style={{ color: "#cc0000" }}>{formatPrice(product.price)}</div>
             )}
           </div>
           <button onClick={handleAddToCart} disabled={!inStock} className="w-full flex items-center justify-center gap-1 text-white py-1.5 px-1 rounded-lg text-[11px] font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:opacity-80 touch-manipulation" style={{ backgroundColor: inStock ? "#cc0000" : "#aaa" }}>

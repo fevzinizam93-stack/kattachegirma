@@ -1,5 +1,6 @@
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { trpc } from "@/lib/trpc";
 import { ChevronDown, ChevronRight, MessageCircle, Minus, Phone, Plus, ShoppingCart, Star, Tag, Truck, Send } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -55,10 +56,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
   const { addItem } = useCart();
   const { lang, t } = useLanguage();
-  const formatPrice = (price: string | number) => {
-    const num = typeof price === "string" ? parseFloat(price) : price;
-    return new Intl.NumberFormat("ru-RU").format(num) + " " + t.common_sum;
-  };
+  const { formatPrice } = useCurrency();
 
   const { data: product, isLoading } = trpc.products.bySlug.useQuery({ slug });
   const { data: categoriesData } = trpc.categories.list.useQuery();
@@ -92,14 +90,12 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
   // SEO: dynamic title based on product name (bilingual)
   useEffect(() => {
     if (!product) {
-      document.title = lang === "uz"
-        ? "Mahsulot | Katta Chegirma"
-        : "Товар | Катта Чегирма";
+      document.title = "Katta Chegirma";
       return;
     }
     const name = (lang === "uz" && (product as any).nameUz) ? (product as any).nameUz : product.name;
     const brand = product.brand ? `${product.brand} ` : "";
-    const suffix = lang === "uz" ? " — Toshkentda sotib olish" : " — купить в Ташкенте";
+    const suffix = t.detail_buy_in_city;
     const titleRaw = `${brand}${name}${suffix}`;
     // Truncate at word boundary if > 60 chars
     document.title = titleRaw.length > 60
@@ -200,7 +196,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
       imageUrl: product.imageUrl ?? undefined,
       slug: product.slug,
     });
-    toast.success(lang === "uz" ? `${quantity} ta mahsulot savatga qo'shildi!` : `${quantity} шт. добавлено в корзину!`, {
+    toast.success(`${quantity} ${t.detail_added_qty}`, {
       description: displayName,
     });
   };
@@ -473,7 +469,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 <AccordionSection title={t.detail_about} defaultOpen={true}>
                   <div className="flex flex-col items-center justify-center text-center py-8 text-gray-400">
                     <span className="text-4xl mb-2">📋</span>
-                    <p className="text-sm">{lang === "uz" ? "Tavsif hali qo'shilmagan" : "Описание пока не добавлено"}</p>
+                    <p className="text-sm">{t.detail_no_description}</p>
                   </div>
                 </AccordionSection>
               )}
@@ -497,7 +493,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
         </div>
 
         {/* ===== REVIEWS SECTION ===== */}
-        <ReviewsSection productId={product.id} lang={lang} />
+        <ReviewsSection productId={product.id} />
 
         {/* ===== THIRD-PARTY SELLER NOTICE ===== */}
         {product.sellerId && (
@@ -507,13 +503,10 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 <div className="flex-shrink-0 w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 text-sm font-bold">i</div>
                 <div>
                   <p className="font-semibold text-gray-700 text-sm mb-1">
-                    {lang === "uz" ? "Mustaqil sotuvchi mahsuloti" : "Товар стороннего продавца"}
+                    {t.detail_third_party}
                   </p>
                   <p className="text-xs text-gray-500 leading-relaxed">
-                    {lang === "uz"
-                      ? "Bu mahsulot Katta Chegirma platformasida ro'yxatdan o'tgan mustaqil sotuvchi tomonidan taklif qilinadi. Yetkazib berish muddati, kafolat shartlari va to'lov xavfsizligi uchun javobgarlik to'liq sotuvchida. Katta Chegirma vositachi platforma sifatida ushbu mahsulot bo'yicha majburiyat olmaydi."
-                      : "Данный товар предлагается независимым продавцом, зарегистрированным на платформе Katta Chegirma. Ответственность за сроки доставки, условия гарантии и безопасность оплаты полностью лежит на продавце. Katta Chegirma как платформа-посредник не несёт обязательств по данному товару."
-                    }
+                    {t.detail_third_party_desc}
                   </p>
                 </div>
               </div>
@@ -550,7 +543,8 @@ function StarRating({ value, onChange }: { value: number; onChange?: (v: number)
   );
 }
 
-function ReviewsSection({ productId, lang }: { productId: number; lang: string }) {
+function ReviewsSection({ productId }: { productId: number }) {
+  const { lang, t } = useLanguage();
   const [authorName, setAuthorName] = useState("");
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
@@ -585,7 +579,7 @@ function ReviewsSection({ productId, lang }: { productId: number; lang: string }
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
         <div className="flex items-center gap-3">
           <h2 className="text-base font-black text-gray-900">
-            {lang === "uz" ? "Xaridorlar sharhlari" : "Отзывы покупателей"}
+            {t.detail_reviews}
           </h2>
           {(summary?.count ?? 0) > 0 && (
             <div className="flex items-center gap-1.5 bg-yellow-50 border border-yellow-200 px-2.5 py-1 rounded-full">
@@ -603,8 +597,8 @@ function ReviewsSection({ productId, lang }: { productId: number; lang: string }
           {reviewsList.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-gray-400">
               <Star size={36} className="mb-2 text-gray-200" />
-              <p className="text-sm">{lang === "uz" ? "Hali sharhlar yo'q" : "Отзывов пока нет"}</p>
-              <p className="text-xs mt-1">{lang === "uz" ? "Birinchi bo'lib sharh qoldiring!" : "Будьте первым!"}</p>
+              <p className="text-sm">{t.detail_no_reviews}</p>
+              <p className="text-xs mt-1">{t.detail_be_first}</p>
             </div>
           ) : (
             <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
@@ -625,7 +619,7 @@ function ReviewsSection({ productId, lang }: { productId: number; lang: string }
         {/* Right: submit form */}
         <div className="p-4">
           <h3 className="text-sm font-bold text-gray-800 mb-3">
-            {lang === "uz" ? "Sharh qoldiring" : "Оставить отзыв"}
+            {t.detail_reviews}
           </h3>
           {submitted ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
@@ -633,7 +627,7 @@ function ReviewsSection({ productId, lang }: { productId: number; lang: string }
                 <Star size={24} className="text-green-500 fill-green-500" />
               </div>
               <p className="font-bold text-gray-800 text-sm">
-                {lang === "uz" ? "Rahmat!" : "Спасибо за отзыв!"}
+                {t.detail_reviews}
               </p>
               <p className="text-xs text-gray-500 mt-1">
                 {lang === "uz" ? "Sharh moderatsiyadan o'tgach e'lon qilinadi." : "Отзыв появится после проверки модератором."}
@@ -649,13 +643,13 @@ function ReviewsSection({ productId, lang }: { productId: number; lang: string }
             <form onSubmit={handleSubmit} className="space-y-3">
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1">
-                  {lang === "uz" ? "Ismingiz" : "Ваше имя"}
+                  {t.auth_name}
                 </label>
                 <input
                   type="text"
                   value={authorName}
                   onChange={e => setAuthorName(e.target.value)}
-                  placeholder={lang === "uz" ? "Ismingizni kiriting" : "Введите ваше имя"}
+                  placeholder={t.auth_name}
                   required
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                 />
@@ -686,11 +680,11 @@ function ReviewsSection({ productId, lang }: { productId: number; lang: string }
               >
                 <Send size={14} />
                 {submitMutation.isPending
-                  ? (lang === "uz" ? "Yuborilmoqda..." : "Отправка...")
+                  ? t.common_searching
                   : (lang === "uz" ? "Sharh yuborish" : "Отправить отзыв")}
               </button>
               <p className="text-[11px] text-gray-400 text-center">
-                {lang === "uz" ? "Sharhlar moderatsiyadan o'tadi" : "Отзывы проходят модерацию перед публикацией"}
+                {lang === "uz" ? "Sharhlar moderatsiyadan o'tadi" : "Отзывы проходят модерацию"}
               </p>
             </form>
           )}

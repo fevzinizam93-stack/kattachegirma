@@ -22,7 +22,6 @@ const AdminAnalytics = lazy(() => import("./pages/AdminAnalytics"));
 const AdminReviews = lazy(() => import("./pages/AdminReviews"));
 const About = lazy(() => import("./pages/About"));
 const Bestsellers = lazy(() => import("./pages/Bestsellers"));
-const SellerPanel = lazy(() => import("./pages/SellerPanel"));
 const SellerRegister = lazy(() => import("./pages/SellerRegister"));
 const SellerDashboard = lazy(() => import("./pages/SellerDashboard"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -71,7 +70,7 @@ function Router() {
       <Route path="/admin/reviews" component={AdminReviews} />
       <Route path="/about" component={About} />
       <Route path="/bestsellers" component={Bestsellers} />
-      <Route path="/seller" component={SellerPanel} />
+      <Route path="/seller">{() => { window.location.replace("/seller/register"); return null; }}</Route>
       <Route path="/seller/register" component={SellerRegister} />
       <Route path="/seller/dashboard" component={SellerDashboard} />
       <Route path="/premium" component={PremiumCatalog} />

@@ -1,5 +1,6 @@
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
 import { useEffect } from "react";
 import { Link } from "wouter";
@@ -7,13 +8,13 @@ import { Link } from "wouter";
 export default function Cart() {
   const { items, removeItem, updateQuantity, totalAmount, totalItems } = useCart();
   const { t, lang } = useLanguage();
+  const { formatPrice } = useCurrency();
 
   useEffect(() => {
     document.title = lang === "uz"
       ? "Savat — Tanlangan mahsulotlar | Katta Chegirma"
       : "Корзина — Выбранные товары | Катта Чегирма";
   }, [lang]);
-  const formatPrice = (price: number) => new Intl.NumberFormat("ru-RU").format(price) + " " + t.common_sum;
 
   if (items.length === 0) {
     return (
