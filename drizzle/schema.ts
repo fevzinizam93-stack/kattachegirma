@@ -81,6 +81,7 @@ export const products = mysqlTable("products", {
   isNew: boolean("isNew").default(false),
   isFeatured: boolean("isFeatured").default(false),
   isHit: boolean("isHit").default(false),
+  isPremium: boolean("isPremium").default(false),
   hitOrder: int("hitOrder").default(0),
   specs: json("specs").$type<Record<string, string>>().default({}),
   // Seller info

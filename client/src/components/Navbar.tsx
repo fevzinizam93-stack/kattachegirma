@@ -124,6 +124,19 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
             {t.nav_catalog}
           </Link>
 
+          {/* Premium section button */}
+          <Link
+            href="/premium"
+            className={`shrink-0 text-xs font-bold px-3 py-2 rounded-full border transition-colors whitespace-nowrap flex items-center gap-1.5 ${
+              location === "/premium"
+                ? "bg-gradient-to-r from-[#d4af37] to-[#f0d060] text-black border-[#d4af37] shadow-[0_0_12px_rgba(212,175,55,0.4)]"
+                : "bg-[#1a1a2e] text-[#d4af37] border-[#d4af37]/50 hover:border-[#d4af37] hover:shadow-[0_0_10px_rgba(212,175,55,0.3)]"
+            }`}
+          >
+            <span>◈</span>
+            <span>{lang === "uz" ? "Original texnika" : "Оригинал техника"}</span>
+          </Link>
+
           {/* About link */}
           <Link
             href="/about"
@@ -213,6 +226,12 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
 
           {/* Right icons */}
           <div className="flex items-center gap-1 shrink-0">
+            {/* Premium */}
+            <Link href="/premium" className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition-colors ${location === "/premium" ? "bg-[#1a1a2e]" : "hover:bg-[#1a1a2e]/10"}`}>
+              <span className="text-base leading-none text-[#d4af37]">◈</span>
+              <span className="text-[9px] font-bold text-[#d4af37] whitespace-nowrap">{lang === "uz" ? "Original" : "Оригинал"}</span>
+            </Link>
+
             {/* Bestsellers */}
             <Link href="/bestsellers" className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors ${location === "/bestsellers" ? "bg-gray-100" : ""}`}>
               <span className="text-lg leading-none">🔥</span>

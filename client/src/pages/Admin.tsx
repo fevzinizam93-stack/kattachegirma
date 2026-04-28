@@ -56,6 +56,7 @@ interface ProductForm {
   isNew: boolean;
   isFeatured: boolean;
   isHit: boolean;
+  isPremium: boolean;
   hitOrder: number;
   sellerPhone: string;
   sellerTelegram: string;
@@ -65,7 +66,7 @@ interface ProductForm {
 const emptyForm: ProductForm = {
   name: "", nameUz: "", slug: "", description: "", descriptionUz: "", categoryId: 0, brand: "",
   price: "", priceUsd: "", originalPrice: "", originalPriceUsd: "", discount: 0, imageUrl: "", images: [], stock: 0,
-  isNew: false, isFeatured: false, isHit: false, hitOrder: 0, sellerPhone: "", sellerTelegram: "", sellerName: "",
+  isNew: false, isFeatured: false, isHit: false, isPremium: false, hitOrder: 0, sellerPhone: "", sellerTelegram: "", sellerName: "",
 };
 
 export default function Admin() {
@@ -382,7 +383,7 @@ export default function Admin() {
       originalPriceUsd: p.originalPrice ? String(Math.round(parseFloat(p.originalPrice) / exchangeRate)) : "",
       discount: p.discount ?? 0,
       imageUrl: p.imageUrl ?? "", images: existingImages, stock: p.stock ?? 0,
-      isNew: p.isNew ?? false, isFeatured: p.isFeatured ?? false, isHit: (p as any).isHit ?? false, hitOrder: (p as any).hitOrder ?? 0,
+      isNew: p.isNew ?? false, isFeatured: p.isFeatured ?? false, isHit: (p as any).isHit ?? false, isPremium: (p as any).isPremium ?? false, hitOrder: (p as any).hitOrder ?? 0,
       sellerPhone: (p as any).sellerPhone ?? "",
       sellerTelegram: (p as any).sellerTelegram ?? "",
       sellerName: (p as any).sellerName ?? "",
@@ -690,6 +691,10 @@ export default function Admin() {
                           <input type="checkbox" checked={form.isHit} onChange={e => setForm(f => ({ ...f, isHit: e.target.checked }))} className="rounded accent-orange-500" />
                           <span className="text-orange-600 font-semibold">🔥 Хит продаж</span>
                         </label>
+                        <label className="flex items-center gap-2 text-sm cursor-pointer">
+                          <input type="checkbox" checked={form.isPremium} onChange={e => setForm(f => ({ ...f, isPremium: e.target.checked }))} className="rounded" style={{ accentColor: '#d4af37' }} />
+                          <span className="font-semibold" style={{ color: '#d4af37' }}>◈ Оригинал техника</span>
+                        </label>
                       </div>
                       {form.isHit && (
                         <div className="col-span-2">
@@ -767,6 +772,7 @@ export default function Admin() {
                               {p.isFeatured && <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">Tavsiya</span>}
                               {p.isNew && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Yangi</span>}
                               {(p as any).isHit && <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">🔥 Hit</span>}
+                              {(p as any).isPremium && <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{ background: '#1a1a2e', color: '#d4af37' }}>◈ Original</span>}
                             </div>
                           </td>
                           <td className="px-4 py-3">

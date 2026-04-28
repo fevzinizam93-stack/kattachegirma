@@ -183,12 +183,13 @@ export const appRouter = router({
         categoryId: z.number().optional(),
         search: z.string().optional(),
         featured: z.boolean().optional(),
+        isPremium: z.boolean().optional(),
         limit: z.number().default(20),
         offset: z.number().default(0),
       }))
       .query(async ({ input }) => {
         const items = await getProducts({ ...input, approvedOnly: true });
-        const total = await countProducts({ categoryId: input.categoryId, search: input.search, approvedOnly: true });
+        const total = await countProducts({ categoryId: input.categoryId, search: input.search, approvedOnly: true, isPremium: input.isPremium });
         return { items, total };
       }),
 
@@ -239,6 +240,7 @@ export const appRouter = router({
         isNew: z.boolean().default(false),
         isFeatured: z.boolean().default(false),
         isHit: z.boolean().default(false),
+        isPremium: z.boolean().default(false),
         hitOrder: z.number().default(0),
         specs: z.record(z.string(), z.string()).optional(),
         sellerPhone: z.string().optional(),
@@ -288,6 +290,7 @@ export const appRouter = router({
         isNew: z.boolean().optional(),
         isFeatured: z.boolean().optional(),
         isHit: z.boolean().optional(),
+        isPremium: z.boolean().optional(),
         hitOrder: z.number().optional(),
         specs: z.record(z.string(), z.string()).optional(),
         sellerPhone: z.string().optional(),

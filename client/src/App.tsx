@@ -26,6 +26,7 @@ const SellerPanel = lazy(() => import("./pages/SellerPanel"));
 const SellerRegister = lazy(() => import("./pages/SellerRegister"));
 const SellerDashboard = lazy(() => import("./pages/SellerDashboard"));
 const Profile = lazy(() => import("./pages/Profile"));
+const PremiumCatalog = lazy(() => import("./pages/PremiumCatalog"));
 const AuthModal = lazy(() => import("./components/AuthModal"));
 
 // Global auth modal context so any page can open it
@@ -73,6 +74,7 @@ function Router() {
       <Route path="/seller" component={SellerPanel} />
       <Route path="/seller/register" component={SellerRegister} />
       <Route path="/seller/dashboard" component={SellerDashboard} />
+      <Route path="/premium" component={PremiumCatalog} />
       <Route path="/profile" component={Profile} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

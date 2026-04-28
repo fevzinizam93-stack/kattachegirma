@@ -1,0 +1,1 @@
+ALTER TABLE `products` ADD `isPremium` boolean DEFAULT false;
