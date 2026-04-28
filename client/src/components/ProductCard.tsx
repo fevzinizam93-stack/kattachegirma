@@ -17,6 +17,7 @@ interface Product {
   isNew?: boolean | null;
   isFeatured?: boolean | null;
   isHit?: boolean | null;
+  isPremium?: boolean | null;
   stock?: number | null;
   sellerId?: number | null;
 }
@@ -86,6 +87,11 @@ export default function ProductCard({ product }: ProductCardProps) {
               <span className="text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-none flex items-center gap-0.5" style={{ backgroundColor: "#e65100" }}>🔥 {lang === "uz" ? "Hit" : "Хит"}</span>
             )}
           </div>
+          {product.isPremium && (
+            <div className="absolute top-1.5 right-1.5">
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-none flex items-center gap-0.5" style={{ background: 'linear-gradient(135deg, #1a1a2e, #2d2d4e)', color: '#d4af37', border: '1px solid #d4af37' }}>◈ {lang === "uz" ? "Original" : "Оригинал"}</span>
+            </div>
+          )}
         </div>
 
         <div className="p-2 flex flex-col flex-1">
