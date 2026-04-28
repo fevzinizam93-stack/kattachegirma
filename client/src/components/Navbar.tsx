@@ -27,9 +27,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const langMenuRef = useRef<HTMLDivElement>(null);
-  const langMenuMobileRef = useRef<HTMLDivElement>(null);
   const currMenuRef = useRef<HTMLDivElement>(null);
-  const currMenuMobileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(searchQuery), 300);
@@ -51,14 +49,12 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
         setShowDropdown(false);
       }
       if (
-        langMenuRef.current && !langMenuRef.current.contains(e.target as Node) &&
-        langMenuMobileRef.current && !langMenuMobileRef.current.contains(e.target as Node)
+        langMenuRef.current && !langMenuRef.current.contains(e.target as Node)
       ) {
         setShowLangMenu(false);
       }
       if (
-        currMenuRef.current && !currMenuRef.current.contains(e.target as Node) &&
-        currMenuMobileRef.current && !currMenuMobileRef.current.contains(e.target as Node)
+        currMenuRef.current && !currMenuRef.current.contains(e.target as Node)
       ) {
         setShowCurrMenu(false);
       }
@@ -322,76 +318,14 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
 
       {/* ── Mobile header ── */}
       <div className="md:hidden">
-        {/* Top row: logo + icons */}
-        <div className="flex items-center gap-2 px-3 pt-2 pb-1">
-          <Link href="/" className="flex items-center gap-1.5 flex-1 min-w-0">
+        {/* Top row: logo + name only */}
+        <div className="flex items-center px-3 pt-2 pb-1">
+          <Link href="/" className="flex items-center gap-1.5 min-w-0">
             <div className="flex items-center justify-center w-8 h-8 shrink-0">
               <img src="/manus-storage/kattachegirma-logo_b5417617.png" alt="KC" className="h-8 w-auto object-contain" />
             </div>
             <span className="font-black text-sm leading-tight truncate text-gray-900">Katta Chegirma!!!</span>
           </Link>
-
-          {/* Currency switcher mobile */}
-          <div className="relative shrink-0" ref={currMenuMobileRef}>
-            <button
-              onClick={() => { setShowCurrMenu((v) => !v); setShowLangMenu(false); }}
-              className="flex items-center gap-0.5 text-xs text-gray-700 cursor-pointer select-none px-1.5 py-1 rounded hover:bg-gray-100 transition-colors"
-            >
-              <span>{currency === "uzs" ? "🇺🇿" : "🇺🇸"}</span>
-              <span className="font-medium">{currency === "uzs" ? "сум" : "$"}</span>
-            </button>
-            {showCurrMenu && (
-              <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden z-50 min-w-[130px]">
-                <button onClick={() => { setCurrency("uzs"); setShowCurrMenu(false); }} className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-red-50 transition-colors ${currency === "uzs" ? "bg-red-50 text-red-700 font-semibold" : "text-gray-700"}`}>
-                  <span>🇺🇿</span><span>Сум</span>{currency === "uzs" && <span className="ml-auto text-red-500">✓</span>}
-                </button>
-                <button onClick={() => { setCurrency("usd"); setShowCurrMenu(false); }} className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-red-50 transition-colors ${currency === "usd" ? "bg-red-50 text-red-700 font-semibold" : "text-gray-700"}`}>
-                  <span>🇺🇸</span><span>Доллар ($)</span>{currency === "usd" && <span className="ml-auto text-red-500">✓</span>}
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Lang switcher mobile */}
-          <div className="relative shrink-0" ref={langMenuMobileRef}>
-            <button onClick={() => { setShowLangMenu((v) => !v); setShowCurrMenu(false); }} className="flex items-center gap-0.5 text-xs text-gray-700 cursor-pointer select-none px-1.5 py-1 rounded hover:bg-gray-100 transition-colors">
-              <span>{lang === "ru" ? "🇷🇺" : "🇺🇿"}</span>
-              <span className="font-medium">{lang === "ru" ? "RU" : "UZ"}</span>
-            </button>
-            {showLangMenu && (
-              <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden z-50 min-w-[120px]">
-                <button onClick={() => { setLang("ru"); setShowLangMenu(false); }} className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-red-50 transition-colors ${lang === "ru" ? "bg-red-50 text-red-700 font-semibold" : "text-gray-700"}`}>
-                  <span>🇷🇺</span><span>Русский</span>{lang === "ru" && <span className="ml-auto text-red-500">✓</span>}
-                </button>
-                <button onClick={() => { setLang("uz"); setShowLangMenu(false); }} className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-red-50 transition-colors ${lang === "uz" ? "bg-red-50 text-red-700 font-semibold" : "text-gray-700"}`}>
-                  <span>🇺🇿</span><span>O'zbek</span>{lang === "uz" && <span className="ml-auto text-red-500">✓</span>}
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Cart mobile */}
-          <Link href="/cart" className="relative shrink-0 p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-            <ShoppingCart size={20} className="text-gray-700" />
-            {totalItems > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 bg-red-600 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">{totalItems > 9 ? "9+" : totalItems}</span>
-            )}
-          </Link>
-
-          {/* User mobile */}
-          {isAuthenticated ? (
-            <Link href="/profile" className="shrink-0 p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-              <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center text-xs font-bold text-red-700">{user?.name?.charAt(0)?.toUpperCase() ?? "U"}</div>
-            </Link>
-          ) : (
-            <button onClick={() => onOpenAuth?.()} className="shrink-0 p-1.5 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200">
-              <User size={18} className="text-gray-700" />
-            </button>
-          )}
-
-          {isAuthenticated && user?.role === "admin" && (
-            <Link href="/admin" className="text-red-600 text-xs font-bold px-2 py-1 bg-red-50 rounded shrink-0">Admin</Link>
-          )}
         </div>
 
         {/* Search row */}
