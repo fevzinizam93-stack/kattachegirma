@@ -9,11 +9,11 @@ export default function Home() {
   const { t, lang } = useLanguage();
   const [, navigate] = useLocation();
 
-  // SEO: dynamic document.title based on language (30-60 chars)
+  // SEO: dynamic document.title (30-60 chars)
   useEffect(() => {
     document.title = lang === "uz"
-      ? "Katta Chegirma — Uy texnikasi chegirmada Toshkent"
-      : "Катта Чегирма — Бытовая техника со скидкой";
+      ? "Katta Chegirma — Chegirmali uy texnikasi do'koni"
+      : "Катта Чегирма — Магазин бытовой техники со скидками";
   }, [lang]);
 
   const { data: featuredData, isLoading: featuredLoading } = trpc.products.list.useQuery({ featured: true, limit: 10, offset: 0 });
@@ -36,6 +36,12 @@ export default function Home() {
           ? "Katta Chegirma — Oʻzbekistonda eng arzon uy texnikasi"
           : "Катта Чегирма — Дешевая бытовая техника в Узбекистане"}
       </h1>
+      {/* SEO: guaranteed H2 always visible to crawlers */}
+      <h2 className="sr-only">
+        {lang === "uz"
+          ? "Chegirmali mahsulotlar — televizor, kir yuvish mashinasi, muzlatgich"
+          : "Товары со скидкой — телевизоры, стиральные машины, холодильники"}
+      </h2>
       {/* Promo Banners from admin */}
       {banners.length > 0 && (
         <section className="container pt-3">
@@ -124,7 +130,7 @@ export default function Home() {
             <div className="flex items-center gap-2">
               <Flame size={20} className="text-orange-500" />
               <h2 className="text-base md:text-lg font-black text-gray-900">
-                {lang === "uz" ? "Sotuvdagi hitlar" : "Хиты продаж"}
+                {t.nav_bestsellers}
               </h2>
             </div>
             <Link href="/bestsellers" className="text-sm font-semibold hover:underline flex items-center gap-1" style={{ color: "#cc0000" }}>
