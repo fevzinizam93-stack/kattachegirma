@@ -8,7 +8,7 @@ import { useAuthModal } from "@/App";
 
 function formatPrice(price: string | number) {
   const num = typeof price === "string" ? parseFloat(price) : price;
-  return new Intl.NumberFormat("ru-RU").format(num) + " so'm";
+  return new Intl.NumberFormat("ru-RU").format(num) + " сум";
 }
 
 type Tab = "products" | "categories" | "orders" | "sellers" | "moderation" | "settings" | "banners" | "notifications";
@@ -130,11 +130,11 @@ export default function Admin() {
   const pendingProducts = pendingProductsData ?? [];
 
   const approveProductMut = trpc.sellers.approveProduct.useMutation({
-    onSuccess: () => { utils.sellers.pendingProducts.invalidate(); toast.success("Mahsulot tasdiqlandi!"); },
+    onSuccess: () => { utils.sellers.pendingProducts.invalidate(); toast.success("Товар одобрен!"); },
     onError: (e) => toast.error(e.message),
   });
   const rejectProductMut = trpc.sellers.rejectProduct.useMutation({
-    onSuccess: () => { utils.sellers.pendingProducts.invalidate(); toast.success("Mahsulot rad etildi"); },
+    onSuccess: () => { utils.sellers.pendingProducts.invalidate(); toast.success("Товар отклонён"); },
     onError: (e) => toast.error(e.message),
   });
 
@@ -200,39 +200,36 @@ export default function Admin() {
   }, [storeSettingsRaw, settingsLoaded]);
 
   const createProduct = trpc.products.create.useMutation({
-    onSuccess: () => { toast.success("Mahsulot qo'shildi!"); utils.products.list.invalidate(); setShowForm(false); setForm(emptyForm); },
-    onError: (e) => toast.error("Xatolik: " + e.message),
+    onSuccess: () => { toast.success("Товар добавлен!"); utils.products.list.invalidate(); setShowForm(false); setForm(emptyForm); },
+    onError: (e) => toast.error("Ошибка: " + e.message),
   });
-
   const updateProduct = trpc.products.update.useMutation({
-    onSuccess: () => { toast.success("Mahsulot yangilandi!"); utils.products.list.invalidate(); setShowForm(false); setForm(emptyForm); setEditId(null); },
-    onError: (e) => toast.error("Xatolik: " + e.message),
+    onSuccess: () => { toast.success("Товар обновлён!"); utils.products.list.invalidate(); setShowForm(false); setForm(emptyForm); setEditId(null); },
+    onError: (e) => toast.error("Ошибка: " + e.message),
   });
-
   const deleteProduct = trpc.products.delete.useMutation({
-    onSuccess: () => { toast.success("Mahsulot o'chirildi!"); utils.products.list.invalidate(); },
-    onError: (e) => toast.error("Xatolik: " + e.message),
+    onSuccess: () => { toast.success("Товар удалён!"); utils.products.list.invalidate(); },
+    onError: (e) => toast.error("Ошибка: " + e.message),
   });
-
   const updateOrderStatus = trpc.orders.updateStatus.useMutation({
-    onSuccess: () => { toast.success("Holat yangilandi!"); utils.orders.list.invalidate(); },
+    onSuccess: () => { toast.success("Статус обновлён!"); utils.orders.list.invalidate(); },
   });
 
   const approveSeller = trpc.sellers.approve.useMutation({
-    onSuccess: () => { toast.success("Sotuvchi tasdiqlandi!"); utils.sellers.list.invalidate(); },
+    onSuccess: () => { toast.success("Продавец одобрен!"); utils.sellers.list.invalidate(); },
     onError: (e) => toast.error(e.message),
   });
 
   const blockSeller = trpc.sellers.blockSeller.useMutation({
     onSuccess: (_data, vars) => {
-      toast.success(vars.blocked ? "Sotuvchi bloklandi" : "Sotuvchi blokdan chiqarildi");
+      toast.success(vars.blocked ? "Продавец заблокирован" : "Продавец разблокирован");
       utils.sellers.list.invalidate();
     },
     onError: (e) => toast.error(e.message),
   });
 
   const approveProduct = trpc.sellers.approveProduct.useMutation({
-    onSuccess: () => { toast.success("Mahsulot tasdiqlandi!"); utils.products.list.invalidate(); },
+    onSuccess: () => { toast.success("Товар одобрен!"); utils.products.list.invalidate(); },
     onError: (e) => toast.error(e.message),
   });
 
@@ -255,8 +252,8 @@ export default function Admin() {
   };
 
   const saveSettings = trpc.storeSettings.setMany.useMutation({
-    onSuccess: () => { toast.success("Sozlamalar saqlandi!"); utils.storeSettings.getAll.invalidate(); },
-    onError: (e) => toast.error("Xatolik: " + e.message),
+    onSuccess: () => { toast.success("Настройки сохранены!"); utils.storeSettings.getAll.invalidate(); },
+    onError: (e) => toast.error("Ошибка: " + e.message),
   });
 
   const upsertCategory = trpc.categories.upsert.useMutation({
@@ -333,7 +330,7 @@ export default function Admin() {
     toast.success("Главное фото установлено!");
   };
 
-  if (loading) return <div className="container py-20 text-center">Yuklanmoqda...</div>;
+  if (loading) return <div className="container py-20 text-center">Загрузка...</div>;
 
   if (!user) {
     return (
@@ -347,7 +344,7 @@ export default function Admin() {
   if (user.role !== "admin") {
     return (
       <div className="container py-20 text-center">
-        <h2 className="text-xl font-bold mb-2">Ruxsat yo'q</h2>
+        <h2 className="text-xl font-bold mb-2">Нет доступа</h2>
         <p className="text-gray-500">Bu sahifa faqat adminlar uchun</p>
         <Link href="/" className="text-primary hover:underline mt-4 inline-block">Bosh sahifaga qaytish</Link>
       </div>
@@ -393,7 +390,7 @@ export default function Admin() {
   };
 
   const statusLabels: Record<string, string> = {
-    pending: "Kutilmoqda", confirmed: "Tasdiqlandi", delivered: "Yetkazildi", cancelled: "Bekor qilindi"
+    pending: "Ожидает", confirmed: "Подтверждён", delivered: "Доставлен", cancelled: "Отменён"
   };
   const statusColors: Record<string, string> = {
     pending: "bg-yellow-100 text-yellow-700", confirmed: "bg-blue-100 text-blue-700",
@@ -416,7 +413,7 @@ export default function Admin() {
       <div className="bg-white border-b border-gray-200">
         <div className="container py-4">
           <h1 className="text-xl font-black text-gray-900">Admin Panel</h1>
-          <p className="text-sm text-gray-500">Xush kelibsiz, {user.name}</p>
+          <p className="text-sm text-gray-500">Добро пожаловать, {user.name}</p>
         </div>
       </div>
 
@@ -448,12 +445,12 @@ export default function Admin() {
         {tab === "products" && (
           <div>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="font-black text-lg text-gray-900">Mahsulotlar ({products.length})</h2>
+              <h2 className="font-black text-lg text-gray-900">Товары ({products.length})</h2>
               <button
                 onClick={() => { setShowForm(true); setForm(emptyForm); setEditId(null); }}
                 className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
               >
-                <Plus size={16} /> Qo'shish
+                <Plus size={16} /> Добавить
               </button>
             </div>
 
@@ -462,7 +459,7 @@ export default function Admin() {
               <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
                 <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                   <div className="flex items-center justify-between p-5 border-b border-gray-200">
-                    <h3 className="font-black text-lg">{editId ? "Mahsulotni tahrirlash" : "Yangi mahsulot"}</h3>
+                    <h3 className="font-black text-lg">{editId ? "Редактировать товар" : "Новый товар"}</h3>
                     <button onClick={() => { setShowForm(false); setForm(emptyForm); setEditId(null); }} className="hover:text-red-500">
                       <X size={20} />
                     </button>
@@ -514,10 +511,10 @@ export default function Admin() {
                         </p>
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold mb-1">Kategoriya *</label>
+                        <label className="block text-sm font-semibold mb-1">Категория *</label>
                         <select value={form.categoryId} onChange={e => setForm(f => ({ ...f, categoryId: parseInt(e.target.value) }))}
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
-                          <option value={0}>Tanlang...</option>
+                          <option value={0}>Выберите...</option>
                           {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
                       </div>
@@ -556,7 +553,7 @@ export default function Admin() {
                           min={0}
                         />
                         {form.priceUsd && (
-                          <p className="text-xs text-gray-500 mt-1">= {Number(form.price).toLocaleString("ru-RU")} so'm</p>
+                          <p className="text-xs text-gray-500 mt-1">= {Number(form.price).toLocaleString("ru-RU")} сум</p>
                         )}
                       </div>
                       {/* Original price USD → UZS */}
@@ -575,16 +572,16 @@ export default function Admin() {
                           min={0}
                         />
                         {form.originalPriceUsd && (
-                          <p className="text-xs text-gray-500 mt-1">= {Number(form.originalPrice).toLocaleString("ru-RU")} so'm</p>
+                          <p className="text-xs text-gray-500 mt-1">= {Number(form.originalPrice).toLocaleString("ru-RU")} сум</p>
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold mb-1">Chegirma (%)</label>
+                        <label className="block text-sm font-semibold mb-1">Скидка (%)</label>
                         <input type="number" value={form.discount} onChange={e => setForm(f => ({ ...f, discount: parseInt(e.target.value) || 0 }))}
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="20" min={0} max={99} />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold mb-1">Ombordagi soni</label>
+                        <label className="block text-sm font-semibold mb-1">Количество на складе</label>
                         <input type="number" value={form.stock} onChange={e => setForm(f => ({ ...f, stock: parseInt(e.target.value) || 0 }))}
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="10" min={0} />
                       </div>
@@ -637,7 +634,7 @@ export default function Admin() {
                                 e.target.value = "";
                               }}
                             />
-                            <Upload size={16} className="text-gray-400" />
+                          <Upload size={16} className="text-gray-400" />
                             <span className="text-gray-500">
                               {imageUploading
                                 ? `Загрузка${uploadingCount > 1 ? ` ${uploadingCount} фото` : ''}...`
@@ -661,20 +658,20 @@ export default function Admin() {
                       </div>
                       {/* Seller info */}
                       <div className="col-span-2 border-t border-gray-100 pt-3">
-                        <p className="text-sm font-bold text-gray-700 mb-3">Sotuvchi ma'lumotlari</p>
+                        <p className="text-sm font-bold text-gray-700 mb-3">Данные продавца</p>
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold mb-1">Sotuvchi ismi</label>
+                        <label className="block text-sm font-semibold mb-1">Имя продавца</label>
                         <input value={form.sellerName} onChange={e => setForm(f => ({ ...f, sellerName: e.target.value }))}
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="Do'kon nomi" />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold mb-1">Sotuvchi telefoni</label>
+                        <label className="block text-sm font-semibold mb-1">Телефон продавца</label>
                         <input value={form.sellerPhone} onChange={e => setForm(f => ({ ...f, sellerPhone: e.target.value }))}
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="+998 90 123 45 67" />
                       </div>
                       <div className="col-span-2">
-                        <label className="block text-sm font-semibold mb-1">Sotuvchi Telegram</label>
+                        <label className="block text-sm font-semibold mb-1">Telegram продавца</label>
                         <input value={form.sellerTelegram} onChange={e => setForm(f => ({ ...f, sellerTelegram: e.target.value }))}
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="@username" />
                       </div>
@@ -714,7 +711,7 @@ export default function Admin() {
                     <div className="flex gap-3 pt-2">
                       <button type="submit" disabled={createProduct.isPending || updateProduct.isPending}
                         className="flex-1 bg-primary text-white py-2.5 rounded-xl font-bold hover:bg-primary/90 transition-colors disabled:opacity-50">
-                        {editId ? "Saqlash" : "Qo'shish"}
+                        {editId ? "Сохранить" : "Добавить"}
                       </button>
                       <button type="button" onClick={() => { setShowForm(false); setForm(emptyForm); setEditId(null); }}
                         className="px-6 border border-gray-200 py-2.5 rounded-xl font-medium hover:bg-gray-50 transition-colors">
@@ -728,18 +725,18 @@ export default function Admin() {
 
             {/* Products table */}
             {productsLoading ? (
-              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">Yuklanmoqda...</div>
+       <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">Загрузка...</div>
             ) : (
               <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead className="bg-gray-50 border-b border-gray-200">
                       <tr>
-                        <th className="text-left px-4 py-3 font-semibold">Mahsulot</th>
-                        <th className="text-left px-4 py-3 font-semibold">Narx</th>
-                        <th className="text-left px-4 py-3 font-semibold">Ombor</th>
-                        <th className="text-left px-4 py-3 font-semibold">Holat</th>
-                        <th className="text-right px-4 py-3 font-semibold">Amallar</th>
+                        <th className="text-left px-4 py-3 font-semibold">Товар</th>
+                        <th className="text-left px-4 py-3 font-semibold">Цена</th>
+                        <th className="text-left px-4 py-3 font-semibold">Склад</th>
+                        <th className="text-left px-4 py-3 font-semibold">Статус</th>
+                        <th className="text-right px-4 py-3 font-semibold">Действия</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -763,14 +760,14 @@ export default function Admin() {
                           </td>
                           <td className="px-4 py-3">
                             <span className={`text-xs font-medium px-2 py-1 rounded-full ${(p.stock ?? 0) > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                              {p.stock ?? 0} ta
+                              {p.stock ?? 0} шт
                             </span>
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex gap-1 flex-wrap">
                               {(p as any).isApproved === false && <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">Tekshirilmoqda</span>}
                               {p.isFeatured && <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">Tavsiya</span>}
-                              {p.isNew && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Yangi</span>}
+                              {p.isNew && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Новинка</span>}
                               {(p as any).isHit && <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">🔥 Hit</span>}
                               {(p as any).isPremium && <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{ background: '#1a1a2e', color: '#d4af37' }}>◈ Original</span>}
                             </div>
@@ -780,8 +777,8 @@ export default function Admin() {
                               {(p as any).isApproved === false && (
                                 <button onClick={() => approveProduct.mutate({ id: p.id })}
                                   className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-lg hover:bg-green-200 transition-colors font-semibold">
-                                  Tasdiqlash
-                                </button>
+Одобрить
+                                  </button>
                               )}
                               <button onClick={() => handleEdit(p)} className="p-1.5 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors">
                                 <Edit size={15} />
@@ -935,18 +932,18 @@ export default function Admin() {
         {/* ==================== ORDERS TAB ==================== */}
         {tab === "orders" && (
           <div>
-            <h2 className="font-black text-lg mb-4 text-gray-900">Buyurtmalar ({orders?.length ?? 0})</h2>
+            <h2 className="font-black text-lg mb-4 text-gray-900">Заказы ({orders?.length ?? 0})</h2>
             {ordersLoading ? (
-              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">Yuklanmoqda...</div>
+            <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">Загрузка...</div>
             ) : !orders || orders.length === 0 ? (
-              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-400">Buyurtma yo'q</div>
+              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-400">Заказов нет</div>
             ) : (
               <div className="space-y-4">
                 {orders.map(order => (
                   <div key={order.id} className="bg-white rounded-xl border border-gray-200 p-5">
                     <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
                       <div>
-                        <p className="font-black text-gray-900">Buyurtma #{order.id}</p>
+                        <p className="font-black text-gray-900">Заказ #{order.id}</p>
                         <p className="text-sm text-gray-400">{new Date(order.createdAt).toLocaleString("ru-RU")}</p>
                       </div>
                       <div className="flex items-center gap-3">
@@ -958,25 +955,25 @@ export default function Admin() {
                           onChange={e => updateOrderStatus.mutate({ id: order.id, status: e.target.value as any })}
                           className="border border-gray-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
                         >
-                          <option value="pending">Kutilmoqda</option>
-                          <option value="confirmed">Tasdiqlash</option>
-                          <option value="delivered">Yetkazildi</option>
-                          <option value="cancelled">Bekor qilish</option>
+                          <option value="pending">Ожидает</option>
+                          <option value="confirmed">Подтвердить</option>
+                          <option value="delivered">Доставлен</option>
+                          <option value="cancelled">Отменить</option>
                         </select>
                       </div>
                     </div>
                     <div className="grid sm:grid-cols-2 gap-3 text-sm">
                       <div>
-                        <p><strong>Mijoz:</strong> {order.customerName}</p>
-                        <p><strong>Tel:</strong> {order.customerPhone}</p>
-                        <p><strong>Manzil:</strong> {order.deliveryAddress}</p>
+                        <p><strong>Клиент:</strong> {order.customerName}</p>
+                        <p><strong>Тел:</strong> {order.customerPhone}</p>
+                        <p><strong>Адрес:</strong> {order.deliveryAddress}</p>
                       </div>
                       <div>
-                        <p className="font-semibold mb-1">Mahsulotlar:</p>
+                        <p className="font-semibold mb-1">Товары:</p>
                         {(order.items as any[]).map((item, i) => (
                           <p key={i} className="text-xs text-gray-400">{item.name} × {item.quantity} — {formatPrice(item.price * item.quantity)}</p>
                         ))}
-                        <p className="font-black text-primary mt-1">Jami: {formatPrice(parseFloat(order.totalAmount))}</p>
+                        <p className="font-black text-primary mt-1">Итого: {formatPrice(parseFloat(order.totalAmount))}</p>
                       </div>
                     </div>
                   </div>
@@ -989,13 +986,13 @@ export default function Admin() {
         {/* ==================== SELLERS TAB ==================== */}
         {tab === "sellers" && (
           <div>
-            <h2 className="font-black text-lg mb-4 text-gray-900">Sotuvchilar ({sellers?.length ?? 0})</h2>
+            <h2 className="font-black text-lg mb-4 text-gray-900">Продавцы ({sellers?.length ?? 0})</h2>
             {sellersLoading ? (
-              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">Yuklanmoqda...</div>
+              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">Загрузка...</div>
             ) : !sellers || sellers.length === 0 ? (
               <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-400">
                 <Users size={40} className="mx-auto mb-3 opacity-40" />
-                <p>Hali sotuvchi yo'q</p>
+                <p>Продавцов пока нет</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -1018,26 +1015,26 @@ export default function Admin() {
                             onClick={() => approveSeller.mutate({ id: seller.id })}
                             className="bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-green-600 transition-colors"
                           >
-                            Tasdiqlash
-                          </button>
+Одобрить
+                            </button>
                         )}
                         {seller.isApproved && (
-                          <span className="bg-green-50 text-green-700 text-xs font-bold px-3 py-1 rounded-full">Tasdiqlangan</span>
+                          <span className="bg-green-50 text-green-700 text-xs font-bold px-3 py-1 rounded-full">Одобрен</span>
                         )}
                         {(seller as any).isBlocked ? (
                           <button
                             onClick={() => blockSeller.mutate({ id: seller.id, blocked: false })}
                             className="bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-amber-600 transition-colors"
                           >
-                            Blokdan chiqarish
+                            Разблокировать
                           </button>
                         ) : (
                           <button
-                            onClick={() => { if (confirm("Sotuvchini bloklaysizmi?")) blockSeller.mutate({ id: seller.id, blocked: true }); }}
+                            onClick={() => { if (confirm("Заблокировать продавца?")) blockSeller.mutate({ id: seller.id, blocked: true }); }}
                             className="bg-red-50 text-red-600 text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-red-100 transition-colors"
                           >
-                            Bloklash
-                          </button>
+Заблокировать
+                            </button>
                         )}
                       </div>
                     </div>
@@ -1055,14 +1052,14 @@ export default function Admin() {
         {tab === "moderation" && (
           <div>
             <h2 className="font-black text-lg mb-4 text-gray-900">
-              Moderatsiya — tekshirilayotgan mahsulotlar ({pendingProducts.length})
+              Модерация — товары на проверке ({pendingProducts.length})
             </h2>
             {pendingLoading ? (
-              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">Yuklanmoqda...</div>
+              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">Загрузка...</div>
             ) : pendingProducts.length === 0 ? (
               <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-400">
                 <Package size={40} className="mx-auto mb-3 opacity-40" />
-                <p>Tekshirish uchun mahsulot yo'q</p>
+                <p>Товаров для проверки нет</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -1080,15 +1077,15 @@ export default function Admin() {
                         <p className="font-bold text-gray-900">{p.name}</p>
                         <p className="text-sm text-gray-500">{p.brand && `${p.brand} · `}{formatPrice(p.price)}</p>
                         {p.sellerName && (
-                          <p className="text-xs text-blue-600 mt-0.5">Sotuvchi: {p.sellerName} {p.sellerPhone && `(${p.sellerPhone})`}</p>
+                          <p className="text-xs text-blue-600 mt-0.5">Продавец: {p.sellerName} {p.sellerPhone && `(${p.sellerPhone})`}</p>
                         )}
                         {p.description && (
                           <p className="text-xs text-gray-400 mt-1 line-clamp-2">{p.description}</p>
                         )}
                         {p.discount && p.discount > 0 ? (
-                          <span className="inline-block bg-red-50 text-red-600 text-xs font-bold px-2 py-0.5 rounded-full mt-1">-{p.discount}% chegirma</span>
+                          <span className="inline-block bg-red-50 text-red-600 text-xs font-bold px-2 py-0.5 rounded-full mt-1">-{p.discount}% скидка</span>
                         ) : (
-                          <span className="inline-block bg-gray-50 text-gray-500 text-xs font-bold px-2 py-0.5 rounded-full mt-1">Chegirmasiz</span>
+                          <span className="inline-block bg-gray-50 text-gray-500 text-xs font-bold px-2 py-0.5 rounded-full mt-1">Без скидки</span>
                         )}
                       </div>
                       <div className="flex flex-col gap-2 flex-shrink-0">
@@ -1097,15 +1094,15 @@ export default function Admin() {
                           disabled={approveProductMut.isPending}
                           className="bg-green-500 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50"
                         >
-                          Tasdiqlash
-                        </button>
+Одобрить
+                          </button>
                         <button
                           onClick={() => { if (confirm(`"${p.name}" rad etilsinmi?`)) rejectProductMut.mutate({ id: p.id }); }}
                           disabled={rejectProductMut.isPending}
                           className="bg-red-50 text-red-600 text-xs font-bold px-4 py-2 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
                         >
-                          Rad etish
-                        </button>
+Отклонить
+                          </button>
                       </div>
                     </div>
                   </div>
@@ -1494,7 +1491,7 @@ export default function Admin() {
                 disabled={saveSettings.isPending}
                 className="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors disabled:opacity-50"
               >
-                {saveSettings.isPending ? "Saqlanmoqda..." : "Saqlash"}
+                {saveSettings.isPending ? "Сохраняем..." : "Сохранить"}
               </button>
             </div>
           </div>
