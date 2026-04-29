@@ -8,6 +8,7 @@ import { CartProvider } from "./contexts/CartContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import MobileBottomNav from "./components/MobileBottomNav";
+import CategoryBar from "./components/CategoryBar";
 
 // All pages are lazy-loaded for code splitting — only the current page's JS is downloaded
 const Home = lazy(() => import("./pages/Home"));
@@ -107,6 +108,7 @@ function App() {
               <Toaster />
               <div className="flex flex-col min-h-screen">
                 <Navbar onOpenAuth={openLogin} />
+                <CategoryBar />
                 <main className="flex-1 pb-14 md:pb-0">
                   <Suspense fallback={<PageLoader />}>
                     <Router />
