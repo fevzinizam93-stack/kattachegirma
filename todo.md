@@ -330,3 +330,12 @@
 ## v53 - Редизайн «Оригинал техника»
 - [x] PremiumCatalog.tsx: белый фон, золотые акценты (заголовки, рамки, кнопки)
 - [x] Navbar: кнопка «Оригинал техника» — золотистая постоянно (не чёрная)
+
+## v54 - UTM-трекинг для Instagram
+- [x] DB: таблица utm_visits (id, utmSource, utmMedium, utmCampaign, utmContent, utmTerm, landingPage, referrer, userAgent, createdAt)
+- [x] Применить миграцию SQL (drizzle/0015_fresh_talkback.sql)
+- [x] server/db.ts: функции recordUtmVisit() и getUtmStats()
+- [x] server/routers.ts: utm.trackVisit (publicProcedure) и utm.getStats (adminProcedure)
+- [x] client/src/hooks/useUTMTracker.ts: хук читает UTM-параметры из URL и вызывает trackVisit один раз за сессию
+- [x] App.tsx: useUTMTracker() вызывается на верхнем уровне
+- [x] Admin.tsx: вкладка «Источники трафика» с KPI-карточками, графиком по дням, таблицами по источнику и кампании

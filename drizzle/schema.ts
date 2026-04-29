@@ -190,3 +190,19 @@ export const telegramRecipients = mysqlTable("telegram_recipients", {
 
 export type TelegramRecipient = typeof telegramRecipients.$inferSelect;
 export type InsertTelegramRecipient = typeof telegramRecipients.$inferInsert;
+
+// UTM tracking table
+export const utmVisits = mysqlTable("utm_visits", {
+  id: int("id").autoincrement().primaryKey(),
+  utmSource: varchar("utmSource", { length: 128 }),
+  utmMedium: varchar("utmMedium", { length: 128 }),
+  utmCampaign: varchar("utmCampaign", { length: 128 }),
+  utmContent: varchar("utmContent", { length: 128 }),
+  utmTerm: varchar("utmTerm", { length: 128 }),
+  landingPage: varchar("landingPage", { length: 512 }),
+  referrer: varchar("referrer", { length: 512 }),
+  userAgent: varchar("userAgent", { length: 512 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type UtmVisit = typeof utmVisits.$inferSelect;

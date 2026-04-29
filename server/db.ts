@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, gte, ilike, like, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool } from "mysql2";
-import { analyticsEvents, banners, Banner, InsertBanner, categories, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, orders, products, reviews, InsertReview, sellers, storeSettings, telegramRecipients, TelegramRecipient, users } from "../drizzle/schema";
+import { analyticsEvents, banners, Banner, InsertBanner, categories, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, orders, products, reviews, InsertReview, sellers, storeSettings, telegramRecipients, TelegramRecipient, users, utmVisits, UtmVisit } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import bcrypt from "bcryptjs";
 
@@ -588,4 +588,90 @@ export async function setSellerBlocked(id: number, blocked: boolean): Promise<vo
   const db = await getDb();
   if (!db) throw new Error("DB unavailable");
   await db.update(sellers).set({ isBlocked: blocked }).where(eq(sellers.id, id));
+}
+
+// ---- UTM Tracking ----
+export async function recordUtmVisit(data: {
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmContent?: string;
+  utmTerm?: string;
+  landingPage?: string;
+  referrer?: string;
+  userAgent?: string;
+}): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.insert(utmVisits).values({
+    utmSource: data.utmSource ?? null,
+    utmMedium: data.utmMedium ?? null,
+    utmCampaign: data.utmCampaign ?? null,
+    utmContent: data.utmContent ?? null,
+    utmTerm: data.utmTerm ?? null,
+    landingPage: data.landingPage ?? null,
+    referrer: data.referrer ?? null,
+    userAgent: data.userAgent ?? null,
+  });
+}
+
+export async function getUtmStats(days = 30): Promise<{
+  total: number;
+  bySource: { source: string; count: number }[];
+  byCampaign: { campaign: string; count: number }[];
+  byDay: { date: string; count: number }[];
+  instagramTotal: number;
+}> {
+  const db = await getDb();
+  if (!db) return { total: 0, bySource: [], byCampaign: [], byDay: [], instagramTotal: 0 };
+
+  const since = new Date();
+  since.setDate(since.getDate() - days);
+
+  const allRows = await db
+    .select()
+    .from(utmVisits)
+    .where(gte(utmVisits.createdAt, since))
+    .orderBy(desc(utmVisits.createdAt));
+
+  const total = allRows.length;
+
+  // Group by source
+  const sourceMap: Record<string, number> = {};
+  const campaignMap: Record<string, number> = {};
+  const dayMap: Record<string, number> = {};
+
+  for (const row of allRows) {
+    const src = row.utmSource ?? "прямой";
+    sourceMap[src] = (sourceMap[src] ?? 0) + 1;
+
+    const camp = row.utmCampaign ?? "—";
+    campaignMap[camp] = (campaignMap[camp] ?? 0) + 1;
+
+    const day = row.createdAt.toISOString().slice(0, 10);
+    dayMap[day] = (dayMap[day] ?? 0) + 1;
+  }
+
+  const bySource = Object.entries(sourceMap)
+    .map(([source, count]) => ({ source, count }))
+    .sort((a, b) => b.count - a.count);
+
+  const byCampaign = Object.entries(campaignMap)
+    .map(([campaign, count]) => ({ campaign, count }))
+    .sort((a, b) => b.count - a.count);
+
+  // Fill missing days with 0
+  const byDay: { date: string; count: number }[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    byDay.push({ date: key, count: dayMap[key] ?? 0 });
+  }
+
+  const instagramTotal = allRows.filter(
+    (r) => r.utmSource?.toLowerCase() === "instagram"
+  ).length;
+
+  return { total, bySource, byCampaign, byDay, instagramTotal };
 }

@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, lazy, Suspense } from "react";
+import { useUTMTracker } from "./hooks/useUTMTracker";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Route, Switch, useLocation } from "wouter";
@@ -95,6 +96,9 @@ function Router() {
 function App() {
   const [authOpen, setAuthOpen] = useState(false);
   const [authTab, setAuthTab] = useState<"login" | "register">("login");
+
+  // Track UTM params on first visit
+  useUTMTracker();
 
   const openLogin = () => { setAuthTab("login"); setAuthOpen(true); };
   const openRegister = () => { setAuthTab("register"); setAuthOpen(true); };

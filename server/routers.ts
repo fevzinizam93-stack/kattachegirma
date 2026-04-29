@@ -62,6 +62,8 @@ import {
   addTelegramRecipient,
   toggleTelegramRecipient,
   deleteTelegramRecipient,
+  recordUtmVisit,
+  getUtmStats,
 } from "./db";
 import { storagePut } from "./storage";
 import { invokeLLM } from "./_core/llm";
@@ -865,6 +867,32 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         await deleteTelegramRecipient(input.id);
         return { ok: true };
+      }),
+  }),
+
+  // ---- UTM Tracking ----
+  utm: router({
+    // Track a UTM visit (public — called on page load when UTM params present)
+    trackVisit: publicProcedure
+      .input(z.object({
+        utmSource: z.string().max(128).optional(),
+        utmMedium: z.string().max(128).optional(),
+        utmCampaign: z.string().max(128).optional(),
+        utmContent: z.string().max(128).optional(),
+        utmTerm: z.string().max(128).optional(),
+        landingPage: z.string().max(512).optional(),
+        referrer: z.string().max(512).optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const userAgent = (ctx as any).req?.headers?.['user-agent'] ?? undefined;
+        await recordUtmVisit({ ...input, userAgent });
+        return { ok: true };
+      }),
+    // Get UTM stats (admin only)
+    getStats: adminProcedure
+      .input(z.object({ days: z.number().min(1).max(365).default(30) }))
+      .query(async ({ input }) => {
+        return getUtmStats(input.days);
       }),
   }),
 });
