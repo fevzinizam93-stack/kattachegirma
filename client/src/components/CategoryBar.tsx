@@ -57,26 +57,22 @@ export default function CategoryBar() {
   const hasMore = hiddenCats.length > 0;
 
   return (
-    <div className="hidden md:block bg-white border-b border-gray-100 shadow-sm">
+    <div className="hidden md:block bg-gray-50 border-b border-gray-200">
       <div className="container">
-        <div ref={containerRef} className="flex items-stretch gap-0 relative">
+        <div ref={containerRef} className="flex items-center gap-1.5 py-2 relative">
           {visibleCats.map((cat) => (
             <Link
               key={cat.id}
               href={`/category/${cat.slug}`}
               onClick={() => setShowMore(false)}
-              className={`flex flex-col items-center justify-center gap-0.5 px-3 py-2 text-center transition-colors min-w-[80px] max-w-[120px] flex-1 border-b-2 hover:bg-red-50 hover:border-red-500 hover:text-red-700 ${
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap transition-all border ${
                 isActive(cat)
-                  ? "border-red-600 bg-red-50 text-red-700"
-                  : "border-transparent text-gray-700"
+                  ? "bg-red-600 text-white border-red-600 shadow-sm"
+                  : "bg-white text-gray-600 border-gray-200 hover:border-red-400 hover:text-red-600 hover:bg-red-50"
               }`}
             >
-              {cat.icon && (
-                <span className="text-lg leading-none">{cat.icon}</span>
-              )}
-              <span className="text-[11px] font-medium leading-tight line-clamp-2 whitespace-normal text-center">
-                {getCatName(cat)}
-              </span>
+              {cat.icon && <span className="text-xs leading-none">{cat.icon}</span>}
+              <span>{getCatName(cat)}</span>
             </Link>
           ))}
 
@@ -85,37 +81,31 @@ export default function CategoryBar() {
             <div ref={moreRef} className="relative shrink-0">
               <button
                 onClick={() => setShowMore((v) => !v)}
-                className={`flex flex-col items-center justify-center gap-0.5 px-4 py-2 h-full transition-colors border-b-2 hover:bg-red-50 hover:border-red-500 hover:text-red-700 min-w-[80px] ${
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap transition-all border ${
                   showMore
-                    ? "border-red-600 bg-red-50 text-red-700"
-                    : "border-transparent text-gray-700"
+                    ? "bg-red-600 text-white border-red-600"
+                    : "bg-white text-gray-600 border-gray-200 hover:border-red-400 hover:text-red-600 hover:bg-red-50"
                 }`}
               >
-                {showMore ? (
-                  <ChevronUp size={16} />
-                ) : (
-                  <ChevronDown size={16} />
-                )}
-                <span className="text-[11px] font-medium whitespace-nowrap">
-                  {lang === "uz" ? "Ko'proq" : "Ещё"} ({hiddenCats.length})
-                </span>
+                <span>{lang === "uz" ? "Ko'proq" : "Ещё"} ({hiddenCats.length})</span>
+                {showMore ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
               </button>
 
               {/* Dropdown with hidden categories */}
               {showMore && (
-                <div className="absolute top-full right-0 mt-0 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 min-w-[200px] py-1 overflow-hidden">
+                <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 min-w-[180px] py-1 overflow-hidden">
                   {hiddenCats.map((cat) => (
                     <Link
                       key={cat.id}
                       href={`/category/${cat.slug}`}
                       onClick={() => setShowMore(false)}
-                      className={`flex items-center gap-3 px-4 py-2.5 hover:bg-red-50 hover:text-red-700 transition-colors text-sm ${
+                      className={`flex items-center gap-2.5 px-4 py-2 hover:bg-red-50 hover:text-red-700 transition-colors text-[12px] ${
                         isActive(cat)
                           ? "bg-red-50 text-red-700 font-semibold"
                           : "text-gray-700"
                       }`}
                     >
-                      {cat.icon && <span className="text-base">{cat.icon}</span>}
+                      {cat.icon && <span className="text-sm">{cat.icon}</span>}
                       <span>{getCatName(cat)}</span>
                     </Link>
                   ))}
