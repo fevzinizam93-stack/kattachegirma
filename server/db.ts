@@ -706,9 +706,20 @@ export async function setUserVip(
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   if (isVip) {
-    await db.update(users).set({ role: "vip", vipExpiresAt: expiresAt ?? null }).where(eq(users.id, userId));
+    // Never downgrade admin to vip — admin already has full access including VIP prices
+    const existing = await db.select({ role: users.role }).from(users).where(eq(users.id, userId)).limit(1);
+    if (existing[0]?.role !== "admin") {
+      await db.update(users).set({ role: "vip", vipExpiresAt: expiresAt ?? null }).where(eq(users.id, userId));
+    } else {
+      // Admin: just update vipExpiresAt if provided, keep role as admin
+      await db.update(users).set({ vipExpiresAt: expiresAt ?? null }).where(eq(users.id, userId));
+    }
   } else {
-    await db.update(users).set({ role: "user", vipExpiresAt: null }).where(eq(users.id, userId));
+    // When revoking VIP, only reset to 'user' if they are currently 'vip' (not admin)
+    const existing = await db.select({ role: users.role }).from(users).where(eq(users.id, userId)).limit(1);
+    if (existing[0]?.role !== "admin") {
+      await db.update(users).set({ role: "user", vipExpiresAt: null }).where(eq(users.id, userId));
+    }
   }
 }
 

@@ -372,3 +372,9 @@
 - [x] Admin.tsx: добавить поле costPrice в форму добавления/редактирования товара
 - [x] Frontend: добавить VIP-кнопку в навигацию (только для vip/admin пользователей)
 - [x] Frontend: VIP-режим показывает себестоимость + скидку от рынка на карточках и странице товара
+
+## Баг v59: VIP роль заменяет admin роль
+- [x] DB: восстановить role='admin' для fevzinizam93@gmail.com
+- [x] server/routers.ts: admin роль тоже видит costPrice (VIP цены) — isVipOrAdmin проверка
+- [x] Admin.tsx VIP вкладка: нельзя давать VIP тому кто уже admin (или сохранять admin роль)
+- [x] Frontend ProductCard/ProductDetail: показывать VIP цены для role='admin' тоже
