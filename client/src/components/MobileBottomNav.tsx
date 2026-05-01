@@ -11,7 +11,7 @@ import { getLoginUrl } from "@/const";
 export default function MobileBottomNav() {
   const [location] = useLocation();
   const { totalItems } = useCart();
-  const { t, lang, setLang } = useLanguage();
+  const { t } = useLanguage();
   const { currency, setCurrency } = useCurrency();
   const { user, isAuthenticated } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -78,7 +78,7 @@ export default function MobileBottomNav() {
             className={`flex flex-col items-center justify-center flex-1 gap-0.5 text-[10px] font-medium transition-colors ${menuOpen ? activeClass : inactiveClass}`}
           >
             <Menu size={22} strokeWidth={menuOpen ? 2.5 : 1.8} />
-            <span>{lang === "uz" ? "Menyu" : "Меню"}</span>
+            <span>Меню</span>
           </button>
         </div>
       </nav>
@@ -88,7 +88,7 @@ export default function MobileBottomNav() {
         <SheetContent side="bottom" className="rounded-t-2xl px-0 pb-safe max-h-[85vh] overflow-y-auto">
           <SheetHeader className="px-5 pb-2 border-b border-gray-100">
             <SheetTitle className="text-base font-black text-gray-900">
-              {lang === "uz" ? "Menyu" : "Меню"}
+              Меню
             </SheetTitle>
           </SheetHeader>
 
@@ -103,7 +103,7 @@ export default function MobileBottomNav() {
                 </div>
                 <div>
                   <div className="text-sm font-bold text-gray-900">{user?.name}</div>
-                  <div className="text-xs text-gray-500">{lang === "uz" ? "Profilga o'tish" : "Перейти в профиль"}</div>
+                  <div className="text-xs text-gray-500">Перейти в профиль</div>
                 </div>
               </Link>
             ) : (
@@ -114,7 +114,7 @@ export default function MobileBottomNav() {
                 </div>
                 <div>
                   <div className="text-sm font-bold text-gray-900">{t.nav_login}</div>
-                  <div className="text-xs text-gray-500">{lang === "uz" ? "Kirish yoki ro'yxatdan o'tish" : "Войти или зарегистрироваться"}</div>
+                  <div className="text-xs text-gray-500">Войти или зарегистрироваться</div>
                 </div>
               </a>
             )}
@@ -129,7 +129,7 @@ export default function MobileBottomNav() {
               </div>
               <div>
                 <div className="text-sm font-bold text-gray-900">Premium</div>
-                <div className="text-xs text-gray-500">{lang === "uz" ? "Original texnika" : "Оригинальная техника"}</div>
+                <div className="text-xs text-gray-500">Оригинальная техника</div>
               </div>
             </Link>
 
@@ -141,7 +141,7 @@ export default function MobileBottomNav() {
               </div>
               <div>
                 <div className="text-sm font-bold text-gray-900">{t.nav_become_seller}</div>
-                <div className="text-xs text-gray-500">{lang === "uz" ? "Do'koningizni oching" : "Откройте свой магазин"}</div>
+                <div className="text-xs text-gray-500">Откройте свой магазин</div>
               </div>
             </Link>
 
@@ -154,7 +154,7 @@ export default function MobileBottomNav() {
                 </div>
                 <div>
                   <div className="text-sm font-bold text-red-700">Admin</div>
-                  <div className="text-xs text-gray-500">{lang === "uz" ? "Boshqaruv paneli" : "Панель управления"}</div>
+                  <div className="text-xs text-gray-500">Панель управления</div>
                 </div>
               </Link>
             )}
@@ -167,39 +167,16 @@ export default function MobileBottomNav() {
                 </div>
                 <div>
                   <div className="text-sm font-bold" style={{ color: '#7c3aed' }}>VIP участник</div>
-                  <div className="text-xs text-purple-500">{lang === "uz" ? "Maxsus narxlar sizga ko'rinadi" : "Себестоимость товаров видна вам"}</div>
+                  <div className="text-xs text-purple-500">Себестоимость товаров видна вам</div>
                 </div>
               </div>
             )}
 
             <div className="h-px bg-gray-100 my-1" />
 
-            {/* Language selector */}
-            <div className="px-3 py-2">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                {lang === "uz" ? "Til" : "Язык"}
-              </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setLang("ru")}
-                  className={`flex items-center gap-2 flex-1 px-3 py-2.5 rounded-xl border-2 text-sm font-semibold transition-all ${lang === "ru" ? "border-red-500 bg-red-50 text-red-700" : "border-gray-200 text-gray-600 hover:border-gray-300"}`}
-                >
-                  <span>🇷🇺</span> Русский {lang === "ru" && <span className="ml-auto text-red-500 text-xs">✓</span>}
-                </button>
-                <button
-                  onClick={() => setLang("uz")}
-                  className={`flex items-center gap-2 flex-1 px-3 py-2.5 rounded-xl border-2 text-sm font-semibold transition-all ${lang === "uz" ? "border-red-500 bg-red-50 text-red-700" : "border-gray-200 text-gray-600 hover:border-gray-300"}`}
-                >
-                  <span>🇺🇿</span> O'zbek {lang === "uz" && <span className="ml-auto text-red-500 text-xs">✓</span>}
-                </button>
-              </div>
-            </div>
-
             {/* Currency selector */}
             <div className="px-3 py-2">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                {lang === "uz" ? "Valyuta" : "Валюта"}
-              </p>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Валюта</p>
               <div className="flex gap-2">
                 <button
                   onClick={() => setCurrency("uzs")}

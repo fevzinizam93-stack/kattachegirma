@@ -55,7 +55,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
   const [zoomed, setZoomed] = useState(false);
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
   const { addItem } = useCart();
-  const { lang, t } = useLanguage();
+  const { t } = useLanguage();
   const { formatPrice } = useCurrency();
 
   const { data: product, isLoading } = trpc.products.bySlug.useQuery({ slug });
@@ -93,7 +93,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
       document.title = "Katta Chegirma";
       return;
     }
-    const name = (lang === "uz" && (product as any).nameUz) ? (product as any).nameUz : product.name;
+    const name = product.name;
     const brand = product.brand ? `${product.brand} ` : "";
     const suffix = t.detail_buy_in_city;
     const titleRaw = `${brand}${name}${suffix}`;
@@ -101,12 +101,12 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
     document.title = titleRaw.length > 60
       ? titleRaw.slice(0, 60).replace(/\s+\S*$/, "") + "…"
       : titleRaw;
-  }, [product, lang]);
+  }, [product]);
 
   // SEO: Schema.org Product JSON-LD
   useEffect(() => {
     if (!product) return;
-    const name = (lang === "uz" && (product as any).nameUz) ? (product as any).nameUz : product.name;
+    const name = product.name;
     const price = parseFloat(product.price);
     const inStock = !product.stock || product.stock > 0;
     const schema = {
@@ -135,7 +135,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
     document.getElementById("product-schema")?.remove();
     document.head.appendChild(script);
     return () => { document.getElementById("product-schema")?.remove(); };
-  }, [product, lang]);
+  }, [product]);
 
   if (isLoading) {
     return (
@@ -191,10 +191,10 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
         <div className="text-center">
           <div className="text-6xl mb-4">📦</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            {lang === "uz" ? "Bu mahsulot hozirda mavjud emas" : "Товар закончился"}
+            Товар закончился
           </h2>
           <p className="text-gray-500 mb-6">
-            {lang === "uz" ? "Boshqa mahsulotlarimizni ko'ring" : "Посмотрите другие наши товары"}
+            Посмотрите другие наши товары
           </p>
           <Link href="/catalog" className="bg-primary text-white px-6 py-2.5 rounded-lg hover:bg-primary/90 transition-colors font-semibold">
             {t.nav_catalog}
@@ -207,10 +207,8 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
   const hasDiscount = (product.discount ?? 0) > 0 && product.originalPrice;
   const specs = (product.specs as Record<string, string> | null) ?? {};
   const telegramUsername = product.sellerTelegram?.replace("@", "").replace("https://t.me/", "");
-  const displayName = (lang === "uz" && (product as any).nameUz) ? (product as any).nameUz : product.name;
-  const descriptionText = (lang === "uz" && (product as any).descriptionUz)
-    ? (product as any).descriptionUz
-    : (product.description || (product as any).descriptionUz);
+  const displayName = product.name;
+  const descriptionText = product.description;
   const allImages: string[] = (product as any).images?.length
     ? (product as any).images
     : product.imageUrl ? [product.imageUrl] : [];
@@ -573,7 +571,7 @@ function StarRating({ value, onChange }: { value: number; onChange?: (v: number)
 }
 
 function ReviewsSection({ productId }: { productId: number }) {
-  const { lang, t } = useLanguage();
+  const { t } = useLanguage();
   const [authorName, setAuthorName] = useState("");
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
@@ -600,7 +598,7 @@ function ReviewsSection({ productId }: { productId: number }) {
   };
 
   const formatDate = (d: Date | string) =>
-    new Date(d).toLocaleDateString(lang === "uz" ? "uz-UZ" : "ru-RU", { day: "2-digit", month: "long", year: "numeric" });
+    new Date(d).toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric" });
 
   return (
     <div className="bg-white rounded-2xl shadow-sm mt-3 overflow-hidden">
@@ -659,13 +657,13 @@ function ReviewsSection({ productId }: { productId: number }) {
                 {t.detail_reviews}
               </p>
               <p className="text-xs text-gray-500 mt-1">
-                {lang === "uz" ? "Sharh moderatsiyadan o'tgach e'lon qilinadi." : "Отзыв появится после проверки модератором."}
+                Отзыв появится после проверки модератором.
               </p>
               <button
                 onClick={() => setSubmitted(false)}
                 className="mt-3 text-xs text-primary underline"
               >
-                {lang === "uz" ? "Yana sharh qoldirish" : "Оставить ещё один отзыв"}
+                Оставить ещё один отзыв
               </button>
             </div>
           ) : (
@@ -685,18 +683,18 @@ function ReviewsSection({ productId }: { productId: number }) {
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1">
-                  {lang === "uz" ? "Baho" : "Оценка"}
+                  Оценка
                 </label>
                 <StarRating value={rating} onChange={setRating} />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1">
-                  {lang === "uz" ? "Sharh" : "Комментарий"}
+                  Комментарий
                 </label>
                 <textarea
                   value={comment}
                   onChange={e => setComment(e.target.value)}
-                  placeholder={lang === "uz" ? "Fikringizni yozing..." : "Напишите ваш отзыв..."}
+                  placeholder="Напишите ваш отзыв..."
                   required
                   rows={4}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none"
@@ -710,10 +708,10 @@ function ReviewsSection({ productId }: { productId: number }) {
                 <Send size={14} />
                 {submitMutation.isPending
                   ? t.common_searching
-                  : (lang === "uz" ? "Sharh yuborish" : "Отправить отзыв")}
+                  : "Отправить отзыв"}
               </button>
               <p className="text-[11px] text-gray-400 text-center">
-                {lang === "uz" ? "Sharhlar moderatsiyadan o'tadi" : "Отзывы проходят модерацию"}
+                Отзывы проходят модерацию
               </p>
             </form>
           )}

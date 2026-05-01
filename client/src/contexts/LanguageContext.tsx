@@ -836,14 +836,15 @@ const LanguageContext = createContext<LanguageContextType>({
 });
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Language>(() => {
-    const saved = localStorage.getItem("kc_lang");
-    return (saved === "uz" || saved === "ru") ? saved : "ru";
-  });
+  // Language is fixed to Russian — Uzbek support removed for now
+  const lang: Language = "ru";
+  // Clear any saved UZ preference from localStorage
+  if (typeof localStorage !== "undefined") {
+    localStorage.setItem("kc_lang", "ru");
+  }
 
-  const setLang = (newLang: Language) => {
-    setLangState(newLang);
-    localStorage.setItem("kc_lang", newLang);
+  const setLang = (_newLang: Language) => {
+    // No-op: language is fixed to Russian
   };
 
   const t = translations[lang];

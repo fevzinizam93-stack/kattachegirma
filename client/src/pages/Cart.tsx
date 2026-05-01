@@ -7,14 +7,12 @@ import { Link } from "wouter";
 
 export default function Cart() {
   const { items, removeItem, updateQuantity, totalAmount, totalItems } = useCart();
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const { formatPrice } = useCurrency();
 
   useEffect(() => {
-    document.title = lang === "uz"
-      ? "Savat — Tanlangan mahsulotlar | Katta Chegirma"
-      : "Корзина — Выбранные товары | Катта Чегирма";
-  }, [lang]);
+    document.title = "Корзина — Выбранные товары | Катта Чегирма";
+  }, []);
 
   if (items.length === 0) {
     return (

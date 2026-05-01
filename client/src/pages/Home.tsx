@@ -10,15 +10,13 @@ import { Link, useLocation } from "wouter";
 const CATEGORY_ORDER = [120001, 1, 2, 30001, 9, 150001, 8, 13];
 
 export default function Home() {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const [, navigate] = useLocation();
 
   // SEO: dynamic document.title (30-60 chars)
   useEffect(() => {
-    document.title = lang === "uz"
-      ? "Katta Chegirma — Chegirmali uy texnikasi do'koni"
-      : "Катта Чегирма — Магазин бытовой техники со скидками";
-  }, [lang]);
+    document.title = "Катта Чегирма — Магазин бытовой техники со скидками";
+  }, []);
 
   // Hits — primary content, load first
   const { data: hitsData } = trpc.products.getHits.useQuery(
@@ -68,24 +66,15 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* SEO: visually hidden H1 for search engines */}
-      <h1 className="sr-only">
-        {lang === "uz"
-          ? "Katta Chegirma — Oʻzbekistonda eng arzon uy texnikasi"
-          : "Катта Чегирма — Дешевая бытовая техника в Узбекистане"}
-      </h1>
-      {/* SEO: guaranteed H2 always visible to crawlers */}
-      <h2 className="sr-only">
-        {lang === "uz"
-          ? "Chegirmali mahsulotlar — televizor, kir yuvish mashinasi, muzlatgich"
-          : "Товары со скидкой — телевизоры, стиральные машины, холодильники"}
-      </h2>
+      <h1 className="sr-only">Катта Чегирма — Дешевая бытовая техника в Узбекистане</h1>
+      <h2 className="sr-only">Товары со скидкой — телевизоры, стиральные машины, холодильники</h2>
 
       {/* Promo Banners from admin */}
       {banners.length > 0 && (
         <section className="container pt-3">
           <div className="flex flex-col gap-2">
             {banners.map(banner => (
-              <PromoBanner key={banner.id} banner={banner} lang={lang} />
+              <PromoBanner key={banner.id} banner={banner} />
             ))}
           </div>
         </section>
@@ -161,7 +150,7 @@ export default function Home() {
                   className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
                   style={{ color: "#cc0000" }}
                 >
-                  {lang === "uz" ? `Yana ${prods.length - 5} ta ko'rish` : `Ещё ${prods.length - 5} товаров`} <ArrowRight size={14} />
+                  Ещё {prods.length - 5} товаров <ArrowRight size={14} />
                 </Link>
               </div>
             )}
@@ -190,7 +179,7 @@ interface BannerData {
   endsAt?: Date | null;
 }
 
-function PromoBanner({ banner, lang }: { banner: BannerData; lang: string }) {
+function PromoBanner({ banner }: { banner: BannerData }) {
   const [timeLeft, setTimeLeft] = React.useState("");
 
   React.useEffect(() => {
@@ -202,17 +191,17 @@ function PromoBanner({ banner, lang }: { banner: BannerData; lang: string }) {
       const h = Math.floor((diff % 86400000) / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
       const s = Math.floor((diff % 60000) / 1000);
-      if (d > 0) setTimeLeft(lang === "uz" ? `${d} kun ${h} soat` : `${d} д ${h} ч`);
+      if (d > 0) setTimeLeft(`${d} д ${h} ч`);
       else setTimeLeft(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`);
     };
     update();
     const id = setInterval(update, 1000);
     return () => clearInterval(id);
-  }, [banner.endsAt, lang]);
+  }, [banner.endsAt]);
 
-  const title = lang === "uz" && banner.titleUz ? banner.titleUz : banner.title;
-  const desc = lang === "uz" && banner.descriptionUz ? banner.descriptionUz : banner.description;
-  const btnText = lang === "uz" && banner.linkTextUz ? banner.linkTextUz : (banner.linkText || (lang === "uz" ? "Ko'rish" : "Смотреть"));
+  const title = banner.title;
+  const desc = banner.description;
+  const btnText = banner.linkText || "Смотреть";
 
   const inner = (
     <div
@@ -225,7 +214,7 @@ function PromoBanner({ banner, lang }: { banner: BannerData; lang: string }) {
         {timeLeft && (
           <div className="mt-1 flex items-center gap-1.5 text-xs font-bold opacity-80">
             <span>⏰</span>
-            <span>{lang === "uz" ? "Tugashiga:" : "Осталось:"} {timeLeft}</span>
+            <span>Осталось: {timeLeft}</span>
           </div>
         )}
       </div>

@@ -8,7 +8,7 @@ export default function CategoryBar() {
   const { data: categories = [] } = trpc.categories.list.useQuery(undefined, {
     staleTime: 10 * 60 * 1000,
   });
-  const { lang } = useLanguage();
+  // Language fixed to Russian
   const [location] = useLocation();
   const [showMore, setShowMore] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
@@ -46,7 +46,6 @@ export default function CategoryBar() {
   if (categories.length === 0) return null;
 
   const getCatName = (cat: { name: string; nameUz?: string | null }) => {
-    if (lang === "uz" && cat.nameUz) return cat.nameUz;
     return cat.name;
   };
 
@@ -87,7 +86,7 @@ export default function CategoryBar() {
                     : "bg-white text-gray-600 border-gray-200 hover:border-red-400 hover:text-red-600 hover:bg-red-50"
                 }`}
               >
-                <span>{lang === "uz" ? "Ko'proq" : "Ещё"} ({hiddenCats.length})</span>
+                <span>Ещё ({hiddenCats.length})</span>
                 {showMore ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
               </button>
 

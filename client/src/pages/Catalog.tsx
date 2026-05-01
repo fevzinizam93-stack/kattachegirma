@@ -7,13 +7,11 @@ import { useEffect, useState } from "react";
 const LIMIT = 12;
 
 export default function Catalog() {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
 
   useEffect(() => {
-    document.title = lang === "uz"
-      ? "Katalog — Barcha uy texnikasi | Katta Chegirma"
-      : "Каталог товаров — Бытовая техника";
-  }, [lang]);
+    document.title = "Каталог товаров — Бытовая техника";
+  }, []);
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>();
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");

@@ -14,19 +14,17 @@ interface NavbarProps {
 export default function Navbar({ onOpenAuth }: NavbarProps) {
   const { totalItems } = useCart();
   const { user, isAuthenticated } = useAuth();
-  const { lang, setLang, t } = useLanguage();
+  const { t } = useLanguage();
   const { currency, setCurrency } = useCurrency();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
-  const [showLangMenu, setShowLangMenu] = useState(false);
   const [showCurrMenu, setShowCurrMenu] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [, navigate] = useLocation();
   const [location] = useLocation();
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const langMenuRef = useRef<HTMLDivElement>(null);
   const currMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -47,11 +45,6 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
         inputRef.current && !inputRef.current.contains(e.target as Node)
       ) {
         setShowDropdown(false);
-      }
-      if (
-        langMenuRef.current && !langMenuRef.current.contains(e.target as Node)
-      ) {
-        setShowLangMenu(false);
       }
       if (
         currMenuRef.current && !currMenuRef.current.contains(e.target as Node)
@@ -103,7 +96,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
   };
 
   const getProductName = (product: { name: string; nameUz?: string | null }) => {
-    if (lang === "uz" && product.nameUz) return product.nameUz;
+    // Language fixed to Russian
     return product.name;
   };
 
@@ -271,7 +264,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
             {/* Currency switcher */}
             <div className="relative" ref={currMenuRef}>
               <button
-                onClick={() => { setShowCurrMenu((v) => !v); setShowLangMenu(false); }}
+                onClick={() => { setShowCurrMenu((v) => !v); }}
                 className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer select-none"
               >
                 <span className="text-base leading-none">{currency === "uzs" ? "🇺🇿" : "🇺🇸"}</span>
@@ -292,26 +285,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
               )}
             </div>
 
-            {/* Language switcher */}
-            <div className="relative" ref={langMenuRef}>
-              <button onClick={() => { setShowLangMenu((v) => !v); setShowCurrMenu(false); }} className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer select-none">
-                <span className="text-base leading-none">{lang === "ru" ? "🇷🇺" : "🇺🇿"}</span>
-                <span className="text-[10px] text-gray-600 font-medium flex items-center gap-0.5">
-                  {lang === "ru" ? "RU" : "UZ"}
-                  <ChevronDown size={9} className={`transition-transform ${showLangMenu ? "rotate-180" : ""}`} />
-                </span>
-              </button>
-              {showLangMenu && (
-                <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden z-50 min-w-[130px]">
-                  <button onClick={() => { setLang("ru"); setShowLangMenu(false); }} className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-red-50 transition-colors ${lang === "ru" ? "bg-red-50 text-red-700 font-semibold" : "text-gray-700"}`}>
-                    <span>🇷🇺</span><span>Русский</span>{lang === "ru" && <span className="ml-auto text-red-500">✓</span>}
-                  </button>
-                  <button onClick={() => { setLang("uz"); setShowLangMenu(false); }} className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-red-50 transition-colors ${lang === "uz" ? "bg-red-50 text-red-700 font-semibold" : "text-gray-700"}`}>
-                    <span>🇺🇿</span><span>O'zbek</span>{lang === "uz" && <span className="ml-auto text-red-500">✓</span>}
-                  </button>
-                </div>
-              )}
-            </div>
+            {/* Language fixed to Russian — switcher removed */}
           </div>
         </div>
       </div>

@@ -31,12 +31,12 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
-  const { lang, t } = useLanguage();
+  const { t } = useLanguage();
   const { formatPrice } = useCurrency();
   const { user } = useAuth();
 
   const isVip = user?.role === "vip" || user?.role === "admin";
-  const displayName = (lang === "uz" && product.nameUz) ? product.nameUz : product.name;
+  const displayName = product.name;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();

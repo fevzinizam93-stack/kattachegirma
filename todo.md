@@ -384,3 +384,18 @@
 - [x] Проверить routers.ts create/update: принимается ли costPrice в input schema
 - [x] Проверить ProductCard.tsx: правильно ли отображается costPrice (деление на 100 если хранится в копейках?)
 - [x] Проверить DB: что реально сохраняется в costPrice для товара Bosch PKN811FP2E
+
+## v60 - Только русский язык (убрать узбекский)
+- [ ] ProductDetail.tsx: исправить кнопку "протеиновые таблетки" → "Отправить отзыв", убрать все узбекские тексты
+- [ ] Все страницы/компоненты: заменить узбекские тексты на русские
+- [ ] Navbar.tsx: убрать переключатель языков (RU/UZ)
+- [ ] Убрать узбекские плейсхолдеры, лейблы, сообщения об ошибках
+
+## v60 - Только русский язык (выполнено)
+- [x] LanguageContext.tsx: зафиксировать lang='ru', убрать смену языка
+- [x] Navbar.tsx: убрать переключатель RU/UZ
+- [x] MobileBottomNav.tsx: убрать переключатель языка, заменить все UZ тексты
+- [x] ProductCard.tsx: заменить displayName на product.name (RU)
+- [x] CategoryBar.tsx: заменить getCatName на cat.name (RU)
+- [x] Home.tsx, Cart.tsx, Catalog.tsx, Checkout.tsx, NotFound.tsx, ProductDetail.tsx: заменить все lang===uz на RU
+- [x] ProductDetail.tsx: кнопка "Отправить отзыв" исправлена (было "протеиновые таблетки")
