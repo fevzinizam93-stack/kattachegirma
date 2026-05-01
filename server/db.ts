@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, gte, ilike, like, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool } from "mysql2";
-import { analyticsEvents, banners, Banner, InsertBanner, categories, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, orders, products, reviews, InsertReview, sellers, storeSettings, telegramRecipients, TelegramRecipient, users, utmVisits, UtmVisit } from "../drizzle/schema";
+import { analyticsEvents, banners, Banner, InsertBanner, categories, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, orders, products, reviews, InsertReview, sellers, storeSettings, telegramRecipients, TelegramRecipient, users, User, utmVisits, UtmVisit } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import bcrypt from "bcryptjs";
 
@@ -682,4 +682,47 @@ export async function getUtmStats(days = 30): Promise<{
   ).length;
 
   return { total, bySource, byCampaign, byDay, instagramTotal };
+}
+
+// ─── VIP User Management ──────────────────────────────────────────────────────
+
+export async function getVipUsers(): Promise<User[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(users).where(eq(users.role, "vip")).orderBy(desc(users.createdAt));
+}
+
+export async function getAllUsersForAdmin(): Promise<User[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(users).orderBy(desc(users.createdAt)).limit(500);
+}
+
+export async function setUserVip(
+  userId: number,
+  isVip: boolean,
+  expiresAt?: Date | null
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  if (isVip) {
+    await db.update(users).set({ role: "vip", vipExpiresAt: expiresAt ?? null }).where(eq(users.id, userId));
+  } else {
+    await db.update(users).set({ role: "user", vipExpiresAt: null }).where(eq(users.id, userId));
+  }
+}
+
+export async function findUserByEmailOrPhone(query: string): Promise<User | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(users).where(
+    or(eq(users.email, query), eq(users.phone, query))
+  ).limit(1);
+  return result[0] ?? null;
+}
+
+export async function updateUserPhone(userId: number, phone: string): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(users).set({ phone }).where(eq(users.id, userId));
 }

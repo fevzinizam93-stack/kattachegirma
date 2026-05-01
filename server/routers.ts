@@ -65,6 +65,11 @@ import {
   deleteTelegramRecipient,
   recordUtmVisit,
   getUtmStats,
+  getVipUsers,
+  getAllUsersForAdmin,
+  setUserVip,
+  findUserByEmailOrPhone,
+  updateUserPhone,
 } from "./db";
 import { storagePut } from "./storage";
 import { invokeLLM } from "./_core/llm";
@@ -251,6 +256,7 @@ export const appRouter = router({
         sellerName: z.string().optional(),
         sellerId: z.number().optional(),
         isApproved: z.boolean().default(true),
+        costPrice: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
         // Normalize slug server-side: transliterate Cyrillic, strip emojis/special chars
@@ -301,6 +307,7 @@ export const appRouter = router({
         sellerName: z.string().optional(),
         sellerId: z.number().optional(),
         isApproved: z.boolean().optional(),
+        costPrice: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
         const { id, ...data } = input;
@@ -902,6 +909,50 @@ export const appRouter = router({
       .query(async ({ input }) => {
         return getUtmStats(input.days);
       }),
+  }),
+
+  // ---- VIP Management ----
+  vip: router({
+    // List all VIP users (admin only)
+    listUsers: adminProcedure.query(async () => {
+      return getVipUsers();
+    }),
+
+    // List all users for admin to manage (admin only)
+    listAllUsers: adminProcedure.query(async () => {
+      return getAllUsersForAdmin();
+    }),
+
+    // Grant VIP access to a user by email or phone (admin only)
+    grantAccess: adminProcedure
+      .input(z.object({
+        emailOrPhone: z.string().min(1),
+        expiresAt: z.string().optional(), // ISO date string
+      }))
+      .mutation(async ({ input }) => {
+        const user = await findUserByEmailOrPhone(input.emailOrPhone.trim());
+        if (!user) throw new TRPCError({ code: "NOT_FOUND", message: "Пользователь не найден. Попросите его сначала зарегистрироваться на сайте." });
+        const expiresAt = input.expiresAt ? new Date(input.expiresAt) : null;
+        await setUserVip(user.id, true, expiresAt);
+        return { ok: true, userId: user.id, name: user.name, email: user.email };
+      }),
+
+    // Revoke VIP access (admin only)
+    revokeAccess: adminProcedure
+      .input(z.object({ userId: z.number() }))
+      .mutation(async ({ input }) => {
+        await setUserVip(input.userId, false);
+        return { ok: true };
+      }),
+
+    // Get current user's VIP status (protected)
+    myStatus: protectedProcedure.query(async ({ ctx }) => {
+      return {
+        isVip: ctx.user.role === "vip" || ctx.user.role === "admin",
+        role: ctx.user.role,
+        vipExpiresAt: (ctx.user as any).vipExpiresAt ?? null,
+      };
+    }),
   }),
 });
 export type AppRouter = typeof appRouter;

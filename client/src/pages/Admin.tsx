@@ -1,6 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { BarChart3, Bell, Edit, FolderOpen, ImagePlus, MapPin, Package, Plus, Search, Settings, ShoppingBag, Star, Store, Trash2, Upload, Users, X } from "lucide-react";
+import { BarChart3, Bell, Crown, Edit, FolderOpen, ImagePlus, MapPin, Package, Plus, Search, Settings, ShoppingBag, Star, Store, Trash2, Upload, Users, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -11,7 +11,7 @@ function formatPrice(price: string | number) {
   return new Intl.NumberFormat("ru-RU").format(num) + " сум";
 }
 
-type Tab = "products" | "categories" | "orders" | "sellers" | "moderation" | "settings" | "banners" | "notifications" | "utm";
+type Tab = "products" | "categories" | "orders" | "sellers" | "moderation" | "settings" | "banners" | "notifications" | "utm" | "vip";
 
 interface BannerForm {
   id?: number;
@@ -58,6 +58,7 @@ interface ProductForm {
   isHit: boolean;
   isPremium: boolean;
   hitOrder: number;
+  costPrice: string;
   sellerPhone: string;
   sellerTelegram: string;
   sellerName: string;
@@ -66,7 +67,7 @@ interface ProductForm {
 const emptyForm: ProductForm = {
   name: "", nameUz: "", slug: "", description: "", descriptionUz: "", categoryId: 0, brand: "",
   price: "", priceUsd: "", originalPrice: "", originalPriceUsd: "", discount: 0, imageUrl: "", images: [], stock: 0,
-  isNew: false, isFeatured: false, isHit: false, isPremium: false, hitOrder: 0, sellerPhone: "", sellerTelegram: "", sellerName: "",
+  isNew: false, isFeatured: false, isHit: false, isPremium: false, hitOrder: 0, costPrice: "", sellerPhone: "", sellerTelegram: "", sellerName: "",
 };
 
 export default function Admin() {
@@ -146,6 +147,28 @@ export default function Admin() {
   });
   const rejectProductMut = trpc.sellers.rejectProduct.useMutation({
     onSuccess: () => { utils.sellers.pendingProducts.invalidate(); toast.success("Товар отклонён"); },
+    onError: (e) => toast.error(e.message),
+  });
+
+  // VIP management
+  const [vipSearch, setVipSearch] = useState("");
+  const [vipEmailOrPhone, setVipEmailOrPhone] = useState("");
+  const [vipExpiresAt, setVipExpiresAt] = useState("");
+  const { data: vipUsersData, isLoading: vipLoading } = trpc.vip.listUsers.useQuery(undefined, {
+    enabled: tab === "vip" && user?.role === "admin",
+  });
+  const vipUsers = vipUsersData ?? [];
+  const grantVipMut = trpc.vip.grantAccess.useMutation({
+    onSuccess: (data) => {
+      utils.vip.listUsers.invalidate();
+      setVipEmailOrPhone("");
+      setVipExpiresAt("");
+      toast.success(`VIP доступ выдан: ${data.name ?? data.email}`);
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const revokeVipMut = trpc.vip.revokeAccess.useMutation({
+    onSuccess: () => { utils.vip.listUsers.invalidate(); toast.success("VIP доступ отозван"); },
     onError: (e) => toast.error(e.message),
   });
 
@@ -406,6 +429,7 @@ export default function Admin() {
       discount: p.discount ?? 0,
       imageUrl: p.imageUrl ?? "", images: existingImages, stock: p.stock ?? 0,
       isNew: p.isNew ?? false, isFeatured: p.isFeatured ?? false, isHit: (p as any).isHit ?? false, isPremium: (p as any).isPremium ?? false, hitOrder: (p as any).hitOrder ?? 0,
+      costPrice: (p as any).costPrice ? String((p as any).costPrice) : "",
       sellerPhone: (p as any).sellerPhone ?? "",
       sellerTelegram: (p as any).sellerTelegram ?? "",
       sellerName: (p as any).sellerName ?? "",
@@ -431,6 +455,7 @@ export default function Admin() {
     { key: "banners" as Tab, icon: ImagePlus, label: "Баннеры" },
     { key: "notifications" as Tab, icon: Bell, label: "Уведомления" },
     { key: "utm" as Tab, icon: MapPin, label: "Источники трафика" },
+    { key: "vip" as Tab, icon: Crown, label: "VIP" },
     { key: "settings" as Tab, icon: Settings, label: "Настройки" },
   ];
 
@@ -716,6 +741,12 @@ export default function Admin() {
                         <label className="block text-sm font-semibold mb-1">Имя продавца</label>
                         <input value={form.sellerName} onChange={e => setForm(f => ({ ...f, sellerName: e.target.value }))}
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="Do'kon nomi" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold mb-1 text-purple-700">👑 Себестоимость (сум) — только для VIP</label>
+                        <input type="number" value={form.costPrice} onChange={e => setForm(f => ({ ...f, costPrice: e.target.value }))}
+                          className="w-full border border-purple-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-purple-50" placeholder="Себестоимость в сумах (не видна обычным пользователям)" />
+                        <p className="text-xs text-purple-500 mt-1">VIP-участники увидят эту цену как «Цена для вас»</p>
                       </div>
                       <div>
                         <label className="block text-sm font-semibold mb-1">Телефон продавца</label>
@@ -1572,6 +1603,107 @@ export default function Admin() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {tab === "vip" && (
+          <div className="max-w-3xl space-y-6">
+            <div className="flex items-center gap-3 mb-2">
+              <Crown size={22} className="text-yellow-500" />
+              <h2 className="font-black text-lg text-gray-900">VIP подписка</h2>
+              <span className="bg-yellow-100 text-yellow-700 text-xs font-bold px-2 py-0.5 rounded-full">{vipUsers.length} VIP</span>
+            </div>
+
+            {/* Grant VIP */}
+            <div className="bg-white rounded-2xl shadow-sm p-6">
+              <h3 className="font-bold text-gray-800 mb-4">Дать VIP-доступ</h3>
+              <p className="text-sm text-gray-500 mb-4">Пользователь должен сначала зарегистрироваться на сайте. Введите его email или номер телефона.</p>
+              <div className="flex gap-3 flex-wrap">
+                <input
+                  value={vipEmailOrPhone}
+                  onChange={e => setVipEmailOrPhone(e.target.value)}
+                  placeholder="Email или номер телефона"
+                  className="flex-1 min-w-48 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                />
+                <input
+                  type="date"
+                  value={vipExpiresAt}
+                  onChange={e => setVipExpiresAt(e.target.value)}
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                  title="Дата окончания VIP (необязательно)"
+                />
+                <button
+                  onClick={() => {
+                    if (!vipEmailOrPhone.trim()) return toast.error("Введите email или телефон");
+                    grantVipMut.mutate({ emailOrPhone: vipEmailOrPhone, expiresAt: vipExpiresAt || undefined });
+                  }}
+                  disabled={grantVipMut.isPending}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold px-5 py-2 rounded-lg text-sm transition-colors disabled:opacity-50"
+                >
+                  {grantVipMut.isPending ? "Выдаём..." : "Дать VIP"}
+                </button>
+              </div>
+              <p className="text-xs text-gray-400 mt-2">Дата окончания — необязательно. Если не указана, VIP бессрочный.</p>
+            </div>
+
+            {/* VIP users list */}
+            <div className="bg-white rounded-2xl shadow-sm p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-gray-800">VIP-участники ({vipUsers.length})</h3>
+                <div className="relative">
+                  <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    value={vipSearch}
+                    onChange={e => setVipSearch(e.target.value)}
+                    placeholder="Поиск..."
+                    className="pl-8 pr-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-300 w-40"
+                  />
+                </div>
+              </div>
+              {vipLoading ? (
+                <p className="text-sm text-gray-400">Загрузка...</p>
+              ) : vipUsers.length === 0 ? (
+                <p className="text-sm text-gray-400">Пока нет VIP-участников</p>
+              ) : (
+                <div className="space-y-2">
+                  {vipUsers
+                    .filter(u => {
+                      if (!vipSearch.trim()) return true;
+                      const q = vipSearch.toLowerCase();
+                      return (u.name ?? "").toLowerCase().includes(q) || (u.email ?? "").toLowerCase().includes(q) || ((u as any).phone ?? "").includes(q);
+                    })
+                    .map(u => (
+                      <div key={u.id} className="flex items-center justify-between p-3 bg-yellow-50 rounded-xl border border-yellow-100">
+                        <div>
+                          <p className="font-semibold text-sm text-gray-900">{u.name ?? "Без имени"}</p>
+                          <p className="text-xs text-gray-500">{u.email ?? (u as any).phone ?? "—"}</p>
+                          {(u as any).vipExpiresAt && (
+                            <p className="text-xs text-yellow-600">До: {new Date((u as any).vipExpiresAt).toLocaleDateString("ru-RU")}</p>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => revokeVipMut.mutate({ userId: u.id })}
+                          disabled={revokeVipMut.isPending}
+                          className="text-xs text-red-500 hover:text-red-700 font-semibold px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition-colors"
+                        >
+                          Отозвать VIP
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+
+            {/* Instructions */}
+            <div className="bg-blue-50 rounded-2xl p-5 border border-blue-100">
+              <h3 className="font-bold text-blue-800 mb-2">Как работает VIP?</h3>
+              <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
+                <li>Пользователь регистрируется на сайте (email + пароль)</li>
+                <li>Вы добавляете его email здесь → он получает VIP-доступ</li>
+                <li>VIP-участник видит кнопку «VIP» на сайте и себестоимость товаров</li>
+                <li>Чтобы убрать VIP — нажмите «Отозвать VIP» рядом с именем</li>
+              </ol>
+            </div>
           </div>
         )}
 

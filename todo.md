@@ -360,3 +360,15 @@
 ## v58 - Массовый перевод товаров RU→UZ
 - [x] Написать скрипт scripts/mass-translate.mjs для массового перевода через LLM
 - [x] Перевести все 45 товаров (0 ошибок): Варочная панель → pishirish paneli, Пылесос → changyutgich и т.д.
+
+## v59 - VIP подписка (себестоимость + закрытый доступ)
+- [x] drizzle/schema.ts: добавить поле costPrice (int, nullable) в таблицу products
+- [x] drizzle/schema.ts: добавить поле role enum('admin','user','vip') в таблицу users (расширить)
+- [x] Применить SQL-миграцию (ALTER TABLE products ADD costPrice, ALTER TABLE users MODIFY role)
+- [x] server/db.ts: добавить getVipUsers, addVipUser, removeVipUser helpers
+- [x] server/routers.ts: добавить vip.listUsers, vip.addUser, vip.removeUser (adminProcedure)
+- [x] server/routers.ts: возвращать costPrice в products.get только если ctx.user?.role === 'vip' или 'admin'
+- [x] Admin.tsx: добавить вкладку "VIP" для управления VIP-пользователями (добавить/удалить по телефону)
+- [x] Admin.tsx: добавить поле costPrice в форму добавления/редактирования товара
+- [x] Frontend: добавить VIP-кнопку в навигацию (только для vip/admin пользователей)
+- [x] Frontend: VIP-режим показывает себестоимость + скидку от рынка на карточках и странице товара
