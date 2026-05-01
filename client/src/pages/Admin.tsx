@@ -1,6 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { BarChart3, Bell, Edit, FolderOpen, ImagePlus, MapPin, Package, Plus, Settings, ShoppingBag, Star, Store, Trash2, Upload, Users, X } from "lucide-react";
+import { BarChart3, Bell, Edit, FolderOpen, ImagePlus, MapPin, Package, Plus, Search, Settings, ShoppingBag, Star, Store, Trash2, Upload, Users, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -80,6 +80,7 @@ export default function Admin() {
   const [uploadingCount, setUploadingCount] = useState(0);
   const [isTranslating, setIsTranslating] = useState(false);
   const [exchangeRate, setExchangeRate] = useState<number>(12700); // UZS per 1 USD
+  const [adminSearch, setAdminSearch] = useState("");
 
   // Category form state
   const [showCatForm, setShowCatForm] = useState(false);
@@ -103,8 +104,18 @@ export default function Admin() {
   const { data: categoriesData } = trpc.categories.list.useQuery();
   const categories = categoriesData ?? [];
 
-  const { data: productsData, isLoading: productsLoading } = trpc.products.list.useQuery({ limit: 200, offset: 0 });
+  const { data: productsData, isLoading: productsLoading } = trpc.products.adminList.useQuery({ limit: 500, offset: 0 });
   const products = productsData?.items ?? [];
+  const filteredProducts = adminSearch.trim()
+    ? products.filter(p => {
+        const q = adminSearch.toLowerCase().trim();
+        const name = (p.name ?? "").toLowerCase();
+        const nameUz = ((p as any).nameUz ?? "").toLowerCase();
+        const brand = (p.brand ?? "").toLowerCase();
+        const slug = (p.slug ?? "").toLowerCase();
+        return name.includes(q) || nameUz.includes(q) || brand.includes(q) || slug.includes(q);
+      })
+    : products;
 
   const { data: orders, isLoading: ordersLoading } = trpc.orders.list.useQuery(undefined, {
     enabled: tab === "orders" && user?.role === "admin",
@@ -459,14 +470,40 @@ export default function Admin() {
         {/* ==================== PRODUCTS TAB ==================== */}
         {tab === "products" && (
           <div>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="font-black text-lg text-gray-900">Товары ({products.length})</h2>
-              <button
-                onClick={() => { setShowForm(true); setForm(emptyForm); setEditId(null); }}
-                className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
-              >
-                <Plus size={16} /> Добавить
-              </button>
+            <div className="flex flex-col gap-3 mb-4">
+              <div className="flex justify-between items-center">
+                <h2 className="font-black text-lg text-gray-900">
+                  Товары ({adminSearch.trim() ? `${filteredProducts.length} / ${products.length}` : products.length})
+                </h2>
+                <button
+                  onClick={() => { setShowForm(true); setForm(emptyForm); setEditId(null); }}
+                  className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
+                >
+                  <Plus size={16} /> Добавить
+                </button>
+              </div>
+              {/* Admin product search bar */}
+              <div className="relative">
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <input
+                  type="text"
+                  value={adminSearch}
+                  onChange={e => setAdminSearch(e.target.value)}
+                  placeholder="Поиск по названию (RU/UZ), бренду, модели..."
+                  className="w-full pl-9 pr-10 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-gray-50 placeholder:text-gray-400"
+                />
+                {adminSearch && (
+                  <button
+                    onClick={() => setAdminSearch("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+              {adminSearch.trim() && filteredProducts.length === 0 && (
+                <p className="text-sm text-gray-500 text-center py-2">Ничего не найдено по запросу «{adminSearch}»</p>
+              )}
             </div>
 
             {/* Product Form Modal */}
@@ -755,7 +792,7 @@ export default function Admin() {
                       </tr>
                     </thead>
                     <tbody>
-                      {products.map(p => (
+                      {filteredProducts.map(p => (
                         <tr key={p.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-3">
