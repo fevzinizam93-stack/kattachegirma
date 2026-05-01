@@ -175,6 +175,35 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
     );
   }
 
+  // Product is inactive (out of stock / disabled by admin)
+  if ((product as any).isActive === false) {
+    // Add noindex so Google doesn't index this page
+    const existingMeta = document.querySelector('meta[name="robots"]');
+    if (existingMeta) existingMeta.setAttribute('content', 'noindex, nofollow');
+    else {
+      const meta = document.createElement('meta');
+      meta.name = 'robots';
+      meta.content = 'noindex, nofollow';
+      document.head.appendChild(meta);
+    }
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">📦</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            {lang === "uz" ? "Bu mahsulot hozirda mavjud emas" : "Товар закончился"}
+          </h2>
+          <p className="text-gray-500 mb-6">
+            {lang === "uz" ? "Boshqa mahsulotlarimizni ko'ring" : "Посмотрите другие наши товары"}
+          </p>
+          <Link href="/catalog" className="bg-primary text-white px-6 py-2.5 rounded-lg hover:bg-primary/90 transition-colors font-semibold">
+            {t.nav_catalog}
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const hasDiscount = (product.discount ?? 0) > 0 && product.originalPrice;
   const specs = (product.specs as Record<string, string> | null) ?? {};
   const telegramUsername = product.sellerTelegram?.replace("@", "").replace("https://t.me/", "");

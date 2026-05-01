@@ -218,6 +218,13 @@ export default function Admin() {
     onSuccess: () => { toast.success("Товар удалён!"); utils.products.list.invalidate(); },
     onError: (e) => toast.error("Ошибка: " + e.message),
   });
+  const toggleActive = trpc.products.toggleActive.useMutation({
+    onSuccess: (_data, vars) => {
+      toast.success(vars.isActive ? "Товар включён в каталог" : "Товар скрыт с сайта");
+      utils.products.adminList.invalidate();
+    },
+    onError: (e) => toast.error("Ошибка: " + e.message),
+  });
   const updateOrderStatus = trpc.orders.updateStatus.useMutation({
     onSuccess: () => { toast.success("Статус обновлён!"); utils.orders.list.invalidate(); },
   });
@@ -773,6 +780,7 @@ export default function Admin() {
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex gap-1 flex-wrap">
+                              {(p as any).isActive === false && <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">⛔ Нет в наличии</span>}
                               {(p as any).isApproved === false && <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">Tekshirilmoqda</span>}
                               {p.isFeatured && <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">Tavsiya</span>}
                               {p.isNew && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Новинка</span>}
@@ -788,6 +796,17 @@ export default function Admin() {
 Одобрить
                                   </button>
                               )}
+                              <button
+                                onClick={() => toggleActive.mutate({ id: p.id, isActive: !(p as any).isActive })}
+                                title={(p as any).isActive ? "Скрыть с сайта (нет в наличии)" : "Показать на сайте"}
+                                className={`text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${
+                                  (p as any).isActive
+                                    ? "bg-green-100 text-green-700 hover:bg-red-100 hover:text-red-600"
+                                    : "bg-red-100 text-red-600 hover:bg-green-100 hover:text-green-700"
+                                }`}
+                              >
+                                {(p as any).isActive ? "✓ В наличии" : "⛔ Нет"}
+                              </button>
                               <button onClick={() => handleEdit(p)} className="p-1.5 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors">
                                 <Edit size={15} />
                               </button>

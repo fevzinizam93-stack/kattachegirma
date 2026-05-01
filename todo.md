@@ -342,3 +342,12 @@
 
 ## Баг: Товары из некоторых категорий не видны на главной странице
 - [x] Home.tsx: добавить секции товаров по категориям (Кондиционеры, Телевизоры и т.д.) чтобы все категории были представлены на главной
+
+## v56 - Кнопка "Нет в наличии" / отключение товара
+- [x] drizzle/schema.ts: добавить поле isActive (boolean, default true) в таблицу products
+- [x] Применить SQL-миграцию (ALTER TABLE products ADD COLUMN isActive BOOLEAN DEFAULT TRUE)
+- [x] server/db.ts: getProducts фильтрует isActive=true по умолчанию (кроме adminList)
+- [x] server/routers.ts: добавить процедуру products.toggleActive (adminProcedure)
+- [x] Admin.tsx: кнопка "Нет в наличии" / "В наличии" в списке товаров с цветовой индикацией
+- [x] Скрыть неактивные товары на Home, Catalog, Category, ProductDetail, Search страницах
+- [x] SEO: неактивные товары возвращают noindex meta тег

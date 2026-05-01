@@ -40,6 +40,7 @@ import {
   promoteToAdmin,
   getHitProducts,
   toggleProductHit,
+  toggleProductActive,
   trackEvent,
   getAnalyticsStats,
   insertReview,
@@ -204,8 +205,8 @@ export const appRouter = router({
         offset: z.number().default(0),
       }))
       .query(async ({ input }) => {
-        const items = await getProducts(input);
-        const total = await countProducts({ categoryId: input.categoryId, search: input.search });
+        const items = await getProducts({ ...input, includeInactive: true });
+        const total = await countProducts({ categoryId: input.categoryId, search: input.search, includeInactive: true });
         return { items, total };
       }),
 
@@ -488,6 +489,13 @@ export const appRouter = router({
       .input(z.object({ id: z.number(), isHit: z.boolean() }))
       .mutation(async ({ input }) => {
         await toggleProductHit(input.id, input.isHit);
+        return { success: true };
+      }),
+
+    toggleActive: adminProcedure
+      .input(z.object({ id: z.number(), isActive: z.boolean() }))
+      .mutation(async ({ input }) => {
+        await toggleProductActive(input.id, input.isActive);
         return { success: true };
       }),
   }),

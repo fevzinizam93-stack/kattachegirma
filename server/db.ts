@@ -145,7 +145,7 @@ export async function deleteCategory(id: number) {
 }
 
 // ---- Products ----
-export async function getProducts(opts?: { categoryId?: number; search?: string; featured?: boolean; limit?: number; offset?: number; approvedOnly?: boolean; isPremium?: boolean }) {
+export async function getProducts(opts?: { categoryId?: number; search?: string; featured?: boolean; limit?: number; offset?: number; approvedOnly?: boolean; isPremium?: boolean; includeInactive?: boolean }) {
   const db = await getDb();
   if (!db) return [];
   const conditions = [];
@@ -163,6 +163,7 @@ export async function getProducts(opts?: { categoryId?: number; search?: string;
     ));
   }
   if (opts?.featured) conditions.push(eq(products.isFeatured, true));
+  if (!opts?.includeInactive) conditions.push(eq(products.isActive, true));
   if (opts?.approvedOnly) conditions.push(eq(products.isApproved, true));
   if (opts?.isPremium !== undefined) conditions.push(eq(products.isPremium, opts.isPremium));
   const query = db.select().from(products);
@@ -215,7 +216,7 @@ export async function deleteProduct(id: number) {
   await db.delete(products).where(eq(products.id, id));
 }
 
-export async function countProducts(opts?: { categoryId?: number; search?: string; approvedOnly?: boolean; isPremium?: boolean }) {
+export async function countProducts(opts?: { categoryId?: number; search?: string; approvedOnly?: boolean; isPremium?: boolean; includeInactive?: boolean }) {
   const db = await getDb();
   if (!db) return 0;
   const conditions = [];
@@ -232,6 +233,7 @@ export async function countProducts(opts?: { categoryId?: number; search?: strin
       sql`CAST(${products.price} AS CHAR) LIKE ${q}`,
     ));
   }
+  if (!opts?.includeInactive) conditions.push(eq(products.isActive, true));
   if (opts?.approvedOnly) conditions.push(eq(products.isApproved, true));
   if (opts?.isPremium !== undefined) conditions.push(eq(products.isPremium, opts.isPremium));
   const query = db.select({ count: sql<number>`count(*)` }).from(products);
@@ -363,7 +365,7 @@ export async function getHitProducts(limit?: number, sortByOrder?: boolean) {
   const db = await getDb();
   if (!db) return [];
   const orderCol = sortByOrder ? asc(products.hitOrder) : desc(products.createdAt);
-  const query = db.select().from(products).where(eq(products.isHit, true)).orderBy(orderCol);
+  const query = db.select().from(products).where(and(eq(products.isHit, true), eq(products.isActive, true))).orderBy(orderCol);
   if (limit) query.limit(limit);
   return query;
 }
@@ -372,6 +374,12 @@ export async function toggleProductHit(id: number, isHit: boolean) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   await db.update(products).set({ isHit }).where(eq(products.id, id));
+}
+
+export async function toggleProductActive(id: number, isActive: boolean) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(products).set({ isActive }).where(eq(products.id, id));
 }
 
 // ---- Analytics ----

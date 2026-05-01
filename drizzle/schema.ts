@@ -90,6 +90,7 @@ export const products = mysqlTable("products", {
   sellerTelegram: varchar("sellerTelegram", { length: 128 }),
   sellerName: varchar("sellerName", { length: 256 }),
   isApproved: boolean("isApproved").default(true),
+  isActive: boolean("isActive").default(true).notNull(),
   moderationStatus: mysqlEnum("moderationStatus", ["approved", "pending", "rejected"]).default("approved").notNull(),
   viewCount: int("viewCount").default(0),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
