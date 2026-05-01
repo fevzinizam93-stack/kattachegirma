@@ -743,9 +743,9 @@ export default function Admin() {
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="Do'kon nomi" />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold mb-1 text-purple-700">👑 Себестоимость (сум) — только для VIP</label>
+                        <label className="block text-sm font-semibold mb-1 text-purple-700">👑 Себестоимость (USD $) — только для VIP</label>
                         <input type="number" value={form.costPrice} onChange={e => setForm(f => ({ ...f, costPrice: e.target.value }))}
-                          className="w-full border border-purple-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-purple-50" placeholder="Себестоимость в сумах (не видна обычным пользователям)" />
+                          className="w-full border border-purple-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-purple-50" placeholder="Например: 350 (в долларах)" />
                         <p className="text-xs text-purple-500 mt-1">VIP-участники увидят эту цену как «Цена для вас»</p>
                       </div>
                       <div>

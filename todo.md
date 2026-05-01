@@ -378,3 +378,9 @@
 - [x] server/routers.ts: admin роль тоже видит costPrice (VIP цены) — isVipOrAdmin проверка
 - [x] Admin.tsx VIP вкладка: нельзя давать VIP тому кто уже admin (или сохранять admin роль)
 - [x] Frontend ProductCard/ProductDetail: показывать VIP цены для role='admin' тоже
+
+## Баг: costPrice показывает 0 вместо введённой цены
+- [x] Проверить Admin.tsx форму: поле costPrice — правильно ли читается и сохраняется (USD → сумы конвертация)
+- [x] Проверить routers.ts create/update: принимается ли costPrice в input schema
+- [x] Проверить ProductCard.tsx: правильно ли отображается costPrice (деление на 100 если хранится в копейках?)
+- [x] Проверить DB: что реально сохраняется в costPrice для товара Bosch PKN811FP2E

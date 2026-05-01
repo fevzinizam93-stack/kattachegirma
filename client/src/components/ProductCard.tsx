@@ -63,9 +63,12 @@ export default function ProductCard({ product }: ProductCardProps) {
     : (product.discount ?? 0);
   const inStock = !product.stock || product.stock > 0;
 
-  const costPrice = product.costPrice ? parseFloat(product.costPrice) : null;
+  // costPrice is stored in USD, convert to UZS for display (1 USD = 12700 UZS)
+  const USD_RATE = 12700;
+  const costPriceUsd = product.costPrice ? parseFloat(product.costPrice) : null;
+  const costPrice = costPriceUsd ? costPriceUsd * USD_RATE : null; // in UZS for formatPrice
   const hasVipPrice = isVip && costPrice && costPrice > 0;
-  const vipDiscount = hasVipPrice && costPrice
+  const vipDiscount = hasVipPrice && costPrice && currPrice > costPrice
     ? Math.round(((currPrice - costPrice) / currPrice) * 100)
     : 0;
 
