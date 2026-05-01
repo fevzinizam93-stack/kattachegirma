@@ -45,8 +45,8 @@ export default function CategoryPage({ slug }: CategoryPageProps) {
     return (
       <div className="container py-20 text-center">
         <div className="text-5xl mb-4">😕</div>
-        <h2 className="text-xl font-bold">Kategoriya topilmadi</h2>
-        <Link href="/catalog" className="text-primary hover:underline mt-2 inline-block">Katalogga qaytish</Link>
+        <h2 className="text-xl font-bold">Категория не найдена</h2>
+        <Link href="/catalog" className="text-primary hover:underline mt-2 inline-block">Вернуться в каталог</Link>
       </div>
     );
   }
@@ -57,7 +57,7 @@ export default function CategoryPage({ slug }: CategoryPageProps) {
       <div className="bg-white border-b border-border">
         <div className="container py-3">
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Link href="/" className="hover:text-primary">Bosh sahifa</Link>
+            <Link href="/" className="hover:text-primary">Главная</Link>
             <ChevronRight size={14} />
             <Link href="/catalog" className="hover:text-primary">Katalog</Link>
             <ChevronRight size={14} />
@@ -67,7 +67,7 @@ export default function CategoryPage({ slug }: CategoryPageProps) {
             <span>{category?.icon}</span>
             <span>{category?.name ?? slug}</span>
           </h1>
-          <p className="text-sm text-muted-foreground">{total} ta mahsulot</p>
+          <p className="text-sm text-muted-foreground">{total} товаров</p>
         </div>
       </div>
 
@@ -78,18 +78,18 @@ export default function CategoryPage({ slug }: CategoryPageProps) {
             <div className="bg-white rounded-xl border border-border p-4 sticky top-24 space-y-5">
               {/* Price filter */}
               <div>
-                <h4 className="font-bold text-sm mb-3">Narx (so'm)</h4>
+                <h4 className="font-bold text-sm mb-3">Цена (сум)</h4>
                 <div className="space-y-2">
                   <input
                     type="number"
-                    placeholder="Dan"
+                    placeholder="От"
                     value={minPrice}
                     onChange={e => setMinPrice(e.target.value)}
                     className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                   />
                   <input
                     type="number"
-                    placeholder="Gacha"
+                    placeholder="До"
                     value={maxPrice}
                     onChange={e => setMaxPrice(e.target.value)}
                     className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
@@ -100,13 +100,13 @@ export default function CategoryPage({ slug }: CategoryPageProps) {
               {/* Brand filter */}
               {brands.length > 0 && (
                 <div>
-                  <h4 className="font-bold text-sm mb-3">Brend</h4>
+                  <h4 className="font-bold text-sm mb-3">Бренд</h4>
                   <div className="space-y-1">
                     <button
                       onClick={() => setBrandFilter("")}
                       className={`w-full text-left px-3 py-1.5 rounded-lg text-sm transition-colors ${!brandFilter ? 'bg-primary text-primary-foreground font-semibold' : 'hover:bg-accent'}`}
                     >
-                      Barchasi
+                      Все
                     </button>
                     {brands.map(brand => (
                       <button
@@ -127,7 +127,7 @@ export default function CategoryPage({ slug }: CategoryPageProps) {
                   onClick={() => { setMinPrice(""); setMaxPrice(""); setBrandFilter(""); }}
                   className="w-full border border-primary text-primary px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary/5 transition-colors"
                 >
-                  Filtrni tozalash
+                  Сбросить фильтры
                 </button>
               )}
             </div>
@@ -144,8 +144,8 @@ export default function CategoryPage({ slug }: CategoryPageProps) {
             ) : filtered.length === 0 ? (
               <div className="text-center py-20">
                 <div className="text-5xl mb-4">📦</div>
-                <h3 className="text-lg font-bold mb-2">Mahsulot topilmadi</h3>
-                <p className="text-muted-foreground text-sm">Filtrlarni o'zgartiring</p>
+                <h3 className="text-lg font-bold mb-2">Товары не найдены</h3>
+                <p className="text-muted-foreground text-sm">Измените фильтры</p>
               </div>
             ) : (
               <>
@@ -161,7 +161,7 @@ export default function CategoryPage({ slug }: CategoryPageProps) {
                       disabled={page === 0}
                       className="px-4 py-2 border border-border rounded-lg text-sm font-medium hover:bg-accent disabled:opacity-50"
                     >
-                      ← Oldingi
+                      ← Назад
                     </button>
                     <span className="px-4 py-2 text-sm text-muted-foreground">{page + 1} / {totalPages}</span>
                     <button
@@ -169,7 +169,7 @@ export default function CategoryPage({ slug }: CategoryPageProps) {
                       disabled={page >= totalPages - 1}
                       className="px-4 py-2 border border-border rounded-lg text-sm font-medium hover:bg-accent disabled:opacity-50"
                     >
-                      Keyingi →
+                      Вперёд →
                     </button>
                   </div>
                 )}

@@ -35,34 +35,27 @@ export default function SellerRegister() {
   const benefits = [
     {
       icon: TrendingUp,
-      title: lang === "uz" ? "Ko'p xaridor" : "Много покупателей",
-      desc: lang === "uz" ? "Har kuni minglab tashrif buyuruvchilar" : "Тысячи посетителей каждый день",
+      title: "Много покупателей",
+      desc: "Тысячи посетителей каждый день",
     },
     {
       icon: ShieldCheck,
-      title: lang === "uz" ? "Ishonchli platforma" : "Надёжная платформа",
-      desc: lang === "uz" ? "Mahsulotlar moderatsiyadan o'tadi" : "Все товары проходят модерацию",
+      title: "Надёжная платформа",
+      desc: "Все товары проходят модерацию",
     },
     {
       icon: Users,
-      title: lang === "uz" ? "Oson boshqaruv" : "Простое управление",
-      desc: lang === "uz" ? "Shaxsiy panel orqali tovarlarni boshqaring" : "Управляйте товарами через личный кабинет",
+      title: "Простое управление",
+      desc: "Управляйте товарами через личный кабинет",
     },
   ];
 
-  const disclaimerItems = lang === "uz"
-    ? [
-        "Siz tovar yetkazib berish, kafolat va xaridor pullari uchun to'liq javobgarsiz",
-        "Katta Chegirma platforma sifatida uchinchi tomon sotuvchilar uchun javobgarlik olmaydi",
-        "Barcha mahsulotlar moderatsiyadan o'tadi — chegirmasiz yoki soxta mahsulotlar rad etiladi",
-        "Qoidalarni buzgan sotuvchilar bloklanadi",
-      ]
-    : [
-        "Вы несёте полную ответственность за доставку, гарантию и возврат средств покупателям",
-        "Katta Chegirma как платформа не несёт ответственности за действия сторонних продавцов",
-        "Все товары проходят модерацию — товары без скидок или поддельные будут отклонены",
-        "Продавцы, нарушающие правила, будут заблокированы",
-      ];
+  const disclaimerItems = [
+    "Вы несёте полную ответственность за доставку, гарантию и возврат средств покупателям",
+    "Katta Chegirma как платформа не несёт ответственности за действия сторонних продавцов",
+    "Все товары проходят модерацию — товары без скидок или поддельные будут отклонены",
+    "Продавцы, нарушающие правила, будут заблокированы",
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -96,7 +89,7 @@ export default function SellerRegister() {
         {/* Important disclaimer */}
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-8 text-sm text-amber-800">
           <p className="font-bold mb-1">
-            ⚠️ {lang === "uz" ? "Muhim eslatma — sotuvchilar uchun shartlar:" : "Важное уведомление — условия для продавцов:"}
+            ⚠️ Важное уведомление — условия для продавцов:
           </p>
           <ul className="list-disc list-inside space-y-1">
             {disclaimerItems.map((item, i) => (

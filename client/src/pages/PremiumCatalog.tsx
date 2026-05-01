@@ -16,7 +16,7 @@ function PremiumProductCard({ product }: { product: any }) {
   const price = Number(product.price);
   const originalPrice = product.originalPrice ? Number(product.originalPrice) : null;
   const discount = product.discount ?? 0;
-  const displayName = (lang === "uz" && product.nameUz) ? product.nameUz : product.name;
+  const displayName = product.name;
 
   const handleAddToCart = () => {
     cart.addItem({

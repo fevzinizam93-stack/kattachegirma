@@ -20,19 +20,12 @@ export default function SearchResults({ query }: SearchResultsProps) {
   const products = data?.items ?? [];
   const total = data?.total ?? 0;
 
-  const tips = lang === "uz"
-    ? [
-        "Model nomini to'liq kiriting (masalan: WW70T4542TE)",
-        "Brend nomini kiriting (SAMSUNG, LG, BOSCH...)",
-        "Narxni raqamda kiriting (masalan: 500000)",
-        "Katta yoki kichik harflar muhim emas",
-      ]
-    : [
-        "Введите полное название модели (например: WW70T4542TE)",
-        "Введите название бренда (SAMSUNG, LG, BOSCH...)",
-        "Введите цену цифрами (например: 500000)",
-        "Регистр букв не важен — можно писать заглавными или строчными",
-      ];
+  const tips = [
+    "Введите полное название модели (например: WW70T4542TE)",
+    "Введите название бренда (SAMSUNG, LG, BOSCH...)",
+    "Введите цену цифрами (например: 500000)",
+    "Регистр букв не важен — можно писать заглавными или строчными",
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -73,7 +66,7 @@ export default function SearchResults({ query }: SearchResultsProps) {
             {/* Search tips */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5 text-left mb-6 shadow-sm">
               <p className="text-sm font-bold text-gray-700 mb-3">
-                {lang === "uz" ? "Qidiruv bo'yicha maslahatlar:" : "Советы по поиску:"}
+                "Советы по поиску:"
               </p>
               <ul className="space-y-2">
                 {tips.map((tip, i) => (

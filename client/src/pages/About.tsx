@@ -50,43 +50,11 @@ const content = {
     hours_label: "Режим работы",
     social_label: "Социальные сети",
   },
-  uz: {
-    hero_title: "Katta Chegirma haqida",
-    hero_sub: "Sifatli texnika — hamma uchun mavjud!",
-    intro: "Katta Chegirma — bu shunchaki internet-do'kon emas. Bu O'zbekistondagi har bir oila uchun sifatli maishiy texnikani arzonlashtirish istagidan tug'ilgan loyiha. Biz ishonамиз: yaxshi texnika faqat tanlanganlar uchun imtiyoz bo'lmasligi kerak — u har bir uyda bo'lishi kerak.",
-    trust_title: "Nima uchun minglab xaridorlar bizga ishonadi?",
-    trust_sub: "Biz xaridorlar bilan munosabatlarni uch tamoyil asosida quramiz:",
-    principle1_title: "Halol chegirmalar",
-    principle1_desc: "Biz «eski narx»ni oshirib, keyin «chegirma» qilmaymiz. Bizning aksiyalarimiz — siz o'zingiz tekshira oladigan haqiqiy narx pasayishi.",
-    principle2_title: "Shaffoflik va obro'",
-    principle2_desc: "Barcha texnika yangi, zavod qadoqida, rasmiy kafolat bilan. Biz obro'imizni qadrlaymiz va sifat bilan hech qachon murosaga bormaymiz.",
-    principle3_title: "Faqat tekshirilgan sifat",
-    principle3_desc: "Bizning katalogimizda — faqat tekshirilgan brendlar: Samsung, LG, Franco, Avangard, Ferro va boshqalar. Har bir tovar sizga yetib kelishidan oldin tanlov o'tadi.",
-    benefits_title: "Siz nima olasiz?",
-    benefit1_title: "Doimiy aksiyalar",
-    benefit1_desc: "Har hafta — mashhur tovarlarga yangi chegirmalar. Eng yaxshi takliflarni o'tkazib yubormaslik uchun Telegram kanalimizga obuna bo'ling.",
-    benefit2_title: "Keng assortiment",
-    benefit2_desc: "Muzlatgichlar, kir yuvish mashinalari, televizorlar, oshxona texnikasi va boshqa ko'p narsa — hammasi bir joyda, O'zbekiston bo'ylab qulay yetkazib berish bilan.",
-    benefit3_title: "Qo'llab-quvvatlash va g'amxo'rlik",
-    benefit3_desc: "Menejerlarimiz doimo aloqada. Biz tanlashda, buyurtma rasmiylashtirish va xariddan keyin har qanday savollarni hal qilishda yordam beramiz.",
-    mission_title: "Bizning missiyamiz",
-    mission_desc: "O'zbekistondagi har bir oila zamonaviy, ishonchli maishiy texnikani ortiqcha to'lovsiz, aldovsiz, xaridorga haqiqiy g'amxo'rlik bilan sotib olishi uchun sharoit yaratish.",
-    cta_title: "Oilamizga qo'shiling!",
-    cta_desc: "Minglab mamnun xaridorlar allaqachon Katta Chegirmani tanladilar. Siz ham qo'shiling — foydali xaridlar mumkinligiga o'zingiz ishonch hosil qiling!",
-    cta_btn: "Katalogni ko'rish",
-    gallery_title: "Bizning do'konimiz",
-    gallery_sub: "Bizga tashrif buyuring — biz doim mehmonlarga xursandmiz!",
-    contacts: "Aloqa",
-    phone_label: "Telefon",
-    address_label: "Manzil",
-    hours_label: "Ish vaqti",
-    social_label: "Ijtimoiy tarmoqlar",
-  },
 };
 
 export default function About() {
   const { lang } = useLanguage();
-  const c = content[lang];
+  const c = content.ru;
   const { data: settings } = trpc.storeSettings.getAll.useQuery();
   const s = (settings as Record<string, string>) ?? {};
 

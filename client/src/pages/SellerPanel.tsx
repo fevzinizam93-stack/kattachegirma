@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 function formatPrice(price: string | number) {
   const num = typeof price === "string" ? parseFloat(price) : price;
-  return new Intl.NumberFormat("ru-RU").format(num) + " so'm";
+  return new Intl.NumberFormat("ru-RU").format(num) + " сум";
 }
 
 export default function SellerPanel() {
@@ -43,7 +43,7 @@ export default function SellerPanel() {
 
   const registerMutation = trpc.sellers.register.useMutation({
     onSuccess: () => {
-      toast.success("Ariza yuborildi! Admin tasdiqlashini kuting.");
+      toast.success("Заявка отправлена! Ожидайте подтверждения администратора.");
       utils.sellers.me.invalidate();
       setShowRegForm(false);
     },
@@ -81,7 +81,7 @@ export default function SellerPanel() {
 
   const handleSubmitProduct = () => {
     if (!productForm.name || !productForm.price || !productForm.categoryId) {
-      toast.error("Nom, narx va kategoriyani to'ldiring");
+      toast.error("Заполните название, цену и категорию");
       return;
     }
     const slug = productForm.slug || generateSlug(productForm.name);
@@ -124,7 +124,7 @@ export default function SellerPanel() {
               <Package size={20} className="text-yellow-600" />
             </div>
             <div className="flex-1">
-              <p className="font-bold text-gray-900 mb-1">Mahsulot tekshirilmoqda</p>
+              <p className="font-bold text-gray-900 mb-1">Товар на проверке</p>
               <p className="text-sm text-gray-600">
                 Товар проверяется. На проверку уйдёт от 30 минут до двух дней. Как только подтвердится, ваш товар появится на сайте.
               </p>
@@ -144,7 +144,7 @@ export default function SellerPanel() {
               <Store size={24} className="text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-gray-900">Sotuvchi paneli</h1>
+              <h1 className="text-2xl font-black text-gray-900">Панель продавца</h1>
               <p className="text-gray-500 text-sm">{user?.name || user?.email}</p>
             </div>
           </div>
@@ -152,30 +152,30 @@ export default function SellerPanel() {
           {/* Not registered yet */}
           {!sellerProfile && (
             <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-2">Sotuvchi sifatida ro'yxatdan o'ting</h2>
+              <h2 className="text-lg font-bold text-gray-900 mb-2">Зарегистрируйтесь как продавец</h2>
               <p className="text-gray-500 text-sm mb-4">
-                Mahsulotlaringizni saytga qo'shish uchun sotuvchi sifatida ro'yxatdan o'ting. Admin tasdiqlashidan so'ng mahsulot qo'sha olasiz.
+                Чтобы добавлять товары на сайт, зарегистрируйтесь как продавец. После подтверждения администратором вы сможете добавлять товары.
               </p>
               {!showRegForm ? (
                 <button
                   onClick={() => setShowRegForm(true)}
                   className="bg-primary text-white px-6 py-2.5 rounded-xl font-bold hover:bg-primary/90 transition-colors"
                 >
-                  Ariza berish
+                  Подать заявку
                 </button>
               ) : (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Do'kon / Ism *</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Магазин / Имя *</label>
                     <input
                       value={regForm.name}
                       onChange={e => setRegForm(f => ({ ...f, name: e.target.value }))}
-                      placeholder="Masalan: Texno Bozor"
+                      placeholder="Например: Техно Базар"
                       className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Telefon raqam *</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Номер телефона *</label>
                     <input
                       value={regForm.phone}
                       onChange={e => setRegForm(f => ({ ...f, phone: e.target.value }))}
@@ -188,16 +188,16 @@ export default function SellerPanel() {
                     <input
                       value={regForm.telegram}
                       onChange={e => setRegForm(f => ({ ...f, telegram: e.target.value }))}
-                      placeholder="@username yoki https://t.me/username"
+                      placeholder="@username или https://t.me/username"
                       className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Tavsif</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Описание</label>
                     <textarea
                       value={regForm.description}
                       onChange={e => setRegForm(f => ({ ...f, description: e.target.value }))}
-                      placeholder="Do'koningiz haqida qisqacha..."
+                      placeholder="Кратко о вашем магазине..."
                       rows={3}
                       className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
                     />
@@ -208,13 +208,13 @@ export default function SellerPanel() {
                       disabled={registerMutation.isPending || !regForm.name || !regForm.phone}
                       className="bg-primary text-white px-6 py-2.5 rounded-xl font-bold hover:bg-primary/90 transition-colors disabled:opacity-50"
                     >
-                      {registerMutation.isPending ? "Yuborilmoqda..." : "Ariza yuborish"}
+                      {registerMutation.isPending ? "Отправка..." : "Подать заявку"}
                     </button>
                     <button
                       onClick={() => setShowRegForm(false)}
                       className="border border-gray-200 px-6 py-2.5 rounded-xl font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
                     >
-                      Bekor qilish
+                      Отмена
                     </button>
                   </div>
                 </div>
@@ -230,32 +230,31 @@ export default function SellerPanel() {
                   <Package size={20} className="text-yellow-600" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-yellow-800">Ariza ko'rib chiqilmoqda</h3>
-                  <p className="text-yellow-700 text-sm">Admin tasdiqlashini kuting. Odatda 30 daqiqadan 2 kungacha.</p>
+                  <h3 className="font-bold text-yellow-800">Заявка на рассмотрении</h3>
+                  <p className="text-yellow-700 text-sm">Ожидайте подтверждения администратора. Обычно от 30 минут до 2 дней.</p>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Approved seller */}
           {sellerProfile?.isApproved && (
             <>
               {/* Seller info */}
               <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-bold text-gray-900">Mening do'konim</h2>
+                  <h2 className="text-lg font-bold text-gray-900">Мой магазин</h2>
                   <span className="flex items-center gap-1.5 bg-green-50 text-green-700 text-xs font-bold px-3 py-1 rounded-full">
                     <CheckCircle size={14} />
-                    Tasdiqlangan
+                    Подтверждён
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-400">Ism:</span>
+                    <span className="text-gray-400">Имя:</span>
                     <span className="ml-2 font-semibold text-gray-800">{sellerProfile.name}</span>
                   </div>
                   <div>
-                    <span className="text-gray-400">Telefon:</span>
+                    <span className="text-gray-400">Телефон:</span>
                     <span className="ml-2 font-semibold text-gray-800">{sellerProfile.phone || "—"}</span>
                   </div>
                   {sellerProfile.telegram && (
@@ -270,45 +269,45 @@ export default function SellerPanel() {
               {/* Products */}
               <div className="bg-white rounded-2xl shadow-sm p-6">
                 <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-lg font-bold text-gray-900">Mening mahsulotlarim</h2>
+                  <h2 className="text-lg font-bold text-gray-900">Мои товары</h2>
                   <button
                     onClick={() => setShowProductForm(!showProductForm)}
                     className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
                   >
                     <Plus size={16} />
-                    Mahsulot qo'shish
+                    Добавить товар
                   </button>
                 </div>
 
                 {/* Product form */}
                 {showProductForm && (
                   <div className="border border-gray-200 rounded-xl p-5 mb-5 bg-gray-50">
-                    <h3 className="font-bold text-gray-800 mb-4">Yangi mahsulot</h3>
+                    <h3 className="font-bold text-gray-800 mb-4">Новый товар</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="sm:col-span-2">
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">Mahsulot nomi *</label>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">Название товара *</label>
                         <input
                           value={productForm.name}
                           onChange={e => setProductForm(f => ({ ...f, name: e.target.value, slug: generateSlug(e.target.value) }))}
-                          placeholder="Masalan: Samsung TV 55 dyuym"
+                          placeholder="Например: Samsung TV 55 дюймов"
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">Kategoriya *</label>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">Категория *</label>
                         <select
                           value={productForm.categoryId}
                           onChange={e => setProductForm(f => ({ ...f, categoryId: Number(e.target.value) }))}
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
                         >
-                          <option value={0}>Tanlang...</option>
+                          <option value={0}>Выберите...</option>
                           {categories.map(c => (
                             <option key={c.id} value={c.id}>{c.name}</option>
                           ))}
                         </select>
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">Brend</label>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">Бренд</label>
                         <input
                           value={productForm.brand}
                           onChange={e => setProductForm(f => ({ ...f, brand: e.target.value }))}
@@ -317,7 +316,7 @@ export default function SellerPanel() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">Narx (so'm) *</label>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">Цена (сум) *</label>
                         <input
                           type="number"
                           value={productForm.price}
@@ -327,7 +326,7 @@ export default function SellerPanel() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">Eski narx (so'm)</label>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">Старая цена (сум)</label>
                         <input
                           type="number"
                           value={productForm.originalPrice}
@@ -337,7 +336,7 @@ export default function SellerPanel() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">Chegirma (%)</label>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">Скидка (%)</label>
                         <input
                           type="number"
                           value={productForm.discount}
@@ -348,7 +347,7 @@ export default function SellerPanel() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">Miqdor (dona)</label>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">Количество (шт)</label>
                         <input
                           type="number"
                           value={productForm.stock}
@@ -358,7 +357,7 @@ export default function SellerPanel() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">Rasm URL</label>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">URL фото</label>
                         <input
                           value={productForm.imageUrl}
                           onChange={e => setProductForm(f => ({ ...f, imageUrl: e.target.value }))}
@@ -367,29 +366,29 @@ export default function SellerPanel() {
                         />
                       </div>
                       <div className="sm:col-span-2">
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">Tavsif</label>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">Описание</label>
                         <textarea
                           value={productForm.description}
                           onChange={e => setProductForm(f => ({ ...f, description: e.target.value }))}
                           rows={3}
-                          placeholder="Mahsulot haqida..."
+                          placeholder="О товаре..."
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
                         />
                       </div>
                       {/* Specs */}
                       <div className="sm:col-span-2">
-                        <label className="block text-xs font-semibold text-gray-600 mb-2">Texnik xususiyatlar</label>
+                        <label className="block text-xs font-semibold text-gray-600 mb-2">Технические характеристики</label>
                         <div className="flex gap-2 mb-2">
                           <input
                             value={specKey}
                             onChange={e => setSpecKey(e.target.value)}
-                            placeholder="Xususiyat (masalan: Quvvat)"
+                            placeholder="Характеристика (напр.: Мощность)"
                             className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                           />
                           <input
                             value={specVal}
                             onChange={e => setSpecVal(e.target.value)}
-                            placeholder="Qiymat (masalan: 2000W)"
+                            placeholder="Значение (напр.: 2000W)"
                             className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                           />
                           <button
@@ -415,13 +414,13 @@ export default function SellerPanel() {
                         disabled={createProductMutation.isPending}
                         className="bg-primary text-white px-6 py-2.5 rounded-xl font-bold hover:bg-primary/90 transition-colors disabled:opacity-50"
                       >
-                        {createProductMutation.isPending ? "Qo'shilmoqda..." : "Qo'shish"}
+                        {createProductMutation.isPending ? "Добавление..." : "Добавить"}
                       </button>
                       <button
                         onClick={() => setShowProductForm(false)}
                         className="border border-gray-200 px-6 py-2.5 rounded-xl font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
                       >
-                        Bekor qilish
+                        Отмена
                       </button>
                     </div>
                   </div>
@@ -431,7 +430,7 @@ export default function SellerPanel() {
                 {!myProducts || myProducts.length === 0 ? (
                   <div className="text-center py-10 text-gray-400">
                     <Package size={40} className="mx-auto mb-3 opacity-40" />
-                    <p className="text-sm">Hali mahsulot qo'shilmagan</p>
+                    <p className="text-sm">Товары ещё не добавлены</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -450,9 +449,9 @@ export default function SellerPanel() {
                         </div>
                         <div className="shrink-0">
                           {p.isApproved ? (
-                            <span className="bg-green-50 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full">Tasdiqlangan</span>
+                            <span className="bg-green-50 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full">Одобрен</span>
                           ) : (
-                            <span className="bg-yellow-50 text-yellow-700 text-xs font-bold px-2.5 py-1 rounded-full">Tekshirilmoqda</span>
+                            <span className="bg-yellow-50 text-yellow-700 text-xs font-bold px-2.5 py-1 rounded-full">На проверке</span>
                           )}
                         </div>
                       </div>

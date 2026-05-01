@@ -153,7 +153,7 @@ export default function SellerDashboard() {
 
   function handleSubmit() {
     if (!form.name.trim() || !form.price || !form.categoryId) {
-      toast.error(lang === "uz" ? "Nomi, kategoriya va narx majburiy" : "Название, категория и цена обязательны");
+      toast.error("Название, категория и цена обязательны");
       return;
     }
     const slug = form.slug || generateSlug(form.name);
@@ -192,7 +192,7 @@ export default function SellerDashboard() {
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4 mb-6">
           {[
-            { label: lang === "uz" ? "Jami" : "Всего", value: products.length, color: "text-gray-900" },
+            { label: "Всего", value: products.length, color: "text-gray-900" },
             { label: t.seller_moderation_approved, value: approved, color: "text-green-600" },
             { label: t.seller_moderation_pending, value: pending, color: "text-amber-600" },
           ].map(s => (
@@ -205,10 +205,8 @@ export default function SellerDashboard() {
 
         {/* Disclaimer */}
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-xs text-amber-800">
-          <b>{lang === "uz" ? "Eslatma:" : "Важно:"}</b>{" "}
-          {lang === "uz"
-            ? "Siz qo'shgan har bir mahsulot uchun yetkazib berish, kafolat va xaridor pullari bo'yicha to'liq javobgarlik sizda. Platforma uchinchi tomon sotuvchilar uchun javobgarlik olmaydi."
-            : "За каждый добавленный вами товар вы несёте полную ответственность за доставку, гарантию и возврат средств. Платформа не несёт ответственности за действия сторонних продавцов."}
+          <b>Важно:</b>{" "}
+          За каждый добавленный вами товар вы несёте полную ответственность за доставку, гарантию и возврат средств. Платформа не несёт ответственности за действия сторонних продавцов.
         </div>
 
         {/* Product form */}
@@ -230,7 +228,7 @@ export default function SellerDashboard() {
                 <input
                   value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value, slug: generateSlug(e.target.value) }))}
-                  placeholder={lang === "uz" ? "Masalan: Samsung 65 dyuym televizor" : "Например: Samsung телевизор 65 дюймов"}
+                  placeholder="Например: Samsung телевизор 65 дюймов"
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
               </div>
@@ -243,7 +241,7 @@ export default function SellerDashboard() {
                   onChange={e => setForm(f => ({ ...f, categoryId: Number(e.target.value) }))}
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
                 >
-                  <option value={0}>{lang === "uz" ? "Tanlang..." : "Выберите..."}</option>
+                  <option value={0}>Выберите...</option>
                   {(categoriesQuery.data ?? []).map((c: { id: number; name: string }) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
@@ -262,7 +260,7 @@ export default function SellerDashboard() {
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-600 mb-1">
-                  {t.admin_product_price} ({lang === "uz" ? "so'm" : "сум"}) *
+                  {t.admin_product_price} (сум) *
                 </label>
                 <input
                   value={form.price}
@@ -274,7 +272,7 @@ export default function SellerDashboard() {
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-600 mb-1">
-                  {t.admin_product_old_price} ({lang === "uz" ? "chegirma uchun" : "для скидки"})
+                  {t.admin_product_old_price} (для скидки)
                 </label>
                 <input
                   value={form.originalPrice}
@@ -286,7 +284,7 @@ export default function SellerDashboard() {
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-600 mb-1">
-                  {lang === "uz" ? "Chegirma (%)" : "Скидка (%)"}
+                  Скидка (%)
                 </label>
                 <input
                   value={form.discount}
@@ -299,7 +297,7 @@ export default function SellerDashboard() {
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-600 mb-1">
-                  {lang === "uz" ? "Miqdor (dona)" : "Количество (шт.)"}
+                  Количество (шт.)
                 </label>
                 <input
                   value={form.stock}
@@ -316,7 +314,7 @@ export default function SellerDashboard() {
                   value={form.description}
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   rows={3}
-                  placeholder={lang === "uz" ? "Mahsulot haqida batafsil ma'lumot..." : "Подробное описание товара..."}
+                  placeholder="Подробное описание товара..."
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
                 />
               </div>

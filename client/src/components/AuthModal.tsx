@@ -171,7 +171,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
             className="w-full bg-[#cc0000] hover:bg-[#aa0000] text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isPending
-              ? "Yuklanmoqda... / Загрузка..."
+              ? "Загрузка..."
               : tab === "login"
               ? "Kirish / Войти"
               : "Ro'yxatdan o'tish / Зарегистрироваться"}

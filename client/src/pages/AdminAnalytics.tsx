@@ -51,25 +51,25 @@ export default function AdminAnalytics() {
   );
 
   const t = {
-    title: lang === "uz" ? "Analitika" : "Аналитика",
-    period: lang === "uz" ? "Davr" : "Период",
-    days7: lang === "uz" ? "7 kun" : "7 дней",
-    days30: lang === "uz" ? "30 kun" : "30 дней",
-    days90: lang === "uz" ? "90 kun" : "90 дней",
-    pageViews: lang === "uz" ? "Sahifa ko'rishlari" : "Просмотры страниц",
-    productViews: lang === "uz" ? "Mahsulot ko'rishlari" : "Просмотры товаров",
-    addToCart: lang === "uz" ? "Savatga qo'shildi" : "Добавлено в корзину",
-    orders: lang === "uz" ? "Buyurtmalar" : "Заказы",
-    funnel: lang === "uz" ? "Konversiya hunari" : "Воронка конверсий",
-    topProducts: lang === "uz" ? "Top mahsulotlar" : "Топ товаров",
-    dailyViews: lang === "uz" ? "Kunlik ko'rishlar" : "Ежедневные просмотры",
-    noData: lang === "uz" ? "Ma'lumot yo'q" : "Нет данных",
-    loading: lang === "uz" ? "Yuklanmoqda..." : "Загрузка...",
-    convRate: lang === "uz" ? "Konversiya" : "Конверсия",
-    notAdmin: lang === "uz" ? "Bu sahifaga kirish uchun admin huquqlari kerak." : "Для доступа к этой странице нужны права администратора.",
-    goAdmin: lang === "uz" ? "Admin paneliga qaytish" : "Вернуться в панель администратора",
-    errorTitle: lang === "uz" ? "Ma'lumotlarni yuklashda xatolik" : "Ошибка загрузки данных",
-    errorDesc: lang === "uz" ? "Qayta urinib ko'ring yoki sahifani yangilang." : "Попробуйте ещё раз или обновите страницу.",
+    title: "Аналитика",
+    period: "Период",
+    days7: "7 дней",
+    days30: "30 дней",
+    days90: "90 дней",
+    pageViews: "Просмотры страниц",
+    productViews: "Просмотры товаров",
+    addToCart: "Добавлено в корзину",
+    orders: "Заказы",
+    funnel: "Воронка конверсий",
+    topProducts: "Топ товаров",
+    dailyViews: "Ежедневные просмотры",
+    noData: "Нет данных",
+    loading: "Загрузка...",
+    convRate: "Конверсия",
+    notAdmin: "Для доступа к этой странице нужны права администратора.",
+    goAdmin: "Вернуться в панель администратора",
+    errorTitle: "Ошибка загрузки данных",
+    errorDesc: "Попробуйте ещё раз или обновите страницу.",
   };
 
   // 1. Auth is still loading
@@ -119,7 +119,7 @@ export default function AdminAnalytics() {
           onClick={() => window.location.reload()}
           className="mt-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
         >
-          {lang === "uz" ? "Yangilash" : "Обновить"}
+          Обновить
         </button>
       </div>
     );

@@ -393,8 +393,8 @@ export default function Admin() {
     return (
       <div className="container py-20 text-center">
         <h2 className="text-xl font-bold mb-2">Нет доступа</h2>
-        <p className="text-gray-500">Bu sahifa faqat adminlar uchun</p>
-        <Link href="/" className="text-primary hover:underline mt-4 inline-block">Bosh sahifaga qaytish</Link>
+        <p className="text-gray-500">Эта страница только для администраторов</p>
+        <Link href="/" className="text-primary hover:underline mt-4 inline-block">Вернуться на главную</Link>
       </div>
     );
   }
@@ -402,7 +402,7 @@ export default function Admin() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.price || !form.categoryId) {
-      toast.error("Nom, narx va kategoriya majburiy");
+      toast.error("Название, цена и категория обязательны");
       return;
     }
     // Transliterate Cyrillic and generate safe slug; fallback to timestamp if result is empty
@@ -463,7 +463,7 @@ export default function Admin() {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b border-gray-200">
         <div className="container py-4">
-          <h1 className="text-xl font-black text-gray-900">Admin Panel</h1>
+          <h1 className="text-xl font-black text-gray-900">Панель администратора</h1>
           <p className="text-sm text-gray-500">Добро пожаловать, {user.name}</p>
         </div>
       </div>
@@ -514,7 +514,7 @@ export default function Admin() {
                   type="text"
                   value={adminSearch}
                   onChange={e => setAdminSearch(e.target.value)}
-                  placeholder="Поиск по названию (RU/UZ), бренду, модели..."
+                  placeholder="Поиск по названию, бренду, модели..."
                   className="w-full pl-9 pr-10 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-gray-50 placeholder:text-gray-400"
                 />
                 {adminSearch && (
@@ -544,7 +544,7 @@ export default function Admin() {
                   <form onSubmit={handleSubmit} className="p-5 space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-semibold mb-1">Nomi (RU) *</label>
+                        <label className="block text-sm font-semibold mb-1">Название (русский) *</label>
                         <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="Название на русском" />
                         {form.name && (() => {
@@ -555,9 +555,9 @@ export default function Admin() {
                         })()}
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold mb-1">Nomi (UZ)</label>
+                        <label className="block text-sm font-semibold mb-1">Название (узбекский, необязательно)</label>
                         <input value={form.nameUz} onChange={e => setForm(f => ({ ...f, nameUz: e.target.value }))}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="O'zbek tilidagi nomi" />
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="Название на узбекском (необязательно)" />
                       </div>
                       {/* Auto-translate button */}
                       <div className="col-span-2">
@@ -577,14 +577,14 @@ export default function Admin() {
                             </>
                           ) : (
                             <>
-                              🌐 Автоперевод RU → UZ
+                              🌐 Автоперевод на узбекский
                             </>
                           )}
                         </button>
                         <p className="text-xs text-gray-400 mt-1">
                           {isTranslating
                             ? "Перевод занимает 5–15 секунд..."
-                            : "Нажмите, чтобы автоматически заполнить поля «Название (UZ)» и «Описание (UZ)» на основе русского текста"}
+                            : "Нажмите, чтобы автоматически заполнить поля на узбекском языке"}
                         </p>
                       </div>
                       <div>
@@ -596,7 +596,7 @@ export default function Admin() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold mb-1">Brend</label>
+                        <label className="block text-sm font-semibold mb-1">Бренд</label>
                         <input value={form.brand} onChange={e => setForm(f => ({ ...f, brand: e.target.value }))}
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="SAMSUNG, LG..." />
                       </div>
@@ -724,14 +724,14 @@ export default function Admin() {
                         )}
                       </div>
                       <div className="col-span-2">
-                        <label className="block text-sm font-semibold mb-1">Tavsif (RU)</label>
+                        <label className="block text-sm font-semibold mb-1">Описание (русский)</label>
                         <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                           rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" placeholder="Описание на русском..." />
                       </div>
                       <div className="col-span-2">
-                        <label className="block text-sm font-semibold mb-1">Tavsif (UZ)</label>
+                        <label className="block text-sm font-semibold mb-1">Описание (узбекский, необязательно)</label>
                         <textarea value={form.descriptionUz} onChange={e => setForm(f => ({ ...f, descriptionUz: e.target.value }))}
-                          rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" placeholder="O'zbek tilidagi tavsif..." />
+                          rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" placeholder="Описание на узбекском (необязательно)..." />
                       </div>
                       {/* Seller info */}
                       <div className="col-span-2 border-t border-gray-100 pt-3">
@@ -740,7 +740,7 @@ export default function Admin() {
                       <div>
                         <label className="block text-sm font-semibold mb-1">Имя продавца</label>
                         <input value={form.sellerName} onChange={e => setForm(f => ({ ...f, sellerName: e.target.value }))}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="Do'kon nomi" />
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="Название магазина" />
                       </div>
                       <div>
                         <label className="block text-sm font-semibold mb-1 text-purple-700">👑 Себестоимость (USD $) — только для VIP</label>
@@ -761,11 +761,11 @@ export default function Admin() {
                       <div className="flex items-center gap-4">
                         <label className="flex items-center gap-2 text-sm cursor-pointer">
                           <input type="checkbox" checked={form.isNew} onChange={e => setForm(f => ({ ...f, isNew: e.target.checked }))} className="rounded" />
-                          Yangi
+                          Новинка
                         </label>
                         <label className="flex items-center gap-2 text-sm cursor-pointer">
                           <input type="checkbox" checked={form.isFeatured} onChange={e => setForm(f => ({ ...f, isFeatured: e.target.checked }))} className="rounded" />
-                          Tavsiya etilgan
+                          Рекомендуемый
                         </label>
                         <label className="flex items-center gap-2 text-sm cursor-pointer">
                           <input type="checkbox" checked={form.isHit} onChange={e => setForm(f => ({ ...f, isHit: e.target.checked }))} className="rounded accent-orange-500" />
@@ -798,7 +798,7 @@ export default function Admin() {
                       </button>
                       <button type="button" onClick={() => { setShowForm(false); setForm(emptyForm); setEditId(null); }}
                         className="px-6 border border-gray-200 py-2.5 rounded-xl font-medium hover:bg-gray-50 transition-colors">
-                        Bekor
+                        Отмена
                       </button>
                     </div>
                   </form>
@@ -849,8 +849,8 @@ export default function Admin() {
                           <td className="px-4 py-3">
                             <div className="flex gap-1 flex-wrap">
                               {(p as any).isActive === false && <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">⛔ Нет в наличии</span>}
-                              {(p as any).isApproved === false && <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">Tekshirilmoqda</span>}
-                              {p.isFeatured && <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">Tavsiya</span>}
+                              {(p as any).isApproved === false && <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">На проверке</span>}
+                              {p.isFeatured && <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">Рекомендуем</span>}
                               {p.isNew && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Новинка</span>}
                               {(p as any).isHit && <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">🔥 Hit</span>}
                               {(p as any).isPremium && <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{ background: '#1a1a2e', color: '#d4af37' }}>◈ Original</span>}
@@ -878,7 +878,7 @@ export default function Admin() {
                               <button onClick={() => handleEdit(p)} className="p-1.5 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors">
                                 <Edit size={15} />
                               </button>
-                              <button onClick={() => { if (confirm("O'chirishni tasdiqlaysizmi?")) deleteProduct.mutate({ id: p.id }); }}
+                              <button onClick={() => { if (confirm("Удалить этот товар?")) deleteProduct.mutate({ id: p.id }); }}
                                 className="p-1.5 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors">
                                 <Trash2 size={15} />
                               </button>
@@ -1192,7 +1192,7 @@ export default function Admin() {
 Одобрить
                           </button>
                         <button
-                          onClick={() => { if (confirm(`"${p.name}" rad etilsinmi?`)) rejectProductMut.mutate({ id: p.id }); }}
+                          onClick={() => { if (confirm(`Отклонить товар "${p.name}"?`)) rejectProductMut.mutate({ id: p.id }); }}
                           disabled={rejectProductMut.isPending}
                           className="bg-red-50 text-red-600 text-xs font-bold px-4 py-2 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
                         >
@@ -1235,16 +1235,16 @@ export default function Admin() {
                       <input value={bannerForm.title} onChange={e => setBannerForm(f => ({ ...f, title: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="Большие скидки до 50%!" />
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-gray-600 mb-1 block">Заголовок (UZ)</label>
-                      <input value={bannerForm.titleUz} onChange={e => setBannerForm(f => ({ ...f, titleUz: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="Katta chegirmalar 50% gacha!" />
+                      <label className="text-xs font-semibold text-gray-600 mb-1 block">Заголовок (узбекский, необязательно)</label>
+                      <input value={bannerForm.titleUz} onChange={e => setBannerForm(f => ({ ...f, titleUz: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="Заголовок на узбекском (необязательно)" />
                     </div>
                     <div>
                       <label className="text-xs font-semibold text-gray-600 mb-1 block">Описание (RU)</label>
                       <textarea value={bannerForm.description} onChange={e => setBannerForm(f => ({ ...f, description: e.target.value }))} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="Только до конца недели" />
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-gray-600 mb-1 block">Описание (UZ)</label>
-                      <textarea value={bannerForm.descriptionUz} onChange={e => setBannerForm(f => ({ ...f, descriptionUz: e.target.value }))} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="Faqat hafta oxirigacha" />
+                      <label className="text-xs font-semibold text-gray-600 mb-1 block">Описание (узбекский, необязательно)</label>
+                      <textarea value={bannerForm.descriptionUz} onChange={e => setBannerForm(f => ({ ...f, descriptionUz: e.target.value }))} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="Только до конца недели" />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
@@ -1272,8 +1272,8 @@ export default function Admin() {
                         <input value={bannerForm.linkText} onChange={e => setBannerForm(f => ({ ...f, linkText: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" placeholder="Смотреть все" />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-gray-600 mb-1 block">Текст кнопки (UZ)</label>
-                        <input value={bannerForm.linkTextUz} onChange={e => setBannerForm(f => ({ ...f, linkTextUz: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" placeholder="Hammasini ko'rish" />
+                        <label className="text-xs font-semibold text-gray-600 mb-1 block">Текст кнопки (узбекский, необязательно)</label>
+                        <input value={bannerForm.linkTextUz} onChange={e => setBannerForm(f => ({ ...f, linkTextUz: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" placeholder="Текст кнопки на узбекском (необязательно)" />
                       </div>
                     </div>
                     <div>
@@ -1709,11 +1709,11 @@ export default function Admin() {
 
         {tab === "settings" && (
           <div className="max-w-2xl">
-            <h2 className="font-black text-lg mb-5 text-gray-900">Do'kon sozlamalari</h2>
+            <h2 className="font-black text-lg mb-5 text-gray-900">Настройки магазина</h2>
             <div className="bg-white rounded-2xl shadow-sm p-6 space-y-5">
               {/* Store name */}
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">Do'kon nomi</label>
+                <label className="block text-sm font-bold text-gray-700 mb-1.5">Название магазина</label>
                 <input
                   value={settingsForm.storeName}
                   onChange={e => setSettingsForm(f => ({ ...f, storeName: e.target.value }))}
@@ -1724,12 +1724,12 @@ export default function Admin() {
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">Tavsif</label>
+                <label className="block text-sm font-bold text-gray-700 mb-1.5">Описание</label>
                 <textarea
                   value={settingsForm.description}
                   onChange={e => setSettingsForm(f => ({ ...f, description: e.target.value }))}
                   rows={3}
-                  placeholder="Do'kon haqida qisqacha ma'lumot..."
+                  placeholder="Краткое описание магазина..."
                   className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
                 />
               </div>
@@ -1737,7 +1737,7 @@ export default function Admin() {
               {/* Phone numbers */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1.5">Telefon 1</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-1.5">Телефон 1</label>
                   <input
                     value={settingsForm.phone}
                     onChange={e => setSettingsForm(f => ({ ...f, phone: e.target.value }))}
@@ -1746,7 +1746,7 @@ export default function Admin() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1.5">Telefon 2</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-1.5">Телефон 2</label>
                   <input
                     value={settingsForm.phone2}
                     onChange={e => setSettingsForm(f => ({ ...f, phone2: e.target.value }))}
@@ -1760,24 +1760,24 @@ export default function Admin() {
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
                   <MapPin size={14} className="text-primary" />
-                  Manzil 1
+                  Адрес 1
                 </label>
                 <input
                   value={settingsForm.address}
                   onChange={e => setSettingsForm(f => ({ ...f, address: e.target.value }))}
-                  placeholder="Toshkent, Chilonzor tumani, ..."
+                  placeholder="Ташкент, Чиланзарский район, ..."
                   className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
                   <MapPin size={14} className="text-primary" />
-                  Manzil 2 (ixtiyoriy)
+                  Адрес 2 (необязательно)
                 </label>
                 <input
                   value={settingsForm.address2}
                   onChange={e => setSettingsForm(f => ({ ...f, address2: e.target.value }))}
-                  placeholder="Ikkinchi manzil (ixtiyoriy)"
+                  placeholder="Второй адрес (необязательно)"
                   className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
               </div>
@@ -1806,11 +1806,11 @@ export default function Admin() {
 
               {/* Working hours */}
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">Ish vaqti</label>
+                <label className="block text-sm font-bold text-gray-700 mb-1.5">Часы работы</label>
                 <input
                   value={settingsForm.workingHours}
                   onChange={e => setSettingsForm(f => ({ ...f, workingHours: e.target.value }))}
-                  placeholder="Dushanba - Shanba: 9:00 - 20:00"
+                  placeholder="Пн - Сб: 9:00 - 20:00"
                   className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
               </div>

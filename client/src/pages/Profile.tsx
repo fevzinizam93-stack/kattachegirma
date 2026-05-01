@@ -27,7 +27,7 @@ export default function Profile() {
   const removeFav = trpc.favorites.remove.useMutation({
     onSuccess: () => {
       utils.favorites.list.invalidate();
-      toast.success(lang === "uz" ? "Sevimlilardan o'chirildi" : "Удалено из избранного");
+      toast.success("Удалено из избранного");
     },
   });
 
@@ -37,7 +37,7 @@ export default function Profile() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <User size={48} className="mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-600 mb-4">{lang === "uz" ? "Profilni ko'rish uchun kiring" : "Войдите для просмотра профиля"}</p>
+          <p className="text-gray-600 mb-4">"Войдите для просмотра профиля"</p>
           <Link href="/" className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors">
             {t.nav_home}
           </Link>
@@ -125,7 +125,7 @@ export default function Profile() {
                       <div>
                         <span className="font-semibold text-gray-900">{t.profile_order_number}{order.id}</span>
                         <span className="ml-3 text-sm text-gray-500">
-                          {new Date(order.createdAt).toLocaleDateString(lang === "uz" ? "uz-UZ" : "ru-RU")}
+                          {new Date(order.createdAt).toLocaleDateString("ru-RU")}
                         </span>
                       </div>
                       <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusInfo.color}`}>
@@ -185,7 +185,7 @@ export default function Profile() {
                     <div className="p-3">
                       <Link href={`/product/${product.slug}`}>
                         <p className="text-xs text-gray-800 font-medium line-clamp-2 hover:text-primary transition-colors mb-1">
-                          {(lang === "uz" && product.nameUz) ? product.nameUz : product.name}
+                          {product.name}
                         </p>
                       </Link>
                       <p className="text-sm font-bold text-primary">{formatPrice(Number(product.price))}</p>
