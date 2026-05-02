@@ -758,22 +758,22 @@ export default function Admin() {
                         <input value={form.sellerTelegram} onChange={e => setForm(f => ({ ...f, sellerTelegram: e.target.value }))}
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="@username" />
                       </div>
-                      <div className="flex items-center gap-4">
-                        <label className="flex items-center gap-2 text-sm cursor-pointer">
-                          <input type="checkbox" checked={form.isNew} onChange={e => setForm(f => ({ ...f, isNew: e.target.checked }))} className="rounded" />
-                          Новинка
+                      <div className="col-span-2 grid grid-cols-2 gap-3">
+                        <label className="flex items-center gap-3 text-sm cursor-pointer bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 hover:bg-gray-100 transition-colors select-none">
+                          <input type="checkbox" checked={form.isNew} onChange={e => setForm(f => ({ ...f, isNew: e.target.checked }))} className="w-4 h-4 rounded flex-shrink-0" />
+                          <span className="font-medium">🆕 Новинка</span>
                         </label>
-                        <label className="flex items-center gap-2 text-sm cursor-pointer">
-                          <input type="checkbox" checked={form.isFeatured} onChange={e => setForm(f => ({ ...f, isFeatured: e.target.checked }))} className="rounded" />
-                          Рекомендуемый
+                        <label className="flex items-center gap-3 text-sm cursor-pointer bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 hover:bg-gray-100 transition-colors select-none">
+                          <input type="checkbox" checked={form.isFeatured} onChange={e => setForm(f => ({ ...f, isFeatured: e.target.checked }))} className="w-4 h-4 rounded flex-shrink-0" />
+                          <span className="font-medium">⭐ Рекомендуемый</span>
                         </label>
-                        <label className="flex items-center gap-2 text-sm cursor-pointer">
-                          <input type="checkbox" checked={form.isHit} onChange={e => setForm(f => ({ ...f, isHit: e.target.checked }))} className="rounded accent-orange-500" />
-                          <span className="text-orange-600 font-semibold">🔥 Хит продаж</span>
+                        <label className="flex items-center gap-3 text-sm cursor-pointer bg-orange-50 border border-orange-200 rounded-lg px-4 py-3 hover:bg-orange-100 transition-colors select-none">
+                          <input type="checkbox" checked={form.isHit} onChange={e => setForm(f => ({ ...f, isHit: e.target.checked }))} className="w-4 h-4 rounded flex-shrink-0 accent-orange-500" />
+                          <span className="text-orange-700 font-semibold">🔥 Хит продаж</span>
                         </label>
-                        <label className="flex items-center gap-2 text-sm cursor-pointer">
-                          <input type="checkbox" checked={form.isPremium} onChange={e => setForm(f => ({ ...f, isPremium: e.target.checked }))} className="rounded" style={{ accentColor: '#d4af37' }} />
-                          <span className="font-semibold" style={{ color: '#d4af37' }}>◈ Оригинал техника</span>
+                        <label className="flex items-center gap-3 text-sm cursor-pointer bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-3 hover:bg-yellow-100 transition-colors select-none">
+                          <input type="checkbox" checked={form.isPremium} onChange={e => setForm(f => ({ ...f, isPremium: e.target.checked }))} className="w-4 h-4 rounded flex-shrink-0" style={{ accentColor: '#d4af37' }} />
+                          <span className="font-semibold" style={{ color: '#b8860b' }}>◈ Оригинал техника</span>
                         </label>
                       </div>
                       {form.isHit && (
