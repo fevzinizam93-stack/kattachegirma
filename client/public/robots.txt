@@ -3,5 +3,16 @@ Allow: /
 Disallow: /admin
 Disallow: /api/
 Disallow: /profile
+Disallow: /seller-panel
+Disallow: /seller-dashboard
 
-Sitemap: https://www.kattachegirma.uz/sitemap.xml
+User-agent: Yandex
+Allow: /
+Disallow: /admin
+Disallow: /api/
+Disallow: /profile
+Disallow: /seller-panel
+Disallow: /seller-dashboard
+Clean-param: utm_source&utm_medium&utm_campaign&utm_content&utm_term
+
+Sitemap: https://kattachegirma.uz/sitemap.xml

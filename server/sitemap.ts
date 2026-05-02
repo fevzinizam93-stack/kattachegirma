@@ -3,7 +3,7 @@ import { getDb } from "./db";
 import { products, categories } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 
-const BASE_URL = "https://www.kattachegirma.uz";
+const BASE_URL = "https://kattachegirma.uz";
 
 // Static pages
 const STATIC_PAGES = [
