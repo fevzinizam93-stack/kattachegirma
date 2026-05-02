@@ -62,7 +62,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
   const isPending = loginMutation.isPending || registerMutation.isPending;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose} translate="no">
       <div
         className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
@@ -70,7 +70,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
         {/* Header */}
         <div className="bg-[#cc0000] px-6 py-4 flex items-center justify-between">
           <h2 className="text-white font-bold text-xl">
-            {tab === "login" ? "Kirish / Войти" : "Ro'yxatdan o'tish / Регистрация"}
+            {tab === "login" ? "Войти" : "Регистрация"}
           </h2>
           <button onClick={onClose} className="text-white hover:text-red-200 transition-colors">
             <X size={22} />
@@ -87,7 +87,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
             }`}
             onClick={() => setTab("login")}
           >
-            Kirish / Войти
+            Войти
           </button>
           <button
             className={`flex-1 py-3 text-sm font-semibold transition-colors ${
@@ -97,7 +97,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
             }`}
             onClick={() => setTab("register")}
           >
-            Ro'yxatdan o'tish / Регистрация
+            Регистрация
           </button>
         </div>
 
@@ -106,7 +106,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
           {tab === "register" && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ism / Имя
+                Имя
               </label>
               <div className="relative">
                 <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -117,7 +117,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc0000] focus:border-transparent text-sm"
-                  placeholder="Ismingiz / Ваше имя"
+                  placeholder="Ваше имя"
                 />
               </div>
             </div>
@@ -142,7 +142,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Parol / Пароль
+              Пароль
             </label>
             <div className="relative">
               <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -153,7 +153,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 className="w-full pl-9 pr-10 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc0000] focus:border-transparent text-sm"
-                placeholder={tab === "login" ? "Parolingiz / Ваш пароль" : "Kamida 6 ta belgi / Минимум 6 символов"}
+                placeholder={tab === "login" ? "Ваш пароль" : "Минимум 6 символов"}
               />
               <button
                 type="button"
@@ -173,31 +173,31 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
             {isPending
               ? "Загрузка..."
               : tab === "login"
-              ? "Kirish / Войти"
-              : "Ro'yxatdan o'tish / Зарегистрироваться"}
+              ? "Войти"
+              : "Зарегистрироваться"}
           </button>
 
           <p className="text-center text-sm text-gray-500">
             {tab === "login" ? (
               <>
-                Hisob yo'qmi?{" "}
+                Нет аккаунта?{" "}
                 <button
                   type="button"
                   onClick={() => setTab("register")}
                   className="text-[#cc0000] font-medium hover:underline"
                 >
-                  Ro'yxatdan o'ting
+                  Зарегистрироваться
                 </button>
               </>
             ) : (
               <>
-                Allaqachon hisob bormi?{" "}
+                Уже есть аккаунт?{" "}
                 <button
                   type="button"
                   onClick={() => setTab("login")}
                   className="text-[#cc0000] font-medium hover:underline"
                 >
-                  Kiring
+                  Войти
                 </button>
               </>
             )}

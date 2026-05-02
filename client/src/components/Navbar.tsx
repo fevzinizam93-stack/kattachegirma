@@ -103,7 +103,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
   const hasQuery = debouncedQuery.trim().length >= 1;
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200">
+    <header className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200" translate="no">
       {/* ── Desktop row ── */}
       <div className="hidden md:block">
         <div className="container py-2.5 flex items-center gap-4">

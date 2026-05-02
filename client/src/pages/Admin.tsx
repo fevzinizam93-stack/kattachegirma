@@ -460,7 +460,7 @@ export default function Admin() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50" translate="no">
       <div className="bg-white border-b border-gray-200">
         <div className="container py-4">
           <h1 className="text-xl font-black text-gray-900">Панель администратора</h1>

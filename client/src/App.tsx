@@ -110,7 +110,7 @@ function App() {
           <AuthModalContext.Provider value={{ openLogin, openRegister }}>
             <TooltipProvider>
               <Toaster />
-              <div className="flex flex-col min-h-screen">
+              <div className="flex flex-col min-h-screen" translate="no">
                 <Navbar onOpenAuth={openLogin} />
                 <CategoryBar />
                 <main className="flex-1 pb-14 md:pb-0">
