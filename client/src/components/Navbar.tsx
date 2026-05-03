@@ -103,17 +103,17 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
   const hasQuery = debouncedQuery.trim().length >= 1;
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200" translate="no">
+    <header className="sticky top-0 z-50 bg-red-600 shadow-md" translate="no">
       {/* ── Desktop row ── */}
       <div className="hidden md:block">
         <div className="container py-2.5 flex items-center gap-4">
           {/* Logo */}
           <Link href="/" className="shrink-0 flex items-center gap-2 min-w-fit">
             <div className="flex items-center justify-center w-9 h-9">
-              <img src="/manus-storage/kattachegirma-logo_b5417617.png" alt="KC" className="h-9 w-auto object-contain" />
+              <img src="/manus-storage/kattachegirma-logo-white_0c7831ed.png" alt="KC" className="h-9 w-auto object-contain" />
             </div>
             <div className="leading-tight">
-              <div className="font-black text-sm text-gray-900">Katta Chegirma!!!</div>
+              <div className="font-black text-sm text-white">Katta Chegirma!!!</div>
             </div>
           </Link>
 
@@ -134,7 +134,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           <Link
             href="/about"
             className={`shrink-0 text-sm font-medium px-3 py-2 rounded-full transition-colors whitespace-nowrap ${
-              location === "/about" ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              location === "/about" ? "bg-red-700 text-white" : "text-white/90 hover:bg-red-700 hover:text-white"
             }`}
           >
             {t.nav_about}
@@ -143,7 +143,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           {/* Seller button */}
           <Link
             href="/seller/register"
-            className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors whitespace-nowrap"
+            className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full border-2 border-white text-white hover:bg-white hover:text-red-600 transition-colors whitespace-nowrap"
           >
             {t.nav_become_seller}
           </Link>
@@ -219,38 +219,38 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           {/* Right icons */}
           <div className="flex items-center gap-1 shrink-0">
             {/* Bestsellers */}
-            <Link href="/bestsellers" className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors ${location === "/bestsellers" ? "bg-gray-100" : ""}`}>
+            <Link href="/bestsellers" className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg hover:bg-red-700 transition-colors ${location === "/bestsellers" ? "bg-red-700" : ""}`}>
               <span className="text-lg leading-none">🔥</span>
-              <span className="text-[10px] text-gray-600 whitespace-nowrap">{t.nav_bestsellers}</span>
+              <span className="text-[10px] text-white/90 whitespace-nowrap">{t.nav_bestsellers}</span>
             </Link>
 
             {/* Cart */}
-            <Link href="/cart" className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors relative">
+            <Link href="/cart" className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors relative">
               <div className="relative">
-                <ShoppingCart size={20} className="text-gray-700" />
+                <ShoppingCart size={20} className="text-white" />
                 {totalItems > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">{totalItems > 9 ? "9+" : totalItems}</span>
                 )}
               </div>
-              <span className="text-[10px] text-gray-600 whitespace-nowrap">{t.nav_cart}</span>
+              <span className="text-[10px] text-white/90 whitespace-nowrap">{t.nav_cart}</span>
             </Link>
 
             {/* User / Login */}
             {isAuthenticated ? (
-              <Link href="/profile" className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+              <Link href="/profile" className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors">
                 <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center text-xs font-bold text-red-700">{user?.name?.charAt(0)?.toUpperCase() ?? "U"}</div>
-                <span className="text-[10px] text-gray-600 max-w-[60px] truncate">{user?.name?.split(" ")[0]}</span>
+                <span className="text-[10px] text-white/90 max-w-[60px] truncate">{user?.name?.split(" ")[0]}</span>
               </Link>
             ) : (
-              <button onClick={() => onOpenAuth?.()} className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200">
-                <User size={18} className="text-gray-700" />
-                <span className="text-[10px] text-gray-600 whitespace-nowrap">{t.nav_login}</span>
+              <button onClick={() => onOpenAuth?.()} className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors border border-white/30">
+                <User size={18} className="text-white" />
+                <span className="text-[10px] text-white/90 whitespace-nowrap">{t.nav_login}</span>
               </button>
             )}
 
             {/* Admin link */}
             {isAuthenticated && user?.role === "admin" && (
-              <Link href="/admin" className="text-red-600 text-xs font-bold px-2 py-1 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">Admin</Link>
+              <Link href="/admin" className="text-red-600 text-xs font-bold px-2 py-1 bg-white rounded-lg hover:bg-red-50 transition-colors">Admin</Link>
             )}
 
             {/* VIP badge */}
@@ -265,10 +265,10 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
             <div className="relative" ref={currMenuRef}>
               <button
                 onClick={() => { setShowCurrMenu((v) => !v); }}
-                className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer select-none"
+                className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg hover:bg-red-700 transition-colors cursor-pointer select-none"
               >
                 <span className="text-base leading-none">{currency === "uzs" ? "🇺🇿" : "🇺🇸"}</span>
-                <span className="text-[10px] text-gray-600 font-medium flex items-center gap-0.5">
+                <span className="text-[10px] text-white/90 font-medium flex items-center gap-0.5">
                   {currency === "uzs" ? "сум" : "USD"}
                   <ChevronDown size={9} className={`transition-transform ${showCurrMenu ? "rotate-180" : ""}`} />
                 </span>
@@ -296,9 +296,9 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
         <div className="flex items-center px-3 pt-2 pb-1">
           <Link href="/" className="flex items-center gap-1.5 min-w-0">
             <div className="flex items-center justify-center w-8 h-8 shrink-0">
-              <img src="/manus-storage/kattachegirma-logo_b5417617.png" alt="KC" className="h-8 w-auto object-contain" />
+              <img src="/manus-storage/kattachegirma-logo-white_0c7831ed.png" alt="KC" className="h-8 w-auto object-contain" />
             </div>
-            <span className="font-black text-sm leading-tight truncate text-gray-900">Katta Chegirma!!!</span>
+            <span className="font-black text-sm leading-tight truncate text-white">Katta Chegirma!!!</span>
           </Link>
         </div>
 
