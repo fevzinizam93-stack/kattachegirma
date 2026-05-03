@@ -82,9 +82,14 @@ const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
   return next({ ctx });
 });
 
-// Seller guard middleware
-const sellerProcedure = protectedProcedure.use(({ ctx, next }) => {
-  if (ctx.user.role !== "seller" && ctx.user.role !== "admin") {
+// Seller guard middleware - checks if user has a seller profile OR is admin
+const sellerProcedure = protectedProcedure.use(async ({ ctx, next }) => {
+  if (ctx.user.role === "admin") {
+    return next({ ctx });
+  }
+  // Allow any user who has a seller profile registered (role may not be updated yet)
+  const sellerProfile = await getSellerByUserId(ctx.user.id);
+  if (!sellerProfile) {
     throw new TRPCError({ code: "FORBIDDEN", message: "Seller access required" });
   }
   return next({ ctx });
