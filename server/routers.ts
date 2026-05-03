@@ -337,6 +337,22 @@ export const appRouter = router({
         return { url };
       }),
 
+    // Seller: upload image (returns URL only, no product ID needed)
+    sellerUploadImage: sellerProcedure
+      .input(z.object({
+        base64: z.string(),
+        mimeType: z.string(),
+        filename: z.string(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const seller = await getSellerByUserId(ctx.user.id);
+        if (!seller) throw new TRPCError({ code: "FORBIDDEN", message: "Seller profile not found" });
+        const buffer = Buffer.from(input.base64, "base64");
+        const key = `seller-products/${seller.id}/${Date.now()}-${input.filename}`;
+        const { url } = await storagePut(key, buffer, input.mimeType);
+        return { url };
+      }),
+
     // Seller: create product (pending approval)
     sellerCreate: sellerProcedure
       .input(z.object({

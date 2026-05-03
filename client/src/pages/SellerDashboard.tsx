@@ -2,13 +2,15 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { trpc } from "@/lib/trpc";
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import {
   Plus, Package, Pencil, Trash2, Clock, CheckCircle, XCircle,
-  Upload, X, Store
+  Upload, X, Store, ImagePlus, Loader2
 } from "lucide-react";
+
+const MAX_PHOTOS = 10;
 
 type ModerationStatus = "approved" | "pending" | "rejected";
 
@@ -29,17 +31,21 @@ function StatusBadge({ status }: { status: ModerationStatus }) {
 
 export default function SellerDashboard() {
   const { user, loading } = useAuth();
-  const { lang, t } = useLanguage();
+  const { t } = useLanguage();
   const { formatPrice } = useCurrency();
   const [, navigate] = useLocation();
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Multi-photo state
+  const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([]);
+  const [uploadingCount, setUploadingCount] = useState(0);
+
   const emptyForm = {
     name: "", slug: "", description: "", categoryId: 0,
     brand: "", price: "", originalPrice: "", discount: 0,
-    imageUrl: "", stock: 1, isNew: false,
+    stock: 1, isNew: false,
   };
   const [form, setForm] = useState(emptyForm);
 
@@ -51,9 +57,8 @@ export default function SellerDashboard() {
 
   const utils = trpc.useUtils();
 
-  const uploadMut = trpc.products.uploadImage.useMutation({
-    onSuccess: (data) => setForm(f => ({ ...f, imageUrl: data.url })),
-    onError: (e) => toast.error(t.seller_image_error + e.message),
+  const uploadMut = trpc.products.sellerUploadImage.useMutation({
+    onError: (e) => toast.error("Ошибка загрузки фото: " + e.message),
   });
 
   const createMut = trpc.products.sellerCreate.useMutation({
@@ -62,6 +67,7 @@ export default function SellerDashboard() {
       utils.products.sellerList.invalidate();
       setShowForm(false);
       setForm(emptyForm);
+      setUploadedPhotos([]);
     },
     onError: (e) => toast.error(e.message),
   });
@@ -73,6 +79,7 @@ export default function SellerDashboard() {
       setShowForm(false);
       setEditId(null);
       setForm(emptyForm);
+      setUploadedPhotos([]);
     },
     onError: (e) => toast.error(e.message),
   });
@@ -117,15 +124,57 @@ export default function SellerDashboard() {
   const seller = sellerQuery.data;
   const products = myProductsQuery.data ?? [];
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const base64 = (ev.target?.result as string).split(",")[1];
-      uploadMut.mutate({ base64, mimeType: file.type, productId: editId ?? 0, filename: file.name });
-    };
-    reader.readAsDataURL(file);
+  async function handleFilesChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+
+    const remaining = MAX_PHOTOS - uploadedPhotos.length;
+    if (remaining <= 0) {
+      toast.error(`Максимум ${MAX_PHOTOS} фотографий`);
+      return;
+    }
+
+    const filesToUpload = files.slice(0, remaining);
+    if (files.length > remaining) {
+      toast.warning(`Загружаем первые ${remaining} фото из ${files.length}`);
+    }
+
+    setUploadingCount(prev => prev + filesToUpload.length);
+
+    const uploadPromises = filesToUpload.map(file => {
+      return new Promise<string | null>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+          try {
+            const base64 = (ev.target?.result as string).split(",")[1];
+            const result = await uploadMut.mutateAsync({
+              base64,
+              mimeType: file.type,
+              filename: file.name,
+            });
+            resolve(result.url);
+          } catch {
+            resolve(null);
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    const results = await Promise.all(uploadPromises);
+    const successUrls = results.filter((url): url is string => url !== null);
+    setUploadedPhotos(prev => [...prev, ...successUrls]);
+    setUploadingCount(prev => prev - filesToUpload.length);
+
+    if (successUrls.length > 0) {
+      toast.success(`Загружено ${successUrls.length} фото`);
+    }
+    // Reset file input
+    e.target.value = "";
+  }
+
+  function removePhoto(index: number) {
+    setUploadedPhotos(prev => prev.filter((_, i) => i !== index));
   }
 
   function generateSlug(name: string) {
@@ -137,6 +186,7 @@ export default function SellerDashboard() {
   function openCreate() {
     setEditId(null);
     setForm(emptyForm);
+    setUploadedPhotos([]);
     setShowForm(true);
   }
 
@@ -146,8 +196,15 @@ export default function SellerDashboard() {
       name: p.name, slug: p.slug, description: p.description ?? "",
       categoryId: p.categoryId, brand: p.brand ?? "", price: p.price,
       originalPrice: p.originalPrice ?? "", discount: p.discount ?? 0,
-      imageUrl: p.imageUrl ?? "", stock: p.stock ?? 1, isNew: p.isNew ?? false,
+      stock: p.stock ?? 1, isNew: p.isNew ?? false,
     });
+    // Load existing photos
+    const existing: string[] = [];
+    if (p.imageUrl) existing.push(p.imageUrl);
+    if (p.images && Array.isArray(p.images)) {
+      p.images.forEach((img: string) => { if (img && img !== p.imageUrl) existing.push(img); });
+    }
+    setUploadedPhotos(existing);
     setShowForm(true);
   }
 
@@ -157,10 +214,13 @@ export default function SellerDashboard() {
       return;
     }
     const slug = form.slug || generateSlug(form.name);
+    const imageUrl = uploadedPhotos[0] ?? "";
+    const images = uploadedPhotos;
+
     if (editId) {
-      updateMut.mutate({ id: editId, ...form });
+      updateMut.mutate({ id: editId, ...form, imageUrl, images });
     } else {
-      createMut.mutate({ ...form, slug });
+      createMut.mutate({ ...form, slug, imageUrl, images });
     }
   }
 
@@ -216,7 +276,7 @@ export default function SellerDashboard() {
               <h3 className="font-black text-gray-900">
                 {editId ? t.admin_edit_product : t.seller_add_product}
               </h3>
-              <button onClick={() => { setShowForm(false); setEditId(null); setForm(emptyForm); }} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => { setShowForm(false); setEditId(null); setForm(emptyForm); setUploadedPhotos([]); }} className="text-gray-400 hover:text-gray-600">
                 <X size={20} />
               </button>
             </div>
@@ -318,32 +378,90 @@ export default function SellerDashboard() {
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
                 />
               </div>
-              {/* Image upload */}
+
+              {/* Multi-photo upload */}
               <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-gray-600 mb-1">
-                  {t.admin_product_images}
+                <label className="block text-xs font-bold text-gray-600 mb-2">
+                  Фотографии товара ({uploadedPhotos.length}/{MAX_PHOTOS})
                 </label>
-                <div className="flex items-center gap-3">
-                  {form.imageUrl && (
-                    <img src={form.imageUrl} alt="" className="w-16 h-16 object-cover rounded-xl border border-gray-200" />
+
+                {/* Photo grid */}
+                <div className="grid grid-cols-5 gap-2 mb-3">
+                  {uploadedPhotos.map((url, idx) => (
+                    <div key={idx} className="relative aspect-square group">
+                      <img
+                        src={url}
+                        alt={`Фото ${idx + 1}`}
+                        className="w-full h-full object-cover rounded-xl border border-gray-200"
+                      />
+                      {idx === 0 && (
+                        <span className="absolute bottom-1 left-1 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md">
+                          Главное
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => removePhoto(idx)}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                      >
+                        <X size={10} />
+                      </button>
+                    </div>
+                  ))}
+
+                  {/* Loading placeholders */}
+                  {Array.from({ length: uploadingCount }).map((_, idx) => (
+                    <div key={`loading-${idx}`} className="aspect-square bg-gray-100 rounded-xl border border-dashed border-gray-300 flex items-center justify-center">
+                      <Loader2 size={20} className="text-gray-400 animate-spin" />
+                    </div>
+                  ))}
+
+                  {/* Add more button */}
+                  {uploadedPhotos.length + uploadingCount < MAX_PHOTOS && (
+                    <button
+                      type="button"
+                      onClick={() => fileRef.current?.click()}
+                      disabled={uploadingCount > 0}
+                      className="aspect-square border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center gap-1 text-gray-400 hover:border-primary/50 hover:text-primary transition-colors disabled:opacity-50"
+                    >
+                      <ImagePlus size={20} />
+                      <span className="text-[10px] font-medium">Добавить</span>
+                    </button>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => fileRef.current?.click()}
-                    disabled={uploadMut.isPending}
-                    className="flex items-center gap-2 border-2 border-dashed border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-500 hover:border-primary/50 hover:text-primary transition-colors"
-                  >
-                    <Upload size={16} />
-                    {uploadMut.isPending ? t.seller_uploading : t.seller_upload_image}
-                  </button>
-                  <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
                 </div>
+
+                {/* Upload button */}
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  disabled={uploadingCount > 0 || uploadedPhotos.length >= MAX_PHOTOS}
+                  className="flex items-center gap-2 border-2 border-dashed border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-500 hover:border-primary/50 hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {uploadingCount > 0 ? (
+                    <><Loader2 size={16} className="animate-spin" /> Загружаем {uploadingCount} фото...</>
+                  ) : uploadedPhotos.length >= MAX_PHOTOS ? (
+                    <><Upload size={16} /> Максимум {MAX_PHOTOS} фотографий достигнут</>
+                  ) : (
+                    <><Upload size={16} /> Загрузить фото (можно выбрать несколько сразу)</>
+                  )}
+                </button>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={handleFilesChange}
+                />
+                <p className="text-xs text-gray-400 mt-1.5">
+                  Первое фото будет главным. Можно загрузить до {MAX_PHOTOS} фотографий.
+                </p>
               </div>
             </div>
             <div className="flex gap-3 mt-5">
               <button
                 onClick={handleSubmit}
-                disabled={createMut.isPending || updateMut.isPending}
+                disabled={createMut.isPending || updateMut.isPending || uploadingCount > 0}
                 className="bg-primary text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
               >
                 {createMut.isPending || updateMut.isPending
@@ -351,7 +469,7 @@ export default function SellerDashboard() {
                   : editId ? t.seller_update : t.seller_send}
               </button>
               <button
-                onClick={() => { setShowForm(false); setEditId(null); setForm(emptyForm); }}
+                onClick={() => { setShowForm(false); setEditId(null); setForm(emptyForm); setUploadedPhotos([]); }}
                 className="border border-gray-200 px-6 py-2.5 rounded-xl font-bold text-sm text-gray-600 hover:bg-gray-50 transition-colors"
               >
                 {t.common_cancel}
