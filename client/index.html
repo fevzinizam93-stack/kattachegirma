@@ -1,6 +1,5 @@
 <!doctype html>
 <html lang="ru" translate="no">
-
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5" />
@@ -14,18 +13,77 @@
     <meta name="theme-color" content="#dc2626" />
     <title>Катта Чегирма — Бытовая техника со скидкой Ташкент</title>
     <meta name="description" content="Катта Чегирма — самая дешёвая бытовая техника в Узбекистане. Пылесосы, стиральные машины, холодильники, телевизоры, кондиционеры и многое другое." />
-    <meta name="keywords" content="катта чегирма, бытовая техника, скидки, пылесос, холодильник, телевизор, кондиционер, Ташкент" />
-    <!-- Favicon -->
+    <meta name="keywords" content="катта чегирма, бытовая техника, скидки, пылесос, холодильник, телевизор, кондиционер, Ташкент, kattachegirma" />
+    <!-- Favicon — все размеры для Яндекса и браузеров -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/logo-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/logo-512.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://www.kattachegirma.uz/" />
-    <!-- Open Graph / Social Media -->
+    <link rel="canonical" href="https://kattachegirma.uz/" />
+    <!-- Open Graph / Social Media / Яндекс -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://www.kattachegirma.uz/" />
+    <meta property="og:url" content="https://kattachegirma.uz/" />
+    <meta property="og:site_name" content="Katta Chegirma" />
     <meta property="og:title" content="Катта Чегирма — Бытовая техника со скидкой" />
     <meta property="og:description" content="Самая дешёвая бытовая техника в Узбекистане. Большие скидки каждый день!" />
-    <meta property="og:image" content="/apple-touch-icon.png" />
+    <meta property="og:image" content="https://kattachegirma.uz/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:locale" content="ru_RU" />
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Катта Чегирма — Бытовая техника со скидкой" />
+    <meta name="twitter:description" content="Самая дешёвая бытовая техника в Узбекистане." />
+    <meta name="twitter:image" content="https://kattachegirma.uz/og-image.png" />
+    <!-- Schema.org JSON-LD — Organization + WebSite (для Яндекса) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://kattachegirma.uz/#organization",
+          "name": "Katta Chegirma",
+          "alternateName": "Катта Чегирма",
+          "url": "https://kattachegirma.uz/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://kattachegirma.uz/logo-512.png",
+            "width": 512,
+            "height": 512
+          },
+          "image": "https://kattachegirma.uz/og-image.png",
+          "description": "Самая дешёвая бытовая техника в Узбекистане. Большие скидки каждый день!",
+          "address": {
+            "@type": "PostalAddress",
+            "addressCountry": "UZ",
+            "addressLocality": "Ташкент"
+          },
+          "sameAs": []
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://kattachegirma.uz/#website",
+          "url": "https://kattachegirma.uz/",
+          "name": "Katta Chegirma",
+          "description": "Самая дешёвая бытовая техника в Узбекистане",
+          "publisher": {
+            "@id": "https://kattachegirma.uz/#organization"
+          },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://kattachegirma.uz/search?q={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        }
+      ]
+    }
+    </script>
     <!-- DNS prefetch for API and external resources -->
     <link rel="dns-prefetch" href="//fonts.googleapis.com" />
     <link rel="dns-prefetch" href="//fonts.gstatic.com" />
@@ -34,7 +92,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   </head>
-
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
@@ -43,5 +100,4 @@
       src="%VITE_ANALYTICS_ENDPOINT%/umami"
       data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
   </body>
-
 </html>

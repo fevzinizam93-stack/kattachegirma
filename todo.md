@@ -432,3 +432,15 @@
 
 ## v66 - Исправить ошибку загрузки фото в панели продавца
 - [x] Исправлена ошибка "Seller access required" — sellerProcedure теперь проверяет наличие записи в таблице sellers, а не только роль пользователя
+
+## v67 - SEO: Логотип в Яндекс поиске
+- [x] Создан favicon.ico (16+32+48px мультиразмерный ICO)
+- [x] Создан apple-touch-icon.png 180x180 (красный KC логотип)
+- [x] Создан logo-512.png 512x512 для schema.org
+- [x] Создан logo-192.png 192x192 для PWA
+- [x] Создан og-image.png 1200x630 для Open Graph / Яндекс
+- [x] Обновлён index.html: полные og:image теги с абсолютными URL
+- [x] Добавлена schema.org Organization разметка с logo URL
+- [x] Добавлена schema.org WebSite разметка с SearchAction
+- [x] Добавлены Twitter Card мета-теги
+- [x] Canonical URL исправлен на https://kattachegirma.uz/ (без www)
