@@ -6,6 +6,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { toast } from "sonner";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 const BRANDS = ["Bosch", "LG", "Samsung", "Siemens", "Philips", "Electrolux", "Miele", "AEG"];
 
@@ -129,9 +130,11 @@ export default function PremiumCatalog() {
   const [offset, setOffset] = useState(0);
   const LIMIT = 20;
 
-  useEffect(() => {
-    document.title = `${t.nav_premium} — Katta Chegirma`;
-  }, [lang, t]);
+  usePageMeta({
+    title: "Премиум техника Bosch, LG, Samsung | Катта Чегирма",
+    description: "Премиум бытовая техника оригинальных брендов: Bosch, LG, Samsung, Siemens, Philips. Гарантия качества, официальная упаковка. Купите премиум технику с выгодной ценой в Ташкенте. Быстрая доставка по Узбекистану.",
+    canonicalPath: "/premium",
+  });
 
   const { data, isLoading } = trpc.products.list.useQuery({
     isPremium: true,

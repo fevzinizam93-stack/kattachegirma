@@ -3,6 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { MapPin, Phone, Clock, Instagram, Send, ShieldCheck, Star, Users, Tag, Package, HeartHandshake, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 const SHOP_PHOTOS = [
   "/manus-storage/IMG_6615_332365ec.JPG",
@@ -57,6 +58,12 @@ export default function About() {
   const c = content.ru;
   const { data: settings } = trpc.storeSettings.getAll.useQuery();
   const s = (settings as Record<string, string>) ?? {};
+
+  usePageMeta({
+    title: "О нас — Катта Чегирма | Интернет-магазин бытовой техники",
+    description: "Катта Чегирма — интернет-магазин бытовой техники в Ташкенте. Качественная техника Samsung, LG, Franco, Avangard с гарантией и доставкой по всему Узбекистану. Адрес, контакты, режим работы.",
+    canonicalPath: "/about",
+  });
 
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 

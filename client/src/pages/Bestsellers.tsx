@@ -1,12 +1,14 @@
-import { trpc } from "@/lib/trpc";
 import ProductCard from "@/components/ProductCard";
+import { trpc } from "@/lib/trpc";
 import { Flame } from "lucide-react";
-import { useEffect } from "react";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 export default function Bestsellers() {
-  useEffect(() => {
-    document.title = "Хиты продаж — Популярная техника";
-  }, []);
+  usePageMeta({
+    title: "Хиты продаж — Популярная бытовая техника | Катта Чегирма",
+    description: "Самые популярные товары в интернет-магазине Катта Чегирма. Хиты продаж — техника, которую выбирают наши покупатели. Пылесосы, стиральные машины, холодильники, телевизоры с выгодными ценами. Быстрая доставка по Узбекистану.",
+    canonicalPath: "/bestsellers",
+  });
   const { data: hits, isLoading } = trpc.products.getHits.useQuery({});
   return (
     <div className="min-h-screen bg-white">

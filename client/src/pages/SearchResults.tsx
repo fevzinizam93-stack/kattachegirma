@@ -3,6 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { Search } from "lucide-react";
 import { Link } from "wouter";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 interface SearchResultsProps {
   query: string;
@@ -10,6 +11,14 @@ interface SearchResultsProps {
 
 export default function SearchResults({ query }: SearchResultsProps) {
   const { lang, t } = useLanguage();
+
+  usePageMeta({
+    title: query ? `Поиск: ${query} — Катта Чегирма` : "Поиск товаров — Катта Чегирма",
+    description: query
+      ? `Результаты поиска «${query}» в интернет-магазине Катта Чегирма. Бытовая техника с выгодными ценами. Быстрая доставка по Узбекистану.`
+      : "Поиск бытовой техники в интернет-магазине Катта Чегирма. Выгодные цены, быстрая доставка.",
+    noindex: true, // Search result pages should not be indexed
+  });
 
   const { data, isLoading } = trpc.products.list.useQuery({
     search: query,

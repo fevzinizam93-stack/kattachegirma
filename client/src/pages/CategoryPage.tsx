@@ -3,6 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 const LIMIT = 12;
 
@@ -40,6 +41,20 @@ export default function CategoryPage({ slug }: CategoryPageProps) {
 
   const brands = Array.from(new Set(allProducts.map(p => p.brand).filter(Boolean))) as string[];
   const totalPages = Math.ceil(total / LIMIT);
+
+  // SEO: dynamic meta tags for category page
+  const categoryTitle = category
+    ? `${category.name} — купить в Ташкенте | Катта Чегирма`
+    : `Категория — Катта Чегирма`;
+  const categoryDesc = category
+    ? `Купите ${category.name} по выгодной цене в интернет-магазине Катта Чегирма. ${total > 0 ? `${total} товаров в наличии.` : ""} Быстрая доставка по Ташкенту и всему Узбекистану. Гарантия качества.`
+    : `Каталог бытовой техники в интернет-магазине Катта Чегирма. Выгодные цены, быстрая доставка по Узбекистану.`;
+
+  usePageMeta({
+    title: categoryTitle,
+    description: categoryDesc,
+    canonicalPath: `/category/${slug}`,
+  });
 
   if (!category && categoriesData) {
     return (

@@ -3,15 +3,18 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { Filter, SlidersHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 const LIMIT = 12;
 
 export default function Catalog() {
   const { t } = useLanguage();
 
-  useEffect(() => {
-    document.title = "Каталог товаров — Бытовая техника";
-  }, []);
+  usePageMeta({
+    title: "Каталог бытовой техники со скидками | Катта Чегирма",
+    description: "Полный каталог бытовой техники в интернет-магазине Катта Чегирма. Пылесосы, стиральные машины, холодильники, телевизоры, кондиционеры и другая техника. Фильтр по категориям, брендам и цене. Быстрая доставка по Узбекистану.",
+    canonicalPath: "/catalog",
+  });
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>();
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");

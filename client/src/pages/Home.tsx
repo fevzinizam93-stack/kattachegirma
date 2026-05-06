@@ -4,6 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { ArrowRight, Flame } from "lucide-react";
 import { useEffect } from "react";
 import { Link, useLocation } from "wouter";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 // Categories that have products (with their slugs for linking)
 // We'll fetch products per category dynamically
@@ -13,10 +14,13 @@ export default function Home() {
   const { t } = useLanguage();
   const [, navigate] = useLocation();
 
-  // SEO: dynamic document.title (30-60 chars)
-  useEffect(() => {
-    document.title = "Катта Чегирма — Магазин бытовой техники со скидками";
-  }, []);
+  // SEO: dynamic meta tags for homepage
+  usePageMeta({
+    title: "Катта Чегирма — Магазин бытовой техники со скидками",
+    description: "Катта Чегирма — самая дешёвая бытовая техника в Узбекистане. Пылесосы, стиральные машины, холодильники, телевизоры, кондиционеры и другая техника ведущих брендов со скидками до 60%. Быстрая доставка по Ташкенту и всему Узбекистану.",
+    canonicalPath: "/",
+    imageUrl: "https://kattachegirma.uz/og-image.png",
+  });
 
   // Hits — primary content, load first
   const { data: hitsData } = trpc.products.getHits.useQuery(

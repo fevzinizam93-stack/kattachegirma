@@ -6,6 +6,7 @@ import { ChevronDown, ChevronRight, MessageCircle, Minus, Phone, Plus, ShoppingC
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 interface ProductDetailProps {
   slug: string;
@@ -87,21 +88,39 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product?.id]);
 
-  // SEO: dynamic title based on product name (bilingual)
-  useEffect(() => {
-    if (!product) {
-      document.title = "Katta Chegirma";
-      return;
-    }
-    const name = product.name;
-    const brand = product.brand ? `${product.brand} ` : "";
-    const suffix = t.detail_buy_in_city;
-    const titleRaw = `${brand}${name}${suffix}`;
-    // Truncate at word boundary if > 60 chars
-    document.title = titleRaw.length > 60
-      ? titleRaw.slice(0, 60).replace(/\s+\S*$/, "") + "…"
-      : titleRaw;
-  }, [product]);
+  // SEO: dynamic meta tags via usePageMeta
+  const productTitle = product
+    ? (() => {
+        const brand = product.brand ? `${product.brand} ` : "";
+        const category = categories.find(c => c.id === product.categoryId);
+        const catName = category?.name ? ` — ${category.name}` : "";
+        return `${brand}${product.name}${catName} | Катта Чегирма`;
+      })()
+    : "Катта Чегирма — Магазин бытовой техники";
+
+  const productDesc = product
+    ? (() => {
+        const brand = product.brand ? `${product.brand} ` : "";
+        const price = parseFloat(product.price);
+        const priceStr = price > 0 ? ` Цена: ${price.toLocaleString("ru-RU")} сум.` : "";
+        const inStock = !product.stock || product.stock > 0;
+        const stockStr = inStock ? " В наличии." : " Нет в наличии.";
+        const desc = (product as any).description;
+        if (desc && desc.length > 30) {
+          return `${desc.slice(0, 130)}${desc.length > 130 ? "…" : ""}${priceStr}${stockStr}`;
+        }
+        return `Купите ${brand}${product.name} по выгодной цене в интернет-магазине Катта Чегирма.${priceStr}${stockStr} Быстрая доставка по Ташкенту и Узбекистану.`;
+      })()
+    : "Катта Чегирма — самая дешёвая бытовая техника в Узбекистане. Пылесосы, стиральные машины, холодильники, телевизоры, кондиционеры.";
+
+  usePageMeta({
+    title: productTitle,
+    description: productDesc,
+    imageUrl: product?.imageUrl ?? undefined,
+    canonicalPath: product ? `/product/${product.slug}` : undefined,
+    noindex: (product as any)?.isActive === false,
+    type: "product",
+  });
 
   // SEO: Schema.org Product JSON-LD
   useEffect(() => {
@@ -125,7 +144,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
           ? "https://schema.org/InStock"
           : "https://schema.org/OutOfStock",
         "seller": { "@type": "Organization", "name": "Katta Chegirma" },
-        "url": `https://www.kattachegirma.uz/product/${product.slug}`
+        "url": `https://kattachegirma.uz/product/${product.slug}`
       }
     };
     const script = document.createElement("script");
