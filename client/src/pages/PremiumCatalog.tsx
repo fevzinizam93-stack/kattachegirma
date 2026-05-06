@@ -7,6 +7,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { toast } from "sonner";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
 
 const BRANDS = ["Bosch", "LG", "Samsung", "Siemens", "Philips", "Electrolux", "Miele", "AEG"];
 
@@ -135,6 +136,11 @@ export default function PremiumCatalog() {
     description: "Премиум бытовая техника оригинальных брендов: Bosch, LG, Samsung, Siemens, Philips. Гарантия качества, официальная упаковка. Купите премиум технику с выгодной ценой в Ташкенте. Быстрая доставка по Узбекистану.",
     canonicalPath: "/premium",
   });
+
+  useBreadcrumbSchema([
+    { name: "Главная", url: "https://kattachegirma.uz/" },
+    { name: "Премиум", url: "https://kattachegirma.uz/premium" },
+  ]);
 
   const { data, isLoading } = trpc.products.list.useQuery({
     isPremium: true,

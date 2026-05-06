@@ -4,6 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { Filter, SlidersHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
 
 const LIMIT = 12;
 
@@ -15,6 +16,11 @@ export default function Catalog() {
     description: "Полный каталог бытовой техники в интернет-магазине Катта Чегирма. Пылесосы, стиральные машины, холодильники, телевизоры, кондиционеры и другая техника. Фильтр по категориям, брендам и цене. Быстрая доставка по Узбекистану.",
     canonicalPath: "/catalog",
   });
+
+  useBreadcrumbSchema([
+    { name: "Главная", url: "https://kattachegirma.uz/" },
+    { name: "Каталог", url: "https://kattachegirma.uz/catalog" },
+  ]);
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>();
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");

@@ -2,6 +2,7 @@ import ProductCard from "@/components/ProductCard";
 import { trpc } from "@/lib/trpc";
 import { Flame } from "lucide-react";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
 
 export default function Bestsellers() {
   usePageMeta({
@@ -9,6 +10,11 @@ export default function Bestsellers() {
     description: "Самые популярные товары в интернет-магазине Катта Чегирма. Хиты продаж — техника, которую выбирают наши покупатели. Пылесосы, стиральные машины, холодильники, телевизоры с выгодными ценами. Быстрая доставка по Узбекистану.",
     canonicalPath: "/bestsellers",
   });
+
+  useBreadcrumbSchema([
+    { name: "Главная", url: "https://kattachegirma.uz/" },
+    { name: "Хиты продаж", url: "https://kattachegirma.uz/bestsellers" },
+  ]);
   const { data: hits, isLoading } = trpc.products.getHits.useQuery({});
   return (
     <div className="min-h-screen bg-white">

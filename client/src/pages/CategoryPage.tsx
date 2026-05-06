@@ -4,6 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
 
 const LIMIT = 12;
 
@@ -55,6 +56,17 @@ export default function CategoryPage({ slug }: CategoryPageProps) {
     description: categoryDesc,
     canonicalPath: `/category/${slug}`,
   });
+
+  // SEO: BreadcrumbList Schema.org
+  useBreadcrumbSchema(
+    category
+      ? [
+          { name: "Главная", url: "https://kattachegirma.uz/" },
+          { name: "Каталог", url: "https://kattachegirma.uz/catalog" },
+          { name: category.name, url: `https://kattachegirma.uz/category/${slug}` },
+        ]
+      : [{ name: "Главная", url: "https://kattachegirma.uz/" }, { name: "Каталог", url: "https://kattachegirma.uz/catalog" }]
+  );
 
   if (!category && categoriesData) {
     return (

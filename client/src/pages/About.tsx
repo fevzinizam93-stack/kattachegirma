@@ -4,6 +4,7 @@ import { MapPin, Phone, Clock, Instagram, Send, ShieldCheck, Star, Users, Tag, P
 import { Link } from "wouter";
 import { useState } from "react";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
 
 const SHOP_PHOTOS = [
   "/manus-storage/IMG_6615_332365ec.JPG",
@@ -64,6 +65,11 @@ export default function About() {
     description: "Катта Чегирма — интернет-магазин бытовой техники в Ташкенте. Качественная техника Samsung, LG, Franco, Avangard с гарантией и доставкой по всему Узбекистану. Адрес, контакты, режим работы.",
     canonicalPath: "/about",
   });
+
+  useBreadcrumbSchema([
+    { name: "Главная", url: "https://kattachegirma.uz/" },
+    { name: "О нас", url: "https://kattachegirma.uz/about" },
+  ]);
 
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 

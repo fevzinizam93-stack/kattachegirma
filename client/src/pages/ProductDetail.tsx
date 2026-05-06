@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
 
 interface ProductDetailProps {
   slug: string;
@@ -121,6 +122,21 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
     noindex: (product as any)?.isActive === false,
     type: "product",
   });
+
+  // SEO: BreadcrumbList Schema.org
+  const breadcrumbCategory = categories.find(c => c.id === product?.categoryId);
+  useBreadcrumbSchema(
+    product
+      ? [
+          { name: "Главная", url: "https://kattachegirma.uz/" },
+          { name: "Каталог", url: "https://kattachegirma.uz/catalog" },
+          ...(breadcrumbCategory
+            ? [{ name: breadcrumbCategory.name, url: `https://kattachegirma.uz/category/${breadcrumbCategory.slug}` }]
+            : []),
+          { name: product.name, url: `https://kattachegirma.uz/product/${product.slug}` },
+        ]
+      : []
+  );
 
   // SEO: Schema.org Product JSON-LD
   useEffect(() => {
