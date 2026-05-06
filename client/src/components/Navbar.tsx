@@ -109,11 +109,10 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
         <div className="container py-2.5 flex items-center gap-4">
           {/* Logo */}
           <Link href="/" className="shrink-0 flex items-center gap-2 min-w-fit">
-            <div className="flex items-center justify-center w-9 h-9">
-              <img src="/manus-storage/kc-logo-official_7c5919c1.png" alt="KC" className="h-9 w-auto object-contain" />
-            </div>
+            <img src="/manus-storage/kc-logo-official_7c5919c1.png" alt="Katta Chegirma" className="h-12 w-auto object-contain" />
             <div className="leading-tight">
-              <div className="font-black text-sm text-gray-900">Katta Chegirma!!!</div>
+              <div className="font-black text-xl text-gray-900 tracking-tight">KATTA CHEGIRMA</div>
+              <div className="text-[10px] text-red-600 font-semibold tracking-widest uppercase">Магазин бытовой техники</div>
             </div>
           </Link>
 
@@ -294,11 +293,12 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
       <div className="md:hidden">
         {/* Top row: logo + name only */}
         <div className="flex items-center px-3 pt-2 pb-1">
-          <Link href="/" className="flex items-center gap-1.5 min-w-0">
-            <div className="flex items-center justify-center w-8 h-8 shrink-0">
-              <img src="/manus-storage/kc-logo-official_7c5919c1.png" alt="KC" className="h-8 w-auto object-contain" />
+          <Link href="/" className="flex items-center gap-2 min-w-0">
+            <img src="/manus-storage/kc-logo-official_7c5919c1.png" alt="Katta Chegirma" className="h-10 w-auto object-contain shrink-0" />
+            <div className="leading-tight min-w-0">
+              <div className="font-black text-base text-gray-900 tracking-tight">KATTA CHEGIRMA</div>
+              <div className="text-[9px] text-red-600 font-semibold tracking-wider uppercase">Бытовая техника</div>
             </div>
-            <span className="font-black text-sm leading-tight truncate text-gray-900">Katta Chegirma!!!</span>
           </Link>
         </div>
 
