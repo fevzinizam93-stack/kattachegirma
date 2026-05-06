@@ -35,11 +35,12 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
 
-  // Redirect non-www to www for canonical SEO (301 permanent)
+  // Redirect www to non-www for canonical SEO (301 permanent)
+  // Canonical domain is kattachegirma.uz (without www)
   app.use((req, res, next) => {
     const host = req.headers.host || "";
-    if (host === "kattachegirma.uz" || host === "kattachegirma.uz:3000") {
-      return res.redirect(301, `https://www.kattachegirma.uz${req.originalUrl}`);
+    if (host.startsWith("www.")) {
+      return res.redirect(301, `https://kattachegirma.uz${req.originalUrl}`);
     }
     next();
   });

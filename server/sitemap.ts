@@ -5,13 +5,13 @@ import { eq } from "drizzle-orm";
 
 const BASE_URL = "https://kattachegirma.uz";
 
-// Static pages
+// Static pages (exclude private/transactional pages: /cart, /checkout, /profile, /admin)
 const STATIC_PAGES = [
   { loc: "/", priority: "1.0", changefreq: "daily" },
   { loc: "/catalog", priority: "0.9", changefreq: "daily" },
   { loc: "/bestsellers", priority: "0.8", changefreq: "daily" },
+  { loc: "/premium", priority: "0.7", changefreq: "weekly" },
   { loc: "/about", priority: "0.5", changefreq: "monthly" },
-  { loc: "/cart", priority: "0.3", changefreq: "never" },
 ];
 
 function escapeXml(str: string): string {

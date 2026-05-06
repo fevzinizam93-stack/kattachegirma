@@ -72,8 +72,11 @@ export function serveStatic(app: Express) {
     etag: true,
   }));
 
-  // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+  // SPA fallback: serve index.html for all non-file routes
+  // Known 404 paths return proper 404 HTTP status
+  const KNOWN_404_PATHS = ["/404"];
+  app.use("*", (req, res) => {
+    const status = KNOWN_404_PATHS.includes(req.path) ? 404 : 200;
+    res.status(status).sendFile(path.resolve(distPath, "index.html"));
   });
 }
