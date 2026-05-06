@@ -110,7 +110,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           {/* Logo */}
           <Link href="/" className="shrink-0 flex items-center gap-2 min-w-fit">
             <div className="flex items-center justify-center w-9 h-9">
-              <img src="/manus-storage/kattachegirma-logo-black_84da5662.png" alt="KC" className="h-9 w-auto object-contain" />
+              <img src="/manus-storage/kc-logo-official_7c5919c1.png" alt="KC" className="h-9 w-auto object-contain" />
             </div>
             <div className="leading-tight">
               <div className="font-black text-sm text-gray-900">Katta Chegirma!!!</div>
@@ -296,7 +296,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
         <div className="flex items-center px-3 pt-2 pb-1">
           <Link href="/" className="flex items-center gap-1.5 min-w-0">
             <div className="flex items-center justify-center w-8 h-8 shrink-0">
-              <img src="/manus-storage/kattachegirma-logo-black_84da5662.png" alt="KC" className="h-8 w-auto object-contain" />
+              <img src="/manus-storage/kc-logo-official_7c5919c1.png" alt="KC" className="h-8 w-auto object-contain" />
             </div>
             <span className="font-black text-sm leading-tight truncate text-gray-900">Katta Chegirma!!!</span>
           </Link>
