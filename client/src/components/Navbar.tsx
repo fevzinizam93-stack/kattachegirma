@@ -108,17 +108,18 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
     <header className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200" translate="no">
       {/* ── Desktop row ── */}
       <div className="hidden md:block">
-        <div className="container py-2.5 flex items-center gap-4">
+        <div className="container flex items-center gap-4" style={{ height: "60px" }}>
           {/* Logo */}
           <Link href="/" className="shrink-0 flex items-center gap-2 min-w-fit">
-            <img src="/manus-storage/kc-logo-official_7c5919c1.png" alt="Katta Chegirma" className="h-12 w-auto object-contain" />
-            <div className="font-black text-xl text-gray-900 tracking-tight">Katta Chegirma!!!</div>
+            <img src="/manus-storage/kc-logo-official_7c5919c1.png" alt="Katta Chegirma" className="h-auto w-auto object-contain" style={{ width: "111px" }} />
+            <div className="font-black text-gray-900 tracking-tight" style={{ fontSize: "16px", width: "190px" }}>Katta Chegirma!!!</div>
           </Link>
 
           {/* Premium section button */}
           <Link
             href="/premium"
-            className={`shrink-0 text-xs font-bold px-3 py-2 rounded-full border transition-all whitespace-nowrap flex items-center gap-1 ${
+            style={{ fontSize: "10px" }}
+            className={`shrink-0 font-bold px-3 py-2 rounded-full border transition-all whitespace-nowrap flex items-center gap-1 ${
               location === "/premium"
                 ? "bg-gradient-to-r from-[#d4af37] to-[#f0d060] text-black border-[#d4af37] shadow-[0_0_14px_rgba(212,175,55,0.5)]"
                 : "bg-gradient-to-r from-[#d4af37]/90 to-[#f0d060]/90 text-black border-[#d4af37] hover:from-[#d4af37] hover:to-[#f0d060] hover:shadow-[0_0_12px_rgba(212,175,55,0.4)]"
@@ -131,7 +132,8 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           {/* About link */}
           <Link
             href="/about"
-            className={`shrink-0 text-sm font-medium px-3 py-2 rounded-full transition-colors whitespace-nowrap ${
+            style={{ fontSize: "12px" }}
+            className={`shrink-0 font-medium px-3 py-2 rounded-full transition-colors whitespace-nowrap ${
               location === "/about" ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
             }`}
           >
@@ -141,7 +143,8 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           {/* Sellers list link */}
           <Link
             href="/sellers"
-            className={`shrink-0 text-sm font-medium px-3 py-2 rounded-full transition-colors whitespace-nowrap ${
+            style={{ fontSize: "12px" }}
+            className={`shrink-0 font-medium px-3 py-2 rounded-full transition-colors whitespace-nowrap ${
               location === "/sellers" ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
             }`}
           >
@@ -152,21 +155,23 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           {sellerProfile ? (
             <Link
               href="/seller/dashboard"
-              className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full border-2 border-green-600 text-green-700 hover:bg-green-600 hover:text-white transition-colors whitespace-nowrap"
+              style={{ fontSize: "10px" }}
+              className="shrink-0 font-bold px-3 py-1.5 rounded-full border-2 border-green-600 text-green-700 hover:bg-green-600 hover:text-white transition-colors whitespace-nowrap"
             >
               + Добавить товар
             </Link>
           ) : (
             <Link
               href="/seller/register"
-              className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors whitespace-nowrap"
+              style={{ fontSize: "10px" }}
+              className="shrink-0 font-bold px-3 py-1.5 rounded-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors whitespace-nowrap"
             >
               {t.nav_become_seller}
             </Link>
           )}
 
           {/* Search bar — red border */}
-          <div className="flex-1 relative">
+          <div className="relative" style={{ width: "390px", flexShrink: 0 }}>
             <form onSubmit={handleSearch} className="flex items-center border-2 border-red-500 rounded-full bg-white focus-within:border-red-600 transition-colors overflow-hidden h-10">
               <Search size={16} className="ml-4 text-gray-400 shrink-0" />
               <input
