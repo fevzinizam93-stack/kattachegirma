@@ -7,6 +7,7 @@ import { Home, Grid3X3, Flame, ShoppingCart, Menu, User, Store, Crown, LogIn, Sh
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
 import { getLoginUrl } from "@/const";
+import { trpc } from "@/lib/trpc";
 
 export default function MobileBottomNav() {
   const [location] = useLocation();
@@ -14,6 +15,7 @@ export default function MobileBottomNav() {
   const { t } = useLanguage();
   const { currency, setCurrency } = useCurrency();
   const { user, isAuthenticated } = useAuth();
+  const { data: sellerProfile } = trpc.sellers.me.useQuery(undefined, { enabled: isAuthenticated });
   const [menuOpen, setMenuOpen] = useState(false);
 
   const isActive = (path: string) => {
@@ -145,17 +147,30 @@ export default function MobileBottomNav() {
               </div>
             </Link>
 
-            {/* Стать продавцом */}
-            <Link href="/seller/register" onClick={() => setMenuOpen(false)}
-              className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-red-50 active:bg-red-100 transition-colors">
-              <div className="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center shrink-0">
-                <Store size={18} className="text-red-600" />
-              </div>
-              <div>
-                <div className="text-sm font-bold text-gray-900">{t.nav_become_seller}</div>
-                <div className="text-xs text-gray-500">Откройте свой магазин</div>
-              </div>
-            </Link>
+            {/* Стать продавцом / Добавить товар */}
+            {sellerProfile ? (
+              <Link href="/seller/dashboard" onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-green-50 active:bg-green-100 transition-colors">
+                <div className="w-9 h-9 rounded-full bg-green-50 flex items-center justify-center shrink-0">
+                  <Store size={18} className="text-green-600" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-gray-900">+ Добавить товар</div>
+                  <div className="text-xs text-gray-500">Панель продавца</div>
+                </div>
+              </Link>
+            ) : (
+              <Link href="/seller/register" onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-red-50 active:bg-red-100 transition-colors">
+                <div className="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center shrink-0">
+                  <Store size={18} className="text-red-600" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-gray-900">{t.nav_become_seller}</div>
+                  <div className="text-xs text-gray-500">Откройте свой магазин</div>
+                </div>
+              </Link>
+            )}
 
             {/* Admin */}
             {isAuthenticated && user?.role === "admin" && (

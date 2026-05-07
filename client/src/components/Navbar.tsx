@@ -32,6 +32,8 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  const { data: sellerProfile } = trpc.sellers.me.useQuery(undefined, { enabled: isAuthenticated });
+
   const { data: searchResults, isLoading: isSearching } = trpc.products.list.useQuery(
     { search: debouncedQuery, limit: 6 },
     { enabled: debouncedQuery.trim().length >= 1 }
@@ -147,12 +149,21 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           </Link>
 
           {/* Seller button */}
-          <Link
-            href="/seller/register"
-            className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors whitespace-nowrap"
-          >
-            {t.nav_become_seller}
-          </Link>
+          {sellerProfile ? (
+            <Link
+              href="/seller/dashboard"
+              className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full border-2 border-green-600 text-green-700 hover:bg-green-600 hover:text-white transition-colors whitespace-nowrap"
+            >
+              + Добавить товар
+            </Link>
+          ) : (
+            <Link
+              href="/seller/register"
+              className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors whitespace-nowrap"
+            >
+              {t.nav_become_seller}
+            </Link>
+          )}
 
           {/* Search bar — red border */}
           <div className="flex-1 relative">
