@@ -4,7 +4,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { notifyNewOrder, notifyNewReview, broadcastTelegramMessage } from "./telegram";
+import { notifyNewOrder, notifyNewReview, notifyNewSeller, broadcastTelegramMessage } from "./telegram";
 import {
   getAllCategories,
   getProducts,
@@ -656,6 +656,14 @@ export const appRouter = router({
           return { id: existing.id, isNew: false };
         }
         const id = await createSeller({ ...input, userId: ctx.user.id, isApproved: false });
+        // Send Telegram notification (non-blocking)
+        notifyNewSeller({
+          name: input.name,
+          phone: input.phone,
+          telegram: input.telegram,
+          description: input.description,
+          userId: ctx.user.id,
+        }).catch(e => console.error("[Telegram] notifyNewSeller failed:", e));
         return { id, isNew: true };
       }),
 

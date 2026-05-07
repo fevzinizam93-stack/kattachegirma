@@ -106,6 +106,29 @@ export async function notifyNewReview(review: {
   await broadcastTelegramMessage(message);
 }
 
+export async function notifyNewSeller(seller: {
+  name: string;
+  phone: string;
+  telegram?: string;
+  description?: string;
+  userId: number;
+}): Promise<void> {
+  const message = [
+    `🏪 <b>Новая заявка продавца!</b>`,
+    ``,
+    `👤 <b>Имя:</b> ${seller.name}`,
+    `📞 <b>Телефон:</b> ${seller.phone}`,
+    seller.telegram ? `✈️ <b>Telegram:</b> ${seller.telegram}` : ``,
+    seller.description ? `📝 <b>О себе:</b> ${seller.description}` : ``,
+    ``,
+    `⚠️ <i>Заявка ожидает одобрения. Проверьте в панели администратора.</i>`,
+    ``,
+    `⏰ ${new Date().toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" })}`,
+  ].filter(Boolean).join("\n");
+
+  await broadcastTelegramMessage(message);
+}
+
 export async function notifyNewOrder(order: {
   id: number;
   phone: string;
