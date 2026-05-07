@@ -28,6 +28,7 @@ const Bestsellers = lazy(() => import("./pages/Bestsellers"));
 const SellerRegister = lazy(() => import("./pages/SellerRegister"));
 const SellerDashboard = lazy(() => import("./pages/SellerDashboard"));
 const SellerStorefront = lazy(() => import("./pages/SellerStorefront"));
+const SellersList = lazy(() => import("./pages/SellersList"));
 const Profile = lazy(() => import("./pages/Profile"));
 const PremiumCatalog = lazy(() => import("./pages/PremiumCatalog"));
 const AuthModal = lazy(() => import("./components/AuthModal"));
@@ -83,6 +84,7 @@ function Router() {
       <Route path="/admin/reviews" component={AdminReviews} />
       <Route path="/about" component={About} />
       <Route path="/bestsellers" component={Bestsellers} />
+      <Route path="/sellers" component={SellersList} />
       <Route path="/seller">{() => { window.location.replace("/seller/register"); return null; }}</Route>
       <Route path="/seller/register" component={SellerRegister} />
       <Route path="/seller/dashboard" component={SellerDashboard} />

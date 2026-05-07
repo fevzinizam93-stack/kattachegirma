@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, gte, ilike, like, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool } from "mysql2";
-import { analyticsEvents, banners, Banner, InsertBanner, categories, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, orders, products, reviews, InsertReview, sellers, storeSettings, telegramRecipients, TelegramRecipient, users, User, utmVisits, UtmVisit } from "../drizzle/schema";
+import { analyticsEvents, banners, Banner, InsertBanner, categories, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, orders, products, reviews, InsertReview, sellers, sellerReviews, InsertSellerReview, storeSettings, telegramRecipients, TelegramRecipient, users, User, utmVisits, UtmVisit } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import bcrypt from "bcryptjs";
 
@@ -736,4 +736,69 @@ export async function updateUserPhone(userId: number, phone: string): Promise<vo
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   await db.update(users).set({ phone }).where(eq(users.id, userId));
+}
+
+// ---- Seller Reviews ----
+export async function getSellerReviews(sellerId: number, visibleOnly = true) {
+  const db = await getDb();
+  if (!db) return [];
+  const conditions = [eq(sellerReviews.sellerId, sellerId)];
+  if (visibleOnly) conditions.push(eq(sellerReviews.isVisible, true));
+  return db.select().from(sellerReviews).where(and(...conditions)).orderBy(desc(sellerReviews.createdAt));
+}
+
+export async function createSellerReview(data: InsertSellerReview) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(sellerReviews).values(data);
+  return (result as any)[0]?.insertId as number;
+}
+
+export async function getSellerRatingStats(sellerId: number): Promise<{ avgRating: number; totalReviews: number }> {
+  const db = await getDb();
+  if (!db) return { avgRating: 0, totalReviews: 0 };
+  const result = await db
+    .select({
+      avg: sql<number>`AVG(${sellerReviews.rating})`,
+      total: sql<number>`COUNT(*)`,
+    })
+    .from(sellerReviews)
+    .where(and(eq(sellerReviews.sellerId, sellerId), eq(sellerReviews.isVisible, true)));
+  return {
+    avgRating: Number(result[0]?.avg ?? 0),
+    totalReviews: Number(result[0]?.total ?? 0),
+  };
+}
+
+export async function getSellerProductStats(sellerId: number): Promise<{ productCount: number; totalViews: number }> {
+  const db = await getDb();
+  if (!db) return { productCount: 0, totalViews: 0 };
+  const result = await db
+    .select({
+      productCount: sql<number>`COUNT(*)`,
+      totalViews: sql<number>`SUM(COALESCE(${products.viewCount}, 0))`,
+    })
+    .from(products)
+    .where(and(eq(products.sellerId, sellerId), eq(products.isApproved, true), eq(products.isActive, true)));
+  return {
+    productCount: Number(result[0]?.productCount ?? 0),
+    totalViews: Number(result[0]?.totalViews ?? 0),
+  };
+}
+
+export async function getApprovedSellers(search?: string) {
+  const db = await getDb();
+  if (!db) return [];
+  const conditions = [eq(sellers.isApproved, true)];
+  if (search) {
+    const q = `%${search.toLowerCase()}%`;
+    conditions.push(sql`LOWER(${sellers.name}) LIKE ${q}`);
+  }
+  return db.select().from(sellers).where(and(...conditions)).orderBy(asc(sellers.name));
+}
+
+export async function hideSellerReview(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(sellerReviews).set({ isVisible: false }).where(eq(sellerReviews.id, id));
 }

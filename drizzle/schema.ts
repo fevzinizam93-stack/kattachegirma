@@ -211,3 +211,17 @@ export const utmVisits = mysqlTable("utm_visits", {
 });
 
 export type UtmVisit = typeof utmVisits.$inferSelect;
+
+// Seller reviews (ratings from buyers about sellers)
+export const sellerReviews = mysqlTable("seller_reviews", {
+  id: int("id").autoincrement().primaryKey(),
+  sellerId: int("sellerId").notNull(),
+  userId: int("userId"),
+  authorName: varchar("authorName", { length: 128 }).notNull(),
+  rating: int("rating").notNull(), // 1-5
+  comment: text("comment"),
+  isVisible: boolean("isVisible").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type SellerReview = typeof sellerReviews.$inferSelect;
+export type InsertSellerReview = typeof sellerReviews.$inferInsert;

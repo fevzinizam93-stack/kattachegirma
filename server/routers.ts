@@ -70,6 +70,12 @@ import {
   setUserVip,
   findUserByEmailOrPhone,
   updateUserPhone,
+  getApprovedSellers,
+  getSellerReviews,
+  createSellerReview,
+  getSellerRatingStats,
+  getSellerProductStats,
+  hideSellerReview,
 } from "./db";
 import { storagePut } from "./storage";
 import { invokeLLM } from "./_core/llm";
@@ -747,12 +753,65 @@ export const appRouter = router({
         if (!seller || seller.isBlocked || !seller.isApproved) return [];
         const allProducts = await getSellerProducts(seller.id);
         // Only return approved and active products
-        return allProducts
+         return allProducts
           .filter((p: any) => p.isApproved && p.isActive)
           .slice(input.offset, input.offset + input.limit);
       }),
-  }),
 
+    // Public: list all approved sellers (with optional search)
+    listPublic: publicProcedure
+      .input(z.object({ search: z.string().optional() }))
+      .query(async ({ input }) => {
+        return getApprovedSellers(input.search);
+      }),
+
+    // Public: get seller stats (product count, total views, avg rating)
+    getStats: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        const [productStats, ratingStats] = await Promise.all([
+          getSellerProductStats(input.id),
+          getSellerRatingStats(input.id),
+        ]);
+        return { ...productStats, ...ratingStats };
+      }),
+
+    // Public: get seller reviews
+    getReviews: publicProcedure
+      .input(z.object({ sellerId: z.number() }))
+      .query(async ({ input }) => {
+        return getSellerReviews(input.sellerId, true);
+      }),
+
+    // Public (authenticated): submit a review about a seller
+    submitReview: protectedProcedure
+      .input(z.object({
+        sellerId: z.number(),
+        rating: z.number().int().min(1).max(5),
+        comment: z.string().max(1000).optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const seller = await getSellerById(input.sellerId);
+        if (!seller || !seller.isApproved) throw new Error("Seller not found");
+        const id = await createSellerReview({
+          sellerId: input.sellerId,
+          userId: ctx.user.id,
+          authorName: ctx.user.name ?? "Покупатель",
+          rating: input.rating,
+          comment: input.comment ?? null,
+          isVisible: true,
+        });
+        return { id };
+      }),
+
+    // Admin: hide a seller review
+    hideReview: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await hideSellerReview(input.id);
+        return { success: true };
+      }),
+  }),
   // ---- Analytics ----
   analytics: router({
     // Public: track any event (fire-and-forget)
