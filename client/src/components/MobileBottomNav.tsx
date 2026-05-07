@@ -3,7 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Home, Grid3X3, Flame, ShoppingCart, Menu, User, Store, Crown, LogIn, ShieldCheck } from "lucide-react";
+import { Home, Grid3X3, Flame, ShoppingCart, Menu, User, Store, Crown, LogIn, ShieldCheck, Users } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
 import { getLoginUrl } from "@/const";
@@ -130,6 +130,18 @@ export default function MobileBottomNav() {
               <div>
                 <div className="text-sm font-bold text-gray-900">Premium</div>
                 <div className="text-xs text-gray-500">Оригинальная техника</div>
+              </div>
+            </Link>
+
+            {/* Продавцы */}
+            <Link href="/sellers" onClick={() => setMenuOpen(false)}
+              className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-amber-50 active:bg-amber-100 transition-colors">
+              <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                <Users size={18} className="text-amber-600" />
+              </div>
+              <div>
+                <div className="text-sm font-bold text-gray-900">Продавцы</div>
+                <div className="text-xs text-gray-500">Список всех продавцов</div>
               </div>
             </Link>
 

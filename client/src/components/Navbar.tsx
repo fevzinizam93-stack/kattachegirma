@@ -136,6 +136,16 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
             {t.nav_about}
           </Link>
 
+          {/* Sellers list link */}
+          <Link
+            href="/sellers"
+            className={`shrink-0 text-sm font-medium px-3 py-2 rounded-full transition-colors whitespace-nowrap ${
+              location === "/sellers" ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            }`}
+          >
+            Продавцы
+          </Link>
+
           {/* Seller button */}
           <Link
             href="/seller/register"
