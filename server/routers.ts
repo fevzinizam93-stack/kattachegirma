@@ -4,7 +4,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { notifyNewOrder, notifyNewReview, notifyNewSeller, broadcastTelegramMessage } from "./telegram";
+import { notifyNewOrder, notifyNewReview, notifyNewSeller, notifySellerApproved, notifyNewProduct, broadcastTelegramMessage } from "./telegram";
 import {
   getAllCategories,
   getProducts,
@@ -395,21 +395,18 @@ export const appRouter = router({
           moderationStatus: "pending" as const,
           isFeatured: false,
         });
-        // Notify admin via Telegram
-        const msg = [
-          `🛍 <b>Yangi mahsulot moderatsiyada!</b>`,
-          ``,
-          `📦 <b>Nomi:</b> ${input.name}`,
-          `💰 <b>Narxi:</b> ${Number(input.price).toLocaleString("ru-RU")} so'm`,
-          `👤 <b>Sotuvchi:</b> ${seller.name} (${seller.phone ?? "telefon yo'q"})`,
-          ``,
-          `⚠️ Admin panelida moderatsiya qiling.`,
-        ].join("\n");
-        broadcastTelegramMessage(msg).catch(() => {});
+        // Send rich notification with inline Approve/Reject buttons
+        notifyNewProduct({
+          id,
+          name: input.name,
+          price: input.price,
+          imageUrl: input.imageUrl,
+          sellerName: seller.name,
+          sellerPhone: seller.phone ?? undefined,
+        }).catch(e => console.error("[Telegram] notifyNewProduct failed:", e));
         return { id };
       }),
-
-    // Seller: update own product (only pending/rejected ones)
+    // Seller: update own productt (only pending/rejected ones)
     sellerUpdate: sellerProcedure
       .input(z.object({
         id: z.number(),
@@ -678,6 +675,16 @@ export const appRouter = router({
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         await approveSeller(input.id);
+        // Notify the seller via Telegram (non-blocking)
+        getSellerById(input.id)
+          .then(seller => {
+            if (seller) {
+              notifySellerApproved({ name: seller.name, telegram: seller.telegram }).catch(
+                e => console.error("[Telegram] notifySellerApproved failed:", e)
+              );
+            }
+          })
+          .catch(() => {});
         return { success: true };
       }),
 

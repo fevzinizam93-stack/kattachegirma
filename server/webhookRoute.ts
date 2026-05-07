@@ -5,7 +5,7 @@
  */
 
 import { Router } from "express";
-import { approveSeller, setSellerBlocked, getSellerById } from "./db";
+import { approveSeller, setSellerBlocked, getSellerById, getProductById, updateProduct } from "./db";
 import { answerCallbackQuery, editMessageText } from "./telegram";
 
 const router = Router();
@@ -103,6 +103,69 @@ router.post("/api/telegram/webhook", async (req, res) => {
 
         if (chatId && messageId) {
           await editMessageText(chatId, messageId, updatedText);
+        }
+
+      } else if (data.startsWith("product_approve:")) {
+        const productId = parseInt(data.split(":")[1], 10);
+        if (isNaN(productId)) throw new Error("Invalid product id");
+
+        const product = await getProductById(productId);
+        if (!product) {
+          await answerCallbackQuery(callbackQueryId, "❌ Товар не найден");
+          res.json({ ok: true });
+          return;
+        }
+        if ((product as any).isApproved) {
+          await answerCallbackQuery(callbackQueryId, "✅ Уже одобрен");
+          res.json({ ok: true });
+          return;
+        }
+
+        await updateProduct(productId, { isApproved: true, moderationStatus: "approved" as const });
+        await answerCallbackQuery(callbackQueryId, `✅ Товар «${product.name}» одобрен!`);
+
+        const approvedText = [
+          `📦 <b>Товар — ОДОБРЕН ✅</b>`,
+          ``,
+          `🏷 <b>Название:</b> ${product.name}`,
+          `💰 <b>Цена:</b> ${Number(product.price).toLocaleString("ru-RU")} сум`,
+          product.sellerName ? `🏪 <b>Продавец:</b> ${product.sellerName}` : ``,
+          ``,
+          `👮 <b>Одобрил:</b> ${adminName}`,
+          `⏰ ${new Date().toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" })}`,
+        ].filter(Boolean).join("\n");
+
+        if (chatId && messageId) {
+          await editMessageText(chatId, messageId, approvedText);
+        }
+
+      } else if (data.startsWith("product_reject:")) {
+        const productId = parseInt(data.split(":")[1], 10);
+        if (isNaN(productId)) throw new Error("Invalid product id");
+
+        const product = await getProductById(productId);
+        if (!product) {
+          await answerCallbackQuery(callbackQueryId, "❌ Товар не найден");
+          res.json({ ok: true });
+          return;
+        }
+
+        await updateProduct(productId, { isApproved: false, moderationStatus: "rejected" as const, isActive: false });
+        await answerCallbackQuery(callbackQueryId, `❌ Товар «${product.name}» отклонён`);
+
+        const rejectedText = [
+          `📦 <b>Товар — ОТКЛОНЁН ❌</b>`,
+          ``,
+          `🏷 <b>Название:</b> ${product.name}`,
+          `💰 <b>Цена:</b> ${Number(product.price).toLocaleString("ru-RU")} сум`,
+          product.sellerName ? `🏪 <b>Продавец:</b> ${product.sellerName}` : ``,
+          ``,
+          `👮 <b>Отклонил:</b> ${adminName}`,
+          `⏰ ${new Date().toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" })}`,
+        ].filter(Boolean).join("\n");
+
+        if (chatId && messageId) {
+          await editMessageText(chatId, messageId, rejectedText);
         }
 
       } else {

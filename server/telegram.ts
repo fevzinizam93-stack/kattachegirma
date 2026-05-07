@@ -188,6 +188,82 @@ export async function notifyNewSeller(seller: {
   });
 }
 
+/**
+ * Notify a seller via Telegram that their application was approved.
+ * Sends directly to the seller's Telegram chat (not broadcast).
+ */
+export async function notifySellerApproved(seller: {
+  name: string;
+  telegram?: string | null;
+}): Promise<void> {
+  if (!seller.telegram) return; // Can't notify without Telegram handle
+
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return;
+
+  // Resolve chat_id: try @username or numeric ID
+  const chatId = seller.telegram.trim().replace(/^@/, "");
+  if (!chatId) return;
+
+  const message = [
+    `🎉 <b>Поздравляем! Ваша заявка продавца одобрена!</b>`,
+    ``,
+    `Уважаемый <b>${seller.name}</b>,`,
+    ``,
+    `Ваша заявка на размещение товаров на платформе <b>Katta Chegirma</b> успешно одобрена.`,
+    ``,
+    `✅ Теперь вы можете добавлять товары через личный кабинет продавца.`,
+    `🌐 Сайт: <a href="https://kattachegirma.uz/seller/dashboard">kattachegirma.uz</a>`,
+    ``,
+    `Спасибо, что выбрали нашу площадку!`,
+    `⏰ ${new Date().toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" })}`,
+  ].join("\n");
+
+  // Send to seller's Telegram username (as @username)
+  await sendTelegramMessageToChat(`@${chatId}`, message);
+}
+
+/**
+ * Notify admins about a new product added by a seller.
+ * Includes inline buttons to approve or reject the product.
+ */
+export async function notifyNewProduct(product: {
+  id: number;
+  name: string;
+  price: string;
+  imageUrl?: string | null;
+  sellerName?: string | null;
+  sellerPhone?: string | null;
+  categoryName?: string | null;
+}): Promise<void> {
+  const priceFormatted = Number(product.price).toLocaleString("ru-RU");
+
+  const message = [
+    `📦 <b>Новый товар от продавца!</b>`,
+    ``,
+    `🏷 <b>Название:</b> ${product.name}`,
+    product.categoryName ? `📂 <b>Категория:</b> ${product.categoryName}` : ``,
+    `💰 <b>Цена:</b> ${priceFormatted} сум`,
+    ``,
+    product.sellerName ? `🏪 <b>Продавец:</b> ${product.sellerName}` : ``,
+    product.sellerPhone ? `📞 <b>Телефон:</b> ${product.sellerPhone}` : ``,
+    ``,
+    `⚠️ <i>Товар ожидает модерации. Одобрите или отклоните.</i>`,
+    `⏰ ${new Date().toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" })}`,
+  ].filter(Boolean).join("\n");
+
+  const inline_keyboard = [
+    [
+      { text: "✅ Одобрить товар", callback_data: `product_approve:${product.id}` },
+      { text: "❌ Отклонить", callback_data: `product_reject:${product.id}` },
+    ],
+  ];
+
+  await broadcastTelegramMessage(message, {
+    reply_markup: { inline_keyboard },
+  });
+}
+
 export async function notifyNewOrder(order: {
   id: number;
   phone: string;
