@@ -3,7 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Crown, ShoppingCart } from "lucide-react";
-import { Link, useLocation } from "wouter";
+import { Link } from "wouter";
 import { toast } from "sonner";
 
 interface Product {
@@ -35,7 +35,6 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
   const { user } = useAuth();
-  const [, navigate] = useLocation();
 
   const isVip = user?.role === "vip" || user?.role === "admin";
   const displayName = product.name;
@@ -144,19 +143,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             <ShoppingCart size={12} />
             <span className="truncate">{inStock ? t.card_add_to_cart : t.detail_out_of_stock}</span>
           </button>
-          {/* Seller badge — only for 3rd-party sellers. Using div+onClick to avoid nested <a> inside <Link> */}
-          {product.sellerId && product.sellerName && (
-            <div
-              role="link"
-              tabIndex={0}
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/seller/${product.sellerId}`); }}
-              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); navigate(`/seller/${product.sellerId}`); } }}
-              className="mt-1.5 flex items-center gap-1 text-[10px] text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg px-2 py-1 transition-colors w-full truncate cursor-pointer"
-            >
-              <span className="shrink-0">🏤</span>
-              <span className="truncate font-semibold">{product.sellerName}</span>
-            </div>
-          )}
+          {/* Seller name is shown only on the product detail page, not here */}
         </div>
       </div>
     </Link>
