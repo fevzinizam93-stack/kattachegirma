@@ -716,6 +716,34 @@ export const appRouter = router({
         await promoteToAdmin(input.email);
         return { success: true };
       }),
+
+    // Public: get seller profile by ID
+    getPublicProfile: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        const seller = await getSellerById(input.id);
+        if (!seller || seller.isBlocked || !seller.isApproved) return null;
+        // Return only public fields
+        return {
+          id: seller.id,
+          name: seller.name,
+          description: seller.description,
+          createdAt: seller.createdAt,
+        };
+      }),
+
+    // Public: get approved products by seller ID
+    getPublicProducts: publicProcedure
+      .input(z.object({ id: z.number(), limit: z.number().min(1).max(100).default(48), offset: z.number().min(0).default(0) }))
+      .query(async ({ input }) => {
+        const seller = await getSellerById(input.id);
+        if (!seller || seller.isBlocked || !seller.isApproved) return [];
+        const allProducts = await getSellerProducts(seller.id);
+        // Only return approved and active products
+        return allProducts
+          .filter((p: any) => p.isApproved && p.isActive)
+          .slice(input.offset, input.offset + input.limit);
+      }),
   }),
 
   // ---- Analytics ----

@@ -450,13 +450,23 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
 
 
               {/* Seller contacts — compact */}
-              {(product.sellerPhone || product.sellerTelegram) && (
-                <div className="border border-gray-200 rounded-xl p-2 mb-1.5 bg-gray-50">
-                  {product.sellerName && (
-                    <p className="text-[10px] font-bold text-gray-500 mb-1">
-                      {t.detail_seller}: {product.sellerName}
-                    </p>
+              {(product.sellerPhone || product.sellerTelegram || product.sellerId) && (
+                <div className="border border-amber-200 rounded-xl p-2 mb-1.5 bg-amber-50">
+                  {/* Seller name — clickable link to storefront */}
+                  {product.sellerName && product.sellerId && (
+                    <a
+                      href={`/seller/${product.sellerId}`}
+                      className="flex items-center gap-1.5 text-[11px] font-bold text-amber-800 hover:text-amber-900 mb-1.5 transition-colors"
+                    >
+                      <span>🏪</span>
+                      <span className="underline underline-offset-2">{product.sellerName}</span>
+                      <span className="text-[9px] font-normal text-amber-600 ml-auto">Все товары →</span>
+                    </a>
                   )}
+                  {/* Disclaimer for 3rd-party seller products */}
+                  <div className="text-[9px] text-amber-700 bg-white border border-amber-200 rounded-lg px-2 py-1.5 mb-1.5 leading-relaxed">
+                    ⚠️ Katta Chegirma не несёт ответственности за этого продавца. Качество, доставка и гарантия — ответственность продавца. Наш портал предоставляет доступ для продажи товаров со скидкой.
+                  </div>
                   <div className="flex flex-col gap-1">
                     {product.sellerPhone && (
                       <a

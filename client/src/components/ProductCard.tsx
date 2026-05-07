@@ -22,6 +22,7 @@ interface Product {
   isPremium?: boolean | null;
   stock?: number | null;
   sellerId?: number | null;
+  sellerName?: string | null;
   costPrice?: string | null;
 }
 
@@ -142,6 +143,17 @@ export default function ProductCard({ product }: ProductCardProps) {
             <ShoppingCart size={12} />
             <span className="truncate">{inStock ? t.card_add_to_cart : t.detail_out_of_stock}</span>
           </button>
+          {/* Seller badge — only for 3rd-party sellers */}
+          {product.sellerId && product.sellerName && (
+            <a
+              href={`/seller/${product.sellerId}`}
+              onClick={(e) => e.stopPropagation()}
+              className="mt-1.5 flex items-center gap-1 text-[10px] text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg px-2 py-1 transition-colors w-full truncate"
+            >
+              <span className="shrink-0">🏪</span>
+              <span className="truncate font-semibold">{product.sellerName}</span>
+            </a>
+          )}
         </div>
       </div>
     </Link>
