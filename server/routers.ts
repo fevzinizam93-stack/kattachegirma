@@ -641,7 +641,8 @@ export const appRouter = router({
   sellers: router({
     // Get current user's seller profile
     me: protectedProcedure.query(async ({ ctx }) => {
-      return getSellerByUserId(ctx.user.id);
+      const seller = await getSellerByUserId(ctx.user.id);
+      return seller ?? null;
     }),
 
     // Register as seller
