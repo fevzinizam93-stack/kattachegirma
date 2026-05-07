@@ -10,6 +10,7 @@ import { appRouter } from "../routers";
 import { registerUploadRoute } from "../uploadRoute";
 import { registerSitemapRoute } from "../sitemap";
 import { registerTelegramWebhook } from "../webhookRoute";
+import { autoRegisterTelegramWebhook } from "../telegram";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 
@@ -81,6 +82,11 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+    // Auto-register Telegram webhook in production so inline buttons work
+    if (process.env.NODE_ENV !== "development") {
+      const webhookUrl = "https://kattachegirma.uz/api/telegram/webhook";
+      autoRegisterTelegramWebhook(webhookUrl).catch(console.error);
+    }
   });
 }
 

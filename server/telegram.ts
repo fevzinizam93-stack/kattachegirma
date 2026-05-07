@@ -264,6 +264,38 @@ export async function notifyNewProduct(product: {
   });
 }
 
+/**
+ * Auto-register Telegram webhook URL with Telegram API.
+ * Called once at server startup in production.
+ */
+export async function autoRegisterTelegramWebhook(webhookUrl: string): Promise<void> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) {
+    console.warn("[Telegram] TELEGRAM_BOT_TOKEN not set — skipping webhook registration");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${TELEGRAM_API}/bot${token}/setWebhook`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        url: webhookUrl,
+        allowed_updates: ["callback_query", "message"],
+        drop_pending_updates: false,
+      }),
+    });
+    const data = await res.json() as { ok: boolean; description?: string };
+    if (data.ok) {
+      console.log(`[Telegram] Webhook registered: ${webhookUrl}`);
+    } else {
+      console.error(`[Telegram] Failed to register webhook: ${data.description}`);
+    }
+  } catch (e) {
+    console.error("[Telegram] autoRegisterTelegramWebhook error:", e);
+  }
+}
+
 export async function notifyNewOrder(order: {
   id: number;
   phone: string;
