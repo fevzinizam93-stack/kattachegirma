@@ -445,10 +445,11 @@ export async function getAnalyticsStats(days = 30) {
 }
 
 // ---- Reviews ----
-export async function insertReview(data: InsertReview) {
+export async function insertReview(data: InsertReview): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.insert(reviews).values(data);
+  const result = await db.insert(reviews).values(data);
+  return (result as any)[0]?.insertId ?? 0;
 }
 
 export async function getApprovedReviewsByProduct(productId: number) {

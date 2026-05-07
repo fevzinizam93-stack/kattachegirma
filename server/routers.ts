@@ -868,7 +868,7 @@ export const appRouter = router({
         comment: z.string().min(3).max(2000),
       }))
       .mutation(async ({ input, ctx }) => {
-        await insertReview({
+        const reviewId = await insertReview({
           productId: input.productId,
           authorName: input.authorName,
           rating: input.rating,
@@ -879,6 +879,7 @@ export const appRouter = router({
         // Notify admin via Telegram (fire-and-forget, don't block response)
         const product = await getProductById(input.productId);
         notifyNewReview({
+          id: reviewId,
           productName: product?.name ?? `Товар #${input.productId}`,
           authorName: input.authorName,
           rating: input.rating,

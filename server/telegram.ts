@@ -130,6 +130,7 @@ export async function sendTelegramMessage(text: string): Promise<boolean> {
 }
 
 export async function notifyNewReview(review: {
+  id: number;
   productName: string;
   authorName: string;
   rating: number;
@@ -147,13 +148,18 @@ export async function notifyNewReview(review: {
     `📝 <b>Отзыв:</b>`,
     review.comment,
     ``,
-    `⚠️ <i>Отзыв ожидает модерации. Одобрите или скройте в админ-панели.</i>`,
-    review.adminUrl ? `🔗 <a href="${review.adminUrl}">Открыть панель отзывов</a>` : ``,
-    ``,
+    `⚠️ <i>Отзыв ожидает модерации. Одобрите или скройте.</i>`,
     `⏰ ${new Date().toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" })}`,
   ].filter(Boolean).join("\n");
 
-  await broadcastTelegramMessage(message);
+  const inline_keyboard = [
+    [
+      { text: "✅ Одобрить отзыв", callback_data: `review_approve:${review.id}` },
+      { text: "🙈 Скрыть", callback_data: `review_hide:${review.id}` },
+    ],
+  ];
+
+  await broadcastTelegramMessage(message, { reply_markup: { inline_keyboard } });
 }
 
 export async function notifyNewSeller(seller: {
