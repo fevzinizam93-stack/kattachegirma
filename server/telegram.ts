@@ -7,7 +7,11 @@ import { getActiveTelegramRecipients } from "./db";
 
 const TELEGRAM_API = "https://api.telegram.org";
 
-export async function sendTelegramMessageToChat(chatId: string, text: string): Promise<boolean> {
+export async function sendTelegramMessageToChat(
+  chatId: string,
+  text: string,
+  extra?: Record<string, unknown>
+): Promise<boolean> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) {
     console.warn("[Telegram] TELEGRAM_BOT_TOKEN not set");
@@ -22,6 +26,7 @@ export async function sendTelegramMessageToChat(chatId: string, text: string): P
         chat_id: chatId,
         text,
         parse_mode: "HTML",
+        ...extra,
       }),
     });
 
@@ -38,11 +43,56 @@ export async function sendTelegramMessageToChat(chatId: string, text: string): P
 }
 
 /**
+ * Answer a callback_query (removes loading spinner on button)
+ */
+export async function answerCallbackQuery(
+  callbackQueryId: string,
+  text?: string
+): Promise<void> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return;
+  await fetch(`${TELEGRAM_API}/bot${token}/answerCallbackQuery`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ callback_query_id: callbackQueryId, text }),
+  });
+}
+
+/**
+ * Edit an existing message text (used to update after button press)
+ */
+export async function editMessageText(
+  chatId: string,
+  messageId: number,
+  text: string
+): Promise<void> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return;
+  try {
+    await fetch(`${TELEGRAM_API}/bot${token}/editMessageText`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        message_id: messageId,
+        text,
+        parse_mode: "HTML",
+      }),
+    });
+  } catch (e) {
+    console.error("[Telegram] editMessageText error:", e);
+  }
+}
+
+/**
  * Broadcast a message to:
  * 1. The main admin chat (TELEGRAM_ADMIN_CHAT_ID env var)
  * 2. All active recipients stored in the telegram_recipients DB table
  */
-export async function broadcastTelegramMessage(text: string): Promise<void> {
+export async function broadcastTelegramMessage(
+  text: string,
+  extra?: Record<string, unknown>
+): Promise<void> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) {
     console.warn("[Telegram] TELEGRAM_BOT_TOKEN not set — skipping broadcast");
@@ -54,7 +104,7 @@ export async function broadcastTelegramMessage(text: string): Promise<void> {
   // 1. Always send to the main admin chat_id from env
   const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
   if (adminChatId) {
-    await sendTelegramMessageToChat(adminChatId, text);
+    await sendTelegramMessageToChat(adminChatId, text, extra);
     sentTo.add(adminChatId);
   }
 
@@ -63,7 +113,7 @@ export async function broadcastTelegramMessage(text: string): Promise<void> {
     const recipients = await getActiveTelegramRecipients();
     for (const r of recipients) {
       if (!sentTo.has(r.chatId)) {
-        await sendTelegramMessageToChat(r.chatId, text);
+        await sendTelegramMessageToChat(r.chatId, text, extra);
         sentTo.add(r.chatId);
       }
     }
@@ -107,6 +157,7 @@ export async function notifyNewReview(review: {
 }
 
 export async function notifyNewSeller(seller: {
+  id: number;
   name: string;
   phone: string;
   telegram?: string;
@@ -121,12 +172,20 @@ export async function notifyNewSeller(seller: {
     seller.telegram ? `✈️ <b>Telegram:</b> ${seller.telegram}` : ``,
     seller.description ? `📝 <b>О себе:</b> ${seller.description}` : ``,
     ``,
-    `⚠️ <i>Заявка ожидает одобрения. Проверьте в панели администратора.</i>`,
-    ``,
     `⏰ ${new Date().toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" })}`,
   ].filter(Boolean).join("\n");
 
-  await broadcastTelegramMessage(message);
+  // Inline keyboard with Approve / Reject buttons
+  const inline_keyboard = [
+    [
+      { text: "✅ Одобрить", callback_data: `seller_approve:${seller.id}` },
+      { text: "❌ Отклонить", callback_data: `seller_reject:${seller.id}` },
+    ],
+  ];
+
+  await broadcastTelegramMessage(message, {
+    reply_markup: { inline_keyboard },
+  });
 }
 
 export async function notifyNewOrder(order: {

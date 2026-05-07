@@ -658,6 +658,7 @@ export const appRouter = router({
         const id = await createSeller({ ...input, userId: ctx.user.id, isApproved: false });
         // Send Telegram notification (non-blocking)
         notifyNewSeller({
+          id,
           name: input.name,
           phone: input.phone,
           telegram: input.telegram,
@@ -912,6 +913,34 @@ export const appRouter = router({
         await deleteTelegramRecipient(input.id);
         return { ok: true };
       }),
+    // Register Telegram webhook (admin only)
+    registerWebhook: adminProcedure
+      .input(z.object({ siteUrl: z.string().url() }))
+      .mutation(async ({ input }) => {
+        const token = process.env.TELEGRAM_BOT_TOKEN;
+        if (!token) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "TELEGRAM_BOT_TOKEN not set" });
+        const webhookUrl = `${input.siteUrl}/api/telegram/webhook`;
+        const secret = process.env.TELEGRAM_WEBHOOK_SECRET ?? "";
+        const res = await fetch(`https://api.telegram.org/bot${token}/setWebhook`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            url: webhookUrl,
+            allowed_updates: ["callback_query"],
+            secret_token: secret || undefined,
+          }),
+        });
+        const data = await res.json() as { ok: boolean; description?: string };
+        if (!data.ok) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: data.description ?? "setWebhook failed" });
+        return { ok: true, webhookUrl };
+      }),
+    // Get current webhook info (admin only)
+    getWebhookInfo: adminProcedure.query(async () => {
+      const token = process.env.TELEGRAM_BOT_TOKEN;
+      if (!token) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "TELEGRAM_BOT_TOKEN not set" });
+      const res = await fetch(`https://api.telegram.org/bot${token}/getWebhookInfo`);
+      return res.json();
+    }),
   }),
 
   // ---- UTM Tracking ----

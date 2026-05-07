@@ -198,6 +198,13 @@ export default function Admin() {
     onSuccess: () => { utils.telegram.listRecipients.invalidate(); toast.success("Получатель удалён"); },
     onError: (e) => toast.error(e.message),
   });
+  const { data: webhookInfo } = trpc.telegram.getWebhookInfo.useQuery(undefined, {
+    enabled: tab === "notifications" && user?.role === "admin",
+  });
+  const registerWebhookMut = trpc.telegram.registerWebhook.useMutation({
+    onSuccess: (data) => toast.success(`Webhook зарегистрирован: ${data.webhookUrl}`),
+    onError: (e) => toast.error(e.message),
+  });
 
   const createBannerMut = trpc.banners.create.useMutation({
     onSuccess: () => { utils.banners.listAll.invalidate(); setShowBannerForm(false); setBannerForm(emptyBannerForm); setBannerEditId(null); toast.success("Баннер создан"); },
@@ -1469,6 +1476,30 @@ export default function Admin() {
                   ))}
                 </div>
               )}
+            </div>
+
+            {/* Webhook Registration */}
+            <div className="bg-white rounded-2xl shadow-sm p-5 mt-5">
+              <h3 className="font-bold text-sm text-gray-700 mb-1">Inline-кнопки «Одобрить / Отклонить»</h3>
+              <p className="text-xs text-gray-500 mb-3">
+                Чтобы кнопки в Telegram работали, нужно зарегистрировать webhook. Нажмите кнопку один раз после публикации сайта.
+              </p>
+              {(webhookInfo as any)?.result?.url && (
+                <div className="bg-green-50 border border-green-200 rounded-xl p-3 mb-3 text-xs text-green-800">
+                  <p className="font-bold mb-0.5">Webhook активен</p>
+                  <p className="break-all">{(webhookInfo as any).result.url}</p>
+                  {(webhookInfo as any).result.last_error_message && (
+                    <p className="text-red-600 mt-1">Ошибка: {(webhookInfo as any).result.last_error_message}</p>
+                  )}
+                </div>
+              )}
+              <button
+                onClick={() => registerWebhookMut.mutate({ siteUrl: window.location.origin })}
+                disabled={registerWebhookMut.isPending}
+                className="w-full bg-blue-600 text-white py-2 rounded-xl font-bold text-sm hover:bg-blue-700 transition-colors disabled:opacity-50"
+              >
+                {registerWebhookMut.isPending ? "Регистрация..." : "Зарегистрировать Webhook"}
+              </button>
             </div>
           </div>
         )}
