@@ -1108,5 +1108,28 @@ export const appRouter = router({
       };
     }),
   }),
+
+  // ---- Currency ----
+  currency: router({
+    // Get current USD -> UZS exchange rate (no API key required)
+    getRate: publicProcedure.query(async () => {
+      try {
+        const res = await fetch("https://open.er-api.com/v6/latest/USD", {
+          signal: AbortSignal.timeout(8000),
+        });
+        if (!res.ok) throw new Error("Exchange rate API error");
+        const data = await res.json() as { rates: Record<string, number>; time_last_update_utc: string };
+        const rate = data.rates["UZS"];
+        if (!rate) throw new Error("UZS rate not found");
+        return {
+          usdToUzs: Math.round(rate),
+          updatedAt: data.time_last_update_utc,
+        };
+      } catch {
+        // Fallback rate if API is unavailable
+        return { usdToUzs: 12700, updatedAt: null };
+      }
+    }),
+  }),
 });
 export type AppRouter = typeof appRouter;

@@ -81,7 +81,15 @@ export default function Admin() {
   const [uploadingCount, setUploadingCount] = useState(0);
   const [isTranslating, setIsTranslating] = useState(false);
   const [exchangeRate, setExchangeRate] = useState<number>(12700); // UZS per 1 USD
+  const [rateUpdatedAt, setRateUpdatedAt] = useState<string | null>(null);
   const [adminSearch, setAdminSearch] = useState("");
+  const rateQuery = trpc.currency.getRate.useQuery(undefined, { staleTime: 60 * 60 * 1000 });
+  useEffect(() => {
+    if (rateQuery.data) {
+      setExchangeRate(rateQuery.data.usdToUzs);
+      setRateUpdatedAt(rateQuery.data.updatedAt);
+    }
+  }, [rateQuery.data]);
 
   // Category form state
   const [showCatForm, setShowCatForm] = useState(false);
@@ -609,7 +617,7 @@ export default function Admin() {
                       </div>
                       {/* Exchange rate row */}
                       <div className="col-span-2">
-                        <div className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
+                        <div className="flex flex-wrap items-center gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
                           <span className="text-sm font-semibold text-blue-800">💱 Курс доллара:</span>
                           <input
                             type="number"
@@ -619,6 +627,8 @@ export default function Admin() {
                             min={1}
                           />
                           <span className="text-sm text-blue-700">сум за 1 USD</span>
+                          {rateQuery.isLoading && <span className="text-xs text-blue-400">Загрузка...</span>}
+                          {rateUpdatedAt && <span className="text-xs text-blue-500">Автокурс: {new Date(rateUpdatedAt).toLocaleString("ru", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</span>}
                         </div>
                       </div>
                       {/* Price USD → UZS */}

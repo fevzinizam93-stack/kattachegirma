@@ -2,7 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { trpc } from "@/lib/trpc";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import {
@@ -48,6 +48,27 @@ export default function SellerDashboard() {
     stock: 1, isNew: false,
   };
   const [form, setForm] = useState(emptyForm);
+
+  // Currency state
+  const [priceCurrency, setPriceCurrency] = useState<"UZS" | "USD">("UZS");
+  const [origCurrency, setOrigCurrency] = useState<"UZS" | "USD">("UZS");
+  const [usdRate, setUsdRate] = useState<number>(12700);
+  const [rateUpdatedAt, setRateUpdatedAt] = useState<string | null>(null);
+  const rateQuery = trpc.currency.getRate.useQuery(undefined, { staleTime: 60 * 60 * 1000 });
+  useEffect(() => {
+    if (rateQuery.data) {
+      setUsdRate(rateQuery.data.usdToUzs);
+      setRateUpdatedAt(rateQuery.data.updatedAt);
+    }
+  }, [rateQuery.data]);
+
+  // Convert input to UZS string for storage
+  function toUzs(val: string, currency: "UZS" | "USD"): string {
+    if (!val) return "";
+    const num = parseFloat(val);
+    if (isNaN(num)) return val;
+    return currency === "USD" ? String(Math.round(num * usdRate)) : val;
+  }
 
   const sellerQuery = trpc.sellers.me.useQuery(undefined, { enabled: !!user });
   const categoriesQuery = trpc.categories.list.useQuery();
@@ -216,11 +237,14 @@ export default function SellerDashboard() {
     const slug = form.slug || generateSlug(form.name);
     const imageUrl = uploadedPhotos[0] ?? "";
     const images = uploadedPhotos;
+    // Convert prices to UZS before saving
+    const priceUzs = toUzs(form.price, priceCurrency);
+    const origPriceUzs = toUzs(form.originalPrice, origCurrency);
 
     if (editId) {
-      updateMut.mutate({ id: editId, ...form, imageUrl, images });
+      updateMut.mutate({ id: editId, ...form, price: priceUzs, originalPrice: origPriceUzs, imageUrl, images });
     } else {
-      createMut.mutate({ ...form, slug, imageUrl, images });
+      createMut.mutate({ ...form, slug, price: priceUzs, originalPrice: origPriceUzs, imageUrl, images });
     }
   }
 
@@ -318,29 +342,61 @@ export default function SellerDashboard() {
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
               </div>
+              {/* Currency rate info */}
+              <div className="md:col-span-2 bg-blue-50 border border-blue-200 rounded-xl px-4 py-2 flex items-center gap-3 text-xs text-blue-800">
+                <span className="font-bold">💱 1 USD = {usdRate.toLocaleString()} сум</span>
+                {rateUpdatedAt && <span className="text-blue-500">Обновлено: {new Date(rateUpdatedAt).toLocaleString("ru", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</span>}
+                {rateQuery.isLoading && <span className="text-blue-400">Загрузка курса...</span>}
+              </div>
               <div>
                 <label className="block text-xs font-bold text-gray-600 mb-1">
-                  {t.admin_product_price} (сум) *
+                  {t.admin_product_price} *
                 </label>
-                <input
-                  value={form.price}
-                  onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
-                  placeholder="5000000"
-                  type="number"
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                />
+                <div className="flex gap-2">
+                  <select
+                    value={priceCurrency}
+                    onChange={e => setPriceCurrency(e.target.value as "UZS" | "USD")}
+                    className="border border-gray-200 rounded-xl px-2 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 w-24"
+                  >
+                    <option value="UZS">🇺🇿 Сум</option>
+                    <option value="USD">🇺🇸 USD</option>
+                  </select>
+                  <input
+                    value={form.price}
+                    onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
+                    placeholder={priceCurrency === "USD" ? "100" : "1 270 000"}
+                    type="number"
+                    className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  />
+                </div>
+                {priceCurrency === "USD" && form.price && !isNaN(parseFloat(form.price)) && (
+                  <p className="text-xs text-gray-500 mt-1">≈ {(parseFloat(form.price) * usdRate).toLocaleString("ru")} сум</p>
+                )}
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-600 mb-1">
                   {t.admin_product_old_price} (для скидки)
                 </label>
-                <input
-                  value={form.originalPrice}
-                  onChange={e => setForm(f => ({ ...f, originalPrice: e.target.value }))}
-                  placeholder="6000000"
-                  type="number"
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                />
+                <div className="flex gap-2">
+                  <select
+                    value={origCurrency}
+                    onChange={e => setOrigCurrency(e.target.value as "UZS" | "USD")}
+                    className="border border-gray-200 rounded-xl px-2 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 w-24"
+                  >
+                    <option value="UZS">🇺🇿 Сум</option>
+                    <option value="USD">🇺🇸 USD</option>
+                  </select>
+                  <input
+                    value={form.originalPrice}
+                    onChange={e => setForm(f => ({ ...f, originalPrice: e.target.value }))}
+                    placeholder={origCurrency === "USD" ? "120" : "1 524 000"}
+                    type="number"
+                    className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  />
+                </div>
+                {origCurrency === "USD" && form.originalPrice && !isNaN(parseFloat(form.originalPrice)) && (
+                  <p className="text-xs text-gray-500 mt-1">≈ {(parseFloat(form.originalPrice) * usdRate).toLocaleString("ru")} сум</p>
+                )}
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-600 mb-1">
