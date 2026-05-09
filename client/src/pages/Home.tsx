@@ -24,7 +24,7 @@ export default function Home() {
 
   // Hits — primary content, load first
   const { data: hitsData } = trpc.products.getHits.useQuery(
-    { limit: 8 },
+    { limit: 50 },
     { staleTime: 3 * 60 * 1000 }
   );
   const hitProducts = hitsData ?? [];
@@ -34,18 +34,18 @@ export default function Home() {
     if (!sliderRef.current) return;
     sliderRef.current.scrollBy({ left: dir === "right" ? 280 : -280, behavior: "smooth" });
   };
-  // Auto-scroll: every 3s move one card to the right, loop back to start
+  // Auto-scroll: every 3s move one card; seamless infinite loop via doubled array
   useEffect(() => {
     const interval = setInterval(() => {
       if (sliderPausedRef.current || !sliderRef.current) return;
       const el = sliderRef.current;
-      const maxScroll = el.scrollWidth - el.clientWidth;
-      if (el.scrollLeft >= maxScroll - 5) {
-        el.scrollTo({ left: 0, behavior: "smooth" });
-      } else {
-        el.scrollBy({ left: 240, behavior: "smooth" });
+      const half = el.scrollWidth / 2;
+      // If we've scrolled past the first copy, silently jump back to same position in first copy
+      if (el.scrollLeft >= half - 5) {
+        el.scrollLeft = el.scrollLeft - half;
       }
-    }, 3000);
+      el.scrollBy({ left: 240, behavior: "smooth" });
+    }, 2500);
     return () => clearInterval(interval);
   }, []);
 
@@ -163,8 +163,8 @@ export default function Home() {
                 onTouchStart={() => { sliderPausedRef.current = true; }}
                 onTouchEnd={() => { setTimeout(() => { sliderPausedRef.current = false; }, 2000); }}
               >
-                {hitProducts.map((p) => (
-                  <div key={p.id} className="shrink-0" style={{ width: "220px", scrollSnapAlign: "start" }}>
+                {[...hitProducts, ...hitProducts].map((p, idx) => (
+                  <div key={`${p.id}-${idx}`} className="shrink-0" style={{ width: "220px", scrollSnapAlign: "start" }}>
                     <ProductCard product={p} />
                   </div>
                 ))}

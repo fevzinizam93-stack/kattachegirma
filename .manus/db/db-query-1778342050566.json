@@ -1,0 +1,16 @@
+{
+  "query": "SELECT column_name FROM information_schema.columns WHERE table_name = 'products' AND column_name LIKE '%hit%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute SELECT column_name FROM information_schema.columns WHERE table_name = 'products' AND column_name LIKE '%hit%';",
+  "rows": [
+    {
+      "column_name": "isHit"
+    },
+    {
+      "column_name": "hitOrder"
+    }
+  ],
+  "messages": [],
+  "stdout": "column_name\nisHit\nhitOrder\n",
+  "stderr": "",
+  "execution_time_ms": 264
+}
