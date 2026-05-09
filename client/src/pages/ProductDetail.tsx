@@ -8,6 +8,7 @@ import { Link } from "wouter";
 import { toast } from "sonner";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
+import ProductCard from "@/components/ProductCard";
 
 interface ProductDetailProps {
   slug: string;
@@ -66,6 +67,23 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
   const category = categories.find(c => c.id === product?.categoryId);
 
   const [liveViewCount, setLiveViewCount] = useState<number | null>(null);
+  const [countdown, setCountdown] = useState<{ h: number; m: number; s: number } | null>(null);
+  useEffect(() => {
+    const endsAt = (product as any)?.discountEndsAt;
+    if (!endsAt) { setCountdown(null); return; }
+    const endTime = new Date(endsAt).getTime();
+    const tick = () => {
+      const diff = endTime - Date.now();
+      if (diff <= 0) { setCountdown(null); return; }
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      setCountdown({ h, m, s });
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [(product as any)?.discountEndsAt]);
   const incrementView = trpc.products.incrementView.useMutation({
     onSuccess: (data) => setLiveViewCount(data.viewCount),
     onError: () => {
@@ -412,6 +430,26 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 </div>
               </div>
 
+              {/* Countdown timer */}
+              {countdown && hasDiscount && (
+                <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-1.5">
+                  <span className="text-red-600 text-xs font-bold">⏰ Скидка заканчивается через:</span>
+                  <div className="flex items-center gap-1">
+                    <span className="bg-red-600 text-white text-xs font-black px-1.5 py-0.5 rounded min-w-[28px] text-center">{String(countdown.h).padStart(2,'0')}</span>
+                    <span className="text-red-600 font-black text-xs">:</span>
+                    <span className="bg-red-600 text-white text-xs font-black px-1.5 py-0.5 rounded min-w-[28px] text-center">{String(countdown.m).padStart(2,'0')}</span>
+                    <span className="text-red-600 font-black text-xs">:</span>
+                    <span className="bg-red-600 text-white text-xs font-black px-1.5 py-0.5 rounded min-w-[28px] text-center">{String(countdown.s).padStart(2,'0')}</span>
+                  </div>
+                </div>
+              )}
+              {/* Stock warning */}
+              {(() => { const sc = (product as any)?.stockCount; return sc != null && sc > 0 && sc <= 5 ? (
+                <div className="flex items-center gap-1.5 bg-orange-50 border border-orange-200 rounded-lg px-3 py-1.5 mb-1.5">
+                  <span className="text-orange-600 text-xs font-black animate-pulse">🔥</span>
+                  <span className="text-orange-700 text-xs font-bold">Осталось всего <span className="text-orange-600 font-black">{sc} шт.</span> — успейте купить!</span>
+                </div>
+              ) : null; })()}
               {/* Quantity + Button — same row, compact */}
               <div className="flex items-center gap-1.5 mb-1.5">
                 {(product.stock ?? 0) > 0 && (
@@ -585,6 +623,8 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
             </div>
           </div>
         )}
+      {/* Similar products */}
+      <SimilarProducts categoryId={product.categoryId} excludeId={product.id} />
 
       </div>
     </div>
@@ -761,6 +801,23 @@ function ReviewsSection({ productId }: { productId: number }) {
             </form>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function SimilarProducts({ categoryId, excludeId }: { categoryId: number; excludeId: number }) {
+  const { data: items } = trpc.products.similar.useQuery({ categoryId, excludeId, limit: 8 });
+  if (!items || items.length === 0) return null;
+  return (
+    <div className="container py-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-black text-gray-900">🔄 Похожие товары</h2>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        {items.map((p: any) => (
+          <ProductCard key={p.id} product={p} />
+        ))}
       </div>
     </div>
   );

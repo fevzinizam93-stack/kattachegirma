@@ -26,6 +26,10 @@ export default function Catalog() {
   const [searchInput, setSearchInput] = useState("");
   const [page, setPage] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
+  const [minPriceInput, setMinPriceInput] = useState("");
+  const [maxPriceInput, setMaxPriceInput] = useState("");
+  const [minPrice, setMinPrice] = useState<number | undefined>();
+  const [maxPrice, setMaxPrice] = useState<number | undefined>();
 
   const { data: categoriesData } = trpc.categories.list.useQuery();
   const categories = categoriesData ?? [];
@@ -35,6 +39,8 @@ export default function Catalog() {
     search: search || undefined,
     limit: LIMIT,
     offset: page * LIMIT,
+    minPrice: minPrice,
+    maxPrice: maxPrice,
   });
 
   const products = data?.items ?? [];
@@ -49,6 +55,22 @@ export default function Catalog() {
 
   const handleCategoryChange = (id: number | undefined) => {
     setSelectedCategory(id);
+    setPage(0);
+  };
+
+  const handlePriceFilter = () => {
+    const rawMin = minPriceInput.replace(/[^\d]/g, '');
+    const rawMax = maxPriceInput.replace(/[^\d]/g, '');
+    setMinPrice(rawMin ? parseInt(rawMin, 10) : undefined);
+    setMaxPrice(rawMax ? parseInt(rawMax, 10) : undefined);
+    setPage(0);
+  };
+
+  const handlePriceReset = () => {
+    setMinPriceInput("");
+    setMaxPriceInput("");
+    setMinPrice(undefined);
+    setMaxPrice(undefined);
     setPage(0);
   };
 
@@ -148,6 +170,43 @@ export default function Catalog() {
                   </li>
                 ))}
               </ul>
+
+              {/* Price filter */}
+              <div className="mt-4 pt-4 border-t border-border">
+                <h4 className="font-semibold text-xs text-muted-foreground uppercase tracking-wide mb-2">Цена (сум)</h4>
+                <div className="space-y-2">
+                  <input
+                    type="number"
+                    value={minPriceInput}
+                    onChange={e => setMinPriceInput(e.target.value)}
+                    placeholder="От"
+                    min={0}
+                    className="w-full border border-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                  />
+                  <input
+                    type="number"
+                    value={maxPriceInput}
+                    onChange={e => setMaxPriceInput(e.target.value)}
+                    placeholder="До"
+                    min={0}
+                    className="w-full border border-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                  />
+                  <button
+                    onClick={handlePriceFilter}
+                    className="w-full bg-primary text-primary-foreground px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
+                  >
+                    Применить
+                  </button>
+                  {(minPrice !== undefined || maxPrice !== undefined) && (
+                    <button
+                      onClick={handlePriceReset}
+                      className="w-full border border-border px-3 py-1.5 rounded-lg text-sm hover:bg-accent transition-colors"
+                    >
+                      Сбросить цену
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </aside>
 

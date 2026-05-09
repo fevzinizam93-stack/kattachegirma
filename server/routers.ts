@@ -203,12 +203,14 @@ export const appRouter = router({
         search: z.string().optional(),
         featured: z.boolean().optional(),
         isPremium: z.boolean().optional(),
+        minPrice: z.number().optional(),
+        maxPrice: z.number().optional(),
         limit: z.number().default(20),
         offset: z.number().default(0),
       }))
       .query(async ({ input }) => {
         const items = await getProducts({ ...input, approvedOnly: true });
-        const total = await countProducts({ categoryId: input.categoryId, search: input.search, approvedOnly: true, isPremium: input.isPremium });
+        const total = await countProducts({ categoryId: input.categoryId, search: input.search, approvedOnly: true, isPremium: input.isPremium, minPrice: input.minPrice, maxPrice: input.maxPrice });
         return { items, total };
       }),
 
@@ -240,6 +242,12 @@ export const appRouter = router({
         const newCount = await incrementViewCount(input.productId);
         return { viewCount: newCount };
       }),
+    similar: publicProcedure
+      .input(z.object({ categoryId: z.number(), excludeId: z.number(), limit: z.number().default(8) }))
+      .query(async ({ input }) => {
+        const items = await getProducts({ categoryId: input.categoryId, approvedOnly: true, limit: input.limit + 1 });
+        return items.filter((p: { id: number }) => p.id !== input.excludeId).slice(0, input.limit);
+      }),
 
     create: adminProcedure
       .input(z.object({
@@ -268,6 +276,8 @@ export const appRouter = router({
         sellerId: z.number().optional(),
         isApproved: z.boolean().default(true),
         costPrice: z.string().optional(),
+        stockCount: z.number().optional(),
+        discountEndsAt: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
         // Normalize slug server-side: transliterate Cyrillic, strip emojis/special chars
@@ -287,7 +297,8 @@ export const appRouter = router({
           slug: safeSlug,
           images: input.images ?? [],
           specs: (input.specs ?? {}) as Record<string, string>,
-        });
+          discountEndsAt: input.discountEndsAt ? new Date(input.discountEndsAt) : undefined,
+        } as Parameters<typeof createProduct>[0]);
         return { id };
       }),
 
@@ -319,10 +330,15 @@ export const appRouter = router({
         sellerId: z.number().optional(),
         isApproved: z.boolean().optional(),
         costPrice: z.string().optional(),
+        stockCount: z.number().optional(),
+        discountEndsAt: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
         const { id, ...data } = input;
-        await updateProduct(id, { ...data, specs: data.specs as Record<string, string> | undefined });
+        const updateData: Record<string, unknown> = { ...data, specs: data.specs as Record<string, string> | undefined };
+        if (data.discountEndsAt) updateData.discountEndsAt = new Date(data.discountEndsAt);
+        else if (data.discountEndsAt === '') updateData.discountEndsAt = null;
+        await updateProduct(id, updateData as Parameters<typeof updateProduct>[1]);
         return { success: true };
       }),
 

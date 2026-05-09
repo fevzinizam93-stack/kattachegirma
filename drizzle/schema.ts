@@ -97,6 +97,8 @@ export const products = mysqlTable("products", {
   moderationStatus: mysqlEnum("moderationStatus", ["approved", "pending", "rejected"]).default("approved").notNull(),
   costPrice: decimal("costPrice", { precision: 12, scale: 2 }),
   viewCount: int("viewCount").default(0),
+  stockCount: int("stockCount"),
+  discountEndsAt: timestamp("discountEndsAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

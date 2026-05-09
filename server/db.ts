@@ -145,7 +145,7 @@ export async function deleteCategory(id: number) {
 }
 
 // ---- Products ----
-export async function getProducts(opts?: { categoryId?: number; search?: string; featured?: boolean; limit?: number; offset?: number; approvedOnly?: boolean; isPremium?: boolean; includeInactive?: boolean }) {
+export async function getProducts(opts?: { categoryId?: number; search?: string; featured?: boolean; limit?: number; offset?: number; approvedOnly?: boolean; isPremium?: boolean; includeInactive?: boolean; minPrice?: number; maxPrice?: number }) {
   const db = await getDb();
   if (!db) return [];
   const conditions = [];
@@ -166,6 +166,8 @@ export async function getProducts(opts?: { categoryId?: number; search?: string;
   if (!opts?.includeInactive) conditions.push(eq(products.isActive, true));
   if (opts?.approvedOnly) conditions.push(eq(products.isApproved, true));
   if (opts?.isPremium !== undefined) conditions.push(eq(products.isPremium, opts.isPremium));
+  if (opts?.minPrice != null) conditions.push(sql`CAST(${products.price} AS DECIMAL) >= ${opts.minPrice}`);
+  if (opts?.maxPrice != null) conditions.push(sql`CAST(${products.price} AS DECIMAL) <= ${opts.maxPrice}`);
   const query = db.select().from(products);
   if (conditions.length > 0) query.where(and(...conditions));
   query.orderBy(desc(products.createdAt));
@@ -216,7 +218,7 @@ export async function deleteProduct(id: number) {
   await db.delete(products).where(eq(products.id, id));
 }
 
-export async function countProducts(opts?: { categoryId?: number; search?: string; approvedOnly?: boolean; isPremium?: boolean; includeInactive?: boolean }) {
+export async function countProducts(opts?: { categoryId?: number; search?: string; approvedOnly?: boolean; isPremium?: boolean; includeInactive?: boolean; minPrice?: number; maxPrice?: number }) {
   const db = await getDb();
   if (!db) return 0;
   const conditions = [];
@@ -236,6 +238,8 @@ export async function countProducts(opts?: { categoryId?: number; search?: strin
   if (!opts?.includeInactive) conditions.push(eq(products.isActive, true));
   if (opts?.approvedOnly) conditions.push(eq(products.isApproved, true));
   if (opts?.isPremium !== undefined) conditions.push(eq(products.isPremium, opts.isPremium));
+  if (opts?.minPrice != null) conditions.push(sql`CAST(${products.price} AS DECIMAL) >= ${opts.minPrice}`);
+  if (opts?.maxPrice != null) conditions.push(sql`CAST(${products.price} AS DECIMAL) <= ${opts.maxPrice}`);
   const query = db.select({ count: sql<number>`count(*)` }).from(products);
   if (conditions.length > 0) query.where(and(...conditions));
   const result = await query;

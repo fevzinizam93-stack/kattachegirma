@@ -59,6 +59,8 @@ interface ProductForm {
   isPremium: boolean;
   hitOrder: number;
   costPrice: string;
+  stockCount: string;
+  discountEndsAt: string;
   sellerPhone: string;
   sellerTelegram: string;
   sellerName: string;
@@ -67,7 +69,7 @@ interface ProductForm {
 const emptyForm: ProductForm = {
   name: "", nameUz: "", slug: "", description: "", descriptionUz: "", categoryId: 0, brand: "",
   price: "", priceUsd: "", originalPrice: "", originalPriceUsd: "", discount: 0, imageUrl: "", images: [], stock: 0,
-  isNew: false, isFeatured: false, isHit: false, isPremium: false, hitOrder: 0, costPrice: "", sellerPhone: "", sellerTelegram: "", sellerName: "",
+  isNew: false, isFeatured: false, isHit: false, isPremium: false, hitOrder: 0, costPrice: "", stockCount: "", discountEndsAt: "", sellerPhone: "", sellerTelegram: "", sellerName: "",
 };
 
 export default function Admin() {
@@ -425,10 +427,11 @@ export default function Admin() {
     const translit = (s: string) => s.toLowerCase().split("").map(c => cyrMap[c] ?? c).join("");
     const rawSlug = translit(form.name).replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-").replace(/^-|-$/g, "");
     const slug = form.slug || rawSlug || `product-${Date.now()}`;
+    const stockCountNum = form.stockCount !== "" ? parseInt(form.stockCount) : undefined;
     if (editId) {
-      updateProduct.mutate({ id: editId, ...form, slug });
+      updateProduct.mutate({ id: editId, ...form, slug, stockCount: stockCountNum });
     } else {
-      createProduct.mutate({ ...form, slug });
+      createProduct.mutate({ ...form, slug, stockCount: stockCountNum });
     }
   };
 
@@ -445,6 +448,8 @@ export default function Admin() {
       imageUrl: p.imageUrl ?? "", images: existingImages, stock: p.stock ?? 0,
       isNew: p.isNew ?? false, isFeatured: p.isFeatured ?? false, isHit: (p as any).isHit ?? false, isPremium: (p as any).isPremium ?? false, hitOrder: (p as any).hitOrder ?? 0,
       costPrice: (p as any).costPrice ? String((p as any).costPrice) : "",
+      stockCount: (p as any).stockCount != null ? String((p as any).stockCount) : "",
+      discountEndsAt: (p as any).discountEndsAt ? new Date((p as any).discountEndsAt).toISOString().slice(0, 16) : "",
       sellerPhone: (p as any).sellerPhone ?? "",
       sellerTelegram: (p as any).sellerTelegram ?? "",
       sellerName: (p as any).sellerName ?? "",
@@ -807,6 +812,22 @@ export default function Admin() {
                           <p className="text-xs text-gray-400 mt-1">Товары с меньшим номером отображаются раньше</p>
                         </div>
                       )}
+                      {/* Stock count + Discount timer */}
+                      <div className="col-span-2 grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-semibold mb-1 text-red-700">📦 Осталось на складе (шт.)</label>
+                          <input type="number" value={form.stockCount} onChange={e => setForm(f => ({ ...f, stockCount: e.target.value }))}
+                            className="w-full border border-red-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 bg-red-50"
+                            placeholder="Например: 5" min={0} />
+                          <p className="text-xs text-red-400 mt-1">Если ≤ 5 — покупатель увидит «Осталось X шт.»</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold mb-1 text-red-700">⏰ Скидка действует до</label>
+                          <input type="datetime-local" value={form.discountEndsAt} onChange={e => setForm(f => ({ ...f, discountEndsAt: e.target.value }))}
+                            className="w-full border border-red-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 bg-red-50" />
+                          <p className="text-xs text-red-400 mt-1">Таймер обратного отсчёта на странице товара</p>
+                        </div>
+                      </div>
                     </div>
                     <div className="flex gap-3 pt-2">
                       <button type="submit" disabled={createProduct.isPending || updateProduct.isPending}
