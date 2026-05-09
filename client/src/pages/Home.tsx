@@ -1,8 +1,8 @@
 import ProductCard from "@/components/ProductCard";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
-import { ArrowRight, Flame } from "lucide-react";
-import { useEffect } from "react";
+import { ArrowRight, ChevronLeft, ChevronRight, Flame } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { usePageMeta } from "@/hooks/usePageMeta";
 
@@ -28,6 +28,11 @@ export default function Home() {
     { staleTime: 3 * 60 * 1000 }
   );
   const hitProducts = hitsData ?? [];
+  const sliderRef = useRef<HTMLDivElement>(null);
+  const scrollSlider = (dir: "left" | "right") => {
+    if (!sliderRef.current) return;
+    sliderRef.current.scrollBy({ left: dir === "right" ? 280 : -280, behavior: "smooth" });
+  };
 
   // Secondary content — categories and banners
   const { data: categoriesData } = trpc.categories.list.useQuery(
@@ -102,22 +107,50 @@ export default function Home() {
         </div>
       )}
 
-      {/* Bestsellers / Hits widget */}
+      {/* Bestsellers / Hits widget — horizontal slider */}
       {hitProducts.length > 0 && (
-        <section className="container py-3">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Flame size={20} className="text-orange-500" />
-              <h2 className="text-base md:text-lg font-black text-gray-900">
-                {t.nav_bestsellers}
-              </h2>
+        <section className="py-4" style={{ background: "linear-gradient(135deg, #fff7ed 0%, #fff3e0 50%, #fef9f0 100%)", borderTop: "3px solid #f97316", borderBottom: "3px solid #f97316" }}>
+          <div className="container">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center w-9 h-9 rounded-xl" style={{ background: "linear-gradient(135deg, #f97316, #ef4444)" }}>
+                  <Flame size={18} className="text-white" />
+                </div>
+                <div>
+                  <h2 className="text-base md:text-xl font-black" style={{ color: "#c2410c" }}>
+                    {t.nav_bestsellers}
+                  </h2>
+                  <p className="text-xs font-medium" style={{ color: "#ea580c" }}>Самые горячие скидки</p>
+                </div>
+                <span className="ml-1 text-xs font-bold px-2 py-0.5 rounded-full animate-pulse" style={{ background: "#f97316", color: "white" }}>ГОРЯЧО</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={() => scrollSlider("left")} className="hidden md:flex items-center justify-center w-8 h-8 rounded-full border-2 border-orange-300 bg-white hover:bg-orange-50 hover:border-orange-500 transition-colors shadow-sm">
+                  <ChevronLeft size={16} className="text-orange-600" />
+                </button>
+                <button onClick={() => scrollSlider("right")} className="hidden md:flex items-center justify-center w-8 h-8 rounded-full border-2 border-orange-300 bg-white hover:bg-orange-50 hover:border-orange-500 transition-colors shadow-sm">
+                  <ChevronRight size={16} className="text-orange-600" />
+                </button>
+                <Link href="/bestsellers" className="text-sm font-bold flex items-center gap-1 px-3 py-1.5 rounded-full transition-colors" style={{ color: "#c2410c", background: "rgba(249,115,22,0.12)" }}>
+                  {t.home_view_all} <ArrowRight size={13} />
+                </Link>
+              </div>
             </div>
-            <Link href="/bestsellers" className="text-sm font-semibold hover:underline flex items-center gap-1" style={{ color: "#cc0000" }}>
-              {t.home_view_all} <ArrowRight size={14} />
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
-            {hitProducts.map((p) => <ProductCard key={p.id} product={p} />)}
+            {/* Horizontal scroll row */}
+            <div className="relative">
+              <div
+                ref={sliderRef}
+                className="flex gap-3 overflow-x-auto pb-2"
+                style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none" }}
+              >
+                {hitProducts.map((p) => (
+                  <div key={p.id} className="shrink-0" style={{ width: "220px", scrollSnapAlign: "start" }}>
+                    <ProductCard product={p} />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
       )}
