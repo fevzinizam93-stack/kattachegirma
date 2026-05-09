@@ -29,10 +29,25 @@ export default function Home() {
   );
   const hitProducts = hitsData ?? [];
   const sliderRef = useRef<HTMLDivElement>(null);
+  const sliderPausedRef = useRef(false);
   const scrollSlider = (dir: "left" | "right") => {
     if (!sliderRef.current) return;
     sliderRef.current.scrollBy({ left: dir === "right" ? 280 : -280, behavior: "smooth" });
   };
+  // Auto-scroll: every 3s move one card to the right, loop back to start
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (sliderPausedRef.current || !sliderRef.current) return;
+      const el = sliderRef.current;
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      if (el.scrollLeft >= maxScroll - 5) {
+        el.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        el.scrollBy({ left: 240, behavior: "smooth" });
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Secondary content — categories and banners
   const { data: categoriesData } = trpc.categories.list.useQuery(
@@ -143,6 +158,10 @@ export default function Home() {
                 ref={sliderRef}
                 className="flex gap-3 overflow-x-auto pb-2"
                 style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none" }}
+                onMouseEnter={() => { sliderPausedRef.current = true; }}
+                onMouseLeave={() => { sliderPausedRef.current = false; }}
+                onTouchStart={() => { sliderPausedRef.current = true; }}
+                onTouchEnd={() => { setTimeout(() => { sliderPausedRef.current = false; }, 2000); }}
               >
                 {hitProducts.map((p) => (
                   <div key={p.id} className="shrink-0" style={{ width: "220px", scrollSnapAlign: "start" }}>
