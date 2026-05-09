@@ -54,6 +54,15 @@ export default function SellerDashboard() {
   const [origCurrency, setOrigCurrency] = useState<"UZS" | "USD">("UZS");
   const [usdRate, setUsdRate] = useState<number>(12700);
   const [rateUpdatedAt, setRateUpdatedAt] = useState<string | null>(null);
+  // Welcome popup
+  const [showWelcomePopup, setShowWelcomePopup] = useState(() =>
+    localStorage.getItem("seller_welcome_seen") !== "1"
+  );
+  const [neverShowAgain, setNeverShowAgain] = useState(false);
+  const closeWelcomePopup = () => {
+    if (neverShowAgain) localStorage.setItem("seller_welcome_seen", "1");
+    setShowWelcomePopup(false);
+  };
   const rateQuery = trpc.currency.getRate.useQuery(undefined, { staleTime: 60 * 60 * 1000 });
   useEffect(() => {
     if (rateQuery.data) {
@@ -253,6 +262,37 @@ export default function SellerDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Welcome popup */}
+      {showWelcomePopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full">
+            <div className="text-center mb-4">
+              <div className="text-5xl mb-3">🎉</div>
+              <h2 className="text-xl font-black text-gray-900 mb-2">Добро пожаловать в панель продавца!</h2>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Когда вы добавляете товар, он отправляется на проверку.<br />
+                <span className="font-semibold text-amber-600">Проверка занимает от 30 минут до 2 дней.</span><br />
+                Как только товар будет одобрен — он появится на сайте.
+              </p>
+            </div>
+            <label className="flex items-center gap-2 cursor-pointer mb-4 justify-center">
+              <input
+                type="checkbox"
+                checked={neverShowAgain}
+                onChange={e => setNeverShowAgain(e.target.checked)}
+                className="w-4 h-4 accent-primary"
+              />
+              <span className="text-sm text-gray-500">Больше не показывать</span>
+            </label>
+            <button
+              onClick={closeWelcomePopup}
+              className="w-full bg-primary text-white py-2.5 rounded-xl font-bold text-sm hover:bg-primary/90 transition-colors"
+            >
+              Понятно, начать работу
+            </button>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="bg-white border-b border-gray-100 sticky top-0 z-20">
         <div className="container flex items-center justify-between py-3">
