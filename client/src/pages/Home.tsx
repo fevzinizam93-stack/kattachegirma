@@ -19,7 +19,7 @@ export default function Home() {
     title: "Катта Чегирма — Магазин бытовой техники со скидками",
     description: "Катта Чегирма — самая дешёвая бытовая техника в Узбекистане. Пылесосы, стиральные машины, холодильники, телевизоры, кондиционеры и другая техника ведущих брендов со скидками до 60%. Быстрая доставка по Ташкенту и всему Узбекистану.",
     canonicalPath: "/",
-    imageUrl: "https://kattachegirma.uz/og-image.png",
+    imageUrl: "https://kattachegirma.uz/logo-512.png?v=3",
   });
 
   // Hits — primary content, load first

@@ -111,7 +111,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
         <div className="container flex items-center gap-4" style={{ height: "60px" }}>
           {/* Logo */}
           <Link href="/" className="shrink-0 flex items-center gap-2 min-w-fit">
-            <img src="/manus-storage/kc-logo-official_7c5919c1.png" alt="Katta Chegirma" className="h-auto w-auto object-contain" style={{ width: "111px" }} />
+            <img src="/manus-storage/kc-logo-512_99cc447f.png" alt="Katta Chegirma" className="h-auto w-auto object-contain" style={{ width: "111px" }} />
             <div className="font-black text-gray-900 tracking-tight" style={{ fontSize: "16px", width: "190px" }}>Katta Chegirma!!!</div>
           </Link>
 
@@ -317,7 +317,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
         {/* Top row: logo + name only */}
         <div className="flex items-center px-3 pt-2 pb-1">
           <Link href="/" className="flex items-center gap-2 min-w-0">
-            <img src="/manus-storage/kc-logo-official_7c5919c1.png" alt="Katta Chegirma" className="h-10 w-auto object-contain shrink-0" />
+            <img src="/manus-storage/kc-logo-512_99cc447f.png" alt="Katta Chegirma" className="h-10 w-auto object-contain shrink-0" />
             <div className="font-black text-base text-gray-900 tracking-tight">Katta Chegirma!!!</div>
           </Link>
         </div>
