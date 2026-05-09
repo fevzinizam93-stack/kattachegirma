@@ -111,8 +111,8 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
         <div className="container flex items-center gap-4" style={{ height: "60px" }}>
           {/* Logo */}
           <Link href="/" className="shrink-0 flex items-center gap-2 min-w-fit">
-            <img src="/manus-storage/kc-logo-512_99cc447f.png" alt="Katta Chegirma" className="h-auto w-auto object-contain" style={{ width: "111px" }} />
-            <div className="font-black text-gray-900 tracking-tight" style={{ fontSize: "16px", width: "190px" }}>Katta Chegirma!!!</div>
+            <img src="/manus-storage/kc-logo-512_99cc447f.png" alt="Katta Chegirma" className="object-contain shrink-0" style={{ height: "40px", width: "auto" }} />
+            <div className="font-black text-gray-900 tracking-tight whitespace-nowrap" style={{ fontSize: "15px" }}>Katta Chegirma!!!</div>
           </Link>
 
           {/* Premium section button */}
