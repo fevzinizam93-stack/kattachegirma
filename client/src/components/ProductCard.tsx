@@ -88,9 +88,6 @@ export default function ProductCard({ product }: ProductCardProps) {
             {hasDiscount && (
               <span className="text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-none" style={{ backgroundColor: "#2e7d32" }}>-{discountPercent}%</span>
             )}
-            {product.sellerId && (
-              <span className="text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-none bg-amber-500">3rd</span>
-            )}
             {product.isNew && (
               <span className="text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-none" style={{ backgroundColor: "#388e3c" }}>{t.card_new}</span>
             )}
