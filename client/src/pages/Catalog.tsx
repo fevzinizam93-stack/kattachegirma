@@ -1,12 +1,21 @@
 import ProductCard from "@/components/ProductCard";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
-import { Filter, SlidersHorizontal } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ChevronDown, Filter, SlidersHorizontal } from "lucide-react";
+import { useState, useEffect } from "react";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
 
 const LIMIT = 12;
+
+type SortBy = 'newest' | 'price_asc' | 'price_desc' | 'discount';
+
+const SORT_OPTIONS: { value: SortBy; label: string }[] = [
+  { value: 'newest', label: 'Новинки' },
+  { value: 'price_asc', label: 'Дешевле' },
+  { value: 'price_desc', label: 'Дороже' },
+  { value: 'discount', label: 'По скидке' },
+];
 
 export default function Catalog() {
   const { t } = useLanguage();
@@ -21,6 +30,7 @@ export default function Catalog() {
     { name: "Главная", url: "https://kattachegirma.uz/" },
     { name: "Каталог", url: "https://kattachegirma.uz/catalog" },
   ]);
+
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>();
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -30,9 +40,18 @@ export default function Catalog() {
   const [maxPriceInput, setMaxPriceInput] = useState("");
   const [minPrice, setMinPrice] = useState<number | undefined>();
   const [maxPrice, setMaxPrice] = useState<number | undefined>();
+  const [sortBy, setSortBy] = useState<SortBy>('newest');
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
 
   const { data: categoriesData } = trpc.categories.list.useQuery();
   const categories = categoriesData ?? [];
+
+  // Load brands filtered by selected category
+  const { data: brandsData } = trpc.products.getBrands.useQuery(
+    { categoryId: selectedCategory }
+  );
+  const availableBrands = brandsData ?? [];
 
   const { data, isLoading } = trpc.products.list.useQuery({
     categoryId: selectedCategory,
@@ -41,11 +60,27 @@ export default function Catalog() {
     offset: page * LIMIT,
     minPrice: minPrice,
     maxPrice: maxPrice,
+    sortBy: sortBy,
+    brands: selectedBrands.length > 0 ? selectedBrands : undefined,
   });
 
   const products = data?.items ?? [];
   const total = data?.total ?? 0;
   const totalPages = Math.ceil(total / LIMIT);
+
+  // Reset brands when category changes (brands may no longer be valid)
+  useEffect(() => {
+    setSelectedBrands([]);
+    setPage(0);
+  }, [selectedCategory]);
+
+  // Close sort dropdown on outside click
+  useEffect(() => {
+    if (!showSortDropdown) return;
+    const handler = () => setShowSortDropdown(false);
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [showSortDropdown]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,6 +109,21 @@ export default function Catalog() {
     setPage(0);
   };
 
+  const toggleBrand = (brand: string) => {
+    setSelectedBrands(prev =>
+      prev.includes(brand) ? prev.filter(b => b !== brand) : [...prev, brand]
+    );
+    setPage(0);
+  };
+
+  const handleBrandsReset = () => {
+    setSelectedBrands([]);
+    setPage(0);
+  };
+
+  const currentSortLabel = SORT_OPTIONS.find(o => o.value === sortBy)?.label ?? 'Новинки';
+  const activeFiltersCount = (selectedBrands.length > 0 ? 1 : 0) + (minPrice !== undefined || maxPrice !== undefined ? 1 : 0);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -90,31 +140,62 @@ export default function Catalog() {
             >
               <SlidersHorizontal size={16} />
               {t.catalog_filter_apply}
+              {activeFiltersCount > 0 && (
+                <span className="bg-primary text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">{activeFiltersCount}</span>
+              )}
             </button>
           </div>
 
-          {/* Search */}
-          <form onSubmit={handleSearch} className="mt-3 flex gap-2">
-            <input
-              type="text"
-              value={searchInput}
-              onChange={e => setSearchInput(e.target.value)}
-              placeholder={t.catalog_search_placeholder}
-              className="flex-1 border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-            />
-            <button type="submit" className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors">
-              <Filter size={16} />
-            </button>
-            {search && (
-              <button
-                type="button"
-                onClick={() => { setSearch(""); setSearchInput(""); setPage(0); }}
-                className="border border-border px-3 py-2 rounded-lg text-sm hover:bg-accent"
-              >
-                ✕
+          {/* Search + Sort row */}
+          <div className="mt-3 flex gap-2 items-center">
+            <form onSubmit={handleSearch} className="flex-1 flex gap-2">
+              <input
+                type="text"
+                value={searchInput}
+                onChange={e => setSearchInput(e.target.value)}
+                placeholder={t.catalog_search_placeholder}
+                className="flex-1 border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+              />
+              <button type="submit" className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors">
+                <Filter size={16} />
               </button>
-            )}
-          </form>
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => { setSearch(""); setSearchInput(""); setPage(0); }}
+                  className="border border-border px-3 py-2 rounded-lg text-sm hover:bg-accent"
+                >
+                  ✕
+                </button>
+              )}
+            </form>
+
+            {/* Sort dropdown */}
+            <div className="relative shrink-0">
+              <button
+                onClick={e => { e.stopPropagation(); setShowSortDropdown(v => !v); }}
+                className="flex items-center gap-1.5 border border-border bg-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-accent transition-colors whitespace-nowrap"
+              >
+                <span className="hidden sm:inline text-muted-foreground text-xs">Сортировка:</span>
+                <span className="font-semibold">{currentSortLabel}</span>
+                <ChevronDown size={14} className={`transition-transform ${showSortDropdown ? 'rotate-180' : ''}`} />
+              </button>
+              {showSortDropdown && (
+                <div className="absolute right-0 top-full mt-1 bg-white border border-border rounded-xl shadow-lg z-20 min-w-[160px] py-1">
+                  {SORT_OPTIONS.map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={e => { e.stopPropagation(); setSortBy(opt.value); setPage(0); setShowSortDropdown(false); }}
+                      className={`w-full text-left px-4 py-2 text-sm transition-colors hover:bg-accent ${sortBy === opt.value ? 'font-semibold text-primary' : ''}`}
+                    >
+                      {sortBy === opt.value && <span className="mr-1">✓</span>}
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -142,14 +223,16 @@ export default function Catalog() {
 
       <div className="container py-3">
         <div className="flex gap-4">
-          {/* Sidebar filters - desktop only */}
-          <aside className={`w-52 shrink-0 ${showFilters ? 'block' : 'hidden'} md:block`}>
-            <div className="bg-white rounded-xl border border-border p-4 sticky top-24">
+          {/* Sidebar filters */}
+          <aside className={`w-56 shrink-0 ${showFilters ? 'block' : 'hidden'} md:block`}>
+            <div className="bg-white rounded-xl border border-border p-4 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
               <h3 className="font-bold text-sm mb-3 flex items-center gap-2">
                 <Filter size={16} />
                 {t.nav_catalog}
               </h3>
-              <ul className="space-y-1">
+
+              {/* Categories */}
+              <ul className="space-y-0.5">
                 <li>
                   <button
                     onClick={() => handleCategoryChange(undefined)}
@@ -170,6 +253,38 @@ export default function Catalog() {
                   </li>
                 ))}
               </ul>
+
+              {/* Brand filter */}
+              {availableBrands.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-border">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-semibold text-xs text-muted-foreground uppercase tracking-wide">Бренд</h4>
+                    {selectedBrands.length > 0 && (
+                      <button
+                        onClick={handleBrandsReset}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Сбросить
+                      </button>
+                    )}
+                  </div>
+                  <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+                    {availableBrands.map(brand => (
+                      <label key={brand} className="flex items-center gap-2 cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          checked={selectedBrands.includes(brand)}
+                          onChange={() => toggleBrand(brand)}
+                          className="w-3.5 h-3.5 rounded border-gray-300 text-primary accent-primary cursor-pointer"
+                        />
+                        <span className={`text-sm leading-tight group-hover:text-primary transition-colors ${selectedBrands.includes(brand) ? 'font-semibold text-primary' : 'text-gray-700'}`}>
+                          {brand}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Price filter */}
               <div className="mt-4 pt-4 border-t border-border">
@@ -212,6 +327,30 @@ export default function Catalog() {
 
           {/* Products grid */}
           <div className="flex-1 min-w-0">
+            {/* Active filters summary */}
+            {(selectedBrands.length > 0 || minPrice !== undefined || maxPrice !== undefined || sortBy !== 'newest') && (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {sortBy !== 'newest' && (
+                  <span className="inline-flex items-center gap-1 bg-primary/10 text-primary text-xs font-medium px-2.5 py-1 rounded-full">
+                    {currentSortLabel}
+                    <button onClick={() => { setSortBy('newest'); setPage(0); }} className="ml-0.5 hover:text-primary/70">✕</button>
+                  </span>
+                )}
+                {selectedBrands.map(b => (
+                  <span key={b} className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-full">
+                    {b}
+                    <button onClick={() => toggleBrand(b)} className="ml-0.5 hover:text-blue-500">✕</button>
+                  </span>
+                ))}
+                {(minPrice !== undefined || maxPrice !== undefined) && (
+                  <span className="inline-flex items-center gap-1 bg-green-50 text-green-700 text-xs font-medium px-2.5 py-1 rounded-full">
+                    {minPrice !== undefined ? `от ${minPrice.toLocaleString()}` : ''}{minPrice !== undefined && maxPrice !== undefined ? ' — ' : ''}{maxPrice !== undefined ? `до ${maxPrice.toLocaleString()}` : ''} сум
+                    <button onClick={handlePriceReset} className="ml-0.5 hover:text-green-500">✕</button>
+                  </span>
+                )}
+              </div>
+            )}
+
             {isLoading ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
                 {Array.from({ length: 12 }).map((_, i) => (
@@ -222,6 +361,14 @@ export default function Catalog() {
               <div className="text-center py-16">
                 <div className="text-5xl mb-4">🔍</div>
                 <h3 className="text-lg font-bold mb-2">{t.catalog_no_products}</h3>
+                {(selectedBrands.length > 0 || minPrice !== undefined || maxPrice !== undefined) && (
+                  <button
+                    onClick={() => { handleBrandsReset(); handlePriceReset(); }}
+                    className="mt-2 text-sm text-primary hover:underline"
+                  >
+                    Сбросить все фильтры
+                  </button>
+                )}
               </div>
             ) : (
               <>

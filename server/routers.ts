@@ -76,6 +76,7 @@ import {
   getSellerRatingStats,
   getSellerProductStats,
   hideSellerReview,
+  getProductBrands,
 } from "./db";
 import { storagePut } from "./storage";
 import { invokeLLM } from "./_core/llm";
@@ -205,13 +206,20 @@ export const appRouter = router({
         isPremium: z.boolean().optional(),
         minPrice: z.number().optional(),
         maxPrice: z.number().optional(),
+        sortBy: z.enum(['newest', 'price_asc', 'price_desc', 'discount']).optional(),
+        brands: z.array(z.string()).optional(),
         limit: z.number().default(20),
         offset: z.number().default(0),
       }))
       .query(async ({ input }) => {
         const items = await getProducts({ ...input, approvedOnly: true });
-        const total = await countProducts({ categoryId: input.categoryId, search: input.search, approvedOnly: true, isPremium: input.isPremium, minPrice: input.minPrice, maxPrice: input.maxPrice });
+        const total = await countProducts({ categoryId: input.categoryId, search: input.search, approvedOnly: true, isPremium: input.isPremium, minPrice: input.minPrice, maxPrice: input.maxPrice, brands: input.brands });
         return { items, total };
+      }),
+    getBrands: publicProcedure
+      .input(z.object({ categoryId: z.number().optional() }))
+      .query(async ({ input }) => {
+        return getProductBrands({ categoryId: input.categoryId });
       }),
 
     // Admin: all products including unapproved

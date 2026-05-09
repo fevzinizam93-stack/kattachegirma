@@ -145,7 +145,7 @@ export async function deleteCategory(id: number) {
 }
 
 // ---- Products ----
-export async function getProducts(opts?: { categoryId?: number; search?: string; featured?: boolean; limit?: number; offset?: number; approvedOnly?: boolean; isPremium?: boolean; includeInactive?: boolean; minPrice?: number; maxPrice?: number }) {
+export async function getProducts(opts?: { categoryId?: number; search?: string; featured?: boolean; limit?: number; offset?: number; approvedOnly?: boolean; isPremium?: boolean; includeInactive?: boolean; minPrice?: number; maxPrice?: number; sortBy?: 'newest' | 'price_asc' | 'price_desc' | 'discount'; brands?: string[] }) {
   const db = await getDb();
   if (!db) return [];
   const conditions = [];
@@ -168,12 +168,38 @@ export async function getProducts(opts?: { categoryId?: number; search?: string;
   if (opts?.isPremium !== undefined) conditions.push(eq(products.isPremium, opts.isPremium));
   if (opts?.minPrice != null) conditions.push(sql`CAST(${products.price} AS DECIMAL) >= ${opts.minPrice}`);
   if (opts?.maxPrice != null) conditions.push(sql`CAST(${products.price} AS DECIMAL) <= ${opts.maxPrice}`);
+  if (opts?.brands && opts.brands.length > 0) {
+    const brandConds = opts.brands.map(b => sql`LOWER(${products.brand}) = ${b.toLowerCase()}`);
+    conditions.push(or(...brandConds));
+  }
   const query = db.select().from(products);
   if (conditions.length > 0) query.where(and(...conditions));
-  query.orderBy(desc(products.createdAt));
+  const sortBy = opts?.sortBy ?? 'newest';
+  if (sortBy === 'price_asc') {
+    query.orderBy(asc(sql`CAST(${products.price} AS DECIMAL)`));
+  } else if (sortBy === 'price_desc') {
+    query.orderBy(desc(sql`CAST(${products.price} AS DECIMAL)`));
+  } else if (sortBy === 'discount') {
+    query.orderBy(desc(sql`CASE WHEN ${products.originalPrice} IS NOT NULL AND CAST(${products.originalPrice} AS DECIMAL) > 0 THEN (CAST(${products.originalPrice} AS DECIMAL) - CAST(${products.price} AS DECIMAL)) / CAST(${products.originalPrice} AS DECIMAL) ELSE 0 END`));
+  } else {
+    query.orderBy(desc(products.createdAt));
+  }
   if (opts?.limit) query.limit(opts.limit);
   if (opts?.offset) query.offset(opts.offset);
   return query;
+}
+
+export async function getProductBrands(opts?: { categoryId?: number }): Promise<string[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const conditions = [eq(products.isActive, true), sql`${products.brand} IS NOT NULL`, sql`${products.brand} != ''`];
+  if (opts?.categoryId) conditions.push(eq(products.categoryId, opts.categoryId));
+  const result = await db
+    .selectDistinct({ brand: products.brand })
+    .from(products)
+    .where(and(...conditions))
+    .orderBy(asc(products.brand));
+  return result.map(r => r.brand).filter(Boolean) as string[];
 }
 
 export async function getSlugExists(slug: string, excludeId?: number): Promise<boolean> {
@@ -218,7 +244,7 @@ export async function deleteProduct(id: number) {
   await db.delete(products).where(eq(products.id, id));
 }
 
-export async function countProducts(opts?: { categoryId?: number; search?: string; approvedOnly?: boolean; isPremium?: boolean; includeInactive?: boolean; minPrice?: number; maxPrice?: number }) {
+export async function countProducts(opts?: { categoryId?: number; search?: string; approvedOnly?: boolean; isPremium?: boolean; includeInactive?: boolean; minPrice?: number; maxPrice?: number; brands?: string[] }) {
   const db = await getDb();
   if (!db) return 0;
   const conditions = [];
@@ -240,6 +266,10 @@ export async function countProducts(opts?: { categoryId?: number; search?: strin
   if (opts?.isPremium !== undefined) conditions.push(eq(products.isPremium, opts.isPremium));
   if (opts?.minPrice != null) conditions.push(sql`CAST(${products.price} AS DECIMAL) >= ${opts.minPrice}`);
   if (opts?.maxPrice != null) conditions.push(sql`CAST(${products.price} AS DECIMAL) <= ${opts.maxPrice}`);
+  if (opts?.brands && opts.brands.length > 0) {
+    const brandConds = opts.brands.map(b => sql`LOWER(${products.brand}) = ${b.toLowerCase()}`);
+    conditions.push(or(...brandConds));
+  }
   const query = db.select({ count: sql<number>`count(*)` }).from(products);
   if (conditions.length > 0) query.where(and(...conditions));
   const result = await query;

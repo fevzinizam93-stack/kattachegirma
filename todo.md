@@ -462,3 +462,13 @@
 - [x] Раздел «Похожие товары» на странице товара (по категории, 4-6 карточек)
 - [x] tRPC: products.getSimilar (по categoryId, исключая текущий товар)
 - [x] Фильтр по цене (min/max слайдер) в каталоге (/catalog)
+
+## v69 - Сортировка и фильтр по бренду в каталоге
+- [x] server/db.ts: добавить параметр sortBy (price_asc, price_desc, newest, discount) в getProducts/countProducts
+- [x] server/db.ts: добавить процедуру getProductBrands (список уникальных брендов, опционально по categoryId)
+- [x] server/routers.ts: обновить products.list — принимать sortBy и brands[]
+- [x] server/routers.ts: добавить products.getBrands (публичная)
+- [x] Catalog.tsx: дропдаун сортировки (Новинки / Дешевле / Дороже / По скидке)
+- [x] Catalog.tsx: список брендов с чекбоксами в sidebar (загружается через products.getBrands)
+- [x] Catalog.tsx: кнопка «Сбросить бренды» (появляется когда выбран хотя бы один бренд)
+- [x] Catalog.tsx: при смене категории — сбрасывать выбранные бренды
