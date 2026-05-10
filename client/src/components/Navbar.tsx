@@ -306,11 +306,6 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
 
           {/* Right icons */}
           <div className="flex items-center gap-1 shrink-0">
-            {/* Bestsellers */}
-            <Link href="/bestsellers" className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors ${location === "/bestsellers" ? "bg-gray-100" : ""}`}>
-              <span className="text-lg leading-none">🔥</span>
-              <span className="text-[10px] text-gray-600 whitespace-nowrap">{t.nav_bestsellers}</span>
-            </Link>
 
             {/* Cart */}
             <Link href="/cart" className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors relative">
