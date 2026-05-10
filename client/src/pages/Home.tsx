@@ -124,7 +124,7 @@ export default function Home() {
 
       {/* Bestsellers / Hits widget — horizontal slider */}
       {hitProducts.length > 0 && (
-        <section className="py-4" style={{ background: "linear-gradient(135deg, #fff7ed 0%, #fff3e0 50%, #fef9f0 100%)", borderTop: "3px solid #f97316", borderBottom: "3px solid #f97316" }}>
+        <section className="py-4" style={{ background: "linear-gradient(135deg, #fff7ed 0%, #fff3e0 50%, #fef9f0 100%)", borderTop: "3px solid #ffffff", borderBottom: "3px solid #ffffff" }}>
           <div className="container">
             {/* Header */}
             <div className="flex items-center justify-between mb-3">

@@ -1,0 +1,23 @@
+{
+  "query": "SELECT id, name, slug, SUBSTRING(description, 1, 200) as desc_preview, LENGTH(description) as desc_len FROM products WHERE slug LIKE '%caspeer%' OR slug LIKE '%casper%' OR name LIKE '%Caspeer%' OR name LIKE '%Casper%' LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute SELECT id, name, slug, SUBSTRING(description, 1, 200) as desc_preview, LENGTH(description) as desc_len FROM products WHERE slug LIKE '%caspeer%' OR slug LIKE '%casper%' OR name LIKE '%Caspeer%' OR name LIKE '%Casper%' LIMIT 5;",
+  "rows": [],
+  "messages": [
+    "630001\tХолодильник Caspeer rm430pb\tkholodilnik-caspeer-rm430pb\tINVERTER, NO FROST, DISPLAY,MULTI AIR FLOW, CONTROLBOX",
+    "Casper RS430PBW",
+    "⭕️ Umumiy hajmi: 458 L",
+    "❄️Sovutgich hajmi 285 L",
+    "🧊Muzlatgich hajmi 173 L",
+    "📏O'lchami: ш690*г910*в1870 mm",
+    "\t189",
+    "630002\tХолодильник Caspeer rm460pb\tkholodilnik-caspeer-rm460pb\tINVERTER, NO FROST, DISPLAY,MULTI AIR FLOW, CONTROL BOX",
+    "🟢Model: #Casper RS460PBW",
+    "⭕️ Umumiy hajmi: 458 L",
+    "❄️Sovutgich hajmi 285 L",
+    "🧊Muzlatgich hajmi 173 L",
+    "📏O'lchami: ш690*г910*в1870 mm\t203"
+  ],
+  "stdout": "id\tname\tslug\tdesc_preview\tdesc_len\n630001\tХолодильник Caspeer rm430pb\tkholodilnik-caspeer-rm430pb\tINVERTER, NO FROST, DISPLAY,MULTI AIR FLOW, CONTROLBOX\nCasper RS430PBW\n⭕️ Umumiy hajmi: 458 L\n❄️Sovutgich hajmi 285 L\n🧊Muzlatgich hajmi 173 L\n📏O'lchami: ш690*г910*в1870 mm\n\t189\n630002\tХолодильник Caspeer rm460pb\tkholodilnik-caspeer-rm460pb\tINVERTER, NO FROST, DISPLAY,MULTI AIR FLOW, CONTROL BOX\n🟢Model: #Casper RS460PBW\n⭕️ Umumiy hajmi: 458 L\n❄️Sovutgich hajmi 285 L\n🧊Muzlatgich hajmi 173 L\n\n\n📏O'lchami: ш690*г910*в1870 mm\t203\n",
+  "stderr": "",
+  "execution_time_ms": 258
+}
