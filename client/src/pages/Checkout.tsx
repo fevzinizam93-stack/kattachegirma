@@ -1,8 +1,9 @@
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { CheckCircle, MapPin, Phone, User } from "lucide-react";
+import { CheckCircle, LogIn, MapPin, Phone, User } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -11,6 +12,7 @@ export default function Checkout() {
   const { items, totalAmount, clearCart } = useCart();
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
+  const { isAuthenticated, user } = useAuth();
   const [success, setSuccess] = useState(false);
   const [orderId, setOrderId] = useState<number | null>(null);
 
@@ -101,6 +103,30 @@ export default function Checkout() {
         <div className="grid lg:grid-cols-3 gap-4">
           {/* Form */}
           <div className="lg:col-span-2">
+            {/* Login banner for unauthenticated users */}
+            {!isAuthenticated && (
+              <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-100 rounded-xl p-4 mb-3 flex items-start gap-3">
+                <div className="w-9 h-9 bg-red-100 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                  <LogIn size={18} className="text-red-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-gray-900 mb-0.5">Войдите для быстрого оформления</p>
+                  <p className="text-xs text-gray-500 mb-2.5">Ваши данные заполнятся автоматически. Можно продолжить без входа.</p>
+                  <div className="flex gap-2">
+                    <Link href="/login?redirect=/checkout">
+                      <button className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">
+                        Войти
+                      </button>
+                    </Link>
+                    <Link href="/login?redirect=/checkout">
+                      <button className="border border-red-200 text-red-600 hover:bg-red-50 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors">
+                        Зарегистрироваться
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-200 p-4 space-y-4">
               <h2 className="font-black text-lg">{t.checkout_address}</h2>
 

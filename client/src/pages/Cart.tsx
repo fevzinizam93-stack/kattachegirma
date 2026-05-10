@@ -1,7 +1,8 @@
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
-import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { Minus, Plus, ShoppingCart, Trash2, LogIn } from "lucide-react";
 import { useEffect } from "react";
 import { Link } from "wouter";
 
@@ -9,6 +10,7 @@ export default function Cart() {
   const { items, removeItem, updateQuantity, totalAmount, totalItems } = useCart();
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     document.title = "Корзина — Выбранные товары | Катта Чегирма";
@@ -99,6 +101,32 @@ export default function Cart() {
 
           {/* Order summary — shown on desktop as sidebar, on mobile as bottom section */}
           <div>
+            {/* Login banner for unauthenticated users */}
+            {!isAuthenticated && (
+              <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-100 rounded-xl p-4 mb-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 bg-red-100 rounded-full flex items-center justify-center shrink-0">
+                    <LogIn size={18} className="text-red-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-gray-900 mb-0.5">Войдите для быстрого оформления</p>
+                    <p className="text-xs text-gray-500 mb-2.5">Ваши данные заполнятся автоматически</p>
+                    <div className="flex gap-2">
+                      <Link href="/login?redirect=/checkout">
+                        <button className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">
+                          Войти
+                        </button>
+                      </Link>
+                      <Link href="/login?redirect=/checkout">
+                        <button className="border border-red-200 text-red-600 hover:bg-red-50 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors">
+                          Регистрация
+                        </button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="bg-white rounded-xl border border-gray-200 p-4 lg:sticky lg:top-24">
               <h2 className="font-black text-base mb-3">{t.cart_total}</h2>
               <div className="space-y-1.5 mb-3">
