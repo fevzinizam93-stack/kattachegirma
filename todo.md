@@ -472,3 +472,6 @@
 - [x] Catalog.tsx: список брендов с чекбоксами в sidebar (загружается через products.getBrands)
 - [x] Catalog.tsx: кнопка «Сбросить бренды» (появляется когда выбран хотя бы один бренд)
 - [x] Catalog.tsx: при смене категории — сбрасывать выбранные бренды
+
+## Bugfix - Кнопка Войти в мобильном меню
+- [x] MobileBottomNav.tsx: кнопка «Войти» направляла на Manus OAuth (getLoginUrl) вместо /login — исправлено на Link href="/login"

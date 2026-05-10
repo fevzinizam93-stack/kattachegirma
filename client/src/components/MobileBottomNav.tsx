@@ -109,7 +109,7 @@ export default function MobileBottomNav() {
                 </div>
               </Link>
             ) : (
-              <a href={getLoginUrl()} onClick={() => setMenuOpen(false)}
+              <Link href="/login" onClick={() => setMenuOpen(false)}
                 className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors">
                 <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
                   <LogIn size={18} className="text-gray-600" />
@@ -118,7 +118,7 @@ export default function MobileBottomNav() {
                   <div className="text-sm font-bold text-gray-900">{t.nav_login}</div>
                   <div className="text-xs text-gray-500">Войти или зарегистрироваться</div>
                 </div>
-              </a>
+              </Link>
             )}
 
             <div className="h-px bg-gray-100 my-1" />
