@@ -3,7 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Home, Grid3X3, Flame, ShoppingCart, Menu, User, Store, Crown, LogIn, ShieldCheck, Users } from "lucide-react";
+import { Home, Grid3X3, Flame, ShoppingCart, Menu, Store, Crown, LogIn, ShieldCheck, Users, ChevronRight, LayoutGrid } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
 import { getLoginUrl } from "@/const";
@@ -16,7 +16,9 @@ export default function MobileBottomNav() {
   const { currency, setCurrency } = useCurrency();
   const { user, isAuthenticated } = useAuth();
   const { data: sellerProfile } = trpc.sellers.me.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: categories = [] } = trpc.categories.list.useQuery(undefined, { staleTime: 10 * 60 * 1000 });
   const [menuOpen, setMenuOpen] = useState(false);
+  const [catalogOpen, setCatalogOpen] = useState(false);
 
   const isActive = (path: string) => {
     if (path === "/") return location === "/";
@@ -122,6 +124,48 @@ export default function MobileBottomNav() {
             )}
 
             <div className="h-px bg-gray-100 my-1" />
+
+            {/* Каталог — раскрывающийся список категорий */}
+            <button
+              onClick={() => setCatalogOpen((v) => !v)}
+              className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-red-50 active:bg-red-100 transition-colors"
+            >
+              <div className="w-9 h-9 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                <LayoutGrid size={18} className="text-red-600" />
+              </div>
+              <div className="flex-1 text-left">
+                <div className="text-sm font-bold text-gray-900">Каталог</div>
+                <div className="text-xs text-gray-500">Все категории товаров</div>
+              </div>
+              <ChevronRight size={16} className={`text-gray-400 transition-transform duration-200 ${catalogOpen ? "rotate-90" : ""}`} />
+            </button>
+
+            {/* Categories list — expanded */}
+            {catalogOpen && (
+              <div className="ml-4 pl-3 border-l-2 border-red-100 space-y-0.5">
+                {categories.map((cat) => (
+                  <Link
+                    key={cat.id}
+                    href={`/category/${cat.slug}`}
+                    onClick={() => { setMenuOpen(false); setCatalogOpen(false); }}
+                    className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${
+                      location === `/category/${cat.slug}` ? "bg-red-50 text-red-700" : "text-gray-700 hover:bg-gray-50 hover:text-red-600"
+                    }`}
+                  >
+                    {cat.icon && <span className="text-base leading-none shrink-0">{cat.icon}</span>}
+                    <span>{cat.name}</span>
+                  </Link>
+                ))}
+                <Link
+                  href="/catalog"
+                  onClick={() => { setMenuOpen(false); setCatalogOpen(false); }}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-semibold text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  <span>→</span>
+                  <span>Все товары</span>
+                </Link>
+              </div>
+            )}
 
             {/* Premium */}
             <Link href="/premium" onClick={() => setMenuOpen(false)}
