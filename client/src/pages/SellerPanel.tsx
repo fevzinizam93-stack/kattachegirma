@@ -104,7 +104,7 @@ export default function SellerPanel() {
           <h2 className="text-2xl font-black text-gray-900 mb-2">Стать продавцом</h2>
           <p className="text-gray-500 mb-6">Для продажи товаров необходимо войти в систему</p>
           <button
-            onClick={openLogin}
+            onClick={() => openLogin()}
             className="block w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors"
           >
             Войти

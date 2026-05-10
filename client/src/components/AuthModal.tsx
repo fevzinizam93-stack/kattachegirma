@@ -8,9 +8,10 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultTab?: "login" | "register";
+  redirectPath?: string;
 }
 
-export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: AuthModalProps) {
+export default function AuthModal({ isOpen, onClose, defaultTab = "login", redirectPath }: AuthModalProps) {
   const [tab, setTab] = useState<"login" | "register">(defaultTab);
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", password: "" });
@@ -23,6 +24,8 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
     onClose();
     if (role === "admin") {
       navigate("/admin");
+    } else if (redirectPath) {
+      navigate(redirectPath);
     } else {
       navigate("/profile");
     }

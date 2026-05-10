@@ -109,7 +109,7 @@ export default function MobileBottomNav() {
                 </div>
               </Link>
             ) : (
-              <Link href="/login" onClick={() => setMenuOpen(false)}
+              <Link href={`/login${location !== '/' ? `?redirect=${encodeURIComponent(location)}` : ''}`} onClick={() => setMenuOpen(false)}
                 className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors">
                 <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
                   <LogIn size={18} className="text-gray-600" />

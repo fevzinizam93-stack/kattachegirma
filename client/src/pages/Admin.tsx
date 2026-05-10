@@ -401,7 +401,7 @@ export default function Admin() {
     return (
       <div className="container py-20 text-center">
         <h2 className="text-xl font-bold mb-4">Для доступа необходимо войти</h2>
-        <button onClick={openLogin} className="bg-primary text-white px-6 py-3 rounded-xl font-bold inline-block">Войти</button>
+        <button onClick={() => openLogin()} className="bg-primary text-white px-6 py-3 rounded-xl font-bold inline-block">Войти</button>
       </div>
     );
   }

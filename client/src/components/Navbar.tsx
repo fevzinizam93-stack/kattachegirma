@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 
 interface NavbarProps {
-  onOpenAuth?: () => void;
+  onOpenAuth?: (redirectPath?: string) => void;
 }
 
 export default function Navbar({ onOpenAuth }: NavbarProps) {
@@ -264,7 +264,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                 <span className="text-[10px] text-gray-600 max-w-[60px] truncate">{user?.name?.split(" ")[0]}</span>
               </Link>
             ) : (
-              <button onClick={() => onOpenAuth?.()} className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200">
+              <button onClick={() => onOpenAuth?.(location)} className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200">
                 <User size={18} className="text-gray-700" />
                 <span className="text-[10px] text-gray-600 whitespace-nowrap">{t.nav_login}</span>
               </button>

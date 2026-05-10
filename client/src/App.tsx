@@ -31,6 +31,7 @@ const SellerStorefront = lazy(() => import("./pages/SellerStorefront"));
 const SellersList = lazy(() => import("./pages/SellersList"));
 const Profile = lazy(() => import("./pages/Profile"));
 const PremiumCatalog = lazy(() => import("./pages/PremiumCatalog"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
 const AuthModal = lazy(() => import("./components/AuthModal"));
 
 // Lightweight spinner shown while a page chunk is loading
@@ -44,8 +45,8 @@ function PageLoader() {
 
 // Global auth modal context so any page can open it
 interface AuthModalContextType {
-  openLogin: () => void;
-  openRegister: () => void;
+  openLogin: (redirectPath?: string) => void;
+  openRegister: (redirectPath?: string) => void;
 }
 
 export const AuthModalContext = createContext<AuthModalContextType>({
@@ -93,6 +94,7 @@ function Router() {
       </Route>
       <Route path="/premium" component={PremiumCatalog} />
       <Route path="/profile" component={Profile} />
+      <Route path="/login" component={LoginPage} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
@@ -102,12 +104,16 @@ function Router() {
 function App() {
   const [authOpen, setAuthOpen] = useState(false);
   const [authTab, setAuthTab] = useState<"login" | "register">("login");
+  const [authRedirect, setAuthRedirect] = useState<string | undefined>();
 
   // Track UTM params on first visit
   useUTMTracker();
 
-  const openLogin = () => { setAuthTab("login"); setAuthOpen(true); };
-  const openRegister = () => { setAuthTab("register"); setAuthOpen(true); };
+  const openLogin = (redirectPath?: string) => { setAuthTab("login"); setAuthRedirect(redirectPath); setAuthOpen(true); };
+  const openRegister = (redirectPath?: string) => { setAuthTab("register"); setAuthRedirect(redirectPath); setAuthOpen(true); };
+  // Wrappers without args for onClick handlers
+  const openLoginClick = () => openLogin();
+  const openRegisterClick = () => openRegister();
 
   return (
     <ErrorBoundary>
@@ -128,7 +134,7 @@ function App() {
                 <MobileBottomNav />
               </div>
               <Suspense fallback={null}>
-                <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} defaultTab={authTab} />
+                <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} defaultTab={authTab} redirectPath={authRedirect} />
               </Suspense>
             </TooltipProvider>
           </AuthModalContext.Provider>
