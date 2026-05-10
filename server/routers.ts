@@ -77,6 +77,7 @@ import {
   getSellerProductStats,
   hideSellerReview,
   getProductBrands,
+  getSalesProducts,
 } from "./db";
 import { storagePut } from "./storage";
 import { invokeLLM } from "./_core/llm";
@@ -532,6 +533,12 @@ export const appRouter = router({
       return getSellerProducts(seller.id);
     }),
 
+    // Public: get sale products (with discount)
+    getSales: publicProcedure
+      .input(z.object({ limit: z.number().optional() }))
+      .query(async ({ input }) => {
+        return getSalesProducts(input.limit);
+      }),
     // Public: get hit products (bestsellers)
     getHits: publicProcedure
       .input(z.object({ limit: z.number().optional() }))

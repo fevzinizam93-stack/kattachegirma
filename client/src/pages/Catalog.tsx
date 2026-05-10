@@ -2,7 +2,8 @@ import ProductCard from "@/components/ProductCard";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { ChevronDown, Filter, SlidersHorizontal } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useLocation } from "wouter";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
 
@@ -19,6 +20,7 @@ const SORT_OPTIONS: { value: SortBy; label: string }[] = [
 
 export default function Catalog() {
   const { t } = useLanguage();
+  const [location, setLocation] = useLocation();
 
   usePageMeta({
     title: "Каталог бытовой техники со скидками | Катта Чегирма",
@@ -31,18 +33,61 @@ export default function Catalog() {
     { name: "Каталог", url: "https://kattachegirma.uz/catalog" },
   ]);
 
-  const [selectedCategory, setSelectedCategory] = useState<number | undefined>();
-  const [search, setSearch] = useState("");
-  const [searchInput, setSearchInput] = useState("");
+  // Parse initial state from URL params
+  const getInitialState = () => {
+    const params = new URLSearchParams(window.location.search);
+    const catId = params.get('category');
+    const minP = params.get('minPrice');
+    const maxP = params.get('maxPrice');
+    const brandsParam = params.get('brands');
+    const sort = params.get('sortBy') as SortBy | null;
+    const q = params.get('q') ?? '';
+    return {
+      selectedCategory: catId ? parseInt(catId, 10) : undefined,
+      search: q,
+      searchInput: q,
+      minPrice: minP ? parseInt(minP, 10) : undefined,
+      maxPrice: maxP ? parseInt(maxP, 10) : undefined,
+      minPriceInput: minP ?? '',
+      maxPriceInput: maxP ?? '',
+      sortBy: (sort && ['newest','price_asc','price_desc','discount'].includes(sort) ? sort : 'newest') as SortBy,
+      selectedBrands: brandsParam ? brandsParam.split(',').filter(Boolean) : [],
+    };
+  };
+
+  const init = getInitialState();
+  const [selectedCategory, setSelectedCategory] = useState<number | undefined>(init.selectedCategory);
+  const [search, setSearch] = useState(init.search);
+  const [searchInput, setSearchInput] = useState(init.searchInput);
   const [page, setPage] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
-  const [minPriceInput, setMinPriceInput] = useState("");
-  const [maxPriceInput, setMaxPriceInput] = useState("");
-  const [minPrice, setMinPrice] = useState<number | undefined>();
-  const [maxPrice, setMaxPrice] = useState<number | undefined>();
-  const [sortBy, setSortBy] = useState<SortBy>('newest');
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [minPriceInput, setMinPriceInput] = useState(init.minPriceInput);
+  const [maxPriceInput, setMaxPriceInput] = useState(init.maxPriceInput);
+  const [minPrice, setMinPrice] = useState<number | undefined>(init.minPrice);
+  const [maxPrice, setMaxPrice] = useState<number | undefined>(init.maxPrice);
+  const [sortBy, setSortBy] = useState<SortBy>(init.sortBy);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>(init.selectedBrands);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
+
+  // Sync filters to URL
+  const syncToUrl = useCallback((opts: {
+    category?: number;
+    q?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    sortBy?: SortBy;
+    brands?: string[];
+  }) => {
+    const params = new URLSearchParams();
+    if (opts.category) params.set('category', String(opts.category));
+    if (opts.q) params.set('q', opts.q);
+    if (opts.minPrice) params.set('minPrice', String(opts.minPrice));
+    if (opts.maxPrice) params.set('maxPrice', String(opts.maxPrice));
+    if (opts.sortBy && opts.sortBy !== 'newest') params.set('sortBy', opts.sortBy);
+    if (opts.brands && opts.brands.length > 0) params.set('brands', opts.brands.join(','));
+    const qs = params.toString();
+    setLocation('/catalog' + (qs ? '?' + qs : ''), { replace: true });
+  }, [setLocation]);
 
   const { data: categoriesData } = trpc.categories.list.useQuery();
   const categories = categoriesData ?? [];
@@ -72,7 +117,8 @@ export default function Catalog() {
   useEffect(() => {
     setSelectedBrands([]);
     setPage(0);
-  }, [selectedCategory]);
+    syncToUrl({ category: selectedCategory, q: search, minPrice, maxPrice, sortBy, brands: [] });
+  }, [selectedCategory]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Close sort dropdown on outside click
   useEffect(() => {
@@ -86,19 +132,24 @@ export default function Catalog() {
     e.preventDefault();
     setSearch(searchInput);
     setPage(0);
+    syncToUrl({ category: selectedCategory, q: searchInput, minPrice, maxPrice, sortBy, brands: selectedBrands });
   };
 
   const handleCategoryChange = (id: number | undefined) => {
     setSelectedCategory(id);
     setPage(0);
+    syncToUrl({ category: id, q: search, minPrice, maxPrice, sortBy, brands: [] });
   };
 
   const handlePriceFilter = () => {
     const rawMin = minPriceInput.replace(/[^\d]/g, '');
     const rawMax = maxPriceInput.replace(/[^\d]/g, '');
-    setMinPrice(rawMin ? parseInt(rawMin, 10) : undefined);
-    setMaxPrice(rawMax ? parseInt(rawMax, 10) : undefined);
+    const newMin = rawMin ? parseInt(rawMin, 10) : undefined;
+    const newMax = rawMax ? parseInt(rawMax, 10) : undefined;
+    setMinPrice(newMin);
+    setMaxPrice(newMax);
     setPage(0);
+    syncToUrl({ category: selectedCategory, q: search, minPrice: newMin, maxPrice: newMax, sortBy, brands: selectedBrands });
   };
 
   const handlePriceReset = () => {
@@ -107,18 +158,22 @@ export default function Catalog() {
     setMinPrice(undefined);
     setMaxPrice(undefined);
     setPage(0);
+    syncToUrl({ category: selectedCategory, q: search, sortBy, brands: selectedBrands });
   };
 
   const toggleBrand = (brand: string) => {
-    setSelectedBrands(prev =>
-      prev.includes(brand) ? prev.filter(b => b !== brand) : [...prev, brand]
-    );
+    const newBrands = selectedBrands.includes(brand)
+      ? selectedBrands.filter(b => b !== brand)
+      : [...selectedBrands, brand];
+    setSelectedBrands(newBrands);
     setPage(0);
+    syncToUrl({ category: selectedCategory, q: search, minPrice, maxPrice, sortBy, brands: newBrands });
   };
 
   const handleBrandsReset = () => {
     setSelectedBrands([]);
     setPage(0);
+    syncToUrl({ category: selectedCategory, q: search, minPrice, maxPrice, sortBy, brands: [] });
   };
 
   const currentSortLabel = SORT_OPTIONS.find(o => o.value === sortBy)?.label ?? 'Новинки';
@@ -185,7 +240,7 @@ export default function Catalog() {
                   {SORT_OPTIONS.map(opt => (
                     <button
                       key={opt.value}
-                      onClick={e => { e.stopPropagation(); setSortBy(opt.value); setPage(0); setShowSortDropdown(false); }}
+                      onClick={e => { e.stopPropagation(); setSortBy(opt.value); setPage(0); setShowSortDropdown(false); syncToUrl({ category: selectedCategory, q: search, minPrice, maxPrice, sortBy: opt.value, brands: selectedBrands }); }}
                       className={`w-full text-left px-4 py-2 text-sm transition-colors hover:bg-accent ${sortBy === opt.value ? 'font-semibold text-primary' : ''}`}
                     >
                       {sortBy === opt.value && <span className="mr-1">✓</span>}
@@ -333,7 +388,7 @@ export default function Catalog() {
                 {sortBy !== 'newest' && (
                   <span className="inline-flex items-center gap-1 bg-primary/10 text-primary text-xs font-medium px-2.5 py-1 rounded-full">
                     {currentSortLabel}
-                    <button onClick={() => { setSortBy('newest'); setPage(0); }} className="ml-0.5 hover:text-primary/70">✕</button>
+                    <button onClick={() => { setSortBy('newest'); setPage(0); syncToUrl({ category: selectedCategory, q: search, minPrice, maxPrice, sortBy: 'newest', brands: selectedBrands }); }} className="ml-0.5 hover:text-primary/70">✕</button>
                   </span>
                 )}
                 {selectedBrands.map(b => (

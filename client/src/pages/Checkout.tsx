@@ -4,7 +4,7 @@ import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { CheckCircle, LogIn, MapPin, Phone, User } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 
@@ -21,6 +21,17 @@ export default function Checkout() {
     customerPhone: "",
     deliveryAddress: "",
   });
+
+  // Autofill form from user profile when authenticated
+  useEffect(() => {
+    if (user) {
+      setForm(f => ({
+        ...f,
+        customerName: f.customerName || (user as any).name || "",
+        customerPhone: f.customerPhone || (user as any).phone || "",
+      }));
+    }
+  }, [user]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const createOrder = trpc.orders.create.useMutation({

@@ -32,6 +32,7 @@ const SellersList = lazy(() => import("./pages/SellersList"));
 const Profile = lazy(() => import("./pages/Profile"));
 const PremiumCatalog = lazy(() => import("./pages/PremiumCatalog"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
+const Sales = lazy(() => import("./pages/Sales"));
 const AuthModal = lazy(() => import("./components/AuthModal"));
 
 // Lightweight spinner shown while a page chunk is loading
@@ -95,6 +96,7 @@ function Router() {
       <Route path="/premium" component={PremiumCatalog} />
       <Route path="/profile" component={Profile} />
       <Route path="/login" component={LoginPage} />
+      <Route path="/sales" component={Sales} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

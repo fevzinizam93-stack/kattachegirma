@@ -837,3 +837,25 @@ export async function hideSellerReview(id: number): Promise<void> {
   if (!db) throw new Error("DB not available");
   await db.update(sellerReviews).set({ isVisible: false }).where(eq(sellerReviews.id, id));
 }
+
+export async function getSalesProducts(limit?: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const query = db
+    .select()
+    .from(products)
+    .where(
+      and(
+        eq(products.isActive, true),
+        eq(products.isApproved, true),
+        sql`(${products.originalPrice} IS NOT NULL AND CAST(${products.originalPrice} AS DECIMAL) > CAST(${products.price} AS DECIMAL))`
+      )
+    )
+    .orderBy(
+      desc(sql`CASE WHEN ${products.discountEndsAt} IS NOT NULL THEN 1 ELSE 0 END`),
+      asc(products.discountEndsAt),
+      desc(sql`(CAST(${products.originalPrice} AS DECIMAL) - CAST(${products.price} AS DECIMAL)) / CAST(${products.originalPrice} AS DECIMAL)`)
+    );
+  if (limit) query.limit(limit);
+  return query;
+}
