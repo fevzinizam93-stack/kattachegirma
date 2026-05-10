@@ -3,15 +3,18 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { useCart } from "@/contexts/CartContext";
 import { Link, useLocation } from "wouter";
-import { ShoppingBag, Heart, User, LogOut, Package, ChevronRight, ArrowLeft } from "lucide-react";
+import { ShoppingBag, Heart, User, LogOut, Package, ChevronRight, ArrowLeft, RotateCcw, MapPin, Phone } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Profile() {
   const [tab, setTab] = useState<"orders" | "favorites">("orders");
+  const [reorderingId, setReorderingId] = useState<number | null>(null);
   const { user, logout } = useAuth();
   const { lang, t } = useLanguage();
   const { formatPrice } = useCurrency();
+  const { addItem } = useCart();
   const [, navigate] = useLocation();
 
   const statusLabels: Record<string, { label: string; color: string }> = {
@@ -31,15 +34,45 @@ export default function Profile() {
     },
   });
 
+  const reorderMutation = trpc.orders.reorder.useMutation({
+    onSuccess: (data) => {
+      // Add all items from the past order to cart
+        data.items.forEach((item: { productId: number; name: string; price: number; quantity: number; imageUrl?: string }) => {
+        for (let i = 0; i < item.quantity; i++) {
+          addItem({
+            productId: item.productId,
+            name: item.name,
+            price: item.price,
+            quantity: 1,
+            imageUrl: item.imageUrl ?? "",
+            slug: "",
+          });
+        }
+      });
+      toast.success(`${data.items.length} товар(ов) добавлено в корзину`);
+      navigate("/cart");
+    },
+    onError: () => {
+      toast.error("Не удалось повторить заказ");
+    },
+    onSettled: () => {
+      setReorderingId(null);
+    },
+  });
+
+  const handleReorder = (orderId: number) => {
+    setReorderingId(orderId);
+    reorderMutation.mutate({ orderId });
+  };
 
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <User size={48} className="mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-600 mb-4">"Войдите для просмотра профиля"</p>
-          <Link href="/" className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors">
-            {t.nav_home}
+          <p className="text-gray-600 mb-4">Войдите для просмотра профиля</p>
+          <Link href="/login" className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+            Войти
           </Link>
         </div>
       </div>
@@ -119,35 +152,63 @@ export default function Profile() {
             ) : (
               orders.map((order: any) => {
                 const statusInfo = statusLabels[order.status] ?? { label: order.status, color: "bg-gray-100 text-gray-700" };
+                const isReordering = reorderingId === order.id;
                 return (
                   <div key={order.id} className="bg-white rounded-xl shadow-sm p-5">
+                    {/* Order header */}
                     <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                      <div>
+                      <div className="flex items-center gap-3">
                         <span className="font-semibold text-gray-900">{t.profile_order_number}{order.id}</span>
-                        <span className="ml-3 text-sm text-gray-500">
-                          {new Date(order.createdAt).toLocaleDateString("ru-RU")}
+                        <span className="text-sm text-gray-500">
+                          {new Date(order.createdAt).toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric" })}
                         </span>
                       </div>
                       <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusInfo.color}`}>
                         {statusInfo.label}
                       </span>
                     </div>
+
+                    {/* Order items */}
                     <div className="space-y-2 mb-3">
-                      {(order.items as any[]).map((item, idx) => (
+                      {(order.items as any[]).map((item: any, idx: number) => (
                         <div key={idx} className="flex items-center gap-3">
                           {item.imageUrl && (
-                            <img src={item.imageUrl} alt={item.name} className="w-10 h-10 object-contain rounded border border-gray-100" />
+                            <img src={item.imageUrl} alt={item.name} className="w-12 h-12 object-contain rounded border border-gray-100 bg-gray-50 flex-shrink-0" />
                           )}
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm text-gray-800 truncate">{item.name}</p>
-                            <p className="text-xs text-gray-500">{item.quantity} × {formatPrice(Number(item.price))}</p>
+                            <p className="text-sm text-gray-800 truncate font-medium">{item.name}</p>
+                            <p className="text-xs text-gray-500">{item.quantity} шт. × {formatPrice(Number(item.price))}</p>
                           </div>
+                          <p className="text-sm font-semibold text-gray-700 flex-shrink-0">
+                            {formatPrice(Number(item.price) * item.quantity)}
+                          </p>
                         </div>
                       ))}
                     </div>
-                    <div className="flex items-center justify-between pt-3 border-t border-gray-100 flex-wrap gap-2">
-                      <span className="text-sm text-gray-500">{order.deliveryAddress}</span>
-                      <span className="font-bold text-primary">{formatPrice(Number(order.totalAmount))}</span>
+
+                    {/* Order footer */}
+                    <div className="pt-3 border-t border-gray-100">
+                      <div className="flex items-center gap-4 mb-3 flex-wrap">
+                        <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                          <MapPin size={14} className="flex-shrink-0" />
+                          <span className="truncate max-w-[200px]">{order.deliveryAddress}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                          <Phone size={14} className="flex-shrink-0" />
+                          <span>{order.customerPhone}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <span className="font-bold text-primary text-lg">{formatPrice(Number(order.totalAmount))}</span>
+                        <button
+                          onClick={() => handleReorder(order.id)}
+                          disabled={isReordering}
+                          className="flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                          <RotateCcw size={15} className={isReordering ? "animate-spin" : ""} />
+                          {isReordering ? "Добавляем..." : "Повторить заказ"}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );

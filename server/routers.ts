@@ -604,6 +604,15 @@ export const appRouter = router({
     myOrders: protectedProcedure.query(async ({ ctx }) => {
       return getOrdersByUserId(ctx.user.id);
     }),
+    // User: reorder — returns items from a past order to re-add to cart
+    reorder: protectedProcedure
+      .input(z.object({ orderId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const userOrders = await getOrdersByUserId(ctx.user.id);
+        const order = userOrders.find((o) => o.id === input.orderId);
+        if (!order) throw new TRPCError({ code: "NOT_FOUND", message: "Order not found" });
+        return { items: order.items };
+      }),
 
     updateStatus: adminProcedure
       .input(z.object({
