@@ -3,7 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { ChevronDown, Crown, Search, ShoppingCart, User, X } from "lucide-react";
+import { ChevronDown, Crown, LayoutGrid, Search, ShoppingCart, User, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 
@@ -20,6 +20,8 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [showCurrMenu, setShowCurrMenu] = useState(false);
+  const [showCatalogModal, setShowCatalogModal] = useState(false);
+  const catalogModalRef = useRef<HTMLDivElement>(null);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [, navigate] = useLocation();
   const [location] = useLocation();
@@ -33,6 +35,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
   }, [searchQuery]);
 
   const { data: sellerProfile } = trpc.sellers.me.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: catalogCategories = [] } = trpc.categories.list.useQuery(undefined, { staleTime: 10 * 60 * 1000 });
 
   const { data: searchResults, isLoading: isSearching } = trpc.products.list.useQuery(
     { search: debouncedQuery, limit: 6 },
@@ -57,6 +60,26 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  // Close catalog modal on outside click or Escape
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (catalogModalRef.current && !catalogModalRef.current.contains(e.target as Node)) {
+        setShowCatalogModal(false);
+      }
+    };
+    const keyHandler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowCatalogModal(false);
+    };
+    if (showCatalogModal) {
+      document.addEventListener("mousedown", handler);
+      document.addEventListener("keydown", keyHandler);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("keydown", keyHandler);
+    };
+  }, [showCatalogModal]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,16 +163,59 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
             {t.nav_about}
           </Link>
 
-          {/* Sellers list link */}
-          <Link
-            href="/sellers"
-            style={{ fontSize: "12px" }}
-            className={`shrink-0 font-medium px-3 py-2 rounded-full transition-colors whitespace-nowrap ${
-              location === "/sellers" ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-            }`}
-          >
-            Продавцы
-          </Link>
+          {/* Catalog button with dropdown modal */}
+          <div className="relative" ref={catalogModalRef}>
+            <button
+              onClick={() => setShowCatalogModal((v) => !v)}
+              style={{ fontSize: "12px" }}
+              className={`shrink-0 font-medium px-3 py-2 rounded-full transition-colors whitespace-nowrap flex items-center gap-1.5 ${
+                showCatalogModal ? "bg-red-600 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              }`}
+            >
+              <LayoutGrid size={14} />
+              Каталог
+              <ChevronDown size={12} className={`transition-transform duration-200 ${showCatalogModal ? "rotate-180" : ""}`} />
+            </button>
+
+            {/* Catalog categories dropdown */}
+            {showCatalogModal && (
+              <div
+                className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 overflow-hidden"
+                style={{ width: "540px", animation: "catalogSlideDown 0.18s ease-out" }}
+              >
+                <div className="px-4 pt-3 pb-2 border-b border-gray-100 flex items-center justify-between">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Все категории</p>
+                  <button onClick={() => setShowCatalogModal(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                    <X size={14} />
+                  </button>
+                </div>
+                <div className="grid grid-cols-3 gap-0 p-2">
+                  {catalogCategories.map((cat) => (
+                    <Link
+                      key={cat.id}
+                      href={`/category/${cat.slug}`}
+                      onClick={() => setShowCatalogModal(false)}
+                      className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-red-50 hover:text-red-700 transition-colors text-[12px] font-medium ${
+                        location === `/category/${cat.slug}` ? "bg-red-50 text-red-700" : "text-gray-700"
+                      }`}
+                    >
+                      {cat.icon && <span className="text-lg leading-none shrink-0">{cat.icon}</span>}
+                      <span className="leading-tight line-clamp-2">{cat.name}</span>
+                    </Link>
+                  ))}
+                </div>
+                <div className="border-t border-gray-100 px-4 py-2.5">
+                  <Link
+                    href="/catalog"
+                    onClick={() => setShowCatalogModal(false)}
+                    className="flex items-center justify-center gap-2 text-sm font-semibold text-red-600 hover:text-red-700 transition-colors py-1"
+                  >
+                    Смотреть все товары →
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Seller button */}
           {sellerProfile ? (
