@@ -498,3 +498,13 @@
 - [x] App.tsx: добавить маршрут /sales
 - [x] Navbar: добавить ссылку Акции
 - [x] Catalog.tsx: сохранять фильтры (search, category, brands, sortBy, minPrice, maxPrice) в URL
+
+## v75 - In-app уведомления при смене статуса заказа
+- [x] DB: таблица notifications (id, userId, title, message, isRead, orderId, createdAt)
+- [x] DB миграция: применить SQL
+- [x] server/db.ts: createNotification(), getUserNotifications(), markNotificationRead(), markAllNotificationsRead()
+- [x] server/routers.ts: notifications router (list, markRead, markAllRead)
+- [x] server/routers.ts: orders.updateStatus — создавать уведомление при смене статуса на confirmed/delivered/cancelled
+- [x] Navbar.tsx: колокольчик с бейджем непрочитанных, выпадающий список уведомлений
+- [x] MobileBottomNav.tsx: бейдж уведомлений в меню профиля
+- [x] Тесты: проверить notifications.list и notifications.markRead

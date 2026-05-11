@@ -3,7 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Home, Grid3X3, Flame, ShoppingCart, Menu, Store, Crown, LogIn, ShieldCheck, Users, ChevronRight, LayoutGrid } from "lucide-react";
+import { Home, Grid3X3, Flame, ShoppingCart, Menu, Store, Crown, LogIn, ShieldCheck, Users, ChevronRight, LayoutGrid, Bell } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
 import { getLoginUrl } from "@/const";
@@ -17,8 +17,21 @@ export default function MobileBottomNav() {
   const { user, isAuthenticated } = useAuth();
   const { data: sellerProfile } = trpc.sellers.me.useQuery(undefined, { enabled: isAuthenticated });
   const { data: categories = [] } = trpc.categories.list.useQuery(undefined, { staleTime: 10 * 60 * 1000 });
+  const { data: notifData, refetch: refetchNotifs } = trpc.notifications.list.useQuery(undefined, {
+    enabled: isAuthenticated,
+    refetchInterval: 30000,
+  });
+  const { data: unreadData } = trpc.notifications.unreadCount.useQuery(undefined, {
+    enabled: isAuthenticated,
+    refetchInterval: 30000,
+  });
+  const markReadMutation = trpc.notifications.markRead.useMutation({ onSuccess: () => refetchNotifs() });
+  const markAllReadMutation = trpc.notifications.markAllRead.useMutation({ onSuccess: () => refetchNotifs() });
+  const notifList = notifData ?? [];
+  const unreadCount = unreadData?.count ?? 0;
   const [menuOpen, setMenuOpen] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
 
   const isActive = (path: string) => {
     if (path === "/") return location === "/";
@@ -81,7 +94,14 @@ export default function MobileBottomNav() {
             onClick={() => setMenuOpen(true)}
             className={`flex flex-col items-center justify-center flex-1 gap-0.5 text-[10px] font-medium transition-colors ${menuOpen ? activeClass : inactiveClass}`}
           >
-            <Menu size={22} strokeWidth={menuOpen ? 2.5 : 1.8} />
+            <div className="relative">
+              <Menu size={22} strokeWidth={menuOpen ? 2.5 : 1.8} />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center leading-none">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </div>
             <span>Меню</span>
           </button>
         </div>
@@ -97,6 +117,78 @@ export default function MobileBottomNav() {
           </SheetHeader>
 
           <div className="px-4 py-3 space-y-1">
+
+            {/* Notifications section — only for authenticated users */}
+            {isAuthenticated && (
+              <>
+                <button
+                  onClick={() => setNotifOpen((v) => !v)}
+                  className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                >
+                  <div className="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center shrink-0 relative">
+                    <Bell size={18} className="text-red-600" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 bg-red-600 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center leading-none">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="text-sm font-bold text-gray-900">Уведомления</div>
+                    <div className="text-xs text-gray-500">
+                      {unreadCount > 0 ? `${unreadCount} новых` : "Нет новых"}
+                    </div>
+                  </div>
+                  <ChevronRight size={16} className={`text-gray-400 transition-transform duration-200 ${notifOpen ? "rotate-90" : ""}`} />
+                </button>
+
+                {notifOpen && (
+                  <div className="ml-4 pl-3 border-l-2 border-red-100 space-y-0.5">
+                    {notifList.length === 0 ? (
+                      <div className="px-3 py-3 text-sm text-gray-400">Нет уведомлений</div>
+                    ) : (
+                      <>
+                        {unreadCount > 0 && (
+                          <button
+                            onClick={() => markAllReadMutation.mutate()}
+                            className="w-full text-left px-3 py-1.5 text-xs text-red-600 font-medium hover:bg-red-50 rounded-lg transition-colors"
+                          >
+                            Прочитать все
+                          </button>
+                        )}
+                        {notifList.slice(0, 5).map((notif) => (
+                          <button
+                            key={notif.id}
+                            type="button"
+                            onClick={() => {
+                              if (!notif.isRead) markReadMutation.mutate({ id: notif.id });
+                              setMenuOpen(false);
+                              setNotifOpen(false);
+                            }}
+                            className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors ${
+                              notif.isRead ? "text-gray-500 hover:bg-gray-50" : "bg-red-50/60 text-gray-800 hover:bg-red-50"
+                            }`}
+                          >
+                            <div className="flex items-start gap-2">
+                              {!notif.isRead && <span className="mt-1.5 w-2 h-2 rounded-full bg-red-500 shrink-0" />}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[13px] font-semibold leading-tight">{notif.title}</p>
+                                <p className="text-xs text-gray-500 mt-0.5 leading-snug">{notif.message}</p>
+                                <p className="text-[10px] text-gray-400 mt-1">
+                                  {new Date(notif.createdAt).toLocaleString("ru-RU", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                                </p>
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                )}
+
+                <div className="h-px bg-gray-100 my-1" />
+              </>
+            )}
 
             {/* Profile / Login */}
             {isAuthenticated ? (

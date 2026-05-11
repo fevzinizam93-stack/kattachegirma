@@ -78,6 +78,11 @@ import {
   hideSellerReview,
   getProductBrands,
   getSalesProducts,
+  createNotification,
+  getUserNotifications,
+  countUnreadNotifications,
+  markNotificationRead,
+  markAllNotificationsRead,
 } from "./db";
 import { storagePut } from "./storage";
 import { invokeLLM } from "./_core/llm";
@@ -621,8 +626,61 @@ export const appRouter = router({
       }))
       .mutation(async ({ input }) => {
         await updateOrderStatus(input.id, input.status);
+        // Notify the user if status changed to confirmed, delivered or cancelled
+        const allOrders = await getAllOrders();
+        const order = allOrders.find((o) => o.id === input.id);
+        if (order?.userId) {
+          const statusMessages: Record<string, { title: string; message: string } | undefined> = {
+            confirmed: {
+              title: "Заказ подтверждён ✅",
+              message: `Ваш заказ #${input.id} подтверждён и передан в обработку.`,
+            },
+            delivered: {
+              title: "Заказ доставлен 🎉",
+              message: `Ваш заказ #${input.id} успешно доставлен. Спасибо за покупку!`,
+            },
+            cancelled: {
+              title: "Заказ отменён ❌",
+              message: `Ваш заказ #${input.id} был отменён. Свяжитесь с нами для уточнения деталей.`,
+            },
+          };
+          const notif = statusMessages[input.status];
+          if (notif) {
+            await createNotification({
+              userId: order.userId,
+              title: notif.title,
+              message: notif.message,
+              orderId: input.id,
+            }).catch((e) => console.error("[Notification] Failed:", e));
+          }
+        }
         return { success: true };
       }),
+  }),
+
+  // ---- Notifications ----
+  notifications: router({
+    // Get current user's notifications
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return getUserNotifications(ctx.user.id);
+    }),
+    // Count unread notifications
+    unreadCount: protectedProcedure.query(async ({ ctx }) => {
+      const count = await countUnreadNotifications(ctx.user.id);
+      return { count };
+    }),
+    // Mark a single notification as read
+    markRead: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        await markNotificationRead(input.id, ctx.user.id);
+        return { success: true };
+      }),
+    // Mark all notifications as read
+    markAllRead: protectedProcedure.mutation(async ({ ctx }) => {
+      await markAllNotificationsRead(ctx.user.id);
+      return { success: true };
+    }),
   }),
 
   // ---- Favorites ----

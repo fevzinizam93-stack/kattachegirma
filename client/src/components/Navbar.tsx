@@ -3,7 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { ChevronDown, Crown, LayoutGrid, Search, ShoppingCart, User, X } from "lucide-react";
+import { Bell, ChevronDown, Crown, LayoutGrid, Search, ShoppingCart, User, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 
@@ -21,7 +21,9 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showCurrMenu, setShowCurrMenu] = useState(false);
   const [showCatalogModal, setShowCatalogModal] = useState(false);
+  const [showNotifDropdown, setShowNotifDropdown] = useState(false);
   const catalogModalRef = useRef<HTMLDivElement>(null);
+  const notifDropdownRef = useRef<HTMLDivElement>(null);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [, navigate] = useLocation();
   const [location] = useLocation();
@@ -35,6 +37,18 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
   }, [searchQuery]);
 
   const { data: sellerProfile } = trpc.sellers.me.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: notifData, refetch: refetchNotifs } = trpc.notifications.list.useQuery(undefined, {
+    enabled: isAuthenticated,
+    refetchInterval: 30000, // poll every 30 seconds
+  });
+  const { data: unreadData } = trpc.notifications.unreadCount.useQuery(undefined, {
+    enabled: isAuthenticated,
+    refetchInterval: 30000,
+  });
+  const markReadMutation = trpc.notifications.markRead.useMutation({ onSuccess: () => refetchNotifs() });
+  const markAllReadMutation = trpc.notifications.markAllRead.useMutation({ onSuccess: () => refetchNotifs() });
+  const notifList = notifData ?? [];
+  const unreadCount = unreadData?.count ?? 0;
   const { data: catalogCategories = [] } = trpc.categories.list.useQuery(undefined, { staleTime: 10 * 60 * 1000 });
 
   const { data: searchResults, isLoading: isSearching } = trpc.products.list.useQuery(
@@ -55,6 +69,11 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
         currMenuRef.current && !currMenuRef.current.contains(e.target as Node)
       ) {
         setShowCurrMenu(false);
+      }
+      if (
+        notifDropdownRef.current && !notifDropdownRef.current.contains(e.target as Node)
+      ) {
+        setShowNotifDropdown(false);
       }
     };
     document.addEventListener("mousedown", handler);
@@ -306,6 +325,78 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
 
           {/* Right icons */}
           <div className="flex items-center gap-1 shrink-0">
+
+            {/* Notification Bell — only for authenticated users */}
+            {isAuthenticated && (
+              <div className="relative" ref={notifDropdownRef}>
+                <button
+                  onClick={() => setShowNotifDropdown((v) => !v)}
+                  className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors relative"
+                >
+                  <div className="relative">
+                    <Bell size={20} className="text-gray-700" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-gray-600 whitespace-nowrap">Уведомления</span>
+                </button>
+
+                {/* Notification dropdown */}
+                {showNotifDropdown && (
+                  <div className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 overflow-hidden" style={{ width: "340px" }}>
+                    <div className="px-4 pt-3 pb-2 border-b border-gray-100 flex items-center justify-between">
+                      <p className="text-sm font-semibold text-gray-800">Уведомления</p>
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={() => markAllReadMutation.mutate()}
+                          className="text-xs text-red-600 hover:text-red-700 font-medium transition-colors"
+                        >
+                          Прочитать все
+                        </button>
+                      )}
+                    </div>
+                    <div className="max-h-[360px] overflow-y-auto">
+                      {notifList.length === 0 ? (
+                        <div className="px-4 py-8 text-center">
+                          <Bell size={32} className="text-gray-300 mx-auto mb-2" />
+                          <p className="text-sm text-gray-400">Нет уведомлений</p>
+                        </div>
+                      ) : (
+                        notifList.map((notif) => (
+                          <button
+                            key={notif.id}
+                            type="button"
+                            onClick={() => {
+                              if (!notif.isRead) markReadMutation.mutate({ id: notif.id });
+                              setShowNotifDropdown(false);
+                            }}
+                            className={`w-full text-left px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors ${
+                              notif.isRead ? "opacity-70" : "bg-red-50/40"
+                            }`}
+                          >
+                            <div className="flex items-start gap-2">
+                              {!notif.isRead && (
+                                <span className="mt-1.5 w-2 h-2 rounded-full bg-red-500 shrink-0" />
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-gray-900 leading-tight">{notif.title}</p>
+                                <p className="text-xs text-gray-500 mt-0.5 leading-snug">{notif.message}</p>
+                                <p className="text-[10px] text-gray-400 mt-1">
+                                  {new Date(notif.createdAt).toLocaleString("ru-RU", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                                </p>
+                              </div>
+                            </div>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Cart */}
             <Link href="/cart" className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors relative">

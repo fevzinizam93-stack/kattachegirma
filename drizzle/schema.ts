@@ -214,6 +214,20 @@ export const utmVisits = mysqlTable("utm_visits", {
 
 export type UtmVisit = typeof utmVisits.$inferSelect;
 
+// In-app notifications for users
+export const notifications = mysqlTable("notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  title: varchar("title", { length: 256 }).notNull(),
+  message: text("message").notNull(),
+  isRead: boolean("isRead").default(false).notNull(),
+  orderId: int("orderId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = typeof notifications.$inferInsert;
+
 // Seller reviews (ratings from buyers about sellers)
 export const sellerReviews = mysqlTable("seller_reviews", {
   id: int("id").autoincrement().primaryKey(),
