@@ -2,13 +2,14 @@ import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { trpc } from "@/lib/trpc";
-import { ChevronDown, ChevronRight, MessageCircle, Minus, Phone, Plus, ShoppingCart, Star, Tag, Truck, Send } from "lucide-react";
+import { ChevronDown, ChevronRight, MessageCircle, Minus, Phone, Plus, ShoppingCart, Star, Tag, Truck, Send, ArrowLeftRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
 import ProductCard from "@/components/ProductCard";
+import CompareModal from "@/components/CompareModal";
 
 interface ProductDetailProps {
   slug: string;
@@ -141,6 +142,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [zoomed, setZoomed] = useState(false);
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
+  const [compareOpen, setCompareOpen] = useState(false);
   const { addItem } = useCart();
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
@@ -366,6 +368,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
   };
 
   return (
+    <>
     <div className="min-h-screen bg-gray-50">
       {/* Breadcrumb */}
       <div className="bg-white border-b border-gray-200">
@@ -571,6 +574,15 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
 
 
 
+              {/* Compare button */}
+              <button
+                onClick={() => setCompareOpen(true)}
+                className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold border-2 border-gray-200 text-gray-600 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50 transition-all mb-1.5"
+              >
+                <ArrowLeftRight size={13} />
+                Сравнить с другим
+              </button>
+
               {/* Seller contacts — единая кнопка «Связаться» */}
               {((product as any).contactPhone || product.sellerPhone || product.sellerTelegram || product.sellerId) && (
                 <div className="border border-amber-200 rounded-xl p-2 mb-1.5 bg-amber-50">
@@ -695,6 +707,14 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
 
       </div>
     </div>
+
+    {/* Compare Modal */}
+    <CompareModal
+      open={compareOpen}
+      onClose={() => setCompareOpen(false)}
+      currentProduct={product as any}
+    />
+    </>
   );
 }
 

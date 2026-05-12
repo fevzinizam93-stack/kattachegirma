@@ -522,16 +522,16 @@
 - [x] Тесты: guard проверки для messages router
 
 ## v77 - Контактный телефон товара + сохранённые контакты продавцов
-- [ ] DB: таблица seller_contacts (id, name, phone, createdBy, createdAt) — глобальная книга контактов
-- [ ] DB: поле contactPhone (varchar 64) в таблице products
-- [ ] DB миграция: применить SQL
-- [ ] server/db.ts: getSellerContacts(), createSellerContact(), deleteSellerContact()
-- [ ] server/routers.ts: sellerContacts router (list, create, delete) — доступен admin и seller
-- [ ] server/routers.ts: products.create/update — принимают contactPhone
-- [ ] Admin.tsx: в форме товара поле «Контактный телефон» с кнопкой «+» для выбора/сохранения контакта
-- [ ] SellerDashboard.tsx: то же самое поле в форме продавца
-- [ ] ProductDetail.tsx: показывать contactPhone если задан
-- [ ] Тесты: guard проверки для sellerContacts router
+- [x] DB: таблица seller_contacts (id, name, phone, createdBy, createdAt) — глобальная книга контактов
+- [x] DB: поле contactPhone (varchar 64) в таблице products
+- [x] DB миграция: применена (migration 0022)
+- [x] server/db.ts: getSellerContacts(), createSellerContact(), deleteSellerContact()
+- [x] server/routers.ts: sellerContacts router (list, create, delete) — доступен admin и seller
+- [x] server/routers.ts: products.create/update — принимают contactPhone
+- [x] Admin.tsx: ContactPhonePicker с кнопкой-книжкой для выбора/сохранения контакта
+- [x] SellerDashboard.tsx: то же самое поле в форме продавца
+- [x] ProductDetail.tsx: показывает contactPhone через кнопку «Связаться»
+- [x] Тесты: guard проверки для sellerContacts router
 
 ## v78 - Исправление бага: сообщения не видны продавцам
 
@@ -587,3 +587,12 @@
 - [x] SellerStorefront.tsx: страница /seller/:id уже существует (аватар, имя, описание, рейтинг, товары, отзывы)
 - [x] App.tsx: маршрут /seller/:id уже зарегистрирован и ведёт на SellerStorefront
 - [x] ProductDetail.tsx: имя продавца — кликабельная ссылка на /seller/:id (через Link из wouter)
+
+## v86 - Сравнение товаров (модальное окно)
+- [x] CompareModal.tsx: создан компонент — слева текущий товар, справа список товаров той же категории
+- [x] CompareModal.tsx: список товаров отсортирован по цене (от дешёвых к дорогим) — sortBy: price_asc
+- [x] CompareModal.tsx: поиск по товарам в правой панели
+- [x] CompareModal.tsx: клик по товару из списка → он появляется справа для сравнения
+- [x] CompareModal.tsx: показывает фото, название, цену, характеристики (specs), описание обоих товаров
+- [x] ProductDetail.tsx: кнопка «Сравнить с другим» → открывает CompareModal
+- [x] Модальное окно закрывается по кнопке ✕ или клику на фон — пользователь остаётся на той же странице
