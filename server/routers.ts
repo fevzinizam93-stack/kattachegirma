@@ -90,6 +90,9 @@ import {
   sendMessage,
   markConversationRead,
   countUnreadMessages,
+  getSellerContacts,
+  createSellerContact,
+  deleteSellerContact,
 } from "./db";
 import { storagePut } from "./storage";
 import { invokeLLM } from "./_core/llm";
@@ -299,6 +302,7 @@ export const appRouter = router({
         costPrice: z.string().optional(),
         stockCount: z.number().optional(),
         discountEndsAt: z.string().optional(),
+        contactPhone: z.string().max(64).optional(),
       }))
       .mutation(async ({ input }) => {
         // Normalize slug server-side: transliterate Cyrillic, strip emojis/special chars
@@ -353,6 +357,7 @@ export const appRouter = router({
         costPrice: z.string().optional(),
         stockCount: z.number().optional(),
         discountEndsAt: z.string().optional(),
+        contactPhone: z.string().max(64).optional(),
       }))
       .mutation(async ({ input }) => {
         const { id, ...data } = input;
@@ -421,6 +426,7 @@ export const appRouter = router({
         stock: z.number().default(0),
         isNew: z.boolean().default(false),
         specs: z.record(z.string(), z.string()).optional(),
+        contactPhone: z.string().max(64).optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         const seller = await getSellerByUserId(ctx.user.id);
@@ -469,6 +475,7 @@ export const appRouter = router({
         stock: z.number().optional(),
         isNew: z.boolean().optional(),
         specs: z.record(z.string(), z.string()).optional(),
+        contactPhone: z.string().max(64).optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         const seller = await getSellerByUserId(ctx.user.id);
@@ -1275,8 +1282,15 @@ export const appRouter = router({
      * Seller: get their own conversation with admin (read-only access to own conv)
      */
     sellerConversation: protectedProcedure.query(async ({ ctx }) => {
-      // Only sellers (and admins) can access
-      if (ctx.user.role !== "seller" && ctx.user.role !== "admin") {
+      // Allow any user who has a seller profile OR is admin
+      // (sellers may have role="user" if role was not updated at registration)
+      if (ctx.user.role === "admin") {
+        // Admin should use adminConversations instead, but return empty for safety
+        return { conversation: null, messages: [] };
+      }
+      // Check if user has a seller profile
+      const sellerProfile = await getSellerByUserId(ctx.user.id);
+      if (!sellerProfile) {
         throw new TRPCError({ code: "FORBIDDEN", message: "Only sellers can access messages" });
       }
       const conv = await getSellerConversation(ctx.user.id);
@@ -1296,13 +1310,16 @@ export const appRouter = router({
       }))
       .mutation(async ({ input, ctx }) => {
         // Verify the user belongs to this conversation
-        const msgs = await getConversationMessages(input.conversationId);
-        // Load conversation to check ownership
-        const adminConvs = await getAdminConversations(ctx.user.id);
-        const sellerConv = await getSellerConversation(ctx.user.id);
-        const isParticipant =
-          adminConvs.some((c) => c.id === input.conversationId) ||
-          sellerConv?.id === input.conversationId;
+        // Admin: check adminConversations; Seller (any role): check sellerConversation
+        let isParticipant = false;
+        if (ctx.user.role === "admin") {
+          const adminConvs = await getAdminConversations(ctx.user.id);
+          isParticipant = adminConvs.some((c) => c.id === input.conversationId);
+        } else {
+          // Any user with a seller profile can reply
+          const sellerConv = await getSellerConversation(ctx.user.id);
+          isParticipant = sellerConv?.id === input.conversationId;
+        }
         if (!isParticipant) {
           throw new TRPCError({ code: "FORBIDDEN", message: "Not a participant of this conversation" });
         }
@@ -1311,6 +1328,19 @@ export const appRouter = router({
           senderId: ctx.user.id,
           body: input.body,
         });
+        // If admin sent the message, create an in-app notification for the seller
+        if (ctx.user.role === "admin") {
+          const adminConvs = await getAdminConversations(ctx.user.id);
+          const conv = adminConvs.find((c) => c.id === input.conversationId);
+          if (conv) {
+            await createNotification({
+              userId: conv.sellerId,
+              title: "Новое сообщение от администратора",
+              message: input.body.length > 80 ? input.body.slice(0, 80) + "..." : input.body,
+              orderId: null,
+            });
+          }
+        }
         return { success: true };
       }),
 
@@ -1318,12 +1348,56 @@ export const appRouter = router({
      * Count unread messages for the current user
      */
     unreadCount: protectedProcedure.query(async ({ ctx }) => {
-      if (ctx.user.role !== "seller" && ctx.user.role !== "admin") {
-        return { count: 0 };
+      // Admin always has access; for other users check if they have a seller profile
+      if (ctx.user.role !== "admin") {
+        const sellerProfile = await getSellerByUserId(ctx.user.id);
+        if (!sellerProfile) return { count: 0 };
       }
       const count = await countUnreadMessages(ctx.user.id);
       return { count };
     }),
+  }),
+
+  // ---- Seller Contacts (phone book) ----
+  sellerContacts: router({
+    /** List all saved contacts — accessible to admin and sellers */
+    list: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") {
+        // Check if user has a seller profile
+        const sellerProfile = await getSellerByUserId(ctx.user.id);
+        if (!sellerProfile) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Only admin and sellers can access contacts" });
+        }
+      }
+      return getSellerContacts();
+    }),
+
+    /** Create a new contact */
+    create: protectedProcedure
+      .input(z.object({
+        name: z.string().min(1).max(128),
+        phone: z.string().min(5).max(64),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== "admin") {
+          const sellerProfile = await getSellerByUserId(ctx.user.id);
+          if (!sellerProfile) throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        const contact = await createSellerContact({
+          name: input.name,
+          phone: input.phone,
+          createdBy: ctx.user.id,
+        });
+        return contact;
+      }),
+
+    /** Delete a contact — admin only */
+    delete: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await deleteSellerContact(input.id);
+        return { success: true };
+      }),
   }),
 });
 export type AppRouter = typeof appRouter;

@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, gte, ilike, like, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool } from "mysql2";
-import { analyticsEvents, banners, Banner, InsertBanner, categories, conversations, Conversation, InsertConversation, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, messages, Message, InsertMessage, notifications, InsertNotification, orders, products, reviews, InsertReview, sellers, sellerReviews, InsertSellerReview, storeSettings, telegramRecipients, TelegramRecipient, users, User, utmVisits, UtmVisit } from "../drizzle/schema";
+import { analyticsEvents, banners, Banner, InsertBanner, categories, conversations, Conversation, InsertConversation, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, messages, Message, InsertMessage, notifications, InsertNotification, orders, products, reviews, InsertReview, sellers, sellerContacts, SellerContact, InsertSellerContact, sellerReviews, InsertSellerReview, storeSettings, telegramRecipients, TelegramRecipient, users, User, utmVisits, UtmVisit } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import bcrypt from "bcryptjs";
 
@@ -1013,4 +1013,34 @@ export async function countUnreadMessages(userId: number): Promise<number> {
       )
     );
   return result[0]?.count ?? 0;
+}
+
+// ---- Seller Contacts (phone book) ----
+
+/** Get all saved seller contacts (visible to admin and sellers) */
+export async function getSellerContacts(): Promise<SellerContact[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(sellerContacts).orderBy(asc(sellerContacts.name));
+}
+
+/** Create a new seller contact */
+export async function createSellerContact(data: InsertSellerContact): Promise<SellerContact | null> {
+  const db = await getDb();
+  if (!db) return null;
+  await db.insert(sellerContacts).values(data);
+  const result = await db
+    .select()
+    .from(sellerContacts)
+    .where(and(eq(sellerContacts.name, data.name), eq(sellerContacts.phone, data.phone)))
+    .orderBy(desc(sellerContacts.createdAt))
+    .limit(1);
+  return result[0] ?? null;
+}
+
+/** Delete a seller contact by id */
+export async function deleteSellerContact(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(sellerContacts).where(eq(sellerContacts.id, id));
 }

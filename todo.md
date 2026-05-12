@@ -520,3 +520,23 @@
 - [x] /seller/messages страница: чат с администратором
 - [x] Navbar/MobileBottomNav: бейдж непрочитанных сообщений для продавцов
 - [x] Тесты: guard проверки для messages router
+
+## v77 - Контактный телефон товара + сохранённые контакты продавцов
+- [ ] DB: таблица seller_contacts (id, name, phone, createdBy, createdAt) — глобальная книга контактов
+- [ ] DB: поле contactPhone (varchar 64) в таблице products
+- [ ] DB миграция: применить SQL
+- [ ] server/db.ts: getSellerContacts(), createSellerContact(), deleteSellerContact()
+- [ ] server/routers.ts: sellerContacts router (list, create, delete) — доступен admin и seller
+- [ ] server/routers.ts: products.create/update — принимают contactPhone
+- [ ] Admin.tsx: в форме товара поле «Контактный телефон» с кнопкой «+» для выбора/сохранения контакта
+- [ ] SellerDashboard.tsx: то же самое поле в форме продавца
+- [ ] ProductDetail.tsx: показывать contactPhone если задан
+- [ ] Тесты: guard проверки для sellerContacts router
+
+## v78 - Исправление бага: сообщения не видны продавцам
+
+- [x] routers.ts: messaging.sellerConversation — убрать проверку role==="seller", заменить на проверку наличия записи в sellers таблице
+- [x] routers.ts: messaging.unreadCount — убрать жёсткую проверку role==="seller"
+- [x] routers.ts: messaging.send — убрать жёсткую проверку role
+- [x] SellerMessages.tsx: убрать canAccess проверку на role==="seller", проверять через наличие seller-профиля
+- [x] SellerDashboard.tsx: MessagesButton — убрать жёсткую проверку роли

@@ -10,8 +10,10 @@ export default function SellerMessages() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const utils = trpc.useUtils();
 
-  // Only sellers and admins can access
-  const canAccess = isAuthenticated && (user?.role === "seller" || user?.role === "admin");
+  // Access check: any authenticated user with a seller profile can access
+  // (sellers may have role="user" if not updated at registration)
+  // We rely on the backend to enforce access — just check isAuthenticated here
+  const canAccess = isAuthenticated;
 
   const { data, isLoading, refetch } = trpc.messaging.sellerConversation.useQuery(undefined, {
     enabled: canAccess,

@@ -1,5 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
+import ContactPhonePicker from "@/components/ContactPhonePicker";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { trpc } from "@/lib/trpc";
 import { useState, useRef, useCallback, useEffect } from "react";
@@ -32,7 +33,12 @@ function StatusBadge({ status }: { status: ModerationStatus }) {
 
 /** Small button showing unread message count, links to /seller/messages */
 function MessagesButton() {
-  const { data } = trpc.messaging.unreadCount.useQuery(undefined, { refetchInterval: 15000 });
+  const { user } = useAuth();
+  const { data } = trpc.messaging.unreadCount.useQuery(undefined, {
+    refetchInterval: 15000,
+    // Query runs for all authenticated users; backend returns 0 if no seller profile
+    enabled: !!user,
+  });
   const unread = data?.count ?? 0;
   return (
     <Link
@@ -66,7 +72,7 @@ export default function SellerDashboard() {
   const emptyForm = {
     name: "", slug: "", description: "", categoryId: 0,
     brand: "", price: "", originalPrice: "", discount: 0,
-    stock: 1, isNew: false,
+    stock: 1, isNew: false, contactPhone: "",
   };
   const [form, setForm] = useState(emptyForm);
 
@@ -248,6 +254,7 @@ export default function SellerDashboard() {
       categoryId: p.categoryId, brand: p.brand ?? "", price: p.price,
       originalPrice: p.originalPrice ?? "", discount: p.discount ?? 0,
       stock: p.stock ?? 1, isNew: p.isNew ?? false,
+      contactPhone: (p as any).contactPhone ?? "",
     });
     // Load existing photos
     const existing: string[] = [];
@@ -497,6 +504,17 @@ export default function SellerDashboard() {
                   placeholder="Подробное описание товара..."
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
                 />
+              </div>
+
+              {/* Contact phone */}
+              <div className="md:col-span-2">
+                <label className="block text-xs font-bold text-gray-600 mb-1">Контактный телефон для покупателей</label>
+                <ContactPhonePicker
+                  value={form.contactPhone}
+                  onChange={(phone) => setForm(f => ({ ...f, contactPhone: phone }))}
+                  placeholder="+998 90 123 45 67"
+                />
+                <p className="text-xs text-gray-400 mt-1">Нажмите на книжку справа, чтобы выбрать из сохранённых номеров или сохранить новый</p>
               </div>
 
               {/* Multi-photo upload */}

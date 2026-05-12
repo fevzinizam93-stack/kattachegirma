@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import ContactPhonePicker from "@/components/ContactPhonePicker";
 import { trpc } from "@/lib/trpc";
 import { BarChart3, Bell, Crown, Edit, FolderOpen, ImagePlus, MapPin, MessageSquare, Package, Plus, Search, Send, Settings, ShoppingBag, Star, Store, Trash2, Upload, Users, X } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -93,12 +94,13 @@ interface ProductForm {
   sellerPhone: string;
   sellerTelegram: string;
   sellerName: string;
+  contactPhone: string;
 }
 
 const emptyForm: ProductForm = {
   name: "", nameUz: "", slug: "", description: "", descriptionUz: "", categoryId: 0, brand: "",
   price: "", priceUsd: "", originalPrice: "", originalPriceUsd: "", discount: 0, imageUrl: "", images: [], stock: 0,
-  isNew: false, isFeatured: false, isHit: false, isPremium: false, hitOrder: 0, costPrice: "", stockCount: "", discountEndsAt: "", sellerPhone: "", sellerTelegram: "", sellerName: "",
+  isNew: false, isFeatured: false, isHit: false, isPremium: false, hitOrder: 0, costPrice: "", stockCount: "", discountEndsAt: "", sellerPhone: "", sellerTelegram: "", sellerName: "", contactPhone: "",
 };
 
 export default function Admin() {
@@ -520,6 +522,7 @@ export default function Admin() {
       sellerPhone: (p as any).sellerPhone ?? "",
       sellerTelegram: (p as any).sellerTelegram ?? "",
       sellerName: (p as any).sellerName ?? "",
+      contactPhone: (p as any).contactPhone ?? "",
     });
     setEditId(p.id);
     setShowForm(true);
@@ -847,6 +850,15 @@ export default function Admin() {
                         <label className="block text-sm font-semibold mb-1">Telegram продавца</label>
                         <input value={form.sellerTelegram} onChange={e => setForm(f => ({ ...f, sellerTelegram: e.target.value }))}
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="@username" />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block text-sm font-semibold mb-1">Контактный телефон (показывается на странице товара)</label>
+                        <ContactPhonePicker
+                          value={form.contactPhone}
+                          onChange={(phone) => setForm(f => ({ ...f, contactPhone: phone }))}
+                          placeholder="+998 90 123 45 67"
+                        />
+                        <p className="text-xs text-gray-400 mt-1">Нажмите на книжку справа, чтобы выбрать из сохранённых номеров или сохранить новый</p>
                       </div>
                       <div className="col-span-2 grid grid-cols-2 gap-3">
                         <label className="flex items-center gap-3 text-sm cursor-pointer bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 hover:bg-gray-100 transition-colors select-none">

@@ -99,6 +99,7 @@ export const products = mysqlTable("products", {
   viewCount: int("viewCount").default(0),
   stockCount: int("stockCount"),
   discountEndsAt: timestamp("discountEndsAt"),
+  contactPhone: varchar("contactPhone", { length: 64 }),  // contact phone shown on product page
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -265,3 +266,15 @@ export const messages = mysqlTable("messages", {
 
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = typeof messages.$inferInsert;
+
+// Saved seller contacts (phone book for product contact field)
+export const sellerContacts = mysqlTable("seller_contacts", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 128 }).notNull(),
+  phone: varchar("phone", { length: 64 }).notNull(),
+  createdBy: int("createdBy"),  // user.id who created this contact
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SellerContact = typeof sellerContacts.$inferSelect;
+export type InsertSellerContact = typeof sellerContacts.$inferInsert;
