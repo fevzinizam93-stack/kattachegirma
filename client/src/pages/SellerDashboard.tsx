@@ -1,6 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import ContactPhonePicker from "@/components/ContactPhonePicker";
+import BrandPicker from "@/components/BrandPicker";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { trpc } from "@/lib/trpc";
 import { useState, useRef, useCallback, useEffect } from "react";
@@ -407,11 +408,10 @@ export default function SellerDashboard() {
                 <label className="block text-xs font-bold text-gray-600 mb-1">
                   {t.admin_product_brand}
                 </label>
-                <input
+                <BrandPicker
                   value={form.brand}
-                  onChange={e => setForm(f => ({ ...f, brand: e.target.value }))}
+                  onChange={(v: string) => setForm(f => ({ ...f, brand: v }))}
                   placeholder="Samsung, LG, Artel..."
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
               </div>
               {/* Currency rate info */}

@@ -279,3 +279,13 @@ export const sellerContacts = mysqlTable("seller_contacts", {
 
 export type SellerContact = typeof sellerContacts.$inferSelect;
 export type InsertSellerContact = typeof sellerContacts.$inferInsert;
+
+// Saved brands for quick selection in product forms
+export const brands = mysqlTable("brands", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 128 }).notNull(),
+  createdBy: int("createdBy"),  // user.id who created this brand
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type Brand = typeof brands.$inferSelect;
+export type InsertBrand = typeof brands.$inferInsert;

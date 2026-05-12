@@ -1,5 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import ContactPhonePicker from "@/components/ContactPhonePicker";
+import BrandPicker from "@/components/BrandPicker";
 import { trpc } from "@/lib/trpc";
 import { BarChart3, Bell, Crown, Edit, FolderOpen, ImagePlus, MapPin, MessageSquare, Package, Plus, Search, Send, Settings, ShoppingBag, Star, Store, Trash2, Upload, Users, X } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -688,8 +689,11 @@ export default function Admin() {
                       </div>
                       <div>
                         <label className="block text-sm font-semibold mb-1">Бренд</label>
-                        <input value={form.brand} onChange={e => setForm(f => ({ ...f, brand: e.target.value }))}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="SAMSUNG, LG..." />
+                        <BrandPicker
+                          value={form.brand}
+                          onChange={(v) => setForm(f => ({ ...f, brand: v }))}
+                          placeholder="SAMSUNG, LG..."
+                        />
                       </div>
                       {/* Exchange rate row */}
                       <div className="col-span-2">

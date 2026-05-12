@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, gte, ilike, like, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool } from "mysql2";
-import { analyticsEvents, banners, Banner, InsertBanner, categories, conversations, Conversation, InsertConversation, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, messages, Message, InsertMessage, notifications, InsertNotification, orders, products, reviews, InsertReview, sellers, sellerContacts, SellerContact, InsertSellerContact, sellerReviews, InsertSellerReview, storeSettings, telegramRecipients, TelegramRecipient, users, User, utmVisits, UtmVisit } from "../drizzle/schema";
+import { analyticsEvents, banners, Banner, InsertBanner, brands, Brand, InsertBrand, categories, conversations, Conversation, InsertConversation, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, messages, Message, InsertMessage, notifications, InsertNotification, orders, products, reviews, InsertReview, sellers, sellerContacts, SellerContact, InsertSellerContact, sellerReviews, InsertSellerReview, storeSettings, telegramRecipients, TelegramRecipient, users, User, utmVisits, UtmVisit } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import bcrypt from "bcryptjs";
 
@@ -1043,4 +1043,33 @@ export async function deleteSellerContact(id: number): Promise<void> {
   const db = await getDb();
   if (!db) return;
   await db.delete(sellerContacts).where(eq(sellerContacts.id, id));
+}
+
+// ---- Brands (saved brand list for product forms) ----
+/** Get all saved brands ordered by name */
+export async function getBrands(): Promise<Brand[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(brands).orderBy(asc(brands.name));
+}
+
+/** Create a new brand */
+export async function createBrand(data: InsertBrand): Promise<Brand | null> {
+  const db = await getDb();
+  if (!db) return null;
+  await db.insert(brands).values(data);
+  const result = await db
+    .select()
+    .from(brands)
+    .where(eq(brands.name, data.name))
+    .orderBy(desc(brands.createdAt))
+    .limit(1);
+  return result[0] ?? null;
+}
+
+/** Delete a brand by id */
+export async function deleteBrand(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(brands).where(eq(brands.id, id));
 }

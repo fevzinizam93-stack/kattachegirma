@@ -561,3 +561,13 @@
 - [x] ContactPhonePicker.tsx: добавить callback onSelectContact(phone, name) вместо onChange(phone)
 - [x] Admin.tsx: при выборе контакта заполнять sellerName и contactPhone
 - [x] SellerDashboard.tsx: при выборе контакта заполнять sellerName и contactPhone
+
+## v82 - Сохранённые бренды (BrandPicker)
+
+- [x] DB: таблица brands (id, name, createdAt, createdBy)
+- [x] DB миграция: применить SQL
+- [x] server/db.ts: getBrands(), createBrand(), deleteBrand()
+- [x] server/routers.ts: brands router (list, create, delete)
+- [x] BrandPicker.tsx: компонент с кнопкой-книжкой, список брендов, добавление нового, выбор → заполняет поле brand
+- [x] Admin.tsx: заменить input бренда на BrandPicker
+- [x] SellerDashboard.tsx: заменить input бренда на BrandPicker

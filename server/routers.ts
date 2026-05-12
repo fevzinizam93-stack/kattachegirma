@@ -93,6 +93,9 @@ import {
   getSellerContacts,
   createSellerContact,
   deleteSellerContact,
+  getBrands,
+  createBrand,
+  deleteBrand,
 } from "./db";
 import { storagePut } from "./storage";
 import { invokeLLM } from "./_core/llm";
@@ -1397,6 +1400,37 @@ export const appRouter = router({
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         await deleteSellerContact(input.id);
+        return { success: true };
+      }),
+  }),
+
+  brands: router({
+    /** List all saved brands — accessible to admin and sellers */
+    list: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") {
+        const sellerProfile = await getSellerByUserId(ctx.user.id);
+        if (!sellerProfile) throw new TRPCError({ code: "FORBIDDEN", message: "Only admin and sellers can access brands" });
+      }
+      return getBrands();
+    }),
+
+    /** Create a new brand */
+    create: protectedProcedure
+      .input(z.object({ name: z.string().min(1).max(128) }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== "admin") {
+          const sellerProfile = await getSellerByUserId(ctx.user.id);
+          if (!sellerProfile) throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        const brand = await createBrand({ name: input.name.trim(), createdBy: ctx.user.id });
+        return brand;
+      }),
+
+    /** Delete a brand — admin only */
+    delete: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await deleteBrand(input.id);
         return { success: true };
       }),
   }),

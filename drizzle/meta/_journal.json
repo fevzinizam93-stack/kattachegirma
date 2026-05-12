@@ -169,6 +169,13 @@
       "when": 1778592644939,
       "tag": "0023_bitter_scourge",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "5",
+      "when": 1778594726396,
+      "tag": "0024_rainy_fantastic_four",
+      "breakpoints": true
     }
   ]
 }
