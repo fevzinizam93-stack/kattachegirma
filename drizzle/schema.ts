@@ -223,6 +223,7 @@ export const notifications = mysqlTable("notifications", {
   message: text("message").notNull(),
   isRead: boolean("isRead").default(false).notNull(),
   orderId: int("orderId"),
+  type: varchar("type", { length: 64 }),  // e.g. "order", "message"
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 

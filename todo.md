@@ -540,3 +540,11 @@
 - [x] routers.ts: messaging.send — убрать жёсткую проверку role
 - [x] SellerMessages.tsx: убрать canAccess проверку на role==="seller", проверять через наличие seller-профиля
 - [x] SellerDashboard.tsx: MessagesButton — убрать жёсткую проверку роли
+
+## v79 - Кнопка «Открыть сообщение» в уведомлениях
+
+- [x] schema.ts: добавить поле type (varchar, nullable) в таблицу notifications
+- [x] DB миграция: применить SQL
+- [x] routers.ts: messaging.send — при создании уведомления передавать type="message"
+- [x] Navbar.tsx: в выпадающем уведомлении типа "message" показывать кнопку «Открыть сообщение» → /seller/messages
+- [x] MobileBottomNav.tsx: аналогичная ссылка в мобильном меню уведомлений

@@ -157,15 +157,12 @@ export default function MobileBottomNav() {
                           </button>
                         )}
                         {notifList.slice(0, 5).map((notif) => (
-                          <button
+                          <div
                             key={notif.id}
-                            type="button"
                             onClick={() => {
                               if (!notif.isRead) markReadMutation.mutate({ id: notif.id });
-                              setMenuOpen(false);
-                              setNotifOpen(false);
                             }}
-                            className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors ${
+                            className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors cursor-pointer ${
                               notif.isRead ? "text-gray-500 hover:bg-gray-50" : "bg-red-50/60 text-gray-800 hover:bg-red-50"
                             }`}
                           >
@@ -177,9 +174,18 @@ export default function MobileBottomNav() {
                                 <p className="text-[10px] text-gray-400 mt-1">
                                   {new Date(notif.createdAt).toLocaleString("ru-RU", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                                 </p>
+                                {(notif as any).type === "message" && (
+                                  <Link
+                                    href="/seller/messages"
+                                    onClick={(e) => { e.stopPropagation(); setMenuOpen(false); setNotifOpen(false); }}
+                                    className="inline-flex items-center gap-1 mt-2 px-3 py-1 rounded-full bg-red-600 text-white text-[11px] font-semibold hover:bg-red-700 transition-colors"
+                                  >
+                                    ✉️ Открыть сообщение
+                                  </Link>
+                                )}
                               </div>
                             </div>
-                          </button>
+                          </div>
                         ))}
                       </>
                     )}

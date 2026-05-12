@@ -1,0 +1,1 @@
+ALTER TABLE `notifications` ADD `type` varchar(64);

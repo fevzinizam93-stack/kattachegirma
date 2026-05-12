@@ -1338,6 +1338,7 @@ export const appRouter = router({
               title: "Новое сообщение от администратора",
               message: input.body.length > 80 ? input.body.slice(0, 80) + "..." : input.body,
               orderId: null,
+              type: "message",
             });
           }
         }
