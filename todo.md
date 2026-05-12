@@ -616,3 +616,9 @@
 - [x] CompareModal.tsx: строка суммаризации — показывает счётчик левый лучше / одинаково / правый лучше
 - [x] CompareModal.tsx: в списке товаров — подсветка цены зелёным/красным + бейдж «Дешевле»/«Дороже»
 - [x] CompareModal.tsx: футер — легенда цветов (зелёный = лучше, красный = хуже, жёлтый = отличается)
+
+## v90 - Переключатель «Только отличия» в CompareModal
+- [x] CompareModal.tsx: state showDiffsOnly (boolean, default false)
+- [x] CompareModal.tsx: toggle-кнопка в заголовке — оранжевая при активном, серая с hover при неактивном
+- [x] CompareModal.tsx: при showDiffsOnly=true скрывать строки с result==="equal" в обоих колонках
+- [x] CompareModal.tsx: показывать «Скрыто N совпадений» в верхней части списка характеристик

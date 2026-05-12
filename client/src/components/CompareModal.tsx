@@ -232,12 +232,14 @@ function ProductColumn({
   allSpecs,
   otherProduct,
   onAddToCart,
+  showDiffsOnly,
 }: {
   product: Product;
   label: string;
   allSpecs: string[];
   otherProduct: Product | null;
   onAddToCart: (p: Product) => void;
+  showDiffsOnly: boolean;
 }) {
   const { formatPrice } = useCurrency();
   const price = parseFloat(product.price);
@@ -364,10 +366,26 @@ function ProductColumn({
       {/* Specs */}
       {allSpecs.length > 0 && (
         <div className="flex-1 space-y-0">
+          {(() => {
+            const hiddenCount = showDiffsOnly && hasRight
+              ? allSpecs.filter((key) => {
+                  const r = compareSpecValues(product.specs?.[key], otherProduct?.specs?.[key]);
+                  return r === "equal";
+                }).length
+              : 0;
+            return hiddenCount > 0 ? (
+              <div className="text-[10px] text-gray-400 italic px-1 py-1 mb-1">
+                Скрыто {hiddenCount} совпадени{hiddenCount === 1 ? "е" : hiddenCount < 5 ? "я" : "й"}
+              </div>
+            ) : null;
+          })()}
           {allSpecs.map((key) => {
             const val = product.specs?.[key];
             const otherVal = otherProduct?.specs?.[key];
             const result = hasRight ? compareSpecValues(val, otherVal) : "equal";
+
+            // Hide equal specs when showDiffsOnly is active
+            if (showDiffsOnly && hasRight && result === "equal") return null;
 
             const isBetter =
               (label === "Текущий" && (result === "left_better" || result === "only_left")) ||
@@ -437,6 +455,7 @@ function ProductColumn({
 export default function CompareModal({ open, onClose, currentProduct }: CompareModalProps) {
   const [search, setSearch] = useState("");
   const [compareProduct, setCompareProduct] = useState<Product | null>(null);
+  const [showDiffsOnly, setShowDiffsOnly] = useState(false);
   const { addItem } = useCart();
   const { formatPrice } = useCurrency();
 
@@ -524,12 +543,28 @@ export default function CompareModal({ open, onClose, currentProduct }: CompareM
               </span>
             )}
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
-          >
-            <X size={16} />
-          </button>
+          <div className="flex items-center gap-2">
+            {compareProduct && (
+              <button
+                onClick={() => setShowDiffsOnly((v) => !v)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
+                  showDiffsOnly
+                    ? "bg-amber-500 text-white border-amber-500 shadow-sm"
+                    : "bg-white text-gray-600 border-gray-200 hover:border-amber-400 hover:text-amber-600"
+                }`}
+                title="Показывать только отличающиеся характеристики"
+              >
+                <span className="hidden sm:inline">{showDiffsOnly ? "✓ Только отличия" : "Только отличия"}</span>
+                <span className="sm:hidden">{showDiffsOnly ? "✓" : "≠"}</span>
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+            >
+              <X size={16} />
+            </button>
+          </div>
         </div>
 
         {/* Summary bar — shown when both products selected */}
@@ -562,6 +597,7 @@ export default function CompareModal({ open, onClose, currentProduct }: CompareM
               allSpecs={allSpecs}
               otherProduct={compareProduct}
               onAddToCart={handleAddToCart}
+              showDiffsOnly={showDiffsOnly}
             />
           </div>
 
@@ -581,6 +617,7 @@ export default function CompareModal({ open, onClose, currentProduct }: CompareM
                   allSpecs={allSpecs}
                   otherProduct={currentProduct}
                   onAddToCart={handleAddToCart}
+                  showDiffsOnly={showDiffsOnly}
                 />
               </div>
             ) : (
