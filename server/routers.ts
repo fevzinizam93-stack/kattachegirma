@@ -96,6 +96,8 @@ import {
   getBrands,
   createBrand,
   deleteBrand,
+  bulkRecalcPrices,
+  getSellerPublicProfile,
 } from "./db";
 import { storagePut } from "./storage";
 import { invokeLLM } from "./_core/llm";
@@ -861,6 +863,13 @@ export const appRouter = router({
         };
       }),
 
+    // Public: get full seller profile (seller info + products + stats + rating) in one call
+    getFullPublicProfile: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return getSellerPublicProfile(input.id);
+      }),
+
     // Public: get approved products by seller ID
     getPublicProducts: publicProcedure
       .input(z.object({ id: z.number(), limit: z.number().min(1).max(100).default(48), offset: z.number().min(0).default(0) }))
@@ -1226,6 +1235,17 @@ export const appRouter = router({
 
   // ---- Currency ----
   currency: router({
+    // Bulk recalculate all product prices based on new exchange rate
+    bulkUpdatePrices: adminProcedure
+      .input(z.object({
+        newRate: z.number().min(1),
+        markupPercent: z.number().min(0).max(500).default(0),
+      }))
+      .mutation(async ({ input }) => {
+        const updated = await bulkRecalcPrices(input.newRate, input.markupPercent);
+        return { updated, newRate: input.newRate };
+      }),
+
     // Get current USD -> UZS exchange rate (no API key required)
     getRate: publicProcedure.query(async () => {
       try {

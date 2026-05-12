@@ -117,7 +117,16 @@ export default function Admin() {
   const [exchangeRate, setExchangeRate] = useState<number>(12700); // UZS per 1 USD
   const [rateUpdatedAt, setRateUpdatedAt] = useState<string | null>(null);
   const [adminSearch, setAdminSearch] = useState("");
+  const [markupPercent, setMarkupPercent] = useState<number>(0);
+  const [bulkUpdateResult, setBulkUpdateResult] = useState<{ updated: number; newRate: number } | null>(null);
   const rateQuery = trpc.currency.getRate.useQuery(undefined, { staleTime: 60 * 60 * 1000 });
+  const bulkUpdatePricesMut = trpc.currency.bulkUpdatePrices.useMutation({
+    onSuccess: (data) => {
+      setBulkUpdateResult(data);
+      utils.products.list.invalidate();
+      setTimeout(() => setBulkUpdateResult(null), 5000);
+    },
+  });
   useEffect(() => {
     if (rateQuery.data) {
       setExchangeRate(rateQuery.data.usdToUzs);
@@ -1982,6 +1991,64 @@ export default function Admin() {
         {tab === "settings" && (
           <div className="max-w-2xl">
             <h2 className="font-black text-lg mb-5 text-gray-900">Настройки магазина</h2>
+
+            {/* === Bulk price recalculation === */}
+            <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-5 mb-5">
+              <h3 className="font-bold text-base text-amber-900 mb-1 flex items-center gap-2">💱 Массовый пересчёт цен по курсу доллара</h3>
+              <p className="text-xs text-amber-700 mb-4">Пересчитывает цены всех товаров у которых указана себестоимость (USD). Формула: <span className="font-mono font-bold">Цена = Себестоимость × Курс × (1 + Наценка%)</span></p>
+              <div className="flex flex-wrap items-end gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-amber-800 mb-1">Курс USD → UZS</label>
+                  <input
+                    type="number"
+                    value={exchangeRate}
+                    onChange={e => setExchangeRate(Number(e.target.value) || 12700)}
+                    className="w-32 border border-amber-300 rounded-lg px-3 py-2 text-sm font-bold text-amber-900 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    min={1}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-amber-800 mb-1">Наценка (%)</label>
+                  <input
+                    type="number"
+                    value={markupPercent}
+                    onChange={e => setMarkupPercent(Number(e.target.value) || 0)}
+                    className="w-24 border border-amber-300 rounded-lg px-3 py-2 text-sm font-bold text-amber-900 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    min={0}
+                    max={500}
+                    placeholder="0"
+                  />
+                </div>
+                <button
+                  onClick={() => {
+                    if (!confirm(`Пересчитать все цены по курсу ${exchangeRate.toLocaleString("ru")} сум/USD с наценкой ${markupPercent}%?\n\nЭто изменит цены всех товаров с себестоимостью!`)) return;
+                    bulkUpdatePricesMut.mutate({ newRate: exchangeRate, markupPercent });
+                  }}
+                  disabled={bulkUpdatePricesMut.isPending}
+                  className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-bold transition-colors disabled:opacity-50 flex items-center gap-2"
+                >
+                  {bulkUpdatePricesMut.isPending ? (
+                    <><span className="animate-spin">⏳</span> Пересчёт...</>
+                  ) : (
+                    <>🔄 Пересчитать все цены</>
+                  )}
+                </button>
+              </div>
+              {bulkUpdateResult && (
+                <div className="mt-3 bg-green-100 border border-green-300 rounded-lg px-4 py-2 text-sm text-green-800 font-semibold">
+                  ✅ Обновлено {bulkUpdateResult.updated} товаров по курсу {bulkUpdateResult.newRate.toLocaleString("ru")} сум/USD
+                </div>
+              )}
+              {bulkUpdatePricesMut.isError && (
+                <div className="mt-3 bg-red-100 border border-red-300 rounded-lg px-4 py-2 text-sm text-red-800">
+                  ❌ Ошибка: {bulkUpdatePricesMut.error?.message}
+                </div>
+              )}
+              {rateQuery.data && (
+                <p className="text-xs text-amber-600 mt-2">Автокурс ЦБ: {rateQuery.data.usdToUzs.toLocaleString("ru")} сум/USD (обновлён {rateQuery.data.updatedAt ? new Date(rateQuery.data.updatedAt).toLocaleString("ru", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—"})</p>
+              )}
+            </div>
+
             <div className="bg-white rounded-2xl shadow-sm p-6 space-y-5">
               {/* Store name */}
               <div>

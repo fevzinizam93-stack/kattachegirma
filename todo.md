@@ -571,3 +571,19 @@
 - [x] BrandPicker.tsx: компонент с кнопкой-книжкой, список брендов, добавление нового, выбор → заполняет поле brand
 - [x] Admin.tsx: заменить input бренда на BrandPicker
 - [x] SellerDashboard.tsx: заменить input бренда на BrandPicker
+
+## v83 - Исправление каталога (0 товаров при открытии)
+- [x] Catalog.tsx: диагностировать почему показывает 0 товаров при открытии /catalog
+- [x] Исправить баг — товары должны загружаться сразу при открытии каталога
+
+## v84 - Массовое обновление курса доллара
+- [x] server/db.ts: bulkRecalcPrices(newRate, markupPercent) — пересчитывает все цены товаров с costPrice по формуле: Цена = Себестоимость × Курс × (1 + Наценка%)
+- [x] server/routers.ts: currency.bulkUpdatePrices — adminProcedure, принимает newRate и markupPercent
+- [x] Admin.tsx: в вкладке «Настройки» амберный блок «Массовый пересчёт цен» — поле курса, поле наценки%, кнопка с подтверждением, результат обновления
+
+## v85 - Публичная страница продавца
+- [x] server/db.ts: getSellerPublicProfile(sellerId) — возвращает данные продавца + товары + статистика + рейтинг в одном запросе
+- [x] server/routers.ts: sellers.getFullPublicProfile — publicProcedure, возвращает полный профиль продавца
+- [x] SellerStorefront.tsx: страница /seller/:id уже существует (аватар, имя, описание, рейтинг, товары, отзывы)
+- [x] App.tsx: маршрут /seller/:id уже зарегистрирован и ведёт на SellerStorefront
+- [x] ProductDetail.tsx: имя продавца — кликабельная ссылка на /seller/:id (через Link из wouter)

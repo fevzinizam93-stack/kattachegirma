@@ -1073,3 +1073,65 @@ export async function deleteBrand(id: number): Promise<void> {
   if (!db) return;
   await db.delete(brands).where(eq(brands.id, id));
 }
+
+// ---- Bulk price recalculation ----
+/** Recalculate all product prices based on new USD→UZS rate using costPrice as base.
+ *  Only updates products where costPrice > 0.
+ *  Returns number of updated products.
+ */
+export async function bulkRecalcPrices(newRate: number, markupPercent: number = 0): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const prods = await db.select({
+    id: products.id,
+    costPrice: products.costPrice,
+  }).from(products).where(
+    and(
+      sql`${products.costPrice} IS NOT NULL`,
+      sql`CAST(${products.costPrice} AS DECIMAL) > 0`
+    )
+  );
+  let updated = 0;
+  const multiplier = 1 + markupPercent / 100;
+  for (const prod of prods) {
+    const costUsd = parseFloat(prod.costPrice as string);
+    const newPriceUzs = Math.round(costUsd * newRate * multiplier);
+    await db.update(products)
+      .set({ price: String(newPriceUzs) })
+      .where(eq(products.id, prod.id));
+    updated++;
+  }
+  return updated;
+}
+
+// ---- Public Seller Profile ----
+export async function getSellerPublicProfile(sellerId: number) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const sellerRows = await db.select().from(sellers).where(eq(sellers.id, sellerId)).limit(1);
+  const seller = sellerRows[0] ?? null;
+  if (!seller || !seller.isApproved || seller.isBlocked) return null;
+
+  const sellerProducts = await db
+    .select()
+    .from(products)
+    .where(
+      and(
+        eq(products.sellerId, sellerId),
+        eq(products.isApproved, true),
+        eq(products.isActive, true)
+      )
+    )
+    .orderBy(desc(products.createdAt));
+
+  const stats = await getSellerProductStats(sellerId);
+  const rating = await getSellerRatingStats(sellerId);
+
+  return {
+    seller,
+    products: sellerProducts,
+    stats,
+    rating,
+  };
+}

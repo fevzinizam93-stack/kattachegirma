@@ -576,14 +576,14 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 <div className="border border-amber-200 rounded-xl p-2 mb-1.5 bg-amber-50">
                   {/* Seller name — clickable link to storefront */}
                   {product.sellerName && product.sellerId && (
-                    <a
+                    <Link
                       href={`/seller/${product.sellerId}`}
                       className="flex items-center gap-1.5 text-[11px] font-bold text-amber-800 hover:text-amber-900 mb-1.5 transition-colors"
                     >
-                      <span>🏪</span>
+                      <span>🏦</span>
                       <span className="underline underline-offset-2">{product.sellerName}</span>
                       <span className="text-[9px] font-normal text-amber-600 ml-auto">Все товары →</span>
-                    </a>
+                    </Link>
                   )}
                   {/* Disclaimer */}
                   <div className="text-[9px] text-amber-700 bg-white border border-amber-200 rounded-lg px-2 py-1.5 mb-2 leading-relaxed">
