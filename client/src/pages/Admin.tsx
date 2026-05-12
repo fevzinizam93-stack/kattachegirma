@@ -841,21 +841,12 @@ export default function Admin() {
                           className="w-full border border-purple-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-purple-50" placeholder="Например: 350 (в долларах)" />
                         <p className="text-xs text-purple-500 mt-1">VIP-участники увидят эту цену как «Цена для вас»</p>
                       </div>
-                      <div>
-                        <label className="block text-sm font-semibold mb-1">Телефон продавца</label>
-                        <input value={form.sellerPhone} onChange={e => setForm(f => ({ ...f, sellerPhone: e.target.value }))}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="+998 90 123 45 67" />
-                      </div>
-                      <div className="col-span-2">
-                        <label className="block text-sm font-semibold mb-1">Telegram продавца</label>
-                        <input value={form.sellerTelegram} onChange={e => setForm(f => ({ ...f, sellerTelegram: e.target.value }))}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="@username" />
-                      </div>
                       <div className="col-span-2">
                         <label className="block text-sm font-semibold mb-1">Контактный телефон (показывается на странице товара)</label>
                         <ContactPhonePicker
                           value={form.contactPhone}
-                          onChange={(phone) => setForm(f => ({ ...f, contactPhone: phone }))}
+                          onChange={(phone) => setForm(f => ({ ...f, contactPhone: phone, sellerPhone: phone, sellerTelegram: phone }))}
+                          onSelectContact={(phone, name) => setForm(f => ({ ...f, contactPhone: phone, sellerPhone: phone, sellerTelegram: phone, sellerName: name }))}
                           placeholder="+998 90 123 45 67"
                         />
                         <p className="text-xs text-gray-400 mt-1">Нажмите на книжку справа, чтобы выбрать из сохранённых номеров или сохранить новый</p>

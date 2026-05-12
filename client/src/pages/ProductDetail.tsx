@@ -52,6 +52,90 @@ function AccordionSection({
   );
 }
 
+// Кнопка «Связаться» с выпадающим меню
+function ContactButton({ phone, telegram }: { phone: string; telegram: string }) {
+  const [open, setOpen] = useState(false);
+  const telegramUsername = telegram?.replace("@", "").replace("https://t.me/", "");
+  const hasPhone = Boolean(phone);
+  const hasTelegram = Boolean(telegram);
+
+  if (!hasPhone && !hasTelegram) return null;
+
+  // Если есть только один вариант — сразу переходим по нему
+  if (hasPhone && !hasTelegram) {
+    return (
+      <a
+        href={`tel:${phone}`}
+        className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
+      >
+        <Phone size={15} />
+        Связаться
+      </a>
+    );
+  }
+  if (!hasPhone && hasTelegram) {
+    return (
+      <a
+        href={`https://t.me/${telegramUsername}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="w-full flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
+      >
+        <MessageCircle size={15} />
+        Связаться в Telegram
+      </a>
+    );
+  }
+
+  // Есть оба — показываем кнопку с выпадающим меню
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
+      >
+        <Phone size={15} />
+        Связаться
+        <ChevronDown size={14} className={`ml-auto transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="absolute bottom-full left-0 right-0 mb-1.5 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-20">
+          <a
+            href={`tel:${phone}`}
+            className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+            onClick={() => setOpen(false)}
+          >
+            <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+              <Phone size={15} className="text-green-600" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-900">Позвонить</p>
+              <p className="text-xs text-gray-500">{phone}</p>
+            </div>
+          </a>
+          <div className="border-t border-gray-100" />
+          <a
+            href={`https://t.me/${telegramUsername}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+            onClick={() => setOpen(false)}
+          >
+            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+              <MessageCircle size={15} className="text-blue-500" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-900">Telegram</p>
+              <p className="text-xs text-gray-500">{telegram}</p>
+            </div>
+          </a>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ProductDetail({ slug }: ProductDetailProps) {
   const [quantity, setQuantity] = useState(1);
   const [activeImageIdx, setActiveImageIdx] = useState(0);
@@ -487,8 +571,8 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
 
 
 
-              {/* Seller contacts — compact */}
-              {(product.sellerPhone || product.sellerTelegram || product.sellerId) && (
+              {/* Seller contacts — единая кнопка «Связаться» */}
+              {((product as any).contactPhone || product.sellerPhone || product.sellerTelegram || product.sellerId) && (
                 <div className="border border-amber-200 rounded-xl p-2 mb-1.5 bg-amber-50">
                   {/* Seller name — clickable link to storefront */}
                   {product.sellerName && product.sellerId && (
@@ -501,32 +585,15 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                       <span className="text-[9px] font-normal text-amber-600 ml-auto">Все товары →</span>
                     </a>
                   )}
-                  {/* Disclaimer for 3rd-party seller products */}
-                  <div className="text-[9px] text-amber-700 bg-white border border-amber-200 rounded-lg px-2 py-1.5 mb-1.5 leading-relaxed">
-                    ⚠️ Katta Chegirma не несёт ответственности за этого продавца. Качество, доставка и гарантия — ответственность продавца. Наш портал предоставляет доступ для продажи товаров со скидкой.
+                  {/* Disclaimer */}
+                  <div className="text-[9px] text-amber-700 bg-white border border-amber-200 rounded-lg px-2 py-1.5 mb-2 leading-relaxed">
+                    ⚠️ Katta Chegirma не несёт ответственности за этого продавца. Качество, доставка и гарантия — ответственность продавца.
                   </div>
-                  <div className="flex flex-col gap-1">
-                    {product.sellerPhone && (
-                      <a
-                        href={`tel:${product.sellerPhone}`}
-                        className="flex items-center gap-1.5 bg-green-50 border border-green-200 text-green-700 px-2.5 py-1.5 rounded-lg hover:bg-green-100 transition-colors text-xs font-semibold"
-                      >
-                        <Phone size={12} />
-                        <span>{product.sellerPhone}</span>
-                      </a>
-                    )}
-                    {product.sellerTelegram && (
-                      <a
-                        href={`https://t.me/${telegramUsername}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-700 px-2.5 py-1.5 rounded-lg hover:bg-blue-100 transition-colors text-xs font-semibold"
-                      >
-                        <MessageCircle size={12} />
-                        <span>Telegram: {product.sellerTelegram}</span>
-                      </a>
-                    )}
-                  </div>
+                  {/* Кнопка «Связаться» с выпадающим меню */}
+                  <ContactButton
+                    phone={(product as any).contactPhone || product.sellerPhone || ""}
+                    telegram={product.sellerTelegram || ""}
+                  />
                 </div>
               )}
 

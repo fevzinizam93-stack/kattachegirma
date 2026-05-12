@@ -72,7 +72,7 @@ export default function SellerDashboard() {
   const emptyForm = {
     name: "", slug: "", description: "", categoryId: 0,
     brand: "", price: "", originalPrice: "", discount: 0,
-    stock: 1, isNew: false, contactPhone: "",
+    stock: 1, isNew: false, contactPhone: "", sellerName: "",
   };
   const [form, setForm] = useState(emptyForm);
 
@@ -255,6 +255,7 @@ export default function SellerDashboard() {
       originalPrice: p.originalPrice ?? "", discount: p.discount ?? 0,
       stock: p.stock ?? 1, isNew: p.isNew ?? false,
       contactPhone: (p as any).contactPhone ?? "",
+      sellerName: (p as any).sellerName ?? "",
     });
     // Load existing photos
     const existing: string[] = [];
@@ -512,6 +513,7 @@ export default function SellerDashboard() {
                 <ContactPhonePicker
                   value={form.contactPhone}
                   onChange={(phone) => setForm(f => ({ ...f, contactPhone: phone }))}
+                  onSelectContact={(phone, name) => setForm(f => ({ ...f, contactPhone: phone, sellerName: name }))}
                   placeholder="+998 90 123 45 67"
                 />
                 <p className="text-xs text-gray-400 mt-1">Нажмите на книжку справа, чтобы выбрать из сохранённых номеров или сохранить новый</p>

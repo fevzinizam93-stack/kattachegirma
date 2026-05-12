@@ -548,3 +548,16 @@
 - [x] routers.ts: messaging.send — при создании уведомления передавать type="message"
 - [x] Navbar.tsx: в выпадающем уведомлении типа "message" показывать кнопку «Открыть сообщение» → /seller/messages
 - [x] MobileBottomNav.tsx: аналогичная ссылка в мобильном меню уведомлений
+
+## v80 - Упрощение формы товара и кнопка «Связаться»
+
+- [x] Admin.tsx: убрать поля «Телефон продавца» (sellerPhone) и «Telegram продавца» (sellerTelegram) из формы
+- [x] Admin.tsx: ContactPhonePicker при выборе контакта автоматически заполняет только contactPhone
+- [x] SellerDashboard.tsx: убрать поля sellerPhone и sellerTelegram из формы
+- [x] SellerDashboard.tsx: ContactPhonePicker при выборе контакта автоматически заполняет только contac- [x] ProductDetail.tsx: убрать отдельные кнопки звонка/Telegram, добавить единую кнопку «Связаться» с выпадающим меню (позвонить / Telegram)писать в Telegram)
+
+## v81 - Автозаполнение имени продавца из сохранённых контактов
+
+- [x] ContactPhonePicker.tsx: добавить callback onSelectContact(phone, name) вместо onChange(phone)
+- [x] Admin.tsx: при выборе контакта заполнять sellerName и contactPhone
+- [x] SellerDashboard.tsx: при выборе контакта заполнять sellerName и contactPhone

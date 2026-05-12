@@ -15,11 +15,12 @@ import { toast } from "sonner";
 interface Props {
   value: string;
   onChange: (phone: string) => void;
+  onSelectContact?: (phone: string, name: string) => void;
   placeholder?: string;
   className?: string;
 }
 
-export default function ContactPhonePicker({ value, onChange, placeholder = "+998 __ ___ __ __", className = "" }: Props) {
+export default function ContactPhonePicker({ value, onChange, onSelectContact, placeholder = "+998 __ ___ __ __", className = "" }: Props) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState("");
@@ -124,6 +125,7 @@ export default function ContactPhonePicker({ value, onChange, placeholder = "+99
                   className="flex-1 text-left min-w-0"
                   onClick={() => {
                     onChange(c.phone);
+                    if (onSelectContact) onSelectContact(c.phone, c.name);
                     setOpen(false);
                   }}
                 >
