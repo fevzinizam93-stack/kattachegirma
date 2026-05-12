@@ -5,6 +5,7 @@ import { ArrowRight, ChevronLeft, ChevronRight, Flame } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import RecentlyViewed from "@/components/RecentlyViewed";
 
 // Categories that have products (with their slugs for linking)
 // We'll fetch products per category dynamically
@@ -213,6 +214,9 @@ export default function Home() {
           </section>
         );
       })}
+
+      {/* Recently viewed */}
+      <RecentlyViewed />
 
       {/* Bottom padding for mobile nav */}
       <div className="pb-20 md:pb-8" />

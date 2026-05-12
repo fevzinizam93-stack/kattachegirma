@@ -10,6 +10,7 @@ import { usePageMeta } from "@/hooks/usePageMeta";
 import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
 import ProductCard from "@/components/ProductCard";
 import CompareModal from "@/components/CompareModal";
+import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 
 interface ProductDetailProps {
   slug: string;
@@ -144,6 +145,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
   const [compareOpen, setCompareOpen] = useState(false);
   const { addItem } = useCart();
+  const { addItem: addToRecentlyViewed } = useRecentlyViewed();
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
 
@@ -190,6 +192,22 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
     }
     sessionStorage.setItem(key, "1");
     incrementView.mutate({ productId: product.id });
+    // Save to recently viewed history
+    addToRecentlyViewed({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      brand: product.brand,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      discount: product.discount,
+      imageUrl: product.imageUrl,
+      isNew: product.isNew,
+      isHit: product.isHit,
+      isPremium: (product as any).isPremium,
+      stock: product.stock,
+      categoryId: product.categoryId,
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product?.id]);
 

@@ -2,9 +2,11 @@ import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Crown, ShoppingCart } from "lucide-react";
+import { Crown, ShoppingCart, ArrowLeftRight } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
+import { useState } from "react";
+import CompareModal from "@/components/CompareModal";
 
 interface Product {
   id: number;
@@ -35,6 +37,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
   const { user } = useAuth();
+  const [compareOpen, setCompareOpen] = useState(false);
 
   const isVip = user?.role === "vip" || user?.role === "admin";
   const displayName = product.name;
@@ -74,6 +77,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     : 0;
 
   return (
+    <>
     <Link href={`/product/${product.slug}`}>
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden cursor-pointer h-full flex flex-col active:scale-[0.98] transition-transform touch-manipulation">
         <div className="relative bg-gray-50" style={{ paddingBottom: "70%" }}>
@@ -107,6 +111,16 @@ export default function ProductCard({ product }: ProductCardProps) {
                 <Crown size={8} /> VIP -{vipDiscount}%
               </span>
             </div>
+          )}
+          {/* Compare button */}
+          {!hasVipPrice && (
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCompareOpen(true); }}
+              title="Сравнить"
+              className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-full bg-white/90 border border-gray-200 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all shadow-sm"
+            >
+              <ArrowLeftRight size={10} />
+            </button>
           )}
         </div>
 
@@ -144,5 +158,12 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
       </div>
     </Link>
+    {/* Compare Modal — rendered outside Link to avoid nested anchor */}
+    <CompareModal
+      open={compareOpen}
+      onClose={() => setCompareOpen(false)}
+      currentProduct={product as any}
+    />
+    </>
   );
 }

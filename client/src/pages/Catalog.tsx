@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
+import RecentlyViewed from "@/components/RecentlyViewed";
 
 const LIMIT = 12;
 
@@ -460,6 +461,8 @@ export default function Catalog() {
           </div>
         </div>
       </div>
+      {/* Recently viewed */}
+      <RecentlyViewed />
     </div>
   );
 }
