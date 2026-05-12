@@ -589,8 +589,112 @@ export default function CompareModal({ open, onClose, currentProduct }: CompareM
 
         {/* Body */}
         <div className="flex flex-1 min-h-0 overflow-hidden">
+
+          {/* ===== MOBILE: horizontal scroll-snap ===== */}
+          {compareProduct ? (
+            <div className="sm:hidden flex flex-1 min-h-0 overflow-hidden">
+              {/* Swipe container */}
+              <div
+                className="flex flex-1 overflow-x-auto snap-x snap-mandatory scroll-smooth"
+                style={{ scrollbarWidth: "none" }}
+              >
+                {/* Slide 1: current product */}
+                <div className="snap-center shrink-0 w-full overflow-y-auto p-4">
+                  <ProductColumn
+                    product={currentProduct}
+                    label="Текущий"
+                    allSpecs={allSpecs}
+                    otherProduct={compareProduct}
+                    onAddToCart={handleAddToCart}
+                    showDiffsOnly={showDiffsOnly}
+                  />
+                </div>
+                {/* Slide 2: compare product */}
+                <div className="snap-center shrink-0 w-full overflow-y-auto p-4">
+                  <button
+                    onClick={() => setCompareProduct(null)}
+                    className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 mb-3 font-semibold"
+                  >
+                    ← Выбрать другой
+                  </button>
+                  <ProductColumn
+                    product={compareProduct}
+                    label="Сравниваемый"
+                    allSpecs={allSpecs}
+                    otherProduct={currentProduct}
+                    onAddToCart={handleAddToCart}
+                    showDiffsOnly={showDiffsOnly}
+                  />
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* Mobile: product picker (full width) */
+            <div className="sm:hidden flex flex-col flex-1 overflow-hidden">
+              <div className="p-3 border-b border-gray-100 shrink-0">
+                <p className="text-xs text-gray-500 mb-2 font-medium">Выберите товар для сравнения:</p>
+                <div className="relative">
+                  <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Поиск по названию..."
+                    className="w-full pl-8 pr-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-gray-50"
+                  />
+                  {search && (
+                    <button onClick={() => setSearch("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
+                {/* Current product mini-preview */}
+                <div className="mt-2 flex items-center gap-2 p-2 bg-red-50 rounded-lg border border-red-100">
+                  {currentProduct.imageUrl && (
+                    <img src={currentProduct.imageUrl} alt={currentProduct.name} className="w-8 h-8 object-contain rounded" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] font-bold text-red-700 line-clamp-1">{currentProduct.name}</p>
+                    <p className="text-[10px] text-red-500">{formatPrice(currentProduct.price)}</p>
+                  </div>
+                  <span className="text-[9px] text-red-400 font-semibold">vs</span>
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                {candidates.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full py-8 text-center px-4">
+                    <div className="text-3xl mb-2">🔍</div>
+                    <p className="text-sm text-gray-500 font-medium">{search ? "Ничего не найдено" : "Нет других товаров в этой категории"}</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-50">
+                    {candidates.map((p) => {
+                      const price = parseFloat(p.price);
+                      const priceRes = comparePrices(parseFloat(currentProduct.price), price);
+                      return (
+                        <button key={p.id} onClick={() => setCompareProduct(p)} className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-blue-50 transition-colors text-left group">
+                          <div className="w-10 h-10 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
+                            {p.imageUrl ? <img src={p.imageUrl} alt={p.name} className="w-full h-full object-contain p-0.5" /> : <span className="text-lg text-gray-200">📦</span>}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-gray-800 line-clamp-1 group-hover:text-blue-700">{p.name}</p>
+                            <span className={`text-xs font-black ${ priceRes === "right_better" ? "text-green-700" : priceRes === "left_better" ? "text-red-600" : "text-gray-700" }`}>{formatPrice(p.price)}</span>
+                            {priceRes === "right_better" && <span className="ml-1 text-[9px] font-bold text-white bg-green-600 px-1 py-0.5 rounded">Дешевле</span>}
+                            {priceRes === "left_better" && <span className="ml-1 text-[9px] font-bold text-white bg-red-500 px-1 py-0.5 rounded">Дороже</span>}
+                          </div>
+                          <ChevronRight size={14} className="text-gray-300 group-hover:text-blue-400 shrink-0" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ===== DESKTOP: two columns side by side ===== */}
           {/* LEFT: Current product */}
-          <div className="w-1/2 border-r border-gray-100 overflow-y-auto p-4">
+          <div className="hidden sm:block w-1/2 border-r border-gray-100 overflow-y-auto p-4">
             <ProductColumn
               product={currentProduct}
               label="Текущий"
@@ -602,7 +706,7 @@ export default function CompareModal({ open, onClose, currentProduct }: CompareM
           </div>
 
           {/* RIGHT: Comparison panel */}
-          <div className="w-1/2 flex flex-col overflow-hidden">
+          <div className="hidden sm:flex w-1/2 flex-col overflow-hidden">
             {compareProduct ? (
               <div className="flex-1 overflow-y-auto p-4">
                 <button
@@ -745,6 +849,17 @@ export default function CompareModal({ open, onClose, currentProduct }: CompareM
             )}
           </div>
         </div>
+
+        {/* Mobile swipe indicator */}
+        {compareProduct && (
+          <div className="sm:hidden flex items-center justify-center gap-2 py-2 border-t border-gray-100 bg-white shrink-0">
+            <span className="text-[10px] text-gray-400 font-medium">Свайпайте чтобы сравнить →</span>
+            <div className="flex gap-1">
+              <span className="w-4 h-1.5 rounded-full bg-red-500" />
+              <span className="w-4 h-1.5 rounded-full bg-gray-200" />
+            </div>
+          </div>
+        )}
 
         {/* Footer: specs count */}
         {compareProduct && allSpecs.length > 0 && (
