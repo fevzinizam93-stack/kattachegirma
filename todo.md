@@ -508,3 +508,15 @@
 - [x] Navbar.tsx: колокольчик с бейджем непрочитанных, выпадающий список уведомлений
 - [x] MobileBottomNav.tsx: бейдж уведомлений в меню профиля
 - [x] Тесты: проверить notifications.list и notifications.markRead
+
+## v76 - Система сообщений Admin ↔ Продавец
+- [x] DB: таблица conversations (id, adminId, sellerId, createdAt, updatedAt)
+- [x] DB: таблица messages (id, conversationId, senderId, body, isRead, createdAt)
+- [x] DB миграция: применить SQL
+- [x] server/db.ts: getOrCreateConversation(), getConversations(), getMessages(), sendMessage(), markMessagesRead(), getUnreadMessageCount()
+- [x] server/routers.ts: messages router (getConversations, getMessages, send, markRead, unreadCount)
+- [x] Admin.tsx: вкладка «Сообщения» — список продавцов с кнопкой «Написать», чат-окно
+- [x] SellerDashboard.tsx: кнопка «Сообщения от администратора» → /seller/messages
+- [x] /seller/messages страница: чат с администратором
+- [x] Navbar/MobileBottomNav: бейдж непрочитанных сообщений для продавцов
+- [x] Тесты: guard проверки для messages router

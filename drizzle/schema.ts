@@ -241,3 +241,27 @@ export const sellerReviews = mysqlTable("seller_reviews", {
 });
 export type SellerReview = typeof sellerReviews.$inferSelect;
 export type InsertSellerReview = typeof sellerReviews.$inferInsert;
+
+// Admin <-> Seller messaging system
+export const conversations = mysqlTable("conversations", {
+  id: int("id").autoincrement().primaryKey(),
+  adminId: int("adminId").notNull(),       // admin user.id
+  sellerId: int("sellerId").notNull(),     // seller user.id (NOT sellers.id)
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Conversation = typeof conversations.$inferSelect;
+export type InsertConversation = typeof conversations.$inferInsert;
+
+export const messages = mysqlTable("messages", {
+  id: int("id").autoincrement().primaryKey(),
+  conversationId: int("conversationId").notNull(),
+  senderId: int("senderId").notNull(),
+  body: text("body").notNull(),
+  isRead: boolean("isRead").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Message = typeof messages.$inferSelect;
+export type InsertMessage = typeof messages.$inferInsert;

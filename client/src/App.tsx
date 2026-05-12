@@ -31,6 +31,7 @@ const Profile = lazy(() => import("./pages/Profile"));
 const PremiumCatalog = lazy(() => import("./pages/PremiumCatalog"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const Sales = lazy(() => import("./pages/Sales"));
+const SellerMessages = lazy(() => import("./pages/SellerMessages"));
 const AuthModal = lazy(() => import("./components/AuthModal"));
 
 // Lightweight spinner shown while a page chunk is loading
@@ -88,6 +89,7 @@ function Router() {
       <Route path="/seller">{() => { window.location.replace("/seller/register"); return null; }}</Route>
       <Route path="/seller/register" component={SellerRegister} />
       <Route path="/seller/dashboard" component={SellerDashboard} />
+      <Route path="/seller/messages" component={SellerMessages} />
       <Route path="/seller/:id">
         {() => <SellerStorefront />}
       </Route>

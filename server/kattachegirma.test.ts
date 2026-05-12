@@ -188,3 +188,72 @@ describe("notifications.markAllRead - auth guard", () => {
     await expect(caller.notifications.markAllRead()).rejects.toThrow();
   });
 });
+
+describe("messaging.adminConversations - admin guard", () => {
+  it("throws FORBIDDEN for non-admin user", async () => {
+    const ctx: TrpcContext = {
+      user: {
+        id: 2, openId: "regular-user", email: "user@test.com",
+        name: "User", loginMethod: "manus", role: "user",
+        createdAt: new Date(), updatedAt: new Date(), lastSignedIn: new Date(),
+      },
+      req: { protocol: "https", headers: {} } as TrpcContext["req"],
+      res: { clearCookie: () => {} } as TrpcContext["res"],
+    };
+    const caller = appRouter.createCaller(ctx);
+    await expect(caller.messaging.adminConversations()).rejects.toThrow();
+  });
+
+  it("throws UNAUTHORIZED for unauthenticated user", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(caller.messaging.adminConversations()).rejects.toThrow();
+  });
+});
+
+describe("messaging.sellerConversation - role guard", () => {
+  it("throws FORBIDDEN for regular user", async () => {
+    const ctx: TrpcContext = {
+      user: {
+        id: 3, openId: "buyer-user", email: "buyer@test.com",
+        name: "Buyer", loginMethod: "manus", role: "user",
+        createdAt: new Date(), updatedAt: new Date(), lastSignedIn: new Date(),
+      },
+      req: { protocol: "https", headers: {} } as TrpcContext["req"],
+      res: { clearCookie: () => {} } as TrpcContext["res"],
+    };
+    const caller = appRouter.createCaller(ctx);
+    await expect(caller.messaging.sellerConversation()).rejects.toThrow();
+  });
+
+  it("throws UNAUTHORIZED for unauthenticated user", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(caller.messaging.sellerConversation()).rejects.toThrow();
+  });
+});
+
+describe("messaging.send - auth guard", () => {
+  it("throws UNAUTHORIZED for unauthenticated user", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(caller.messaging.send({ conversationId: 1, body: "test" })).rejects.toThrow();
+  });
+});
+
+describe("messaging.unreadCount - role filter", () => {
+  it("returns 0 for regular user without throwing", async () => {
+    const ctx: TrpcContext = {
+      user: {
+        id: 4, openId: "buyer2-user", email: "buyer2@test.com",
+        name: "Buyer2", loginMethod: "manus", role: "user",
+        createdAt: new Date(), updatedAt: new Date(), lastSignedIn: new Date(),
+      },
+      req: { protocol: "https", headers: {} } as TrpcContext["req"],
+      res: { clearCookie: () => {} } as TrpcContext["res"],
+    };
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.messaging.unreadCount();
+    expect(result.count).toBe(0);
+  });
+});

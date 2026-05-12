@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, gte, ilike, like, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool } from "mysql2";
-import { analyticsEvents, banners, Banner, InsertBanner, categories, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, notifications, InsertNotification, orders, products, reviews, InsertReview, sellers, sellerReviews, InsertSellerReview, storeSettings, telegramRecipients, TelegramRecipient, users, User, utmVisits, UtmVisit } from "../drizzle/schema";
+import { analyticsEvents, banners, Banner, InsertBanner, categories, conversations, Conversation, InsertConversation, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, messages, Message, InsertMessage, notifications, InsertNotification, orders, products, reviews, InsertReview, sellers, sellerReviews, InsertSellerReview, storeSettings, telegramRecipients, TelegramRecipient, users, User, utmVisits, UtmVisit } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import bcrypt from "bcryptjs";
 
@@ -904,4 +904,113 @@ export async function markAllNotificationsRead(userId: number) {
     .update(notifications)
     .set({ isRead: true })
     .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
+}
+
+// ---- Admin <-> Seller Messaging ----
+
+/** Get or create a conversation between an admin and a seller (by their user IDs) */
+export async function getOrCreateConversation(adminId: number, sellerUserId: number): Promise<Conversation | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const existing = await db
+    .select()
+    .from(conversations)
+    .where(and(eq(conversations.adminId, adminId), eq(conversations.sellerId, sellerUserId)))
+    .limit(1);
+  if (existing.length > 0) return existing[0];
+  await db.insert(conversations).values({ adminId, sellerId: sellerUserId });
+  const created = await db
+    .select()
+    .from(conversations)
+    .where(and(eq(conversations.adminId, adminId), eq(conversations.sellerId, sellerUserId)))
+    .limit(1);
+  return created[0] ?? null;
+}
+
+/** Get all conversations for admin (with last message preview) */
+export async function getAdminConversations(adminId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const convs = await db
+    .select()
+    .from(conversations)
+    .where(eq(conversations.adminId, adminId))
+    .orderBy(desc(conversations.updatedAt));
+  return convs;
+}
+
+/** Get conversation for a seller (by their user ID) */
+export async function getSellerConversation(sellerUserId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db
+    .select()
+    .from(conversations)
+    .where(eq(conversations.sellerId, sellerUserId))
+    .limit(1);
+  return result[0] ?? null;
+}
+
+/** Get messages for a conversation */
+export async function getConversationMessages(conversationId: number): Promise<Message[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(messages)
+    .where(eq(messages.conversationId, conversationId))
+    .orderBy(asc(messages.createdAt));
+}
+
+/** Send a message */
+export async function sendMessage(data: InsertMessage): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.insert(messages).values(data);
+  // Update conversation's updatedAt
+  await db
+    .update(conversations)
+    .set({ updatedAt: new Date() })
+    .where(eq(conversations.id, data.conversationId));
+}
+
+/** Mark all messages in a conversation as read for a given recipient */
+export async function markConversationRead(conversationId: number, recipientId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .update(messages)
+    .set({ isRead: true })
+    .where(
+      and(
+        eq(messages.conversationId, conversationId),
+        eq(messages.isRead, false),
+        // Only mark messages NOT sent by this user (i.e., messages received by them)
+        sql`${messages.senderId} != ${recipientId}`
+      )
+    );
+}
+
+/** Count unread messages for a user across all their conversations */
+export async function countUnreadMessages(userId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  // Find all conversations where user is either admin or seller
+  const userConvs = await db
+    .select({ id: conversations.id })
+    .from(conversations)
+    .where(or(eq(conversations.adminId, userId), eq(conversations.sellerId, userId)));
+  if (userConvs.length === 0) return 0;
+  const convIds = userConvs.map((c) => c.id);
+  const result = await db
+    .select({ count: sql<number>`COUNT(*)` })
+    .from(messages)
+    .where(
+      and(
+        sql`${messages.conversationId} IN (${sql.join(convIds.map((id) => sql`${id}`), sql`, `)})`,
+        eq(messages.isRead, false),
+        sql`${messages.senderId} != ${userId}`
+      )
+    );
+  return result[0]?.count ?? 0;
 }

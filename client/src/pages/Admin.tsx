@@ -1,6 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { BarChart3, Bell, Crown, Edit, FolderOpen, ImagePlus, MapPin, Package, Plus, Search, Settings, ShoppingBag, Star, Store, Trash2, Upload, Users, X } from "lucide-react";
+import { BarChart3, Bell, Crown, Edit, FolderOpen, ImagePlus, MapPin, MessageSquare, Package, Plus, Search, Send, Settings, ShoppingBag, Star, Store, Trash2, Upload, Users, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -11,7 +11,36 @@ function formatPrice(price: string | number) {
   return new Intl.NumberFormat("ru-RU").format(num) + " сум";
 }
 
-type Tab = "products" | "categories" | "orders" | "sellers" | "moderation" | "settings" | "banners" | "notifications" | "utm" | "vip";
+/** Lists all approved sellers so admin can start a conversation */
+function AllSellersList({ onSelect, activeSellerUserId }: { onSelect: (sellerUserId: number) => void; activeSellerUserId: number | null }) {
+  const { data, isLoading } = trpc.sellers.list.useQuery();
+  if (isLoading) return <div className="flex justify-center py-4"><div className="w-5 h-5 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" /></div>;
+  const sellers = (data ?? []).filter((s) => s.isApproved);
+  if (sellers.length === 0) return <p className="text-xs text-gray-400 px-2 py-2">Нет одобренных продавцов</p>;
+  return (
+    <>
+      {sellers.map((seller) => (
+        <button
+          key={seller.id}
+          onClick={() => seller.userId !== null && onSelect(seller.userId)}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${
+            activeSellerUserId === seller.userId ? "bg-red-50 text-red-700" : "hover:bg-gray-50 text-gray-700"
+          }`}
+        >
+          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600 shrink-0">
+            {(seller.name ?? "П")[0].toUpperCase()}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold truncate">{seller.name}</p>
+            <p className="text-xs text-gray-400">Продавец</p>
+          </div>
+        </button>
+      ))}
+    </>
+  );
+}
+
+type Tab = "products" | "categories" | "orders" | "sellers" | "moderation" | "settings" | "banners" | "notifications" | "utm" | "vip" | "messaging";
 
 interface BannerForm {
   id?: number;
@@ -181,6 +210,44 @@ export default function Admin() {
     onSuccess: () => { utils.vip.listUsers.invalidate(); toast.success("VIP доступ отозван"); },
     onError: (e) => toast.error(e.message),
   });
+
+  // Messaging
+  const [activeConvId, setActiveConvId] = useState<number | null>(null);
+  const [msgInput, setMsgInput] = useState("");
+  const { data: adminConvs, refetch: refetchConvs } = trpc.messaging.adminConversations.useQuery(undefined, {
+    enabled: tab === "messaging" && user?.role === "admin",
+    refetchInterval: tab === "messaging" ? 8000 : false,
+  });
+  const openConvMut = trpc.messaging.openConversation.useMutation({
+    onSuccess: (data) => {
+      setActiveConvId(data.conversation.id);
+      refetchConvs();
+    },
+  });
+  const sendMsgMut = trpc.messaging.send.useMutation({
+    onSuccess: () => {
+      setMsgInput("");
+      if (activeConvId) openConvMut.mutate({ sellerUserId: activeConvSellerUserId! });
+    },
+  });
+  const [activeConvSellerUserId, setActiveConvSellerUserId] = useState<number | null>(null);
+  const [activeConvMessages, setActiveConvMessages] = useState<Array<{ id: number; senderId: number; body: string; createdAt: Date; isRead: boolean }>>([]);
+  const [activeConvData, setActiveConvData] = useState<{ conversation: { id: number; adminId: number; sellerId: number } | null; messages: Array<{ id: number; senderId: number; body: string; createdAt: Date; isRead: boolean }> } | null>(null);
+  // When openConvMut succeeds, update messages
+  const openConvForSeller = async (sellerUserId: number) => {
+    setActiveConvSellerUserId(sellerUserId);
+    const result = await openConvMut.mutateAsync({ sellerUserId });
+    setActiveConvData(result);
+    setActiveConvMessages(result.messages);
+  };
+  const handleSendMsg = async () => {
+    if (!msgInput.trim() || !activeConvData?.conversation) return;
+    await sendMsgMut.mutateAsync({ conversationId: activeConvData.conversation.id, body: msgInput.trim() });
+    // Refresh messages
+    const result = await openConvMut.mutateAsync({ sellerUserId: activeConvSellerUserId! });
+    setActiveConvData(result);
+    setActiveConvMessages(result.messages);
+  };
 
   // UTM stats
   const [utmDays, setUtmDays] = useState(30);
@@ -477,6 +544,7 @@ export default function Admin() {
     { key: "utm" as Tab, icon: MapPin, label: "Источники трафика" },
     { key: "vip" as Tab, icon: Crown, label: "VIP" },
     { key: "settings" as Tab, icon: Settings, label: "Настройки" },
+    { key: "messaging" as Tab, icon: MessageSquare, label: `Сообщения${(adminConvs ?? []).reduce((s, c) => s + c.unread, 0) > 0 ? ` (${(adminConvs ?? []).reduce((s, c) => s + c.unread, 0)})` : ""}` },
   ];
 
   return (
@@ -1242,6 +1310,141 @@ export default function Admin() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* ==================== MESSAGING TAB ==================== */}
+        {tab === "messaging" && (
+          <div className="flex gap-4" style={{ height: "calc(100vh - 260px)", minHeight: "500px" }}>
+            {/* Left: seller list */}
+            <div className="w-72 shrink-0 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
+              <div className="p-4 border-b border-gray-100">
+                <h3 className="font-black text-gray-900 text-sm">Продавцы</h3>
+                <p className="text-xs text-gray-400 mt-0.5">Выберите продавца для переписки</p>
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                {/* Existing conversations */}
+                {(adminConvs ?? []).length > 0 && (
+                  <div className="p-2 border-b border-gray-50">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase px-2 mb-1">Активные чаты</p>
+                    {(adminConvs ?? []).map((conv) => (
+                      <button
+                        key={conv.id}
+                        onClick={() => openConvForSeller(conv.sellerId)}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${
+                          activeConvData?.conversation?.id === conv.id
+                            ? "bg-red-50 text-red-700"
+                            : "hover:bg-gray-50 text-gray-700"
+                        }`}
+                      >
+                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600 shrink-0">
+                          {(conv.sellerName ?? "П")[0].toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold truncate">{conv.sellerName}</p>
+                          <p className="text-xs text-gray-400">Продавец</p>
+                        </div>
+                        {conv.unread > 0 && (
+                          <span className="bg-red-600 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center shrink-0">
+                            {conv.unread}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {/* All sellers to start new conversation */}
+                <div className="p-2">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase px-2 mb-1">Все продавцы</p>
+                  <AllSellersList onSelect={openConvForSeller} activeSellerUserId={activeConvSellerUserId} />
+                </div>
+              </div>
+            </div>
+
+            {/* Right: chat window */}
+            <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
+              {!activeConvData ? (
+                <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
+                  <MessageSquare size={48} className="text-gray-200 mb-3" />
+                  <p className="text-gray-400 font-medium">Выберите продавца</p>
+                  <p className="text-gray-300 text-sm mt-1">Нажмите на продавца слева, чтобы начать переписку</p>
+                </div>
+              ) : (
+                <>
+                  {/* Chat header */}
+                  <div className="px-5 py-3.5 border-b border-gray-100 flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-sm font-bold text-gray-600">
+                      {((adminConvs ?? []).find(c => c.id === activeConvData.conversation?.id)?.sellerName ?? "П")[0].toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900 text-sm">
+                        {(adminConvs ?? []).find(c => c.id === activeConvData.conversation?.id)?.sellerName ?? "Продавец"}
+                      </p>
+                      <p className="text-xs text-gray-400">Продавец</p>
+                    </div>
+                  </div>
+
+                  {/* Messages */}
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                    {activeConvMessages.length === 0 && (
+                      <div className="flex flex-col items-center justify-center h-full text-center">
+                        <p className="text-gray-300 text-sm">Нет сообщений. Напишите первым!</p>
+                      </div>
+                    )}
+                    {activeConvMessages.map((msg) => {
+                      const isOwn = msg.senderId === user.id;
+                      return (
+                        <div key={msg.id} className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
+                          <div
+                            className={`max-w-[70%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                              isOwn
+                                ? "bg-red-600 text-white rounded-br-sm"
+                                : "bg-gray-100 text-gray-900 rounded-bl-sm"
+                            }`}
+                          >
+                            <p>{msg.body}</p>
+                            <p className={`text-[10px] mt-1 ${isOwn ? "text-red-200" : "text-gray-400"}`}>
+                              {new Date(msg.createdAt).toLocaleString("ru-RU", {
+                                day: "2-digit", month: "short",
+                                hour: "2-digit", minute: "2-digit",
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Input */}
+                  <div className="border-t border-gray-100 p-3">
+                    <form
+                      onSubmit={(e) => { e.preventDefault(); handleSendMsg(); }}
+                      className="flex items-center gap-2"
+                    >
+                      <input
+                        type="text"
+                        value={msgInput}
+                        onChange={(e) => setMsgInput(e.target.value)}
+                        placeholder="Напишите сообщение продавцу..."
+                        className="flex-1 px-4 py-2.5 rounded-full border border-gray-200 text-sm outline-none focus:border-red-400 transition-colors bg-gray-50"
+                        maxLength={2000}
+                      />
+                      <button
+                        type="submit"
+                        disabled={!msgInput.trim() || sendMsgMut.isPending}
+                        className="w-10 h-10 rounded-full bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white flex items-center justify-center transition-colors shrink-0"
+                      >
+                        {sendMsgMut.isPending ? (
+                          <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          <Send size={16} />
+                        )}
+                      </button>
+                    </form>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         )}
 

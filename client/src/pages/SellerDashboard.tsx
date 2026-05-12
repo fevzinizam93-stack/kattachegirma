@@ -7,8 +7,9 @@ import { useLocation } from "wouter";
 import { toast } from "sonner";
 import {
   Plus, Package, Pencil, Trash2, Clock, CheckCircle, XCircle,
-  Upload, X, Store, ImagePlus, Loader2
+  Upload, X, Store, ImagePlus, Loader2, MessageSquare
 } from "lucide-react";
+import { Link } from "wouter";
 
 const MAX_PHOTOS = 10;
 
@@ -26,6 +27,26 @@ function StatusBadge({ status }: { status: ModerationStatus }) {
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${s.color}`}>
       {s.icon} {s.label}
     </span>
+  );
+}
+
+/** Small button showing unread message count, links to /seller/messages */
+function MessagesButton() {
+  const { data } = trpc.messaging.unreadCount.useQuery(undefined, { refetchInterval: 15000 });
+  const unread = data?.count ?? 0;
+  return (
+    <Link
+      href="/seller/messages"
+      className="relative flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+    >
+      <MessageSquare size={16} />
+      <span className="hidden sm:inline">Сообщения</span>
+      {unread > 0 && (
+        <span className="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+          {unread > 9 ? "9+" : unread}
+        </span>
+      )}
+    </Link>
   );
 }
 
@@ -303,12 +324,15 @@ export default function SellerDashboard() {
               <p className="text-xs text-gray-400">{t.seller_dashboard}</p>
             </div>
           </div>
-          <button
-            onClick={openCreate}
-            className="bg-primary text-white px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-1.5 hover:bg-primary/90 transition-colors"
-          >
-            <Plus size={16} /> {t.seller_add_product}
-          </button>
+          <div className="flex items-center gap-2">
+            <MessagesButton />
+            <button
+              onClick={openCreate}
+              className="bg-primary text-white px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-1.5 hover:bg-primary/90 transition-colors"
+            >
+              <Plus size={16} /> {t.seller_add_product}
+            </button>
+          </div>
         </div>
       </div>
 
