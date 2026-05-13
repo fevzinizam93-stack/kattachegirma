@@ -698,25 +698,25 @@
 
 ## v100 - Избранное (Wishlist)
 - [x] Создать хук useWishlist (localStorage, id товаров, toggle/has/clear)
-- [ ] ProductCard.tsx: кнопка ♡ (Heart) в верхнем левом углу, красная если в избранном
-- [ ] ProductDetail.tsx: кнопка ♡ рядом с кнопкой сравнения
-- [ ] Navbar.tsx: иконка Heart со счётчиком (рядом с корзиной)
-- [ ] MobileBottomNav.tsx: пункт «Избранное» (Heart icon)
-- [ ] Создать страницу Favorites.tsx (/favorites) — сетка товаров из wishlist
-- [ ] App.tsx: зарегистрировать маршрут /favorites
+- [x] ProductCard.tsx: кнопка ♡ (Heart) в верхнем левом углу, красная если в избранном
+- [x] ProductDetail.tsx: кнопка ♡ рядом с кнопкой сравнения
+- [x] Navbar.tsx: иконка Heart со счётчиком (рядом с корзиной)
+- [x] MobileBottomNav.tsx: пункт «Избранное» (Heart icon)
+- [x] Создать страницу Favorites.tsx (/favorites) — сетка товаров из wishlist
+- [x] App.tsx: зарегистрировать маршрут /favorites
 
 ## v101 - Фильтр по рейтингу в каталоге
-- [ ] Catalog.tsx: добавить tRPC запрос products.list с параметром minRating
-- [ ] server/routers.ts: добавить параметр minRating в products.list
-- [ ] server/db.ts: фильтрация по avg_rating >= minRating в getProducts
-- [ ] Catalog.tsx: блок «Рейтинг» в боковой панели — 5 кнопок (★★★★★, ★★★★, ★★★, любой)
-- [ ] Сброс фильтра рейтинга при общем сбросе фильтров
+- [x] Catalog.tsx: добавить tRPC запрос products.list с параметром minRating
+- [x] server/routers.ts: добавить параметр minRating в products.list
+- [x] server/db.ts: фильтрация по avg_rating >= minRating в getProducts
+- [x] Catalog.tsx: блок «Рейтинг» в боковой панели — 5 кнопок (★★★★★, ★★★★, ★★★, любой)
+- [x] Сброс фильтра рейтинга при общем сбросе фильтров
 
 ## v102 - Блок «Похожие товары» на странице товара
-- [ ] server/routers.ts: процедура products.getSimilar (та же категория, исключить текущий, limit 8)
-- [ ] server/db.ts: getSimilarProducts(categoryId, excludeId, limit)
-- [ ] ProductDetail.tsx: секция «Похожие товары» — горизонтальный скролл с ProductCard
-- [ ] Skeleton loader для секции похожих товаров
+- [x] server/routers.ts: процедура products.getSimilar (та же категория, исключить текущий, limit 8)
+- [x] server/db.ts: getSimilarProducts(categoryId, excludeId, limit)
+- [x] ProductDetail.tsx: секция «Похожие товары» — горизонтальный скролл с ProductCard
+- [x] Skeleton loader для секции похожих товаров
 
 ## v103 - Кнопка сравнения на всех карточках
 - [x] Убрать условие !hasVipPrice — кнопка сравнения видна на всех карточках
@@ -726,12 +726,12 @@
 - [x] Обернуть кнопку сравнения в shadcn/ui Tooltip с текстом «Сравнить товар»
 
 ## v105 - Кнопка «Заказать через Telegram» на карточке
-- [ ] Добавить кнопку Telegram на ProductCard (под кнопкой «В корзину»)
-- [ ] Ссылка формирует сообщение с названием товара и ценой
+- [x] Добавить кнопку Telegram на ProductCard (под кнопкой «В корзину»)
+- [x] Ссылка формирует сообщение с названием товара и ценой
 
 ## v106 - Счётчик просмотров и «смотрят сейчас»
-- [ ] Показывать viewCount на странице товара («👁 247 просмотров»)
-- [ ] Добавить «🔥 X человек смотрят сейчас» (рандом 3-15 на основе viewCount)
+- [x] Показывать viewCount на странице товара («👁 247 просмотров»)
+- [x] Добавить «🔥 X человек смотрят сейчас» (рандом 3-15 на основе viewCount)
 
 ## v105-v106 - Telegram кнопка и счётчики
 - [x] Кнопка «Заказать в Telegram» на каждой карточке товара (вне Link, без nested <a>)
@@ -740,13 +740,13 @@
 - [x] Счётчик «Сейчас смотрят: N» на странице товара (оранжевый badge поверх фото)
 
 ## v107 - Форма «Купить в 1 клик»
-- [ ] Таблица quick_orders в БД (id, productId, productName, name, phone, createdAt, status)
-- [ ] tRPC процедура quickOrders.create (публичная) и quickOrders.list (только admin)
-- [ ] Компонент QuickBuyModal — модальное окно с полями имя + телефон
-- [ ] Кнопка «Купить в 1 клик» на странице товара (рядом с «В корзину»)
-- [ ] Кнопка «Купить в 1 клик» на карточках товаров
-- [ ] Telegram-уведомление администратору при новой заявке
-- [ ] Секция «Быстрые заявки» в админ-панели (/admin)
+- [x] Таблица quick_orders в БД (id, productId, productName, name, phone, createdAt, status)
+- [x] tRPC процедура quickOrders.create (публичная) и quickOrders.list (только admin)
+- [x] Компонент QuickBuyModal — модальное окно с полями имя + телефон
+- [x] Кнопка «Купить в 1 клик» на странице товара (рядом с «В корзину»)
+- [x] Кнопка «Купить в 1 клик» на карточках товаров
+- [x] Telegram-уведомление администратору при новой заявке
+- [x] Секция «Быстрые заявки» в админ-панели (/admin)
 
 ## v107 - Форма «Купить в 1 клик»
 - [x] Таблица quick_orders в БД (productId, productName, productPrice, customerName, customerPhone, status)
@@ -803,3 +803,7 @@
 - [x] Автоматический слайдер отзывов (каждые 5 сек, 3 карточки, точки навигации)
 - [x] Блок видео-обзоров с YouTube (embed + thumbnail + play button)
 - [x] Общий рейтинг магазина (средний балл + бейдж)
+
+## v114 - Реальные YouTube ID для видео-обзоров
+- [x] Заменить плейсхолдеры dQw4w9WgXcQ на реальные ID с канала @KattaChegirma
+- [x] Wnv1y5OJEsk (775 просмотров), SB9YAiV2Q4o (пылесос), quNzhLYkid0 (холодильник)

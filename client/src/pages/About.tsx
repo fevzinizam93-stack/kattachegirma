@@ -191,22 +191,22 @@ function ReviewsSection() {
 // ── Video reviews section ──
 const VIDEO_REVIEWS = [
   {
-    id: "dQw4w9WgXcQ",
-    title: "Обзор кондиционера Franco — покупатель из Ташкента",
-    author: "Покупатель Санжар",
-    views: "12 тыс.",
+    id: "Wnv1y5OJEsk",
+    title: "Бытовая техника Katta Chegirma — обзор товаров",
+    author: "@KattaChegirma",
+    views: "775",
   },
   {
-    id: "dQw4w9WgXcQ",
-    title: "Стиральная машина Avangard — честный отзыв после 3 месяцев",
-    author: "Малика из Ферганы",
-    views: "8.4 тыс.",
+    id: "SB9YAiV2Q4o",
+    title: "Самый мощный пылесос — обзор Ferre 2000W",
+    author: "@KattaChegirma",
+    views: "65",
   },
   {
-    id: "dQw4w9WgXcQ",
-    title: "Телевизор Samsung 65\" — распаковка и первое впечатление",
-    author: "Бахром К.",
-    views: "21 тыс.",
+    id: "quNzhLYkid0",
+    title: "Самый большой холодильник — обзор и цена",
+    author: "@KattaChegirma",
+    views: "61",
   },
 ];
 
