@@ -642,10 +642,10 @@
 - [x] Поделиться: маленькие pill-чипсы WhatsApp/Telegram с полупрозрачным фоном
 
 ## v93 - Sticky левая колонка в ProductDetail
-- [ ] ProductDetail.tsx: обёртка двух колонок — items-start (не stretch)
-- [ ] ProductDetail.tsx: левая колонка — sticky top-[72px] (высота navbar), self-start
-- [ ] ProductDetail.tsx: правая колонка — обычный поток, прокручивается независимо
-- [ ] Проверить на мобильных — sticky не должен мешать мобильному layout
+- [x] ProductDetail.tsx: обёртка двух колонок — md:items-start
+- [x] ProductDetail.tsx: левая колонка — md:sticky md:top-[72px] md:self-start
+- [x] ProductDetail.tsx: правая колонка — обычный поток, прокручивается независимо
+- [x] Мобильный layout не затронут (sticky только на md+)
 
 ## v93 - Sticky левая колонка в ProductDetail
 - [x] ProductDetail.tsx: обёртка двух колонок — md:items-start
@@ -661,3 +661,11 @@
 - [x] Footer: staleTime 10 мин для categories.list (было без staleTime)
 - [x] Navbar: refetchInterval уведомлений 30с → 60с + staleTime 30с; sellers.me staleTime 5 мин
 - [x] MobileBottomNav: те же оптимизации что и в Navbar
+
+## v95 - Skeleton loader для страницы товара
+- [x] ProductDetail.tsx: полноценный skeleton, повторяющий реальный layout страницы
+- [x] Skeleton левая колонка: aspect-square фото, 3 мини-превью 56×56, цена (h-8), степпер, кнопка корзины, сравнение, доставка, WhatsApp/Telegram
+- [x] Skeleton правая колонка: бренд+бейджи, название (2 строки h-7), рейтинг (5 звёзд), 6 строк характеристик, описание (4 строки), аватар продавца
+- [x] Хлебные крошки: отдельный skeleton в белой полосе сверху
+- [x] animate-pulse на всём grid, bg-gray-200 для всех элементов
+- [x] Layout skeleton точно совпадает с реальным (md:grid-cols-2, те же padding/gap)

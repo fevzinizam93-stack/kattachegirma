@@ -301,19 +301,113 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="container py-8">
-          <div className="animate-pulse">
-            <div className="h-5 bg-gray-200 rounded w-64 mb-6" />
-            <div className="bg-white rounded-2xl p-6">
-              <div className="grid md:grid-cols-2 gap-8">
-                <div className="aspect-square bg-gray-200 rounded-xl" />
-                <div className="space-y-4">
-                  <div className="h-8 bg-gray-200 rounded w-3/4" />
-                  <div className="h-6 bg-gray-200 rounded w-1/2" />
-                  <div className="h-16 bg-gray-200 rounded" />
-                  <div className="h-12 bg-gray-200 rounded" />
+        {/* Breadcrumb skeleton */}
+        <div className="bg-white border-b border-gray-200">
+          <div className="container py-1.5">
+            <div className="flex items-center gap-2 animate-pulse">
+              <div className="h-3 bg-gray-200 rounded w-12" />
+              <div className="h-3 bg-gray-200 rounded w-2" />
+              <div className="h-3 bg-gray-200 rounded w-16" />
+              <div className="h-3 bg-gray-200 rounded w-2" />
+              <div className="h-3 bg-gray-200 rounded w-32" />
+            </div>
+          </div>
+        </div>
+
+        <div className="container py-2">
+          <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+            <div className="grid md:grid-cols-2 gap-0 divide-y md:divide-y-0 md:divide-x divide-gray-100 md:items-start animate-pulse">
+
+              {/* LEFT COLUMN skeleton — mirrors real layout */}
+              <div className="flex flex-col p-3 md:p-4 gap-3">
+                {/* Main image */}
+                <div className="relative aspect-square w-full rounded-xl bg-gray-200" />
+                {/* Thumbnail strip */}
+                <div className="flex gap-2">
+                  {[0,1,2].map(i => (
+                    <div key={i} className="w-14 h-14 rounded-lg bg-gray-200 flex-shrink-0" />
+                  ))}
+                </div>
+                {/* Price row */}
+                <div className="flex items-center gap-3 mt-1">
+                  <div className="h-8 bg-gray-200 rounded w-36" />
+                  <div className="h-5 bg-gray-200 rounded w-20" />
+                  <div className="h-5 bg-gray-200 rounded-full w-16" />
+                </div>
+                {/* Stock badge */}
+                <div className="h-4 bg-gray-200 rounded-full w-20" />
+                {/* Quantity + cart button */}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-gray-200" />
+                    <div className="w-8 h-6 bg-gray-200 rounded" />
+                    <div className="w-8 h-8 rounded-full bg-gray-200" />
+                  </div>
+                  <div className="h-10 bg-gray-200 rounded-full flex-1" />
+                </div>
+                {/* Compare button */}
+                <div className="h-9 bg-gray-200 rounded-full w-40" />
+                {/* Delivery chip */}
+                <div className="h-7 bg-gray-200 rounded-full w-56" />
+                {/* WhatsApp / Telegram */}
+                <div className="flex gap-2">
+                  <div className="h-9 bg-gray-200 rounded-full w-32" />
+                  <div className="h-9 bg-gray-200 rounded-full w-28" />
                 </div>
               </div>
+
+              {/* RIGHT COLUMN skeleton */}
+              <div className="flex flex-col p-3 md:p-4 gap-4">
+                {/* Brand + badges */}
+                <div className="flex items-center gap-2">
+                  <div className="h-4 bg-gray-200 rounded w-20" />
+                  <div className="h-5 bg-gray-200 rounded-full w-14" />
+                  <div className="h-5 bg-gray-200 rounded-full w-12" />
+                </div>
+                {/* Product name */}
+                <div className="space-y-2">
+                  <div className="h-7 bg-gray-200 rounded w-full" />
+                  <div className="h-7 bg-gray-200 rounded w-3/4" />
+                </div>
+                {/* Rating */}
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1">
+                    {[0,1,2,3,4].map(i => <div key={i} className="w-4 h-4 rounded bg-gray-200" />)}
+                  </div>
+                  <div className="h-4 bg-gray-200 rounded w-16" />
+                </div>
+                {/* Divider */}
+                <div className="h-px bg-gray-100" />
+                {/* Specs */}
+                <div className="space-y-3">
+                  {[0,1,2,3,4,5].map(i => (
+                    <div key={i} className="flex justify-between items-center">
+                      <div className="h-4 bg-gray-200 rounded w-28" />
+                      <div className="h-4 bg-gray-200 rounded w-36" />
+                    </div>
+                  ))}
+                </div>
+                {/* Divider */}
+                <div className="h-px bg-gray-100" />
+                {/* Description heading */}
+                <div className="h-5 bg-gray-200 rounded w-32" />
+                {/* Description lines */}
+                <div className="space-y-2">
+                  <div className="h-4 bg-gray-200 rounded w-full" />
+                  <div className="h-4 bg-gray-200 rounded w-5/6" />
+                  <div className="h-4 bg-gray-200 rounded w-4/5" />
+                  <div className="h-4 bg-gray-200 rounded w-2/3" />
+                </div>
+                {/* Seller info */}
+                <div className="flex items-center gap-3 mt-2">
+                  <div className="w-10 h-10 rounded-full bg-gray-200" />
+                  <div className="space-y-1.5">
+                    <div className="h-4 bg-gray-200 rounded w-28" />
+                    <div className="h-3 bg-gray-200 rounded w-20" />
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
