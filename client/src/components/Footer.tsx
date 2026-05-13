@@ -3,7 +3,9 @@ import { trpc } from "@/lib/trpc";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Footer() {
-  const { data: categoriesData } = trpc.categories.list.useQuery();
+  const { data: categoriesData } = trpc.categories.list.useQuery(undefined, {
+    staleTime: 10 * 60 * 1000, // 10 min — categories rarely change
+  });
   const categories = categoriesData ?? [];
   const { t } = useLanguage();
 

@@ -640,3 +640,24 @@
 - [x] Отдельная зелёная кнопка «Связаться» убрана, контакты в компактном блоке
 - [x] Доставка: маленький chip с иконкой Truck
 - [x] Поделиться: маленькие pill-чипсы WhatsApp/Telegram с полупрозрачным фоном
+
+## v93 - Sticky левая колонка в ProductDetail
+- [ ] ProductDetail.tsx: обёртка двух колонок — items-start (не stretch)
+- [ ] ProductDetail.tsx: левая колонка — sticky top-[72px] (высота navbar), self-start
+- [ ] ProductDetail.tsx: правая колонка — обычный поток, прокручивается независимо
+- [ ] Проверить на мобильных — sticky не должен мешать мобильному layout
+
+## v93 - Sticky левая колонка в ProductDetail
+- [x] ProductDetail.tsx: обёртка двух колонок — md:items-start
+- [x] ProductDetail.tsx: левая колонка — md:sticky md:top-[72px] md:self-start
+- [x] ProductDetail.tsx: правая колонка — обычный поток, прокручивается независимо
+- [x] Мобильный layout не затронут
+
+## v94 - Оптимизация скорости ProductDetail
+- [x] Диагностика: найдены дублирующие запросы из Navbar + MobileBottomNav (оба монтируются одновременно)
+- [x] ProductDetail: staleTime 2 мин для bySlug, 10 мин для categories.list
+- [x] ReviewsSection: staleTime 5 мин для listByProduct и summary
+- [x] SimilarProducts: staleTime 5 мин
+- [x] Footer: staleTime 10 мин для categories.list (было без staleTime)
+- [x] Navbar: refetchInterval уведомлений 30с → 60с + staleTime 30с; sellers.me staleTime 5 мин
+- [x] MobileBottomNav: те же оптимизации что и в Navbar

@@ -36,14 +36,16 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const { data: sellerProfile } = trpc.sellers.me.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: sellerProfile } = trpc.sellers.me.useQuery(undefined, { enabled: isAuthenticated, staleTime: 5 * 60 * 1000 });
   const { data: notifData, refetch: refetchNotifs } = trpc.notifications.list.useQuery(undefined, {
     enabled: isAuthenticated,
-    refetchInterval: 30000, // poll every 30 seconds
+    refetchInterval: 60000, // poll every 60s (was 30s) — reduce server load
+    staleTime: 30000,
   });
   const { data: unreadData } = trpc.notifications.unreadCount.useQuery(undefined, {
     enabled: isAuthenticated,
-    refetchInterval: 30000,
+    refetchInterval: 60000,
+    staleTime: 30000,
   });
   const markReadMutation = trpc.notifications.markRead.useMutation({ onSuccess: () => refetchNotifs() });
   const markAllReadMutation = trpc.notifications.markAllRead.useMutation({ onSuccess: () => refetchNotifs() });

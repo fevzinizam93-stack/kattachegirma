@@ -149,8 +149,12 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
 
-  const { data: product, isLoading } = trpc.products.bySlug.useQuery({ slug });
-  const { data: categoriesData } = trpc.categories.list.useQuery();
+  const { data: product, isLoading } = trpc.products.bySlug.useQuery({ slug }, {
+    staleTime: 2 * 60 * 1000, // 2 min — avoid refetch on back-navigation
+  });
+  const { data: categoriesData } = trpc.categories.list.useQuery(undefined, {
+    staleTime: 10 * 60 * 1000, // 10 min — categories rarely change
+  });
   const categories = categoriesData ?? [];
   const category = categories.find(c => c.id === product?.categoryId);
 
@@ -409,10 +413,10 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
 
       <div className="container py-2">
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <div className="grid md:grid-cols-2 gap-0 divide-y md:divide-y-0 md:divide-x divide-gray-100">
+          <div className="grid md:grid-cols-2 gap-0 divide-y md:divide-y-0 md:divide-x divide-gray-100 md:items-start">
 
             {/* ===== LEFT COLUMN ===== */}
-            <div className="flex flex-col p-3 md:p-4 gap-3">
+            <div className="flex flex-col p-3 md:p-4 gap-3 md:sticky md:top-[72px] md:self-start">
 
               {/* ── Photo block ── */}
               <div className="relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl overflow-hidden cursor-zoom-in"
@@ -782,8 +786,12 @@ function ReviewsSection({ productId }: { productId: number }) {
   const [comment, setComment] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  const { data: reviewsList = [] } = trpc.reviews.listByProduct.useQuery({ productId });
-  const { data: summary } = trpc.reviews.summary.useQuery({ productId });
+  const { data: reviewsList = [] } = trpc.reviews.listByProduct.useQuery({ productId }, {
+    staleTime: 5 * 60 * 1000, // 5 min — reviews don't change often
+  });
+  const { data: summary } = trpc.reviews.summary.useQuery({ productId }, {
+    staleTime: 5 * 60 * 1000,
+  });
   const submitMutation = trpc.reviews.submit.useMutation({
     onSuccess: () => {
       setSubmitted(true);
@@ -927,7 +935,9 @@ function ReviewsSection({ productId }: { productId: number }) {
 }
 
 function SimilarProducts({ categoryId, excludeId }: { categoryId: number; excludeId: number }) {
-  const { data: items } = trpc.products.similar.useQuery({ categoryId, excludeId, limit: 8 });
+  const { data: items } = trpc.products.similar.useQuery({ categoryId, excludeId, limit: 8 }, {
+    staleTime: 5 * 60 * 1000, // 5 min
+  });
   if (!items || items.length === 0) return null;
   return (
     <div className="container py-6">

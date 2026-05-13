@@ -15,15 +15,17 @@ export default function MobileBottomNav() {
   const { t } = useLanguage();
   const { currency, setCurrency } = useCurrency();
   const { user, isAuthenticated } = useAuth();
-  const { data: sellerProfile } = trpc.sellers.me.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: sellerProfile } = trpc.sellers.me.useQuery(undefined, { enabled: isAuthenticated, staleTime: 5 * 60 * 1000 });
   const { data: categories = [] } = trpc.categories.list.useQuery(undefined, { staleTime: 10 * 60 * 1000 });
   const { data: notifData, refetch: refetchNotifs } = trpc.notifications.list.useQuery(undefined, {
     enabled: isAuthenticated,
-    refetchInterval: 30000,
+    refetchInterval: 60000, // poll every 60s (was 30s)
+    staleTime: 30000,
   });
   const { data: unreadData } = trpc.notifications.unreadCount.useQuery(undefined, {
     enabled: isAuthenticated,
-    refetchInterval: 30000,
+    refetchInterval: 60000,
+    staleTime: 30000,
   });
   const markReadMutation = trpc.notifications.markRead.useMutation({ onSuccess: () => refetchNotifs() });
   const markAllReadMutation = trpc.notifications.markAllRead.useMutation({ onSuccess: () => refetchNotifs() });
