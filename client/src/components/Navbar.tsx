@@ -3,7 +3,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { Bell, ChevronDown, Crown, LayoutGrid, Search, ShoppingCart, User, X } from "lucide-react";
+import { Bell, ChevronDown, Crown, Heart, LayoutGrid, Search, ShoppingCart, User, X } from "lucide-react";
+import { useWishlist } from "@/hooks/useWishlist";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 
@@ -13,6 +14,7 @@ interface NavbarProps {
 
 export default function Navbar({ onOpenAuth }: NavbarProps) {
   const { totalItems } = useCart();
+  const { count: wishlistCount } = useWishlist();
   const { user, isAuthenticated } = useAuth();
   const { t } = useLanguage();
   const { currency, setCurrency } = useCurrency();
@@ -407,6 +409,16 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
               </div>
             )}
 
+            {/* Wishlist */}
+            <Link href="/favorites" className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors relative">
+              <div className="relative">
+                <Heart size={20} className="text-gray-700" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">{wishlistCount > 9 ? "9+" : wishlistCount}</span>
+                )}
+              </div>
+              <span className="text-[10px] text-gray-600 whitespace-nowrap">Избранное</span>
+            </Link>
             {/* Cart */}
             <Link href="/cart" className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors relative">
               <div className="relative">

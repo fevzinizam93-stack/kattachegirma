@@ -10,6 +10,8 @@ import {
   getProducts,
   getProductBySlug,
   getProductById,
+  getProductsByIds,
+  getSimilarProducts,
   createProduct,
   updateProduct,
   deleteProduct,
@@ -229,12 +231,13 @@ export const appRouter = router({
         maxPrice: z.number().optional(),
         sortBy: z.enum(['newest', 'price_asc', 'price_desc', 'discount']).optional(),
         brands: z.array(z.string()).optional(),
+        minRating: z.number().min(1).max(5).optional(),
         limit: z.number().default(20),
         offset: z.number().default(0),
       }))
       .query(async ({ input }) => {
         const items = await getProducts({ ...input, approvedOnly: true });
-        const total = await countProducts({ categoryId: input.categoryId, search: input.search, approvedOnly: true, isPremium: input.isPremium, minPrice: input.minPrice, maxPrice: input.maxPrice, brands: input.brands });
+        const total = await countProducts({ categoryId: input.categoryId, search: input.search, approvedOnly: true, isPremium: input.isPremium, minPrice: input.minPrice, maxPrice: input.maxPrice, brands: input.brands, minRating: input.minRating });
         return { items, total };
       }),
     getBrands: publicProcedure
@@ -264,6 +267,16 @@ export const appRouter = router({
         if (!product) throw new TRPCError({ code: "NOT_FOUND" });
         return product;
       }),
+    getByIds: publicProcedure
+      .input(z.object({ ids: z.array(z.number()) }))
+      .query(async ({ input }) => {
+        return getProductsByIds(input.ids);
+      }),
+    getSimilar: publicProcedure
+      .input(z.object({ categoryId: z.number(), excludeId: z.number(), limit: z.number().default(8) }))
+      .query(async ({ input }) => {
+        return getSimilarProducts(input.categoryId, input.excludeId, input.limit);
+      }),
 
     incrementView: publicProcedure
       .input(z.object({ productId: z.number() }))
@@ -274,8 +287,7 @@ export const appRouter = router({
     similar: publicProcedure
       .input(z.object({ categoryId: z.number(), excludeId: z.number(), limit: z.number().default(8) }))
       .query(async ({ input }) => {
-        const items = await getProducts({ categoryId: input.categoryId, approvedOnly: true, limit: input.limit + 1 });
-        return items.filter((p: { id: number }) => p.id !== input.excludeId).slice(0, input.limit);
+        return getSimilarProducts(input.categoryId, input.excludeId, input.limit);
       }),
 
     create: adminProcedure

@@ -695,3 +695,25 @@
 ## v99 - ScrollToTop на других страницах
 - [x] Bestsellers.tsx: добавить импорт и компонент ScrollToTop
 - [x] SellerStorefront.tsx: добавить импорт и компонент ScrollToTop
+
+## v100 - Избранное (Wishlist)
+- [x] Создать хук useWishlist (localStorage, id товаров, toggle/has/clear)
+- [ ] ProductCard.tsx: кнопка ♡ (Heart) в верхнем левом углу, красная если в избранном
+- [ ] ProductDetail.tsx: кнопка ♡ рядом с кнопкой сравнения
+- [ ] Navbar.tsx: иконка Heart со счётчиком (рядом с корзиной)
+- [ ] MobileBottomNav.tsx: пункт «Избранное» (Heart icon)
+- [ ] Создать страницу Favorites.tsx (/favorites) — сетка товаров из wishlist
+- [ ] App.tsx: зарегистрировать маршрут /favorites
+
+## v101 - Фильтр по рейтингу в каталоге
+- [ ] Catalog.tsx: добавить tRPC запрос products.list с параметром minRating
+- [ ] server/routers.ts: добавить параметр minRating в products.list
+- [ ] server/db.ts: фильтрация по avg_rating >= minRating в getProducts
+- [ ] Catalog.tsx: блок «Рейтинг» в боковой панели — 5 кнопок (★★★★★, ★★★★, ★★★, любой)
+- [ ] Сброс фильтра рейтинга при общем сбросе фильтров
+
+## v102 - Блок «Похожие товары» на странице товара
+- [ ] server/routers.ts: процедура products.getSimilar (та же категория, исключить текущий, limit 8)
+- [ ] server/db.ts: getSimilarProducts(categoryId, excludeId, limit)
+- [ ] ProductDetail.tsx: секция «Похожие товары» — горизонтальный скролл с ProductCard
+- [ ] Skeleton loader для секции похожих товаров

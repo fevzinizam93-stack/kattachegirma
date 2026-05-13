@@ -1030,18 +1030,26 @@ function ReviewsSection({ productId }: { productId: number }) {
 
 function SimilarProducts({ categoryId, excludeId }: { categoryId: number; excludeId: number }) {
   const { data: items } = trpc.products.similar.useQuery({ categoryId, excludeId, limit: 8 }, {
-    staleTime: 5 * 60 * 1000, // 5 min
+    staleTime: 5 * 60 * 1000,
   });
   if (!items || items.length === 0) return null;
   return (
-    <div className="container py-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-black text-gray-900">🔄 Похожие товары</h2>
-      </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-        {items.map((p: any) => (
-          <ProductCard key={p.id} product={p} />
-        ))}
+    <div className="py-6 bg-gray-50 border-t border-gray-100">
+      <div className="container">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-black text-gray-900">🔄 Похожие товары</h2>
+          <Link href={`/catalog?category=${categoryId}`} className="text-sm text-primary font-medium hover:underline">
+            Смотреть все →
+          </Link>
+        </div>
+        {/* Horizontal scroll on mobile, grid on desktop */}
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide md:grid md:grid-cols-4 lg:grid-cols-5 md:overflow-visible">
+          {items.map((p: any) => (
+            <div key={p.id} className="flex-shrink-0 w-[160px] sm:w-[180px] md:w-auto">
+              <ProductCard product={p} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

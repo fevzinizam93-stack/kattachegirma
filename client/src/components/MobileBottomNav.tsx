@@ -3,7 +3,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Home, Grid3X3, Flame, ShoppingCart, Menu, Store, Crown, LogIn, ShieldCheck, Users, ChevronRight, LayoutGrid, Bell } from "lucide-react";
+import { Home, Grid3X3, Flame, Heart, ShoppingCart, Menu, Store, Crown, LogIn, ShieldCheck, Users, ChevronRight, LayoutGrid, Bell } from "lucide-react";
+import { useWishlist } from "@/hooks/useWishlist";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
 import { getLoginUrl } from "@/const";
@@ -32,6 +33,7 @@ export default function MobileBottomNav() {
   const notifList = notifData ?? [];
   const unreadCount = unreadData?.count ?? 0;
   const [menuOpen, setMenuOpen] = useState(false);
+  const { count: wishlistCount } = useWishlist();
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
 
@@ -75,6 +77,21 @@ export default function MobileBottomNav() {
             <span>{t.nav_bestsellers}</span>
           </Link>
 
+          {/* Избранное */}
+          <Link
+            href="/favorites"
+            className={`flex flex-col items-center justify-center flex-1 gap-0.5 text-[10px] font-medium transition-colors ${isActive("/favorites") ? activeClass : inactiveClass}`}
+          >
+            <div className="relative">
+              <Heart size={22} strokeWidth={isActive("/favorites") ? 2.5 : 1.8} className={isActive("/favorites") ? "fill-current" : ""} />
+              {wishlistCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center leading-none">
+                  {wishlistCount > 9 ? "9+" : wishlistCount}
+                </span>
+              )}
+            </div>
+            <span>Избранное</span>
+          </Link>
           {/* Корзина */}
           <Link
             href="/cart"

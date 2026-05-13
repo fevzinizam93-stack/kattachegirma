@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, gte, ilike, like, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, ilike, inArray, like, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool } from "mysql2";
 import { analyticsEvents, banners, Banner, InsertBanner, brands, Brand, InsertBrand, categories, conversations, Conversation, InsertConversation, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, messages, Message, InsertMessage, notifications, InsertNotification, orders, products, reviews, InsertReview, sellers, sellerContacts, SellerContact, InsertSellerContact, sellerReviews, InsertSellerReview, storeSettings, telegramRecipients, TelegramRecipient, users, User, utmVisits, UtmVisit } from "../drizzle/schema";
@@ -145,7 +145,7 @@ export async function deleteCategory(id: number) {
 }
 
 // ---- Products ----
-export async function getProducts(opts?: { categoryId?: number; search?: string; featured?: boolean; limit?: number; offset?: number; approvedOnly?: boolean; isPremium?: boolean; includeInactive?: boolean; minPrice?: number; maxPrice?: number; sortBy?: 'newest' | 'price_asc' | 'price_desc' | 'discount'; brands?: string[] }) {
+export async function getProducts(opts?: { categoryId?: number; search?: string; featured?: boolean; limit?: number; offset?: number; approvedOnly?: boolean; isPremium?: boolean; includeInactive?: boolean; minPrice?: number; maxPrice?: number; sortBy?: 'newest' | 'price_asc' | 'price_desc' | 'discount'; brands?: string[]; minRating?: number }) {
   const db = await getDb();
   if (!db) return [];
   const conditions = [];
@@ -171,6 +171,10 @@ export async function getProducts(opts?: { categoryId?: number; search?: string;
   if (opts?.brands && opts.brands.length > 0) {
     const brandConds = opts.brands.map(b => sql`LOWER(${products.brand}) = ${b.toLowerCase()}`);
     conditions.push(or(...brandConds));
+  }
+  if (opts?.minRating != null) {
+    const minR = opts.minRating;
+    conditions.push(sql`(SELECT COALESCE(AVG(r.rating), 0) FROM reviews r WHERE r.productId = ${products.id} AND r.status = 'approved') >= ${minR}`);
   }
   const query = db.select().from(products);
   if (conditions.length > 0) query.where(and(...conditions));
@@ -225,6 +229,24 @@ export async function getProductById(id: number) {
   return result[0];
 }
 
+export async function getProductsByIds(ids: number[]) {
+  if (ids.length === 0) return [];
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(products).where(inArray(products.id, ids));
+}
+
+export async function getSimilarProducts(categoryId: number, excludeId: number, limit = 8) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(products)
+    .where(and(eq(products.categoryId, categoryId), eq(products.moderationStatus, 'approved'), sql`${products.id} != ${excludeId}`))
+    .orderBy(desc(products.createdAt))
+    .limit(limit);
+}
+
 export async function createProduct(data: InsertProduct) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
@@ -244,7 +266,7 @@ export async function deleteProduct(id: number) {
   await db.delete(products).where(eq(products.id, id));
 }
 
-export async function countProducts(opts?: { categoryId?: number; search?: string; approvedOnly?: boolean; isPremium?: boolean; includeInactive?: boolean; minPrice?: number; maxPrice?: number; brands?: string[] }) {
+export async function countProducts(opts?: { categoryId?: number; search?: string; approvedOnly?: boolean; isPremium?: boolean; includeInactive?: boolean; minPrice?: number; maxPrice?: number; brands?: string[]; minRating?: number }) {
   const db = await getDb();
   if (!db) return 0;
   const conditions = [];
@@ -269,6 +291,10 @@ export async function countProducts(opts?: { categoryId?: number; search?: strin
   if (opts?.brands && opts.brands.length > 0) {
     const brandConds = opts.brands.map(b => sql`LOWER(${products.brand}) = ${b.toLowerCase()}`);
     conditions.push(or(...brandConds));
+  }
+  if (opts?.minRating != null) {
+    const minR = opts.minRating;
+    conditions.push(sql`(SELECT COALESCE(AVG(r.rating), 0) FROM reviews r WHERE r.productId = ${products.id} AND r.status = 'approved') >= ${minR}`);
   }
   const query = db.select({ count: sql<number>`count(*)` }).from(products);
   if (conditions.length > 0) query.where(and(...conditions));

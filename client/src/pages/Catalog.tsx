@@ -54,6 +54,7 @@ export default function Catalog() {
       maxPriceInput: maxP ?? '',
       sortBy: (sort && ['newest','price_asc','price_desc','discount'].includes(sort) ? sort : 'newest') as SortBy,
       selectedBrands: brandsParam ? brandsParam.split(',').filter(Boolean) : [],
+      minRating: params.get('minRating') ? parseInt(params.get('minRating')!, 10) : undefined,
     };
   };
 
@@ -72,6 +73,7 @@ export default function Catalog() {
   const [maxPrice, setMaxPrice] = useState<number | undefined>(init.maxPrice);
   const [sortBy, setSortBy] = useState<SortBy>(init.sortBy);
   const [selectedBrands, setSelectedBrands] = useState<string[]>(init.selectedBrands);
+  const [minRating, setMinRating] = useState<number | undefined>(init.minRating);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
   // Sync filters to URL
@@ -82,6 +84,7 @@ export default function Catalog() {
     maxPrice?: number;
     sortBy?: SortBy;
     brands?: string[];
+    minRating?: number;
   }) => {
     const params = new URLSearchParams();
     if (opts.category) params.set('category', String(opts.category));
@@ -419,6 +422,36 @@ export default function Catalog() {
                 </div>
               </div>
             </div>
+              {/* Rating filter */}
+              <div className="mt-4 pt-4 border-t border-border">
+                <h4 className="font-semibold text-xs text-muted-foreground uppercase tracking-wide mb-2">Рейтинг</h4>
+                <div className="space-y-1">
+                  {[4, 3, 2].map((r) => (
+                    <button
+                      key={r}
+                      onClick={() => {
+                        const next = minRating === r ? undefined : r;
+                        setMinRating(next);
+                        setPage(0);
+                        setAllProducts([]);
+                        syncToUrl({ category: selectedCategory, q: search, minPrice, maxPrice, sortBy, brands: selectedBrands, minRating: next });
+                      }}
+                      className={`w-full flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${minRating === r ? 'bg-primary text-primary-foreground font-semibold' : 'hover:bg-accent'}`}
+                    >
+                      <span className="text-amber-400">{'★'.repeat(r)}{'☆'.repeat(5 - r)}</span>
+                      <span>и выше</span>
+                    </button>
+                  ))}
+                  {minRating !== undefined && (
+                    <button
+                      onClick={() => { setMinRating(undefined); setPage(0); setAllProducts([]); syncToUrl({ category: selectedCategory, q: search, minPrice, maxPrice, sortBy, brands: selectedBrands }); }}
+                      className="w-full border border-border px-3 py-1.5 rounded-lg text-sm hover:bg-accent transition-colors"
+                    >
+                      Сбросить рейтинг
+                    </button>
+                  )}
+                </div>
+              </div>
           </aside>
 
           {/* Products grid */}

@@ -2,7 +2,8 @@ import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Crown, ShoppingCart, ArrowLeftRight } from "lucide-react";
+import { Crown, ShoppingCart, ArrowLeftRight, Heart } from "lucide-react";
+import { useWishlist } from "@/hooks/useWishlist";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -38,6 +39,8 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { formatPrice } = useCurrency();
   const { user } = useAuth();
   const [compareOpen, setCompareOpen] = useState(false);
+  const { toggle: toggleWishlist, has: inWishlist } = useWishlist();
+  const isWishlisted = inWishlist(product.id);
 
   const isVip = user?.role === "vip" || user?.role === "admin";
   const displayName = product.name;
@@ -99,8 +102,16 @@ export default function ProductCard({ product }: ProductCardProps) {
               <span className="text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-none flex items-center gap-0.5" style={{ backgroundColor: "#e65100" }}>🔥 {t.card_hit}</span>
             )}
           </div>
+          {/* Wishlist button */}
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleWishlist(product.id); }}
+            title={isWishlisted ? "Убрать из избранного" : "В избранное"}
+            className={`absolute top-1.5 right-1.5 w-6 h-6 rounded-full flex items-center justify-center transition-all shadow-sm z-10 ${isWishlisted ? "bg-red-500 text-white border-red-500" : "bg-white/90 border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-300 hover:bg-red-50"}`}
+          >
+            <Heart size={11} className={isWishlisted ? "fill-white" : ""} />
+          </button>
           {product.isPremium && (
-            <div className="absolute top-1.5 right-1.5">
+            <div className="absolute top-8 right-1.5">
               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-none flex items-center gap-0.5" style={{ background: 'linear-gradient(135deg, #1a1a2e, #2d2d4e)', color: '#d4af37', border: '1px solid #d4af37' }}>◈ {t.card_original}</span>
             </div>
           )}
