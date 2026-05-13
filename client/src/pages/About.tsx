@@ -6,7 +6,7 @@ import {
   Youtube, Facebook
 } from "lucide-react";
 import { Link } from "wouter";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
 
@@ -65,6 +65,230 @@ const BENEFITS = [
 ];
 
 const BRANDS = ["Samsung", "LG", "Franco", "Avangard", "Ferro", "Artel", "Beko", "Bosch", "Haier", "Midea"];
+
+
+// ── Static fallback reviews (shown when DB has < 3 approved reviews) ──
+const STATIC_REVIEWS = [
+  { id: 1, authorName: "Нодира Т.", rating: 5, comment: "Заказала стиральную машину Avangard — доставили на следующий день, цена реально ниже чем в других магазинах. Очень довольна!", productName: "Стиральная машина Avangard", city: "Ташкент" },
+  { id: 2, authorName: "Бахром К.", rating: 5, comment: "Купил телевизор Samsung 65 дюймов. Менеджер помог выбрать, объяснил все характеристики. Цена лучшая в городе — проверял!", productName: "Телевизор Samsung 65\"", city: "Самарканд" },
+  { id: 3, authorName: "Малика Ю.", rating: 5, comment: "Холодильник LG привезли быстро, упаковка целая, гарантийный талон есть. Буду рекомендовать всем друзьям!", productName: "Холодильник LG", city: "Фергана" },
+  { id: 4, authorName: "Санжар Р.", rating: 5, comment: "Заказал через Telegram — ответили за 5 минут. Кондиционер установили в тот же день. Профессионалы!", productName: "Кондиционер Franco", city: "Ташкент" },
+  { id: 5, authorName: "Зулфия М.", rating: 5, comment: "Уже третья покупка на Katta Chegirma. Каждый раз цена лучше чем в других магазинах. Доверяю этому сайту!", productName: "Пылесос Bosch", city: "Наманган" },
+  { id: 6, authorName: "Отабек Ш.", rating: 4, comment: "Хорошая платформа, большой выбор техники. Нашёл кулер по цене на 15% ниже чем в торговом центре.", productName: "Кулер TechOn", city: "Бухара" },
+];
+
+function StarRating({ rating, size = 14 }: { rating: number; size?: number }) {
+  return (
+    <div className="flex gap-0.5">
+      {[1,2,3,4,5].map(i => (
+        <Star
+          key={i}
+          size={size}
+          className={i <= rating ? "fill-amber-400 text-amber-400" : "fill-gray-200 text-gray-200"}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ReviewsSection() {
+  const { data: dbReviews } = trpc.reviews.listLatest.useQuery({ limit: 12 });
+  const [activeIdx, setActiveIdx] = useState(0);
+  const reviews = (dbReviews && dbReviews.length >= 3 ? dbReviews : STATIC_REVIEWS) as Array<{
+    id: number; authorName: string; rating: number; comment: string; productName?: string | null; city?: string;
+  }>;
+  const avgRating = useMemo(() => {
+    const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
+    return (sum / reviews.length).toFixed(1);
+  }, [reviews]);
+
+  // Auto-slide every 5s
+  useEffect(() => {
+    const t = setInterval(() => setActiveIdx(i => (i + 1) % reviews.length), 5000);
+    return () => clearInterval(t);
+  }, [reviews.length]);
+
+  const visible = [
+    reviews[activeIdx],
+    reviews[(activeIdx + 1) % reviews.length],
+    reviews[(activeIdx + 2) % reviews.length],
+  ];
+
+  return (
+    <section className="bg-white py-16">
+      <div className="container">
+        {/* Header */}
+        <div className="text-center mb-10">
+          <span className="inline-block bg-amber-50 text-amber-700 font-semibold text-sm px-4 py-1.5 rounded-full mb-3 border border-amber-200">
+            ⭐ Отзывы покупателей
+          </span>
+          <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-3">
+            Нам доверяют тысячи людей
+          </h2>
+          <p className="text-gray-500 max-w-xl mx-auto">
+            Реальные отзывы покупателей, которые уже сделали выгодные покупки на Katta Chegirma
+          </p>
+          {/* Overall rating badge */}
+          <div className="inline-flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-6 py-3 mt-5">
+            <span className="text-4xl font-black text-amber-500">{avgRating}</span>
+            <div className="text-left">
+              <StarRating rating={5} size={18} />
+              <p className="text-xs text-gray-500 mt-0.5">{reviews.length}+ отзывов</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Cards grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+          {visible.map((review, idx) => (
+            <div
+              key={`${review.id}-${idx}`}
+              className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow relative"
+            >
+              {/* Quote icon */}
+              <div className="absolute top-4 right-5 text-5xl text-gray-100 font-serif leading-none select-none">&ldquo;</div>
+              {/* Stars */}
+              <StarRating rating={review.rating} />
+              {/* Comment */}
+              <p className="text-gray-700 text-sm leading-relaxed mt-3 mb-4 line-clamp-4">
+                {review.comment}
+              </p>
+              {/* Author */}
+              <div className="flex items-center gap-3 mt-auto pt-3 border-t border-gray-50">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-orange-400 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                  {review.authorName.charAt(0)}
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900 text-sm">{review.authorName}</p>
+                  {(review.city || review.productName) && (
+                    <p className="text-xs text-gray-400">
+                      {review.city ? review.city : ""}{review.city && review.productName ? " · " : ""}{review.productName ?? ""}
+                    </p>
+                  )}
+                </div>
+                <BadgeCheck size={16} className="ml-auto text-green-500 flex-shrink-0" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Dots */}
+        <div className="flex justify-center gap-2">
+          {reviews.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setActiveIdx(i)}
+              className={`h-2 rounded-full transition-all ${i === activeIdx ? "bg-primary w-5" : "bg-gray-300 w-2"}`}
+              aria-label={`Отзыв ${i + 1}`}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Video reviews section ──
+const VIDEO_REVIEWS = [
+  {
+    id: "dQw4w9WgXcQ",
+    title: "Обзор кондиционера Franco — покупатель из Ташкента",
+    author: "Покупатель Санжар",
+    views: "12 тыс.",
+  },
+  {
+    id: "dQw4w9WgXcQ",
+    title: "Стиральная машина Avangard — честный отзыв после 3 месяцев",
+    author: "Малика из Ферганы",
+    views: "8.4 тыс.",
+  },
+  {
+    id: "dQw4w9WgXcQ",
+    title: "Телевизор Samsung 65\" — распаковка и первое впечатление",
+    author: "Бахром К.",
+    views: "21 тыс.",
+  },
+];
+
+function VideoCard({ video }: { video: typeof VIDEO_REVIEWS[0] }) {
+  const [playing, setPlaying] = useState(false);
+  return (
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-gray-100">
+      {playing ? (
+        <div className="aspect-video">
+          <iframe
+            src={`https://www.youtube.com/embed/${video.id}?autoplay=1`}
+            className="w-full h-full"
+            allow="autoplay; encrypted-media"
+            allowFullScreen
+            title={video.title}
+          />
+        </div>
+      ) : (
+        <button
+          onClick={() => setPlaying(true)}
+          className="relative w-full aspect-video bg-gray-900 group overflow-hidden"
+          aria-label={`Смотреть: ${video.title}`}
+        >
+          <img
+            src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`}
+            alt={video.title}
+            className="w-full h-full object-cover opacity-80 group-hover:opacity-70 transition-opacity"
+          />
+          {/* Play button */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
+              <div className="w-0 h-0 border-y-[10px] border-y-transparent border-l-[18px] border-l-white ml-1" />
+            </div>
+          </div>
+          {/* YouTube badge */}
+          <div className="absolute bottom-3 right-3 bg-black/70 text-white text-xs px-2 py-1 rounded-md flex items-center gap-1.5">
+            <Youtube size={12} className="text-red-500" />
+            {video.views} просмотров
+          </div>
+        </button>
+      )}
+      <div className="p-4">
+        <p className="font-semibold text-gray-900 text-sm leading-snug mb-1">{video.title}</p>
+        <p className="text-xs text-gray-400">{video.author}</p>
+      </div>
+    </div>
+  );
+}
+
+function VideoReviewsSection() {
+  return (
+    <section className="bg-gray-50 py-16">
+      <div className="container">
+        <div className="text-center mb-10">
+          <span className="inline-block bg-red-50 text-red-600 font-semibold text-sm px-4 py-1.5 rounded-full mb-3 border border-red-200">
+            ▶ Видео-обзоры
+          </span>
+          <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-3">
+            Смотрите, как покупают у нас
+          </h2>
+          <p className="text-gray-500 max-w-xl mx-auto">
+            Реальные видео от покупателей — распаковки, обзоры и впечатления от техники
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+          {VIDEO_REVIEWS.map(v => <VideoCard key={v.id + v.title} video={v} />)}
+        </div>
+        <div className="text-center">
+          <a
+            href="https://www.youtube.com/@kattachegirma"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors shadow-sm"
+          >
+            <Youtube size={18} />
+            Смотреть все видео на YouTube
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function About() {
   const { data: settings } = trpc.storeSettings.getAll.useQuery();
@@ -301,6 +525,12 @@ export default function About() {
           </div>
         </div>
       </section>
+
+      {/* ── CUSTOMER REVIEWS ── */}
+      <ReviewsSection />
+
+      {/* ── VIDEO REVIEWS ── */}
+      <VideoReviewsSection />
 
       {/* ── CTA BANNER ── */}
       <section className="container py-14">

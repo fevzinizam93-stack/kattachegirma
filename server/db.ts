@@ -520,6 +520,25 @@ export async function getApprovedReviewsByProduct(productId: number) {
     .orderBy(desc(reviews.createdAt));
 }
 
+
+export async function getLatestApprovedReviews(limit: number = 12) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select({
+    id: reviews.id,
+    productId: reviews.productId,
+    authorName: reviews.authorName,
+    rating: reviews.rating,
+    comment: reviews.comment,
+    createdAt: reviews.createdAt,
+    productName: products.name,
+  })
+  .from(reviews)
+  .leftJoin(products, eq(reviews.productId, products.id))
+  .where(eq(reviews.status, "approved"))
+  .orderBy(desc(reviews.createdAt))
+  .limit(limit);
+}
 export async function getAllReviews(status?: "pending" | "approved" | "hidden") {
   const db = await getDb();
   if (!db) return [];

@@ -48,6 +48,7 @@ import {
   insertReview,
   getApprovedReviewsByProduct,
   getAllReviews,
+  getLatestApprovedReviews,
   setReviewStatus,
   deleteReview,
   getReviewCountsByProduct,
@@ -1057,8 +1058,13 @@ export const appRouter = router({
         await deleteReview(input.id);
         return { ok: true };
       }),
+    // Public: latest approved reviews (for About page)
+    listLatest: publicProcedure
+      .input(z.object({ limit: z.number().min(1).max(20).default(12) }))
+      .query(async ({ input }) => {
+        return getLatestApprovedReviews(input.limit);
+      }),
   }),
-
   banners: router({
     // Public: list active banners
     listActive: publicProcedure.query(async () => {
