@@ -1,0 +1,77 @@
+{
+  "query": "SELECT `key`, `value` FROM store_settings ORDER BY `key`;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute SELECT `key`, `value` FROM store_settings ORDER BY `key`;",
+  "rows": [
+    {
+      "key": "about_images",
+      "value": "[]"
+    },
+    {
+      "key": "about_text",
+      "value": ""
+    },
+    {
+      "key": "address",
+      "value": "Malika bozor B blok !6 chi dokon"
+    },
+    {
+      "key": "address2",
+      "value": "Qora qmish bitonka, keles mostidan Mexnat pivo zavodga qarab 1 km yurganizda o'ng tarafda Guarante deb nomlangan maishiy texnika do'koni!"
+    },
+    {
+      "key": "description",
+      "value": "МАГАЗИН БЫТОВОЙ ТЕХНИКИ №1 ПО ВЫГОДЕ"
+    },
+    {
+      "key": "instagram",
+      "value": "@katta.chegirma"
+    },
+    {
+      "key": "phone",
+      "value": "+998938619009"
+    },
+    {
+      "key": "phone2",
+      "value": ""
+    },
+    {
+      "key": "store_address",
+      "value": ""
+    },
+    {
+      "key": "store_description",
+      "value": "Katta Chegirma - O'zbekistonda eng arzon uy texnikasi do'koni."
+    },
+    {
+      "key": "store_phone",
+      "value": ""
+    },
+    {
+      "key": "store_telegram",
+      "value": ""
+    },
+    {
+      "key": "storeName",
+      "value": "GUARANTE KATTA CHEGIRMA"
+    },
+    {
+      "key": "telegram",
+      "value": "@kattachegirmauz"
+    },
+    {
+      "key": "workingHours",
+      "value": "Ish vaqti, Xar kuni soata 9:00 dan 19:00 gacha!"
+    }
+  ],
+  "messages": [
+    "GUARANTE KATTA CHEGIRMA!",
+    "Работаем много лет — дорожим репутацией.",
+    "Самые низкие цены на рынке (реально ниже рыночных).",
+    "Прямые поставки брендовой техники.",
+    "Огромный выбор в наличии.",
+    "📍 Приезжайте и сравните цены. Качество — оригинал, цена — подарок!"
+  ],
+  "stdout": "key\tvalue\nabout_images\t[]\nabout_text\t\naddress\tMalika bozor B blok !6 chi dokon\naddress2\tQora qmish bitonka, keles mostidan Mexnat pivo zavodga qarab 1 km yurganizda o'ng tarafda Guarante deb nomlangan maishiy texnika do'koni!\ndescription\tМАГАЗИН БЫТОВОЙ ТЕХНИКИ №1 ПО ВЫГОДЕ\n\nGUARANTE KATTA CHEGIRMA!\n\nРаботаем много лет — дорожим репутацией.\n\nСамые низкие цены на рынке (реально ниже рыночных).\n\nПрямые поставки брендовой техники.\n\nОгромный выбор в наличии.\n\n📍 Приезжайте и сравните цены. Качество — оригинал, цена — подарок!\ninstagram\t@katta.chegirma\nphone\t+998938619009\nphone2\t\nstore_address\t\nstore_description\tKatta Chegirma - O'zbekistonda eng arzon uy texnikasi do'koni.\nstore_phone\t\nstore_telegram\t\nstoreName\tGUARANTE KATTA CHEGIRMA\ntelegram\t@kattachegirmauz\nworkingHours\tIsh vaqti, Xar kuni soata 9:00 dan 19:00 gacha!\n",
+  "stderr": "",
+  "execution_time_ms": 328
+}

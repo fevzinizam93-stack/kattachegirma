@@ -2,7 +2,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Crown, ShoppingCart, ArrowLeftRight, Heart } from "lucide-react";
+import { Crown, ShoppingCart, ArrowLeftRight, Heart, Send } from "lucide-react";
 import { useWishlist } from "@/hooks/useWishlist";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -43,6 +43,14 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { toggle: toggleWishlist, has: inWishlist } = useWishlist();
   const isWishlisted = inWishlist(product.id);
 
+  // Telegram order link — uses store handle @kattachegirmauz
+  const STORE_TG = "kattachegirmauz";
+  const tgMsg = encodeURIComponent(`Здравствуйте! Хочу заказать: ${product.name}\nЦена: ${parseFloat(product.price).toLocaleString("ru-RU")} сум`);
+  const tgOrderUrl = `https://t.me/${STORE_TG}?text=${tgMsg}`;
+
+  // Simulated "watching now" count — seeded by product.id for consistency
+  const watchingNow = ((product.id * 7 + 3) % 13) + 3; // 3..15
+
   const isVip = user?.role === "vip" || user?.role === "admin";
   const displayName = product.name;
 
@@ -82,8 +90,9 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   return (
     <>
-    <Link href={`/product/${product.slug}`}>
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden cursor-pointer h-full flex flex-col active:scale-[0.98] transition-transform touch-manipulation">
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden h-full flex flex-col">
+    <Link href={`/product/${product.slug}`} className="flex flex-col flex-1 cursor-pointer active:scale-[0.98] transition-transform touch-manipulation">
+      <div className="flex flex-col flex-1">
         <div className="relative bg-gray-50" style={{ paddingBottom: "70%" }}>
           <div className="absolute inset-0">
             {product.imageUrl ? (
@@ -176,6 +185,23 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
       </div>
     </Link>
+    {/* Telegram order button — outside Link to avoid nested <a> */}
+    <div className="px-2 pb-2 flex flex-col gap-1 mt-auto">
+      <a
+        href={tgOrderUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="w-full flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-[11px] font-semibold transition-colors active:opacity-80 touch-manipulation border border-[#2AABEE] text-[#2AABEE] hover:bg-[#2AABEE] hover:text-white"
+      >
+        <Send size={11} />
+        <span>Заказать в Telegram</span>
+      </a>
+      <div className="flex items-center justify-center gap-1 text-[10px] text-orange-500 font-semibold">
+        <span className="inline-block w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+        Сейчас смотрят: {watchingNow}
+      </div>
+    </div>
+    </div>
     {/* Compare Modal — rendered outside Link to avoid nested anchor */}
     <CompareModal
       open={compareOpen}

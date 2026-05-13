@@ -159,6 +159,8 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
   const category = categories.find(c => c.id === product?.categoryId);
 
   const [liveViewCount, setLiveViewCount] = useState<number | null>(null);
+  // Simulated "watching now" — seeded by product id for consistency
+  const watchingNow = product ? ((product.id * 7 + 3) % 13) + 3 : 0; // 3..15
   const [countdown, setCountdown] = useState<{ h: number; m: number; s: number } | null>(null);
   useEffect(() => {
     const endsAt = (product as any)?.discountEndsAt;
@@ -540,13 +542,19 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                     </span>
                   )}
                 </div>
-                {/* View count — top right */}
-                {liveViewCount !== null && (
-                  <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-black/40 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-1 rounded-full">
-                    <span>👁</span>
-                    <span>{liveViewCount.toLocaleString("ru-RU")}</span>
+                {/* View count + watching now — top right */}
+                <div className="absolute top-3 right-3 z-10 flex flex-col items-end gap-1">
+                  {liveViewCount !== null && (
+                    <div className="flex items-center gap-1 bg-black/40 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-1 rounded-full">
+                      <span>👁</span>
+                      <span>{liveViewCount.toLocaleString("ru-RU")} просмотров</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-1 bg-orange-500/80 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-1 rounded-full">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                    Сейчас смотрят: {watchingNow}
                   </div>
-                )}
+                </div>
                 {activeUrl ? (
                   <img
                     src={activeUrl}
