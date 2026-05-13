@@ -1483,7 +1483,11 @@ export const appRouter = router({
         productName: z.string().min(1).max(512),
         productPrice: z.string().optional(),
         customerName: z.string().min(1).max(128),
-        customerPhone: z.string().min(7).max(64),
+        customerPhone: z.string()
+          .regex(
+            /^\+998(33|50|55|77|88|90|91|93|94|95|97|98|99)\d{7}$/,
+            "Некорректный номер телефона. Формат: +998XXXXXXXXX"
+          ),
       }))
       .mutation(async ({ input }) => {
         const id = await createQuickOrder(input);
