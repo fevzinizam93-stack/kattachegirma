@@ -7,6 +7,7 @@ import { useLocation } from "wouter";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
 import RecentlyViewed from "@/components/RecentlyViewed";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 const LIMIT = 12;
 
@@ -534,6 +535,8 @@ export default function Catalog() {
       </div>
       {/* Recently viewed */}
       <RecentlyViewed />
+      {/* Floating scroll-to-top button */}
+      <ScrollToTop />
     </div>
   );
 }

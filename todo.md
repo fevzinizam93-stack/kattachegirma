@@ -683,3 +683,11 @@
 - [x] Catalog.tsx: 4 skeleton-карточки с animate-pulse при подгрузке следующей страницы
 - [x] Catalog.tsx: пагинация убрана, добавлено «Все N товаров загружены» в конце
 - [x] Catalog.tsx: setAllProducts([]) при handleSearch, handleCategoryChange, handlePriceFilter, handlePriceReset, toggleBrand, handleBrandsReset, sort change, search clear
+
+## v98 - Плавающая кнопка «Наверх» в каталоге
+- [x] Создать компонент ScrollToTop (useState + useEffect + scroll listener)
+- [x] Кнопка появляется после прокрутки > 300px (opacity + translate transition)
+- [x] Клик — window.scrollTo({ top: 0, behavior: 'smooth' })
+- [x] Позиция: fixed bottom-20 right-4 (не перекрывает мобильный nav)
+- [x] Стиль: pill/circle, bg-primary, ChevronUp icon, shadow-lg
+- [x] Интегрировать ScrollToTop в Catalog.tsx
