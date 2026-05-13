@@ -289,3 +289,17 @@ export const brands = mysqlTable("brands", {
 });
 export type Brand = typeof brands.$inferSelect;
 export type InsertBrand = typeof brands.$inferInsert;
+
+// Quick buy orders (1-click purchase requests)
+export const quickOrders = mysqlTable("quick_orders", {
+  id: int("id").autoincrement().primaryKey(),
+  productId: int("productId"),
+  productName: varchar("productName", { length: 512 }).notNull(),
+  productPrice: varchar("productPrice", { length: 64 }),
+  customerName: varchar("customerName", { length: 128 }).notNull(),
+  customerPhone: varchar("customerPhone", { length: 64 }).notNull(),
+  status: varchar("status", { length: 32 }).default("new").notNull(), // new | called | done | cancelled
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type QuickOrder = typeof quickOrders.$inferSelect;
+export type InsertQuickOrder = typeof quickOrders.$inferInsert;

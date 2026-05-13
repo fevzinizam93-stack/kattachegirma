@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, gte, ilike, inArray, like, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool } from "mysql2";
-import { analyticsEvents, banners, Banner, InsertBanner, brands, Brand, InsertBrand, categories, conversations, Conversation, InsertConversation, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, messages, Message, InsertMessage, notifications, InsertNotification, orders, products, reviews, InsertReview, sellers, sellerContacts, SellerContact, InsertSellerContact, sellerReviews, InsertSellerReview, storeSettings, telegramRecipients, TelegramRecipient, users, User, utmVisits, UtmVisit } from "../drizzle/schema";
+import { analyticsEvents, banners, Banner, InsertBanner, brands, Brand, InsertBrand, categories, conversations, Conversation, InsertConversation, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, messages, Message, InsertMessage, notifications, InsertNotification, orders, products, reviews, InsertReview, sellers, sellerContacts, SellerContact, InsertSellerContact, sellerReviews, InsertSellerReview, storeSettings, telegramRecipients, TelegramRecipient, users, User, utmVisits, UtmVisit, quickOrders, QuickOrder } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import bcrypt from "bcryptjs";
 
@@ -1160,4 +1160,37 @@ export async function getSellerPublicProfile(sellerId: number) {
     stats,
     rating,
   };
+}
+
+// ---- Quick Orders (1-click buy) ----
+export async function createQuickOrder(data: {
+  productId?: number;
+  productName: string;
+  productPrice?: string;
+  customerName: string;
+  customerPhone: string;
+}): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(quickOrders).values({
+    productId: data.productId ?? null,
+    productName: data.productName,
+    productPrice: data.productPrice ?? null,
+    customerName: data.customerName,
+    customerPhone: data.customerPhone,
+    status: "new",
+  });
+  return (result as any)[0]?.insertId as number;
+}
+
+export async function getAllQuickOrders(): Promise<QuickOrder[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(quickOrders).orderBy(desc(quickOrders.createdAt));
+}
+
+export async function updateQuickOrderStatus(id: number, status: string): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(quickOrders).set({ status }).where(eq(quickOrders.id, id));
 }

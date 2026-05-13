@@ -100,6 +100,9 @@ import {
   deleteBrand,
   bulkRecalcPrices,
   getSellerPublicProfile,
+  createQuickOrder,
+  getAllQuickOrders,
+  updateQuickOrderStatus,
 } from "./db";
 import { storagePut } from "./storage";
 import { invokeLLM } from "./_core/llm";
@@ -1463,6 +1466,48 @@ export const appRouter = router({
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         await deleteBrand(input.id);
+        return { success: true };
+      }),
+  }),
+
+  // ---- Quick Orders (1-click buy) ----
+  quickOrders: router({
+    /** Submit a quick buy request (public) */
+    create: publicProcedure
+      .input(z.object({
+        productId: z.number().optional(),
+        productName: z.string().min(1).max(512),
+        productPrice: z.string().optional(),
+        customerName: z.string().min(1).max(128),
+        customerPhone: z.string().min(7).max(64),
+      }))
+      .mutation(async ({ input }) => {
+        const id = await createQuickOrder(input);
+        // Notify admin via Telegram
+        try {
+          const msg = [
+            "🛒 *Новая заявка «Купить в 1 клик»*",
+            `Товар: ${input.productName}${input.productPrice ? ` (цена: ${input.productPrice})` : ""}`,
+            `Покупатель: ${input.customerName}`,
+            `Телефон: ${input.customerPhone}`,
+          ].join("\n");
+          await broadcastTelegramMessage(msg);
+        } catch (e) {
+          console.warn("[QuickOrder] Telegram notify failed:", e);
+        }
+        return { id, success: true };
+      }),
+
+    /** List all quick orders — admin only */
+    list: adminProcedure.query(async () => {
+      return getAllQuickOrders();
+    }),
+
+    /** Update status — admin only */
+    updateStatus: adminProcedure
+      .input(z.object({ id: z.number(), status: z.enum(["new", "called", "done", "cancelled"]) }))
+      .mutation(async ({ input }) => {
+        await updateQuickOrderStatus(input.id, input.status);
         return { success: true };
       }),
   }),

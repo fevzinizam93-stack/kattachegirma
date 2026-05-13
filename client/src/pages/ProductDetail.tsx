@@ -2,7 +2,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { trpc } from "@/lib/trpc";
-import { ChevronDown, ChevronRight, MessageCircle, Minus, Phone, Plus, ShoppingCart, Star, Tag, Truck, Send, ArrowLeftRight } from "lucide-react";
+import { ChevronDown, ChevronRight, MessageCircle, Minus, Phone, Plus, ShoppingCart, Star, Tag, Truck, Send, ArrowLeftRight, Zap } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
 import ProductCard from "@/components/ProductCard";
 import CompareModal from "@/components/CompareModal";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
+import QuickBuyModal from "@/components/QuickBuyModal";
 
 interface ProductDetailProps {
   slug: string;
@@ -144,6 +145,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
   const [zoomed, setZoomed] = useState(false);
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
   const [compareOpen, setCompareOpen] = useState(false);
+  const [quickBuyOpen, setQuickBuyOpen] = useState(false);
   const { addItem } = useCart();
   const { addItem: addToRecentlyViewed } = useRecentlyViewed();
   const { t } = useLanguage();
@@ -671,6 +673,15 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                   </button>
                 </div>
 
+                {/* Row 1b: Quick buy */}
+                <button
+                  onClick={() => setQuickBuyOpen(true)}
+                  disabled={(product.stock ?? 0) === 0}
+                  className="w-full h-10 rounded-full font-bold text-sm flex items-center justify-center gap-2 transition-all border-2 border-primary text-primary hover:bg-primary hover:text-white active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <Zap size={15} />
+                  Купить в 1 клик
+                </button>
                 {/* Row 2: Compare (ghost pill) */}
                 <button
                   onClick={() => setCompareOpen(true)}
@@ -852,6 +863,14 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
       open={compareOpen}
       onClose={() => setCompareOpen(false)}
       currentProduct={product as any}
+    />
+    {/* Quick Buy Modal */}
+    <QuickBuyModal
+      open={quickBuyOpen}
+      onClose={() => setQuickBuyOpen(false)}
+      productId={product.id}
+      productName={product.name}
+      productPrice={product.price ? String(Number(product.price).toLocaleString('ru-RU')) : undefined}
     />
     </>
   );
