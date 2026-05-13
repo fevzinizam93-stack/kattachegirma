@@ -669,3 +669,9 @@
 - [x] Хлебные крошки: отдельный skeleton в белой полосе сверху
 - [x] animate-pulse на всём grid, bg-gray-200 для всех элементов
 - [x] Layout skeleton точно совпадает с реальным (md:grid-cols-2, те же padding/gap)
+
+## v96 - Skeleton loader для каталога
+- [x] Catalog.tsx: skeleton карточки — aspect-square фото, бейдж скидки, иконка сравнения, бренд, название (2 строки), цена (зачёркнутая + актуальная), кнопка корзины
+- [x] Catalog.tsx: 12 skeleton-карточек в grid (2/3/4 колонки на разных брейкпоинтах)
+- [x] animate-pulse на каждой карточке, bg-gray-100 для фото, bg-gray-200 для текстовых элементов
+- [x] Layout skeleton совпадает с реальным (flex-col, те же padding/gap что в ProductCard)

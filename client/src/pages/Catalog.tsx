@@ -410,7 +410,37 @@ export default function Catalog() {
             {isLoading ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
                 {Array.from({ length: 12 }).map((_, i) => (
-                  <div key={i} className="bg-white rounded-xl border border-border h-64 animate-pulse" />
+                  <div key={i} className="bg-white rounded-xl border border-gray-100 overflow-hidden flex flex-col animate-pulse">
+                    {/* Image area */}
+                    <div className="relative bg-gray-100" style={{ aspectRatio: '1' }}>
+                      {/* Discount badge */}
+                      <div className="absolute top-1.5 left-1.5 flex flex-col gap-1">
+                        <div className="h-4 w-8 bg-gray-200 rounded-md" />
+                      </div>
+                      {/* Compare icon placeholder */}
+                      <div className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-full bg-gray-200" />
+                    </div>
+                    {/* Content area */}
+                    <div className="p-2 flex flex-col flex-1 gap-1.5">
+                      {/* Brand */}
+                      <div className="h-2.5 bg-gray-200 rounded w-12" />
+                      {/* Product name — 2 lines */}
+                      <div className="space-y-1 flex-1">
+                        <div className="h-3 bg-gray-200 rounded w-full" />
+                        <div className="h-3 bg-gray-200 rounded w-4/5" />
+                      </div>
+                      {/* Price block */}
+                      <div className="space-y-1 mt-0.5">
+                        <div className="flex items-center gap-1">
+                          <div className="h-2.5 bg-gray-200 rounded w-16" />
+                          <div className="h-3.5 bg-gray-200 rounded w-8" />
+                        </div>
+                        <div className="h-4 bg-gray-200 rounded w-24" />
+                      </div>
+                      {/* Cart button */}
+                      <div className="h-7 bg-gray-200 rounded-lg w-full mt-0.5" />
+                    </div>
+                  </div>
                 ))}
               </div>
             ) : products.length === 0 ? (
