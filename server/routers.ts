@@ -780,8 +780,12 @@ export const appRouter = router({
     // Register as seller
     register: protectedProcedure
       .input(z.object({
-        name: z.string().min(2),
-        phone: z.string().min(7),
+        name: z.string().min(2, "Название магазина обязательно"),
+        phone: z.string()
+          .regex(
+            /^\+998(33|50|55|77|88|90|91|93|94|95|97|98|99)\d{7}$/,
+            "Некорректный номер телефона. Формат: +998XXXXXXXXX (операторы UZ)"
+          ),
         telegram: z.string().optional(),
         description: z.string().optional(),
       }))

@@ -21,6 +21,37 @@ export default function SellerRegister() {
   const [form, setForm] = useState({ name: "", phone: "", telegram: "", description: "" });
   const [step, setStep] = useState<"info" | "form" | "pending">("info");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [phoneError, setPhoneError] = useState("");
+
+  // Uzbekistan phone validation: +998 XX XXX-XX-XX
+  // Valid operators: 90,91,93,94,95,97,98,99,33,50,55,77,88
+  const UZ_PHONE_RE = /^\+998(33|50|55|77|88|90|91|93|94|95|97|98|99)\d{7}$/;
+
+  function formatUzPhone(raw: string): string {
+    // Strip everything except digits and leading +
+    let digits = raw.replace(/[^\d]/g, "");
+    if (digits.startsWith("998")) digits = digits.slice(3);
+    if (digits.startsWith("8") || digits.startsWith("0")) digits = digits.slice(1);
+    digits = digits.slice(0, 9);
+    if (!digits) return "+998";
+    let out = "+998";
+    if (digits.length > 0) out += " " + digits.slice(0, 2);
+    if (digits.length > 2) out += " " + digits.slice(2, 5);
+    if (digits.length > 5) out += "-" + digits.slice(5, 7);
+    if (digits.length > 7) out += "-" + digits.slice(7, 9);
+    return out;
+  }
+
+  function handlePhoneChange(raw: string) {
+    const formatted = formatUzPhone(raw);
+    setForm(f => ({ ...f, phone: formatted }));
+    const stripped = formatted.replace(/[\s\-]/g, "");
+    if (stripped.length > 4 && !UZ_PHONE_RE.test(stripped)) {
+      setPhoneError("Введите корректный номер Узбекистана: +998 XX XXX-XX-XX");
+    } else {
+      setPhoneError("");
+    }
+  }
 
   const sellerQuery = trpc.sellers.me.useQuery(undefined, { enabled: !!user });
   const registerMut = trpc.sellers.register.useMutation({
@@ -294,10 +325,30 @@ export default function SellerRegister() {
                   </label>
                   <input
                     value={form.phone}
-                    onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                    placeholder={t.seller_phone_placeholder}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    onChange={e => handlePhoneChange(e.target.value)}
+                    onFocus={() => { if (!form.phone) setForm(f => ({ ...f, phone: "+998 " })); }}
+                    placeholder="+998 90 123-45-67"
+                    inputMode="tel"
+                    maxLength={17}
+                    className={`w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 transition-colors ${
+                      phoneError
+                        ? "border-red-400 focus:ring-red-300 bg-red-50"
+                        : form.phone && !phoneError
+                          ? "border-green-400 focus:ring-green-300 bg-green-50"
+                          : "border-gray-200 focus:ring-primary/30"
+                    }`}
                   />
+                  {phoneError && (
+                    <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                      <span>⚠</span> {phoneError}
+                    </p>
+                  )}
+                  {form.phone && !phoneError && form.phone.replace(/[\s\-]/g, "").length >= 13 && (
+                    <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                      <span>✓</span> Номер корректный
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-400 mt-1">Формат: +998 90 123-45-67</p>
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1.5">
@@ -324,11 +375,17 @@ export default function SellerRegister() {
                 </div>
                 <button
                   onClick={() => {
-                    if (!form.name.trim() || !form.phone.trim()) {
-                      toast.error(t.seller_required_fields);
+                    if (!form.name.trim()) {
+                      toast.error("Введите название магазина");
                       return;
                     }
-                    registerMut.mutate(form);
+                    const stripped = form.phone.replace(/[\s\-]/g, "");
+                    if (!UZ_PHONE_RE.test(stripped)) {
+                      setPhoneError("Введите корректный номер Узбекистана: +998 XX XXX-XX-XX");
+                      toast.error("Некорректный номер телефона");
+                      return;
+                    }
+                    registerMut.mutate({ ...form, phone: stripped });
                   }}
                   disabled={registerMut.isPending}
                   className="w-full bg-primary text-white py-3.5 rounded-xl font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-base"
