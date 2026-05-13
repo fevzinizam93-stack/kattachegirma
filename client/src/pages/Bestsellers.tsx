@@ -1,4 +1,5 @@
 import ProductCard from "@/components/ProductCard";
+import { ScrollToTop } from "@/components/ScrollToTop";
 import { trpc } from "@/lib/trpc";
 import { Flame } from "lucide-react";
 import { usePageMeta } from "@/hooks/usePageMeta";
@@ -17,6 +18,7 @@ export default function Bestsellers() {
   ]);
   const { data: hits, isLoading } = trpc.products.getHits.useQuery({});
   return (
+    <>
     <div className="min-h-screen bg-white">
       {/* Hero */}
       <div className="bg-primary text-white py-12">
@@ -51,5 +53,7 @@ export default function Bestsellers() {
         )}
       </div>
     </div>
+    <ScrollToTop />
+    </>
   );
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ScrollToTop } from "@/components/ScrollToTop";
 import { useParams, Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -127,6 +128,7 @@ export default function SellerStorefront() {
   const totalViews = stats?.totalViews ?? 0;
 
   return (
+    <>
     <div className="min-h-screen bg-gray-50">
       <div className="container py-6">
         {/* Back button */}
@@ -313,5 +315,7 @@ export default function SellerStorefront() {
         </div>
       </div>
     </div>
+    <ScrollToTop />
+    </>
   );
 }

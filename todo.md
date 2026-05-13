@@ -691,3 +691,7 @@
 - [x] Позиция: fixed bottom-20 right-4 (не перекрывает мобильный nav)
 - [x] Стиль: pill/circle, bg-primary, ChevronUp icon, shadow-lg
 - [x] Интегрировать ScrollToTop в Catalog.tsx
+
+## v99 - ScrollToTop на других страницах
+- [x] Bestsellers.tsx: добавить импорт и компонент ScrollToTop
+- [x] SellerStorefront.tsx: добавить импорт и компонент ScrollToTop
