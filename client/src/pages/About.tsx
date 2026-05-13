@@ -1,6 +1,10 @@
-import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
-import { MapPin, Phone, Clock, Instagram, Send, ShieldCheck, Star, Users, Tag, Package, HeartHandshake, X, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  MapPin, Phone, Clock, Instagram, Send, ShieldCheck, Star, Users,
+  Tag, Package, HeartHandshake, X, ChevronLeft, ChevronRight,
+  CheckCircle2, TrendingUp, Award, Zap, ThumbsUp, BadgeCheck,
+  Youtube, Facebook
+} from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
 import { usePageMeta } from "@/hooks/usePageMeta";
@@ -19,50 +23,56 @@ const SHOP_PHOTOS = [
   "/manus-storage/IMG_6624_a7002add.JPG",
 ];
 
-const content = {
-  ru: {
-    hero_title: "О проекте Katta Chegirma",
-    hero_sub: "Качественная техника доступна каждому!",
-    intro: "Katta Chegirma — это не просто интернет-магазин. Это проект, рождённый из желания сделать качественную бытовую технику доступной для каждой семьи в Узбекистане. Мы верим: хорошая техника не должна быть привилегией избранных — она должна быть в каждом доме.",
-    trust_title: "Почему нам доверяют тысячи покупателей?",
-    trust_sub: "Мы строим отношения с покупателями на трёх принципах:",
-    principle1_title: "Честные скидки",
-    principle1_desc: "Мы не завышаем «старую цену», чтобы потом сделать «скидку». Наши акции — это реальное снижение стоимости, которое вы можете проверить сами.",
-    principle2_title: "Прозрачность и репутация",
-    principle2_desc: "Вся техника — новая, в заводской упаковке, с официальной гарантией. Мы дорожим своей репутацией и никогда не пойдём на компромисс с качеством.",
-    principle3_title: "Только проверенное качество",
-    principle3_desc: "В нашем каталоге — только проверенные бренды: Samsung, LG, Franco, Avangard, Ferro и другие. Каждый товар проходит отбор перед тем, как попасть к вам.",
-    benefits_title: "Что вы получаете?",
-    benefit1_title: "Постоянные акции",
-    benefit1_desc: "Каждую неделю — новые скидки на популярные товары. Подписывайтесь на наш Telegram-канал, чтобы не пропустить лучшие предложения.",
-    benefit2_title: "Широкий ассортимент",
-    benefit2_desc: "Холодильники, стиральные машины, телевизоры, кухонная техника и многое другое — всё в одном месте, с удобной доставкой по всему Узбекистану.",
-    benefit3_title: "Поддержка и забота",
-    benefit3_desc: "Наши менеджеры всегда на связи. Мы поможем с выбором, оформлением заказа и решением любых вопросов после покупки.",
-    mission_title: "Наша миссия",
-    mission_desc: "Сделать так, чтобы каждая семья в Узбекистане могла позволить себе современную, надёжную бытовую технику — без переплат, без обмана, с настоящей заботой о покупателе.",
-    cta_title: "Присоединяйтесь к нашей семье!",
-    cta_desc: "Тысячи довольных покупателей уже выбрали Katta Chegirma. Присоединяйтесь и вы — убедитесь сами, что выгодные покупки возможны!",
-    cta_btn: "Смотреть каталог",
-    gallery_title: "Наш магазин",
-    gallery_sub: "Загляните к нам — мы всегда рады гостям!",
-    contacts: "Контакты",
-    phone_label: "Телефон",
-    address_label: "Адрес",
-    hours_label: "Режим работы",
-    social_label: "Социальные сети",
+const STATS = [
+  { value: "1 000 000+", label: "подписчиков в Instagram", icon: Instagram, color: "from-purple-500 to-pink-500" },
+  { value: "200 000+", label: "подписчиков в Telegram", icon: Send, color: "from-blue-400 to-blue-600" },
+  { value: "400 000+", label: "зрителей на YouTube", icon: Youtube, color: "from-red-500 to-red-600" },
+  { value: "5 000+", label: "довольных покупателей", icon: ThumbsUp, color: "from-green-400 to-green-600" },
+];
+
+const TRUST_ITEMS = [
+  {
+    icon: Tag,
+    title: "Честные скидки",
+    desc: "Мы не завышаем «старую цену». Наши акции — это реальное снижение стоимости, которое вы можете проверить сами.",
+    color: "bg-orange-50 border-orange-200",
+    iconBg: "bg-orange-500",
+    check: "Цены проверяются ежедневно",
   },
-};
+  {
+    icon: ShieldCheck,
+    title: "Прозрачность и гарантия",
+    desc: "Вся техника — новая, в заводской упаковке, с официальной гарантией. Мы дорожим репутацией.",
+    color: "bg-blue-50 border-blue-200",
+    iconBg: "bg-blue-600",
+    check: "Официальная гарантия на каждый товар",
+  },
+  {
+    icon: Star,
+    title: "Только проверенные бренды",
+    desc: "Samsung, LG, Franco, Avangard, Ferro и другие. Каждый товар проходит отбор перед публикацией.",
+    color: "bg-green-50 border-green-200",
+    iconBg: "bg-green-600",
+    check: "Модерация каждого товара",
+  },
+];
+
+const BENEFITS = [
+  { icon: TrendingUp, title: "Лучшая цена на рынке", desc: "Мы допускаем к публикации только товары с самой низкой ценой в Узбекистане — покупатель видит реальную выгоду и покупает сразу.", color: "bg-primary" },
+  { icon: Package, title: "Широкий ассортимент", desc: "Холодильники, стиральные машины, телевизоры, кухонная техника — всё в одном месте с доставкой по всему Узбекистану.", color: "bg-blue-600" },
+  { icon: HeartHandshake, title: "Поддержка 24/7", desc: "Наши менеджеры всегда на связи. Помогаем с выбором, оформлением и любыми вопросами после покупки.", color: "bg-green-600" },
+  { icon: Zap, title: "Быстрый заказ", desc: "Купить в 1 клик или через Telegram — без лишних шагов. Менеджер перезвонит в течение 15 минут.", color: "bg-orange-500" },
+];
+
+const BRANDS = ["Samsung", "LG", "Franco", "Avangard", "Ferro", "Artel", "Beko", "Bosch", "Haier", "Midea"];
 
 export default function About() {
-  const { lang } = useLanguage();
-  const c = content.ru;
   const { data: settings } = trpc.storeSettings.getAll.useQuery();
   const s = (settings as Record<string, string>) ?? {};
 
   usePageMeta({
     title: "О нас — Катта Чегирма | Интернет-магазин бытовой техники",
-    description: "Катта Чегирма — интернет-магазин бытовой техники в Ташкенте. Качественная техника Samsung, LG, Franco, Avangard с гарантией и доставкой по всему Узбекистану. Адрес, контакты, режим работы.",
+    description: "Катта Чегирма — интернет-магазин бытовой техники в Ташкенте. Качественная техника Samsung, LG, Franco, Avangard с гарантией и доставкой по всему Узбекистану.",
     canonicalPath: "/about",
   });
 
@@ -72,244 +82,406 @@ export default function About() {
   ]);
 
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-
   const openLightbox = (i: number) => setLightboxIndex(i);
   const closeLightbox = () => setLightboxIndex(null);
-  const prevPhoto = () =>
-    setLightboxIndex((i) =>
-      i !== null ? (i - 1 + SHOP_PHOTOS.length) % SHOP_PHOTOS.length : null
-    );
-  const nextPhoto = () =>
-    setLightboxIndex((i) =>
-      i !== null ? (i + 1) % SHOP_PHOTOS.length : null
-    );
+  const prevPhoto = () => setLightboxIndex((i) => i !== null ? (i - 1 + SHOP_PHOTOS.length) % SHOP_PHOTOS.length : null);
+  const nextPhoto = () => setLightboxIndex((i) => i !== null ? (i + 1) % SHOP_PHOTOS.length : null);
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero */}
-      <div className="bg-primary text-white py-14">
-        <div className="container text-center">
-          <h1 className="text-3xl md:text-4xl font-black mb-3">{c.hero_title}</h1>
-          <p className="text-white/85 text-lg md:text-xl">{c.hero_sub}</p>
+
+      {/* ── HERO ── */}
+      <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white overflow-hidden">
+        {/* decorative circles */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/15 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+
+        <div className="container relative py-16 md:py-24">
+          <div className="max-w-3xl mx-auto text-center">
+            {/* badge */}
+            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm font-medium mb-6 backdrop-blur-sm">
+              <BadgeCheck size={15} className="text-primary" />
+              <span>Платформа №1 для бытовой техники в Узбекистане</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-black mb-4 leading-tight">
+              О проекте <span className="text-primary">Katta Chegirma</span>
+            </h1>
+            <p className="text-white/80 text-lg md:text-xl leading-relaxed mb-8">
+              Качественная бытовая техника — доступна каждой семье. Без переплат, без обмана, с настоящей заботой о покупателе.
+            </p>
+            <div className="flex flex-wrap gap-3 justify-center">
+              <Link
+                href="/catalog"
+                className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-xl font-bold transition-colors"
+              >
+                <Package size={16} />
+                Смотреть каталог
+              </Link>
+              <a
+                href="#contacts"
+                className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-6 py-3 rounded-xl font-bold transition-colors"
+              >
+                <Phone size={16} />
+                Связаться с нами
+              </a>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div className="container py-12 space-y-14">
-
-        {/* Intro */}
-        <div className="max-w-3xl mx-auto text-center">
-          <p className="text-lg text-gray-700 leading-relaxed">{c.intro}</p>
-        </div>
-
-        {/* Why trust us */}
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl font-black text-gray-900 mb-2 text-center">{c.trust_title}</h2>
-          <p className="text-gray-500 text-center mb-8">{c.trust_sub}</p>
-          <div className="space-y-4">
-            {[
-              { icon: Tag, title: c.principle1_title, desc: c.principle1_desc, color: "bg-orange-100", iconColor: "text-orange-500" },
-              { icon: ShieldCheck, title: c.principle2_title, desc: c.principle2_desc, color: "bg-blue-100", iconColor: "text-blue-600" },
-              { icon: Star, title: c.principle3_title, desc: c.principle3_desc, color: "bg-green-100", iconColor: "text-green-600" },
-            ].map(({ icon: Icon, title, desc, color, iconColor }) => (
-              <div key={title} className="flex gap-4 bg-gray-50 rounded-2xl p-5 hover:shadow-md transition-shadow">
-                <div className={`flex-shrink-0 w-12 h-12 ${color} rounded-xl flex items-center justify-center`}>
-                  <Icon size={22} className={iconColor} />
+      {/* ── STATS BAR ── */}
+      <section className="bg-white border-b border-gray-100 shadow-sm">
+        <div className="container py-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {STATS.map(({ value, label, icon: Icon, color }) => (
+              <div key={label} className="flex items-center gap-3 p-3">
+                <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center flex-shrink-0`}>
+                  <Icon size={20} className="text-white" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900 mb-1">{title}</h3>
-                  <p className="text-gray-600 leading-relaxed text-sm">{desc}</p>
+                  <div className="text-xl font-black text-gray-900 leading-none">{value}</div>
+                  <div className="text-xs text-gray-500 mt-0.5 leading-tight">{label}</div>
                 </div>
               </div>
             ))}
           </div>
         </div>
+      </section>
 
-        {/* Benefits */}
+      {/* ── INTRO ── */}
+      <section className="container py-14">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl font-black text-gray-900 mb-8 text-center">{c.benefits_title}</h2>
-          <div className="grid sm:grid-cols-3 gap-5">
-            {[
-              { icon: Tag, title: c.benefit1_title, desc: c.benefit1_desc, color: "bg-orange-500" },
-              { icon: Package, title: c.benefit2_title, desc: c.benefit2_desc, color: "bg-blue-600" },
-              { icon: HeartHandshake, title: c.benefit3_title, desc: c.benefit3_desc, color: "bg-green-600" },
-            ].map(({ icon: Icon, title, desc, color }) => (
-              <div key={title} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow text-center">
-                <div className={`w-14 h-14 ${color} rounded-2xl flex items-center justify-center mx-auto mb-4`}>
-                  <Icon size={26} className="text-white" />
+          <div className="flex items-start gap-4 bg-gradient-to-r from-primary/5 to-orange-50 border border-primary/15 rounded-3xl p-7 md:p-10">
+            <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center flex-shrink-0 mt-1">
+              <Award size={22} className="text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-gray-900 mb-3">Наша история</h2>
+              <p className="text-gray-700 leading-relaxed text-base">
+                <strong>Katta Chegirma</strong> — это не просто интернет-магазин. Это проект, рождённый из желания сделать качественную бытовую технику доступной для каждой семьи в Узбекистане. Мы верим: хорошая техника не должна быть привилегией избранных — она должна быть в каждом доме.
+              </p>
+              <p className="text-gray-600 leading-relaxed text-sm mt-3">
+                Сегодня нам доверяют более 5 000 покупателей, а наши каналы в Instagram, Telegram и YouTube охватывают более 1,6 миллиона подписчиков. Мы — самый динамичный проект бытовой техники в Узбекистане.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── WHY TRUST US ── */}
+      <section className="bg-gray-50 py-14">
+        <div className="container">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-10">
+              <span className="inline-block bg-primary/10 text-primary text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wide">Доверие</span>
+              <h2 className="text-3xl font-black text-gray-900 mb-2">Почему нам доверяют тысячи покупателей?</h2>
+              <p className="text-gray-500">Мы строим отношения с покупателями на трёх принципах</p>
+            </div>
+            <div className="space-y-4">
+              {TRUST_ITEMS.map(({ icon: Icon, title, desc, color, iconBg, check }) => (
+                <div key={title} className={`flex gap-5 border rounded-2xl p-6 ${color} hover:shadow-md transition-all duration-200`}>
+                  <div className={`flex-shrink-0 w-12 h-12 ${iconBg} rounded-xl flex items-center justify-center`}>
+                    <Icon size={22} className="text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-black text-gray-900 mb-1.5 text-base">{title}</h3>
+                    <p className="text-gray-600 leading-relaxed text-sm mb-2">{desc}</p>
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-green-700">
+                      <CheckCircle2 size={13} className="text-green-500" />
+                      {check}
+                    </div>
+                  </div>
                 </div>
-                <h3 className="font-bold text-gray-900 mb-2">{title}</h3>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── BENEFITS GRID ── */}
+      <section className="container py-14">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <span className="inline-block bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wide">Преимущества</span>
+            <h2 className="text-3xl font-black text-gray-900 mb-2">Что вы получаете?</h2>
+            <p className="text-gray-500">Покупайте выгодно, быстро и с уверенностью</p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-5">
+            {BENEFITS.map(({ icon: Icon, title, desc, color }) => (
+              <div key={title} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-200 group">
+                <div className={`w-12 h-12 ${color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                  <Icon size={22} className="text-white" />
+                </div>
+                <h3 className="font-black text-gray-900 mb-2">{title}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
         </div>
+      </section>
 
-        {/* Mission */}
-        <div className="bg-primary/5 border border-primary/15 rounded-3xl p-8 max-w-3xl mx-auto text-center">
-          <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Users size={26} className="text-white" />
-          </div>
-          <h2 className="text-xl font-black text-gray-900 mb-3">{c.mission_title}</h2>
-          <p className="text-gray-700 leading-relaxed">{c.mission_desc}</p>
-        </div>
-
-        {/* CTA Banner */}
-        <div className="bg-primary rounded-3xl p-8 md:p-12 text-white text-center max-w-3xl mx-auto">
-          <h2 className="text-2xl md:text-3xl font-black mb-3">{c.cta_title}</h2>
-          <p className="text-white/90 leading-relaxed mb-6 text-lg">{c.cta_desc}</p>
-          <Link
-            href="/catalog"
-            className="inline-block bg-white text-primary px-8 py-3 rounded-xl font-black text-lg hover:bg-gray-100 transition-colors"
-          >
-            {c.cta_btn}
-          </Link>
-        </div>
-
-        {/* Photo Gallery */}
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-2xl font-black text-gray-900 mb-2 text-center">{c.gallery_title}</h2>
-          <p className="text-gray-500 text-center mb-8">{c.gallery_sub}</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            {SHOP_PHOTOS.map((src, i) => (
-              <button
-                key={i}
-                onClick={() => openLightbox(i)}
-                className="group relative aspect-square overflow-hidden rounded-2xl bg-gray-100 hover:shadow-lg transition-all duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <img
-                  src={src}
-                  alt={`${c.gallery_title} ${i + 1}`}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 rounded-2xl" />
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Contact info */}
-        {(s.phone || s.address || s.telegram || s.instagram || s.workingHours) && (
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-2xl font-black text-gray-900 mb-6 text-center">{c.contacts}</h2>
-            <div className="grid sm:grid-cols-2 gap-4">
-              {(s.phone || s.phone2) && (
-                <div className="bg-gray-50 rounded-2xl p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Phone size={18} className="text-primary" />
-                    <span className="font-bold text-gray-900">{c.phone_label}</span>
-                  </div>
-                  {s.phone && (
-                    <a href={`tel:${s.phone}`} className="block text-lg font-semibold text-primary hover:underline mb-1">
-                      {s.phone}
-                    </a>
-                  )}
-                  {s.phone2 && (
-                    <a href={`tel:${s.phone2}`} className="block text-lg font-semibold text-primary hover:underline">
-                      {s.phone2}
-                    </a>
-                  )}
-                </div>
-              )}
-              {(s.address || s.address2) && (
-                <div className="bg-gray-50 rounded-2xl p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <MapPin size={18} className="text-primary" />
-                    <span className="font-bold text-gray-900">{c.address_label}</span>
-                  </div>
-                  {s.address && <p className="text-gray-700 mb-1">{s.address}</p>}
-                  {s.address2 && <p className="text-gray-700">{s.address2}</p>}
-                </div>
-              )}
-              {s.workingHours && (
-                <div className="bg-gray-50 rounded-2xl p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Clock size={18} className="text-primary" />
-                    <span className="font-bold text-gray-900">{c.hours_label}</span>
-                  </div>
-                  <p className="text-gray-700">{s.workingHours}</p>
-                </div>
-              )}
-              {(s.telegram || s.instagram) && (
-                <div className="bg-gray-50 rounded-2xl p-5">
-                  <p className="font-bold text-gray-900 mb-3">{c.social_label}</p>
-                  <div className="flex gap-3 flex-wrap">
-                    {s.telegram && (
-                      <a
-                        href={`https://t.me/${s.telegram.replace("@", "")}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-xl font-semibold text-sm hover:bg-blue-600 transition-colors"
-                      >
-                        <Send size={15} /> Telegram
-                      </a>
-                    )}
-                    {s.instagram && (
-                      <a
-                        href={`https://instagram.com/${s.instagram.replace("@", "")}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity"
-                      >
-                        <Instagram size={15} /> Instagram
-                      </a>
-                    )}
-                  </div>
-                </div>
-              )}
+      {/* ── BRANDS ── */}
+      <section className="bg-gray-50 py-12">
+        <div className="container">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-2xl font-black text-gray-900 mb-2">Бренды, которым мы доверяем</h2>
+            <p className="text-gray-500 text-sm mb-8">Только официальные дилеры и проверенные поставщики</p>
+            <div className="flex flex-wrap gap-3 justify-center">
+              {BRANDS.map((brand) => (
+                <span key={brand} className="bg-white border border-gray-200 text-gray-700 font-bold px-5 py-2.5 rounded-xl text-sm shadow-sm hover:border-primary hover:text-primary transition-colors cursor-default">
+                  {brand}
+                </span>
+              ))}
             </div>
           </div>
-        )}
+        </div>
+      </section>
 
-      </div>
+      {/* ── MISSION ── */}
+      <section className="container py-14">
+        <div className="max-w-3xl mx-auto">
+          <div className="relative bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-3xl p-8 md:p-12 overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="relative">
+              <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center mb-6">
+                <Users size={26} className="text-white" />
+              </div>
+              <h2 className="text-2xl md:text-3xl font-black mb-4">Наша миссия</h2>
+              <p className="text-white/85 leading-relaxed text-lg">
+                Сделать так, чтобы каждая семья в Узбекистане могла позволить себе современную, надёжную бытовую технику — <strong className="text-white">без переплат, без обмана</strong>, с настоящей заботой о покупателе.
+              </p>
+              <div className="mt-8 grid grid-cols-3 gap-4 pt-6 border-t border-white/15">
+                {[
+                  { v: "100%", l: "честность" },
+                  { v: "0 сум", l: "скрытых комиссий" },
+                  { v: "24/7", l: "поддержка" },
+                ].map(({ v, l }) => (
+                  <div key={l} className="text-center">
+                    <div className="text-2xl font-black text-primary">{v}</div>
+                    <div className="text-white/60 text-xs mt-0.5">{l}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      {/* Lightbox */}
+      {/* ── PHOTO GALLERY ── */}
+      <section className="bg-gray-50 py-14">
+        <div className="container">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-10">
+              <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wide">Наш магазин</span>
+              <h2 className="text-3xl font-black text-gray-900 mb-2">Загляните к нам</h2>
+              <p className="text-gray-500">Мы всегда рады гостям — приходите и убедитесь лично!</p>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              {SHOP_PHOTOS.map((src, i) => (
+                <button
+                  key={i}
+                  onClick={() => openLightbox(i)}
+                  className="group relative aspect-square overflow-hidden rounded-2xl bg-gray-200 hover:shadow-xl transition-all duration-200 hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <img
+                    src={src}
+                    alt={`Магазин Katta Chegirma фото ${i + 1}`}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-400"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors duration-200 rounded-2xl" />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="bg-white/90 rounded-full p-2">
+                      <ChevronRight size={16} className="text-gray-700" />
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA BANNER ── */}
+      <section className="container py-14">
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-gradient-to-r from-primary to-orange-500 rounded-3xl p-8 md:p-12 text-white text-center shadow-xl shadow-primary/25">
+            <div className="text-4xl mb-4">🎉</div>
+            <h2 className="text-2xl md:text-3xl font-black mb-3">Присоединяйтесь к нашей семье!</h2>
+            <p className="text-white/90 leading-relaxed mb-8 text-lg max-w-xl mx-auto">
+              Тысячи довольных покупателей уже выбрали Katta Chegirma. Убедитесь сами — выгодные покупки возможны!
+            </p>
+            <div className="flex flex-wrap gap-3 justify-center">
+              <Link
+                href="/catalog"
+                className="inline-flex items-center gap-2 bg-white text-primary px-7 py-3 rounded-xl font-black text-base hover:bg-gray-100 transition-colors shadow-lg"
+              >
+                <Package size={16} />
+                Смотреть каталог
+              </Link>
+              <Link
+                href="/seller-register"
+                className="inline-flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/30 text-white px-7 py-3 rounded-xl font-black text-base transition-colors"
+              >
+                <TrendingUp size={16} />
+                Стать продавцом
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── CONTACTS ── */}
+      {(s.phone || s.address || s.telegram || s.instagram || s.workingHours) && (
+        <section id="contacts" className="bg-gray-50 py-14">
+          <div className="container">
+            <div className="max-w-3xl mx-auto">
+              <div className="text-center mb-10">
+                <span className="inline-block bg-primary/10 text-primary text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wide">Контакты</span>
+                <h2 className="text-3xl font-black text-gray-900 mb-2">Свяжитесь с нами</h2>
+                <p className="text-gray-500">Мы всегда на связи и готовы помочь</p>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                {(s.phone || s.phone2) && (
+                  <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                        <Phone size={18} className="text-primary" />
+                      </div>
+                      <span className="font-black text-gray-900">Телефон</span>
+                    </div>
+                    {s.phone && (
+                      <a href={`tel:${s.phone}`} className="block text-lg font-bold text-primary hover:underline mb-1">
+                        {s.phone}
+                      </a>
+                    )}
+                    {s.phone2 && (
+                      <a href={`tel:${s.phone2}`} className="block text-lg font-bold text-primary hover:underline">
+                        {s.phone2}
+                      </a>
+                    )}
+                  </div>
+                )}
+                {(s.address || s.address2) && (
+                  <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+                        <MapPin size={18} className="text-orange-500" />
+                      </div>
+                      <span className="font-black text-gray-900">Адрес</span>
+                    </div>
+                    {s.address && <p className="text-gray-700 mb-1">{s.address}</p>}
+                    {s.address2 && <p className="text-gray-700">{s.address2}</p>}
+                  </div>
+                )}
+                {s.workingHours && (
+                  <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                        <Clock size={18} className="text-green-600" />
+                      </div>
+                      <span className="font-black text-gray-900">Режим работы</span>
+                    </div>
+                    <p className="text-gray-700 font-medium">{s.workingHours}</p>
+                  </div>
+                )}
+                {(s.telegram || s.instagram) && (
+                  <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                        <Instagram size={18} className="text-purple-600" />
+                      </div>
+                      <span className="font-black text-gray-900">Социальные сети</span>
+                    </div>
+                    <div className="flex gap-2 flex-wrap">
+                      {s.telegram && (
+                        <a
+                          href={`https://t.me/${s.telegram.replace("@", "")}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors"
+                        >
+                          <Send size={14} /> Telegram
+                        </a>
+                      )}
+                      {s.instagram && (
+                        <a
+                          href={`https://instagram.com/${s.instagram.replace("@", "")}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-opacity"
+                        >
+                          <Instagram size={14} /> Instagram
+                        </a>
+                      )}
+                      {s.youtube && (
+                        <a
+                          href={s.youtube}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors"
+                        >
+                          <Youtube size={14} /> YouTube
+                        </a>
+                      )}
+                      {s.facebook && (
+                        <a
+                          href={s.facebook}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors"
+                        >
+                          <Facebook size={14} /> Facebook
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── LIGHTBOX ── */}
       {lightboxIndex !== null && (
         <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/92 flex items-center justify-center p-4"
           onClick={closeLightbox}
         >
-          {/* Close */}
           <button
             onClick={closeLightbox}
-            className="absolute top-4 right-4 text-white bg-white/20 hover:bg-white/30 rounded-full p-2 transition-colors z-10"
-            aria-label="Close"
+            className="absolute top-4 right-4 text-white bg-white/15 hover:bg-white/30 rounded-full p-2.5 transition-colors z-10"
+            aria-label="Закрыть"
           >
-            <X size={24} />
+            <X size={22} />
           </button>
-
-          {/* Prev */}
           <button
             onClick={(e) => { e.stopPropagation(); prevPhoto(); }}
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-white bg-white/20 hover:bg-white/30 rounded-full p-3 transition-colors z-10"
-            aria-label="Previous"
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-white bg-white/15 hover:bg-white/30 rounded-full p-3 transition-colors z-10"
+            aria-label="Предыдущее"
           >
-            <ChevronLeft size={28} />
+            <ChevronLeft size={26} />
           </button>
-
-          {/* Image */}
           <img
             src={SHOP_PHOTOS[lightboxIndex]}
-            alt={`Shop photo ${lightboxIndex + 1}`}
-            className="max-h-[90vh] max-w-[90vw] object-contain rounded-xl shadow-2xl"
+            alt={`Магазин фото ${lightboxIndex + 1}`}
+            className="max-h-[90vh] max-w-[90vw] object-contain rounded-2xl shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           />
-
-          {/* Next */}
           <button
             onClick={(e) => { e.stopPropagation(); nextPhoto(); }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-white/20 hover:bg-white/30 rounded-full p-3 transition-colors z-10"
-            aria-label="Next"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-white/15 hover:bg-white/30 rounded-full p-3 transition-colors z-10"
+            aria-label="Следующее"
           >
-            <ChevronRight size={28} />
+            <ChevronRight size={26} />
           </button>
-
-          {/* Counter */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/70 text-sm bg-black/40 px-3 py-1 rounded-full">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/70 text-sm bg-black/50 px-4 py-1.5 rounded-full backdrop-blur-sm">
             {lightboxIndex + 1} / {SHOP_PHOTOS.length}
           </div>
         </div>
       )}
+
     </div>
   );
 }
