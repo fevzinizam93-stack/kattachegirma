@@ -8,6 +8,7 @@ import { Link } from "wouter";
 import { toast } from "sonner";
 import { useState } from "react";
 import CompareModal from "@/components/CompareModal";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Product {
   id: number;
@@ -124,13 +125,21 @@ export default function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
           {/* Compare button — always visible, bottom-left */}
-          <button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCompareOpen(true); }}
-            title="Сравнить"
-            className="absolute bottom-1.5 left-1.5 w-6 h-6 rounded-full bg-white/90 border border-gray-200 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all shadow-sm z-10"
-          >
-            <ArrowLeftRight size={10} />
-          </button>
+          <TooltipProvider delayDuration={300}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCompareOpen(true); }}
+                  className="absolute bottom-1.5 left-1.5 w-6 h-6 rounded-full bg-white/90 border border-gray-200 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all shadow-sm z-10"
+                >
+                  <ArrowLeftRight size={10} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" sideOffset={4} className="text-xs font-medium">
+                Сравнить товар
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
 
         <div className="p-2 flex flex-col flex-1">
