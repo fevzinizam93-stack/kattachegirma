@@ -11,6 +11,7 @@ import {
 import { useAuthModal } from "@/App";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { SellerSuccessModal } from "@/components/SellerSuccessModal";
 
 export default function SellerRegister() {
   const { user, loading } = useAuth();
@@ -19,11 +20,12 @@ export default function SellerRegister() {
   const { t } = useLanguage();
   const [form, setForm] = useState({ name: "", phone: "", telegram: "", description: "" });
   const [step, setStep] = useState<"info" | "form" | "pending">("info");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const sellerQuery = trpc.sellers.me.useQuery(undefined, { enabled: !!user });
   const registerMut = trpc.sellers.register.useMutation({
     onSuccess: () => {
-      toast.success(t.seller_submitted);
+      setShowSuccessModal(true);
       setStep("pending");
     },
     onError: (e) => toast.error(e.message),
@@ -360,6 +362,11 @@ export default function SellerRegister() {
       </div>
 
       <ScrollToTop />
+      <SellerSuccessModal
+        open={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        storeName={form.name}
+      />
     </div>
   );
 }
