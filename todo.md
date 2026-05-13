@@ -675,3 +675,11 @@
 - [x] Catalog.tsx: 12 skeleton-карточек в grid (2/3/4 колонки на разных брейкпоинтах)
 - [x] animate-pulse на каждой карточке, bg-gray-100 для фото, bg-gray-200 для текстовых элементов
 - [x] Layout skeleton совпадает с реальным (flex-col, те же padding/gap что в ProductCard)
+
+## v97 - Бесконечная прокрутка в каталоге
+- [x] Catalog.tsx: allProducts (useState) накапливает товары, сбрасывается при смене фильтров/поиска/сортировки/брендов
+- [x] Catalog.tsx: Intersection Observer на sentinel div (h-1) внизу списка, rootMargin 200px
+- [x] Catalog.tsx: при достижении sentinel — setPage(p => p + 1), isFetchingMore=true
+- [x] Catalog.tsx: 4 skeleton-карточки с animate-pulse при подгрузке следующей страницы
+- [x] Catalog.tsx: пагинация убрана, добавлено «Все N товаров загружены» в конце
+- [x] Catalog.tsx: setAllProducts([]) при handleSearch, handleCategoryChange, handlePriceFilter, handlePriceReset, toggleBrand, handleBrandsReset, sort change, search clear

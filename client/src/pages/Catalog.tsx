@@ -2,7 +2,7 @@ import ProductCard from "@/components/ProductCard";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { ChevronDown, Filter, SlidersHorizontal } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useLocation } from "wouter";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
@@ -61,6 +61,9 @@ export default function Catalog() {
   const [search, setSearch] = useState(init.search);
   const [searchInput, setSearchInput] = useState(init.searchInput);
   const [page, setPage] = useState(0);
+  const [allProducts, setAllProducts] = useState<typeof products>([]);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [minPriceInput, setMinPriceInput] = useState(init.minPriceInput);
   const [maxPriceInput, setMaxPriceInput] = useState(init.maxPriceInput);
@@ -113,6 +116,41 @@ export default function Catalog() {
   const products = data?.items ?? [];
   const total = data?.total ?? 0;
   const totalPages = Math.ceil(total / LIMIT);
+  const hasMore = page < totalPages - 1;
+
+  // Accumulate products for infinite scroll
+  useEffect(() => {
+    if (isLoading) return;
+    if (page === 0) {
+      // Filter reset — replace all
+      setAllProducts(products);
+    } else {
+      // Next page — append (deduplicate by id)
+      setAllProducts(prev => {
+        const existingIds = new Set(prev.map(p => p.id));
+        const newItems = products.filter(p => !existingIds.has(p.id));
+        return [...prev, ...newItems];
+      });
+    }
+    setIsFetchingMore(false);
+  }, [data]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoading && !isFetchingMore) {
+          setIsFetchingMore(true);
+          setPage(p => p + 1);
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, isLoading, isFetchingMore]);
 
   // Reset brands when category changes (brands may no longer be valid)
   useEffect(() => {
@@ -132,16 +170,16 @@ export default function Catalog() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setSearch(searchInput);
+    setAllProducts([]);
     setPage(0);
     syncToUrl({ category: selectedCategory, q: searchInput, minPrice, maxPrice, sortBy, brands: selectedBrands });
   };
-
   const handleCategoryChange = (id: number | undefined) => {
     setSelectedCategory(id);
+    setAllProducts([]);
     setPage(0);
     syncToUrl({ category: id, q: search, minPrice, maxPrice, sortBy, brands: [] });
   };
-
   const handlePriceFilter = () => {
     const rawMin = minPriceInput.replace(/[^\d]/g, '');
     const rawMax = maxPriceInput.replace(/[^\d]/g, '');
@@ -149,30 +187,31 @@ export default function Catalog() {
     const newMax = rawMax ? parseInt(rawMax, 10) : undefined;
     setMinPrice(newMin);
     setMaxPrice(newMax);
+    setAllProducts([]);
     setPage(0);
     syncToUrl({ category: selectedCategory, q: search, minPrice: newMin, maxPrice: newMax, sortBy, brands: selectedBrands });
   };
-
   const handlePriceReset = () => {
     setMinPriceInput("");
     setMaxPriceInput("");
     setMinPrice(undefined);
     setMaxPrice(undefined);
+    setAllProducts([]);
     setPage(0);
     syncToUrl({ category: selectedCategory, q: search, sortBy, brands: selectedBrands });
   };
-
   const toggleBrand = (brand: string) => {
     const newBrands = selectedBrands.includes(brand)
       ? selectedBrands.filter(b => b !== brand)
       : [...selectedBrands, brand];
     setSelectedBrands(newBrands);
+    setAllProducts([]);
     setPage(0);
     syncToUrl({ category: selectedCategory, q: search, minPrice, maxPrice, sortBy, brands: newBrands });
   };
-
   const handleBrandsReset = () => {
     setSelectedBrands([]);
+    setAllProducts([]);
     setPage(0);
     syncToUrl({ category: selectedCategory, q: search, minPrice, maxPrice, sortBy, brands: [] });
   };
@@ -218,7 +257,7 @@ export default function Catalog() {
               {search && (
                 <button
                   type="button"
-                  onClick={() => { setSearch(""); setSearchInput(""); setPage(0); }}
+                  onClick={() => { setSearch(""); setSearchInput(""); setAllProducts([]); setPage(0); }}
                   className="border border-border px-3 py-2 rounded-lg text-sm hover:bg-accent"
                 >
                   ✕
@@ -241,7 +280,7 @@ export default function Catalog() {
                   {SORT_OPTIONS.map(opt => (
                     <button
                       key={opt.value}
-                      onClick={e => { e.stopPropagation(); setSortBy(opt.value); setPage(0); setShowSortDropdown(false); syncToUrl({ category: selectedCategory, q: search, minPrice, maxPrice, sortBy: opt.value, brands: selectedBrands }); }}
+                      onClick={e => { e.stopPropagation(); setSortBy(opt.value); setAllProducts([]); setPage(0); setShowSortDropdown(false); syncToUrl({ category: selectedCategory, q: search, minPrice, maxPrice, sortBy: opt.value, brands: selectedBrands }); }}
                       className={`w-full text-left px-4 py-2 text-sm transition-colors hover:bg-accent ${sortBy === opt.value ? 'font-semibold text-primary' : ''}`}
                     >
                       {sortBy === opt.value && <span className="mr-1">✓</span>}
@@ -389,7 +428,7 @@ export default function Catalog() {
                 {sortBy !== 'newest' && (
                   <span className="inline-flex items-center gap-1 bg-primary/10 text-primary text-xs font-medium px-2.5 py-1 rounded-full">
                     {currentSortLabel}
-                    <button onClick={() => { setSortBy('newest'); setPage(0); syncToUrl({ category: selectedCategory, q: search, minPrice, maxPrice, sortBy: 'newest', brands: selectedBrands }); }} className="ml-0.5 hover:text-primary/70">✕</button>
+                    <button onClick={() => { setSortBy('newest'); setAllProducts([]); setPage(0); syncToUrl({ category: selectedCategory, q: search, minPrice, maxPrice, sortBy: 'newest', brands: selectedBrands }); }} className="ml-0.5 hover:text-primary/70">✕</button>
                   </span>
                 )}
                 {selectedBrands.map(b => (
@@ -457,34 +496,36 @@ export default function Catalog() {
                 )}
               </div>
             ) : (
-              <>
+               <>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
-                  {products.map(p => (
+                  {allProducts.map(p => (
                     <ProductCard key={p.id} product={p} />
                   ))}
                 </div>
-
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="flex justify-center gap-2 mt-8">
-                    <button
-                      onClick={() => setPage(p => Math.max(0, p - 1))}
-                      disabled={page === 0}
-                      className="px-4 py-2 border border-border rounded-lg text-sm font-medium hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      ←
-                    </button>
-                    <span className="px-4 py-2 text-sm text-muted-foreground">
-                      {page + 1} / {totalPages}
-                    </span>
-                    <button
-                      onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
-                      disabled={page >= totalPages - 1}
-                      className="px-4 py-2 border border-border rounded-lg text-sm font-medium hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      →
-                    </button>
+                {/* Infinite scroll sentinel */}
+                <div ref={sentinelRef} className="h-1" />
+                {/* Loading more indicator */}
+                {isFetchingMore && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 mt-2">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <div key={i} className="bg-white rounded-xl border border-gray-100 overflow-hidden flex flex-col animate-pulse">
+                        <div className="relative bg-gray-100" style={{ aspectRatio: '1' }} />
+                        <div className="p-2 flex flex-col gap-1.5">
+                          <div className="h-2.5 bg-gray-200 rounded w-12" />
+                          <div className="h-3 bg-gray-200 rounded w-full" />
+                          <div className="h-3 bg-gray-200 rounded w-4/5" />
+                          <div className="h-4 bg-gray-200 rounded w-24" />
+                          <div className="h-7 bg-gray-200 rounded-lg w-full" />
+                        </div>
+                      </div>
+                    ))}
                   </div>
+                )}
+                {/* End of list */}
+                {!hasMore && allProducts.length > 0 && !isLoading && (
+                  <p className="text-center text-sm text-muted-foreground py-6">
+                    Все {total} товаров загружены
+                  </p>
                 )}
               </>
             )}
