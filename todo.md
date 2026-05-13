@@ -717,3 +717,7 @@
 - [ ] server/db.ts: getSimilarProducts(categoryId, excludeId, limit)
 - [ ] ProductDetail.tsx: секция «Похожие товары» — горизонтальный скролл с ProductCard
 - [ ] Skeleton loader для секции похожих товаров
+
+## v103 - Кнопка сравнения на всех карточках
+- [x] Убрать условие !hasVipPrice — кнопка сравнения видна на всех карточках
+- [x] Переместить кнопку сравнения в левый нижний угол (bottom-left) чтобы не перекрывалась с VIP-бейджем

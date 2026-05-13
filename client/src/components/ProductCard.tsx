@@ -123,16 +123,14 @@ export default function ProductCard({ product }: ProductCardProps) {
               </span>
             </div>
           )}
-          {/* Compare button */}
-          {!hasVipPrice && (
-            <button
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCompareOpen(true); }}
-              title="Сравнить"
-              className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-full bg-white/90 border border-gray-200 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all shadow-sm"
-            >
-              <ArrowLeftRight size={10} />
-            </button>
-          )}
+          {/* Compare button — always visible, bottom-left */}
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCompareOpen(true); }}
+            title="Сравнить"
+            className="absolute bottom-1.5 left-1.5 w-6 h-6 rounded-full bg-white/90 border border-gray-200 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all shadow-sm z-10"
+          >
+            <ArrowLeftRight size={10} />
+          </button>
         </div>
 
         <div className="p-2 flex flex-col flex-1">
