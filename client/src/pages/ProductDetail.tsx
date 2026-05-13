@@ -412,254 +412,269 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
           <div className="grid md:grid-cols-2 gap-0 divide-y md:divide-y-0 md:divide-x divide-gray-100">
 
             {/* ===== LEFT COLUMN ===== */}
-            <div className="flex flex-col p-2 md:p-3">
+            <div className="flex flex-col p-3 md:p-4 gap-3">
 
-              {/* Badges + Name — very compact */}
-              <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                {product.brand && (
-                  <span className="bg-gray-100 text-gray-500 text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide">
-                    {product.brand}
-                  </span>
-                )}
-                {category && (
-                  <span className="bg-primary/10 text-primary text-[10px] font-medium px-1.5 py-0.5 rounded-full">
-                    {category.name}
-                  </span>
-                )}
-              </div>
-
-              {/* Product name — small */}
-              <h1 className="text-sm font-semibold text-gray-800 mb-1 leading-snug line-clamp-2">
-                {displayName}
-              </h1>
-
-              {/* Rating + View count — tiny */}
-              <div className="flex items-center justify-between gap-0.5 mb-1.5">
-                <div className="flex items-center gap-0.5">
-                  {[1,2,3,4,5].map(i => (
-                    <Star key={i} size={10} className={i <= 4 ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} />
-                  ))}
-                  <span className="text-[10px] text-gray-400 ml-1">(4.0)</span>
-                </div>
-                {liveViewCount !== null && (
-                  <span className="flex items-center gap-0.5 text-[10px] text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded-full border border-gray-100">
-                    <span>👁</span>
-                    <span>{liveViewCount.toLocaleString("ru-RU")} просм.</span>
-                  </span>
-                )}
-              </div>
-
-              {/* Photo — takes up most of the space */}
-              <div
-                className="relative bg-gray-50 flex items-center justify-center rounded-xl overflow-hidden mb-1.5 flex-1 cursor-zoom-in"
-                style={{minHeight: "300px"}}
+              {/* ── Photo block ── */}
+              <div className="relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl overflow-hidden cursor-zoom-in"
+                style={{aspectRatio: "1 / 1", maxHeight: "420px"}}
                 onMouseEnter={() => setZoomed(true)}
                 onMouseLeave={() => setZoomed(false)}
                 onMouseMove={(e) => {
                   const rect = e.currentTarget.getBoundingClientRect();
-                  const x = ((e.clientX - rect.left) / rect.width) * 100;
-                  const y = ((e.clientY - rect.top) / rect.height) * 100;
-                  setZoomPos({ x, y });
+                  setZoomPos({ x: ((e.clientX - rect.left) / rect.width) * 100, y: ((e.clientY - rect.top) / rect.height) * 100 });
                 }}
               >
-                <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
+                {/* Badges */}
+                <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
                   {hasDiscount && (
-                    <span className="bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow">
+                    <span className="bg-primary text-white text-xs font-black px-2.5 py-1 rounded-full shadow-lg shadow-primary/30">
                       -{product.discount}%
                     </span>
                   )}
                   {product.isNew && (
-                    <span className="bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow">
+                    <span className="bg-emerald-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow">
                       YANGI
                     </span>
                   )}
                   {(product as any).isHit && (
-                    <span className="bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow">
+                    <span className="bg-orange-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow">
                       🔥 Hit
                     </span>
                   )}
                 </div>
+                {/* View count — top right */}
+                {liveViewCount !== null && (
+                  <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-black/40 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-1 rounded-full">
+                    <span>👁</span>
+                    <span>{liveViewCount.toLocaleString("ru-RU")}</span>
+                  </div>
+                )}
                 {activeUrl ? (
                   <img
                     src={activeUrl}
                     alt={product.name}
-                    className="w-full h-full object-contain rounded-xl drop-shadow-sm transition-transform duration-300 ease-out"
+                    className="w-full h-full object-contain p-4 transition-transform duration-300 ease-out"
                     style={{
-                      maxHeight: "380px",
-                      transform: zoomed ? `scale(2)` : "scale(1)",
+                      transform: zoomed ? `scale(2.2)` : "scale(1)",
                       transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
                     }}
                   />
                 ) : (
-                  <div className="w-full h-48 bg-gray-200 rounded-xl flex items-center justify-center">
-                    <span className="text-gray-400 text-6xl">📦</span>
+                  <div className="w-full h-full flex items-center justify-center">
+                    <span className="text-gray-300 text-8xl">📦</span>
                   </div>
                 )}
               </div>
 
               {/* Thumbnails */}
               {allImages.length > 1 && (
-                <div className="flex gap-1 mb-1.5 overflow-x-auto">
+                <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-hide">
                   {allImages.map((url, idx) => (
                     <button
                       key={idx}
                       onClick={() => setActiveImageIdx(idx)}
-                      className={`shrink-0 w-10 h-10 rounded-lg overflow-hidden border-2 transition-all ${
-                        idx === activeImageIdx ? 'border-primary ring-1 ring-primary/20' : 'border-gray-200 hover:border-primary/50'
+                      className={`shrink-0 w-14 h-14 rounded-xl overflow-hidden border-2 transition-all ${
+                        idx === activeImageIdx
+                          ? 'border-primary shadow-md shadow-primary/20'
+                          : 'border-transparent hover:border-gray-300 bg-gray-50'
                       }`}
                     >
-                      <img src={url} alt={`Фото ${idx + 1}`} className="w-full h-full object-cover" />
+                      <img src={url} alt={`Фото ${idx + 1}`} className="w-full h-full object-contain p-1" />
                     </button>
                   ))}
                 </div>
               )}
 
-              {/* Price row — very compact */}
-              <div className="flex items-center justify-between bg-gray-50 rounded-lg px-2.5 py-1.5 mb-1.5 border border-gray-100">
-                <div className="flex items-center gap-1.5 flex-wrap">
+              {/* ── Price + Stock ── */}
+              <div className="flex items-end justify-between">
+                <div>
                   {hasDiscount && product.originalPrice && (
-                    <span className="text-gray-400 line-through text-[11px]">{formatPrice(product.originalPrice)}</span>
+                    <p className="text-gray-400 line-through text-sm mb-0.5">{formatPrice(product.originalPrice)}</p>
                   )}
-                  <span className="text-base font-black text-primary">{formatPrice(product.price)}</span>
+                  <p className="text-3xl font-black text-primary leading-none">{formatPrice(product.price)}</p>
                   {hasDiscount && (
-                    <span className="bg-primary/10 text-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
-                      <Tag size={8} />-{product.discount}%
+                    <span className="inline-flex items-center gap-0.5 mt-1 bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded-full">
+                      <Tag size={10} /> Скидка {product.discount}%
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <div className={`w-1.5 h-1.5 rounded-full ${(product.stock ?? 0) > 0 ? 'bg-green-500' : 'bg-red-500'}`} />
-                  <span className={`text-[10px] font-semibold ${(product.stock ?? 0) > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {(product.stock ?? 0) > 0 ? t.detail_in_stock : t.detail_out_of_stock}
-                  </span>
+                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${
+                  (product.stock ?? 0) > 0
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                    : 'bg-red-50 text-red-600 border border-red-200'
+                }`}>
+                  <span className={`w-2 h-2 rounded-full ${ (product.stock ?? 0) > 0 ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+                  {(product.stock ?? 0) > 0 ? t.detail_in_stock : t.detail_out_of_stock}
                 </div>
               </div>
 
               {/* Countdown timer */}
               {countdown && hasDiscount && (
-                <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-1.5">
-                  <span className="text-red-600 text-xs font-bold">⏰ Скидка заканчивается через:</span>
-                  <div className="flex items-center gap-1">
-                    <span className="bg-red-600 text-white text-xs font-black px-1.5 py-0.5 rounded min-w-[28px] text-center">{String(countdown.h).padStart(2,'0')}</span>
-                    <span className="text-red-600 font-black text-xs">:</span>
-                    <span className="bg-red-600 text-white text-xs font-black px-1.5 py-0.5 rounded min-w-[28px] text-center">{String(countdown.m).padStart(2,'0')}</span>
-                    <span className="text-red-600 font-black text-xs">:</span>
-                    <span className="bg-red-600 text-white text-xs font-black px-1.5 py-0.5 rounded min-w-[28px] text-center">{String(countdown.s).padStart(2,'0')}</span>
+                <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2.5">
+                  <span className="text-red-600 text-xs font-bold shrink-0">⏰ Скидка истекает:</span>
+                  <div className="flex items-center gap-1 ml-auto">
+                    {[countdown.h, countdown.m, countdown.s].map((v, i) => (
+                      <>
+                        <span key={i} className="bg-red-600 text-white text-sm font-black px-2 py-1 rounded-lg min-w-[32px] text-center tabular-nums">{String(v).padStart(2,'0')}</span>
+                        {i < 2 && <span className="text-red-500 font-black">:</span>}
+                      </>
+                    ))}
                   </div>
                 </div>
               )}
               {/* Stock warning */}
               {(() => { const sc = (product as any)?.stockCount; return sc != null && sc > 0 && sc <= 5 ? (
-                <div className="flex items-center gap-1.5 bg-orange-50 border border-orange-200 rounded-lg px-3 py-1.5 mb-1.5">
-                  <span className="text-orange-600 text-xs font-black animate-pulse">🔥</span>
+                <div className="flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-xl px-3 py-2">
+                  <span className="text-orange-500 animate-pulse">🔥</span>
                   <span className="text-orange-700 text-xs font-bold">Осталось всего <span className="text-orange-600 font-black">{sc} шт.</span> — успейте купить!</span>
                 </div>
               ) : null; })()}
-              {/* Quantity + Button — same row, compact */}
-              <div className="flex items-center gap-1.5 mb-1.5">
-                {(product.stock ?? 0) > 0 && (
-                  <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden shrink-0">
-                    <button
-                      onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                      className="px-2 py-1 hover:bg-gray-100 transition-colors text-gray-600"
-                    >
-                      <Minus size={12} />
-                    </button>
-                    <span className="px-2 py-1 font-bold text-xs min-w-[28px] text-center border-x border-gray-200">
-                      {quantity}
-                    </span>
-                    <button
-                      onClick={() => setQuantity(q => Math.min(product.stock ?? 99, q + 1))}
-                      className="px-2 py-1 hover:bg-gray-100 transition-colors text-gray-600"
-                    >
-                      <Plus size={12} />
-                    </button>
+
+              {/* ── Action block ── */}
+              <div className="space-y-2.5">
+                {/* Row 1: Quantity stepper + CTA */}
+                <div className="flex items-center gap-2">
+                  {(product.stock ?? 0) > 0 && (
+                    <div className="flex items-center bg-gray-100 rounded-full overflow-hidden shrink-0">
+                      <button
+                        onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                        className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 transition-colors text-gray-600 rounded-full"
+                      >
+                        <Minus size={13} />
+                      </button>
+                      <span className="w-8 text-center font-black text-sm text-gray-800">{quantity}</span>
+                      <button
+                        onClick={() => setQuantity(q => Math.min(product.stock ?? 99, q + 1))}
+                        className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 transition-colors text-gray-600 rounded-full"
+                      >
+                        <Plus size={13} />
+                      </button>
+                    </div>
+                  )}
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={(product.stock ?? 0) === 0}
+                    className={`flex-1 h-10 rounded-full font-bold text-sm flex items-center justify-center gap-2 transition-all ${
+                      (product.stock ?? 0) === 0
+                        ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                        : "bg-primary text-white hover:bg-primary/90 active:scale-[0.98] shadow-lg shadow-primary/30"
+                    }`}
+                  >
+                    <ShoppingCart size={15} />
+                    {(product.stock ?? 0) === 0 ? t.detail_out_of_stock : hasDiscount ? "Успей по скидке" : t.card_add_to_cart}
+                  </button>
+                </div>
+
+                {/* Row 2: Compare (ghost pill) */}
+                <button
+                  onClick={() => setCompareOpen(true)}
+                  className="w-full h-9 rounded-full text-xs font-semibold border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50/60 transition-all flex items-center justify-center gap-1.5"
+                >
+                  <ArrowLeftRight size={13} />
+                  Сравнить с другим
+                </button>
+
+                {/* Row 3: Seller contacts */}
+                {((product as any).contactPhone || product.sellerPhone || product.sellerTelegram || product.sellerId) && (
+                  <div className="rounded-2xl border border-gray-100 bg-gray-50 p-3 space-y-2">
+                    {product.sellerName && product.sellerId && (
+                      <Link
+                        href={`/seller/${product.sellerId}`}
+                        className="flex items-center gap-2 text-xs font-bold text-gray-700 hover:text-primary transition-colors"
+                      >
+                        <span className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center text-sm">🏦</span>
+                        <span>{product.sellerName}</span>
+                        <span className="ml-auto text-[10px] text-gray-400 font-normal">Все товары →</span>
+                      </Link>
+                    )}
+                    {/* Disclaimer */}
+                    <p className="text-[9px] text-gray-400 leading-relaxed">
+                      ⚠️ Katta Chegirma не несёт ответственности за этого продавца.
+                    </p>
+                    {/* Contact buttons: WhatsApp + Telegram side by side */}
+                    {(() => {
+                      const phone = (product as any).contactPhone || product.sellerPhone || "";
+                      const tg = product.sellerTelegram || "";
+                      const tgUser = tg.replace("@", "").replace("https://t.me/", "");
+                      return (
+                        <div className="flex gap-2">
+                          {phone && (
+                            <a
+                              href={`https://wa.me/${phone.replace(/\D/g, "")}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-full bg-[#25D366] hover:bg-[#1ebe5d] text-white text-xs font-bold transition-all active:scale-95 shadow-sm"
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                              </svg>
+                              WhatsApp
+                            </a>
+                          )}
+                          {tgUser && (
+                            <a
+                              href={`https://t.me/${tgUser}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-full bg-[#2AABEE] hover:bg-[#1a9bde] text-white text-xs font-bold transition-all active:scale-95 shadow-sm"
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                              </svg>
+                              Telegram
+                            </a>
+                          )}
+                          {/* Fallback: phone call only */}
+                          {phone && !tgUser && (
+                            <a
+                              href={`tel:${phone}`}
+                              className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all active:scale-95 shadow-sm"
+                            >
+                              <Phone size={14} />
+                              Позвонить
+                            </a>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
-                <button
-                  onClick={handleAddToCart}
-                  disabled={(product.stock ?? 0) === 0}
-                  className={`flex-1 py-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1 transition-all ${
-                    (product.stock ?? 0) === 0
-                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                      : "bg-primary text-white hover:bg-primary/90 active:scale-95 shadow-md shadow-primary/25"
-                  }`}
-                >
-                  <ShoppingCart size={13} />
-                  {(product.stock ?? 0) === 0 ? t.detail_out_of_stock : t.card_add_to_cart}
-                </button>
-              </div>
 
-
-
-              {/* Compare button */}
-              <button
-                onClick={() => setCompareOpen(true)}
-                className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold border-2 border-gray-200 text-gray-600 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50 transition-all mb-1.5"
-              >
-                <ArrowLeftRight size={13} />
-                Сравнить с другим
-              </button>
-
-              {/* Seller contacts — единая кнопка «Связаться» */}
-              {((product as any).contactPhone || product.sellerPhone || product.sellerTelegram || product.sellerId) && (
-                <div className="border border-amber-200 rounded-xl p-2 mb-1.5 bg-amber-50">
-                  {/* Seller name — clickable link to storefront */}
-                  {product.sellerName && product.sellerId && (
-                    <Link
-                      href={`/seller/${product.sellerId}`}
-                      className="flex items-center gap-1.5 text-[11px] font-bold text-amber-800 hover:text-amber-900 mb-1.5 transition-colors"
-                    >
-                      <span>🏦</span>
-                      <span className="underline underline-offset-2">{product.sellerName}</span>
-                      <span className="text-[9px] font-normal text-amber-600 ml-auto">Все товары →</span>
-                    </Link>
-                  )}
-                  {/* Disclaimer */}
-                  <div className="text-[9px] text-amber-700 bg-white border border-amber-200 rounded-lg px-2 py-1.5 mb-2 leading-relaxed">
-                    ⚠️ Katta Chegirma не несёт ответственности за этого продавца. Качество, доставка и гарантия — ответственность продавца.
+                {/* Row 4: Delivery chip */}
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <div className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-full px-3 py-1.5 shadow-sm">
+                    <Truck size={13} className="text-primary shrink-0" />
+                    <span className="font-semibold text-gray-700">{t.detail_delivery}</span>
+                    <span className="text-gray-400">— {t.detail_delivery_desc}</span>
                   </div>
-                  {/* Кнопка «Связаться» с выпадающим меню */}
-                  <ContactButton
-                    phone={(product as any).contactPhone || product.sellerPhone || ""}
-                    telegram={product.sellerTelegram || ""}
-                  />
                 </div>
-              )}
 
-              {/* Delivery info — minimal */}
-              <div className="flex items-center gap-1.5 text-[10px] text-gray-500 bg-gray-50 rounded-lg px-2.5 py-1.5 border border-gray-100">
-                <Truck size={12} className="text-primary shrink-0" />
-                <span>
-                  <span className="font-semibold text-gray-600">{t.detail_delivery}</span>
-                  <span className="text-gray-400"> — {t.detail_delivery_desc}</span>
-                </span>
-              </div>
-
-              {/* Share buttons */}
-              <div className="flex gap-2 pt-0.5">
-                <a
-                  href={`https://wa.me/?text=${encodeURIComponent((product.name || '') + '\n' + window.location.href)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-1.5 bg-[#25D366] hover:bg-[#1ebe5d] text-white px-2.5 py-1.5 rounded-lg transition-colors text-xs font-semibold"
-                >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                  </svg>
-                  WhatsApp
-                </a>
-                <a
-                  href={`https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(product.name || '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-1.5 bg-[#2AABEE] hover:bg-[#1a9bde] text-white px-2.5 py-1.5 rounded-lg transition-colors text-xs font-semibold"
-                >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-                  </svg>
-                  Telegram
-                </a>
+                {/* Row 5: Share chips */}
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-gray-400 font-medium shrink-0">Поделиться:</span>
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent((product.name || '') + '\n' + window.location.href)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#1a9b50] px-3 py-1.5 rounded-full text-[11px] font-semibold transition-colors"
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                    </svg>
+                    WhatsApp
+                  </a>
+                  <a
+                    href={`https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(product.name || '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 bg-[#2AABEE]/10 hover:bg-[#2AABEE]/20 text-[#1a7ab0] px-3 py-1.5 rounded-full text-[11px] font-semibold transition-colors"
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                    </svg>
+                    Telegram
+                  </a>
+                </div>
               </div>
             </div>
 
