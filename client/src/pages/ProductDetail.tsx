@@ -593,6 +593,12 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 </div>
               )}
 
+              {/* ── Product name ── */}
+              <h1 className="text-xl font-bold text-gray-900 leading-snug">{product.name}</h1>
+              {product.brand && (
+                <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide -mt-1">{product.brand}</p>
+              )}
+
               {/* ── Price + Stock ── */}
               <div className="flex items-end justify-between">
                 <div>

@@ -817,3 +817,7 @@
 
 ## v116 - Убрать кнопку «Заказать в Telegram» с карточек товаров
 - [x] ProductCard.tsx: удалить кнопку «Заказать в Telegram» и счётчик «Сейчас смотрят»
+
+## v117 - Исправить отображение названия товара
+- [x] ProductCard.tsx: название товара увеличено до text-sm font-semibold text-gray-900
+- [x] ProductDetail.tsx: добавлен заголовок <h1> text-xl font-bold перед ценой

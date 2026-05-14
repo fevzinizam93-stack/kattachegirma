@@ -145,7 +145,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         <div className="p-2 flex flex-col flex-1">
           {product.brand && <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-0.5 truncate">{product.brand}</p>}
-          <h3 className="text-[11px] font-medium text-gray-800 line-clamp-2 flex-1 mb-1.5 leading-snug">{displayName}</h3>
+          <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 flex-1 mb-1.5 leading-snug">{displayName}</h3>
           <div className="mb-1.5">
             {hasVipPrice ? (
               /* VIP pricing block */
