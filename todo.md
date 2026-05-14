@@ -821,3 +821,9 @@
 ## v117 - Исправить отображение названия товара
 - [x] ProductCard.tsx: название товара увеличено до text-sm font-semibold text-gray-900
 - [x] ProductDetail.tsx: добавлен заголовок <h1> text-xl font-bold перед ценой
+
+## v118 - Логотип, SEO и баг загрузки карточек
+- [x] Обработать официальный логотип KC (PNG с прозрачным фоном, 85% прозрачных пикселей)
+- [x] Заменить логотип в Navbar, Footer, favicon, apple-touch-icon, logo-512 (v4)
+- [x] Обновить og:image, twitter:image, Schema.org logo URL (версия ?v=4)
+- [x] Исправить баг layout shift: font-display:optional + Inter-Fallback @font-face с size-adjust

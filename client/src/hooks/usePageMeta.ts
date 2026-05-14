@@ -29,7 +29,7 @@ export function usePageMeta({
     const DEFAULT_TITLE = `${SITE_NAME} — Магазин бытовой техники со скидками`;
     const DEFAULT_DESC =
       "Катта Чегирма — самая дешёвая бытовая техника в Узбекистане. Пылесосы, стиральные машины, холодильники, телевизоры, кондиционеры и многое другое.";
-    const DEFAULT_IMAGE = `${BASE_URL}/logo-512.png?v=3`;
+    const DEFAULT_IMAGE = `${BASE_URL}/logo-512.png?v=4`;
 
     // Helper: upsert a <meta> tag
     function setMeta(selector: string, attr: string, value: string) {
