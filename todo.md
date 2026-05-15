@@ -827,3 +827,10 @@
 - [x] Заменить логотип в Navbar, Footer, favicon, apple-touch-icon, logo-512 (v4)
 - [x] Обновить og:image, twitter:image, Schema.org logo URL (версия ?v=4)
 - [x] Исправить баг layout shift: font-display:optional + Inter-Fallback @font-face с size-adjust
+
+## v119 - Skeleton-заглушки на главной странице (layout shift fix)
+- [x] Home.tsx: добавить ProductCardSkeleton компонент с точными размерами карточки (paddingBottom: 70%, flex-col, p-2)
+- [x] Home.tsx: HitsSliderSkeleton — skeleton для секции "Хиты продаж" (показывается пока hitsLoading=true)
+- [x] Home.tsx: CategorySectionSkeleton — skeleton для секций категорий (показывается пока isMainLoading=true)
+- [x] Home.tsx: skeleton мобильного горизонтального скролла категорий (пока categoriesLoading=true)
+- [x] Home.tsx: секция хитов и секции категорий показывают skeleton сразу, реальные карточки после загрузки

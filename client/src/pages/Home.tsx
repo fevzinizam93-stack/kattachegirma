@@ -8,8 +8,83 @@ import { usePageMeta } from "@/hooks/usePageMeta";
 import RecentlyViewed from "@/components/RecentlyViewed";
 
 // Categories that have products (with their slugs for linking)
-// We'll fetch products per category dynamically
 const CATEGORY_ORDER = [120001, 1, 2, 30001, 9, 150001, 8, 13];
+
+// ---- Skeleton card — точно повторяет размер ProductCard ----
+function ProductCardSkeleton() {
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden h-full flex flex-col animate-pulse">
+      {/* image area — same paddingBottom as real card */}
+      <div className="relative bg-gray-100" style={{ paddingBottom: "70%" }}>
+        <div className="absolute inset-0 bg-gray-200" />
+      </div>
+      <div className="p-2 flex flex-col flex-1 gap-1.5">
+        {/* brand */}
+        <div className="h-2.5 w-12 bg-gray-200 rounded" />
+        {/* name — 2 lines */}
+        <div className="flex-1 space-y-1">
+          <div className="h-3.5 bg-gray-200 rounded w-full" />
+          <div className="h-3.5 bg-gray-200 rounded w-3/4" />
+        </div>
+        {/* price */}
+        <div className="h-4 w-20 bg-gray-200 rounded mt-1" />
+        {/* button */}
+        <div className="h-7 bg-gray-200 rounded-lg mt-0.5" />
+      </div>
+    </div>
+  );
+}
+
+// ---- Skeleton для горизонтального слайдера хитов ----
+function HitsSliderSkeleton() {
+  return (
+    <section className="py-4" style={{ background: "linear-gradient(135deg, #fff7ed 0%, #fff3e0 50%, #fef9f0 100%)", borderTop: "3px solid #ffffff", borderBottom: "3px solid #ffffff" }}>
+      <div className="container">
+        {/* header skeleton */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 rounded-xl bg-orange-200 animate-pulse" />
+            <div className="space-y-1">
+              <div className="h-5 w-32 bg-orange-200 rounded animate-pulse" />
+              <div className="h-3 w-24 bg-orange-100 rounded animate-pulse" />
+            </div>
+          </div>
+          <div className="h-7 w-20 bg-orange-100 rounded-full animate-pulse" />
+        </div>
+        {/* cards row */}
+        <div className="flex gap-3 overflow-hidden">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="shrink-0" style={{ width: "220px" }}>
+              <ProductCardSkeleton />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ---- Skeleton для одной секции категории ----
+function CategorySectionSkeleton({ count = 5 }: { count?: number }) {
+  return (
+    <section className="container py-3">
+      {/* header */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className="h-5 w-5 bg-gray-200 rounded animate-pulse" />
+          <div className="h-5 w-32 bg-gray-200 rounded animate-pulse" />
+        </div>
+        <div className="h-5 w-16 bg-gray-100 rounded animate-pulse" />
+      </div>
+      {/* grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
+        {Array.from({ length: count }).map((_, i) => (
+          <ProductCardSkeleton key={i} />
+        ))}
+      </div>
+    </section>
+  );
+}
 
 export default function Home() {
   const { t } = useLanguage();
@@ -24,7 +99,7 @@ export default function Home() {
   });
 
   // Hits — primary content, load first
-  const { data: hitsData } = trpc.products.getHits.useQuery(
+  const { data: hitsData, isLoading: hitsLoading } = trpc.products.getHits.useQuery(
     { limit: 50 },
     { staleTime: 3 * 60 * 1000 }
   );
@@ -41,7 +116,6 @@ export default function Home() {
       if (sliderPausedRef.current || !sliderRef.current) return;
       const el = sliderRef.current;
       const half = el.scrollWidth / 2;
-      // If we've scrolled past the first copy, silently jump back to same position in first copy
       if (el.scrollLeft >= half - 5) {
         el.scrollLeft = el.scrollLeft - half;
       }
@@ -51,7 +125,7 @@ export default function Home() {
   }, []);
 
   // Secondary content — categories and banners
-  const { data: categoriesData } = trpc.categories.list.useQuery(
+  const { data: categoriesData, isLoading: categoriesLoading } = trpc.categories.list.useQuery(
     undefined,
     { staleTime: 10 * 60 * 1000 }
   );
@@ -63,7 +137,7 @@ export default function Home() {
   const categories = categoriesData ?? [];
 
   // All products — used for category sections
-  const { data: allProductsData } = trpc.products.list.useQuery(
+  const { data: allProductsData, isLoading: productsLoading } = trpc.products.list.useQuery(
     { limit: 200, offset: 0 },
     { staleTime: 3 * 60 * 1000 }
   );
@@ -80,13 +154,15 @@ export default function Home() {
   const catMap: Record<number, (typeof categories)[0]> = {};
   for (const c of categories) catMap[c.id] = c;
 
-  // Ordered list of categories that have products
   const orderedCatIds = [
     ...CATEGORY_ORDER.filter(id => productsByCategory[id]?.length > 0),
     ...Object.keys(productsByCategory)
       .map(Number)
       .filter(id => !CATEGORY_ORDER.includes(id) && productsByCategory[id]?.length > 0),
   ];
+
+  // Are we still loading the main content?
+  const isMainLoading = hitsLoading || productsLoading || categoriesLoading;
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -122,9 +198,23 @@ export default function Home() {
           </div>
         </div>
       )}
+      {/* Mobile category skeleton while loading */}
+      {categoriesLoading && (
+        <div className="md:hidden bg-white border-b border-gray-100 overflow-x-auto scrollbar-hide">
+          <div className="flex gap-2 px-3 py-2.5 w-max">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="shrink-0 flex flex-col items-center gap-1 px-3 py-2 rounded-xl bg-gray-100 animate-pulse min-w-[64px]">
+                <div className="w-8 h-8 bg-gray-200 rounded-full" />
+                <div className="w-12 h-2.5 bg-gray-200 rounded" />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Bestsellers / Hits widget — horizontal slider */}
-      {hitProducts.length > 0 && (
+      {hitsLoading && <HitsSliderSkeleton />}
+      {!hitsLoading && hitProducts.length > 0 && (
         <section className="py-4" style={{ background: "linear-gradient(135deg, #fff7ed 0%, #fff3e0 50%, #fef9f0 100%)", borderTop: "3px solid #ffffff", borderBottom: "3px solid #ffffff" }}>
           <div className="container">
             {/* Header */}
@@ -175,8 +265,17 @@ export default function Home() {
         </section>
       )}
 
+      {/* Category sections skeleton while loading */}
+      {isMainLoading && (
+        <>
+          <CategorySectionSkeleton count={5} />
+          <CategorySectionSkeleton count={5} />
+          <CategorySectionSkeleton count={4} />
+        </>
+      )}
+
       {/* Category sections — one section per category that has products */}
-      {orderedCatIds.map(catId => {
+      {!isMainLoading && orderedCatIds.map(catId => {
         const cat = catMap[catId];
         const prods = productsByCategory[catId] ?? [];
         if (!cat || prods.length === 0) return null;
