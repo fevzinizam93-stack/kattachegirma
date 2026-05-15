@@ -183,6 +183,13 @@
       "when": 1778687253023,
       "tag": "0025_friendly_wolfpack",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "5",
+      "when": 1778867085279,
+      "tag": "0026_massive_susan_delgado",
+      "breakpoints": true
     }
   ]
 }

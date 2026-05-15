@@ -1965,9 +1965,23 @@ export default function Admin() {
                     })
                     .map(u => (
                       <div key={u.id} className="flex items-center justify-between p-3 bg-yellow-50 rounded-xl border border-yellow-100">
-                        <div>
-                          <p className="font-semibold text-sm text-gray-900">{u.name ?? "Без имени"}</p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-semibold text-sm text-gray-900">{u.name ?? "Без имени"}</p>
+                            {u.role === "admin" && (
+                              <span className="text-xs bg-red-100 text-red-600 font-bold px-1.5 py-0.5 rounded">Админ</span>
+                            )}
+                            {u.role === "seller" && (
+                              <span className="text-xs bg-blue-100 text-blue-600 font-bold px-1.5 py-0.5 rounded">Продавец</span>
+                            )}
+                            {u.role === "vip" && (
+                              <span className="text-xs bg-yellow-200 text-yellow-700 font-bold px-1.5 py-0.5 rounded">VIP</span>
+                            )}
+                          </div>
                           <p className="text-xs text-gray-500">{u.email ?? (u as any).phone ?? "—"}</p>
+                          {(u as any).phone && u.email && (
+                            <p className="text-xs text-gray-400">{(u as any).phone}</p>
+                          )}
                           {(u as any).vipExpiresAt && (
                             <p className="text-xs text-yellow-600">До: {new Date((u as any).vipExpiresAt).toLocaleDateString("ru-RU")}</p>
                           )}
@@ -1975,9 +1989,9 @@ export default function Admin() {
                         <button
                           onClick={() => revokeVipMut.mutate({ userId: u.id })}
                           disabled={revokeVipMut.isPending}
-                          className="text-xs text-red-500 hover:text-red-700 font-semibold px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition-colors"
+                          className="text-xs text-red-500 hover:text-red-700 font-semibold px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition-colors ml-3 shrink-0"
                         >
-                          Отозвать VIP
+                          Отключить VIP
                         </button>
                       </div>
                     ))}
@@ -1989,10 +2003,11 @@ export default function Admin() {
             <div className="bg-blue-50 rounded-2xl p-5 border border-blue-100">
               <h3 className="font-bold text-blue-800 mb-2">Как работает VIP?</h3>
               <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
-                <li>Пользователь регистрируется на сайте (email + пароль)</li>
-                <li>Вы добавляете его email здесь → он получает VIP-доступ</li>
+                <li>Пользователь регистрируется на сайте (через Google/email)</li>
+                <li>Вы вводите его email или телефон здесь → он получает VIP-доступ</li>
                 <li>VIP-участник видит кнопку «VIP» на сайте и себестоимость товаров</li>
-                <li>Чтобы убрать VIP — нажмите «Отозвать VIP» рядом с именем</li>
+                <li>Чтобы отключить VIP — нажмите «Отключить VIP» рядом с именем (админы остаются админами)</li>
+                <li>Для тестирования: выдайте VIP себе (админу), затем отключайте когда нужно</li>
               </ol>
             </div>
           </div>

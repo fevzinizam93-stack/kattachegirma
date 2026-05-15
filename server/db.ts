@@ -769,7 +769,13 @@ export async function getUtmStats(days = 30): Promise<{
 export async function getVipUsers(): Promise<User[]> {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(users).where(eq(users.role, "vip")).orderBy(desc(users.createdAt));
+  // Include: users with role='vip' OR admin/seller users with vipEnabled=true
+  return db.select().from(users).where(
+    or(
+      eq(users.role, "vip"),
+      eq(users.vipEnabled, true)
+    )
+  ).orderBy(desc(users.createdAt));
 }
 
 export async function getAllUsersForAdmin(): Promise<User[]> {
@@ -785,20 +791,24 @@ export async function setUserVip(
 ): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
+  const existing = await db.select({ role: users.role }).from(users).where(eq(users.id, userId)).limit(1);
+  const currentRole = existing[0]?.role;
+
   if (isVip) {
-    // Never downgrade admin to vip — admin already has full access including VIP prices
-    const existing = await db.select({ role: users.role }).from(users).where(eq(users.id, userId)).limit(1);
-    if (existing[0]?.role !== "admin") {
-      await db.update(users).set({ role: "vip", vipExpiresAt: expiresAt ?? null }).where(eq(users.id, userId));
+    if (currentRole === "admin" || currentRole === "seller") {
+      // For admin/seller: set vipEnabled=true, keep role unchanged
+      await db.update(users).set({ vipEnabled: true, vipExpiresAt: expiresAt ?? null }).where(eq(users.id, userId));
     } else {
-      // Admin: just update vipExpiresAt if provided, keep role as admin
-      await db.update(users).set({ vipExpiresAt: expiresAt ?? null }).where(eq(users.id, userId));
+      // Regular user: change role to 'vip' and set vipEnabled=true
+      await db.update(users).set({ role: "vip", vipEnabled: true, vipExpiresAt: expiresAt ?? null }).where(eq(users.id, userId));
     }
   } else {
-    // When revoking VIP, only reset to 'user' if they are currently 'vip' (not admin)
-    const existing = await db.select({ role: users.role }).from(users).where(eq(users.id, userId)).limit(1);
-    if (existing[0]?.role !== "admin") {
-      await db.update(users).set({ role: "user", vipExpiresAt: null }).where(eq(users.id, userId));
+    if (currentRole === "admin" || currentRole === "seller") {
+      // For admin/seller: just disable vipEnabled, keep role unchanged
+      await db.update(users).set({ vipEnabled: false, vipExpiresAt: null }).where(eq(users.id, userId));
+    } else {
+      // Regular vip user: revert to 'user' role and disable vipEnabled
+      await db.update(users).set({ role: "user", vipEnabled: false, vipExpiresAt: null }).where(eq(users.id, userId));
     }
   }
 }

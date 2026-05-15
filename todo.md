@@ -828,6 +828,15 @@
 - [x] Обновить og:image, twitter:image, Schema.org logo URL (версия ?v=4)
 - [x] Исправить баг layout shift: font-display:optional + Inter-Fallback @font-face с size-adjust
 
+## v120 - VIP баг-фикс: показывать VIP-участников + toggle
+- [x] drizzle/schema.ts: добавить поле vipEnabled (boolean, default false) в таблицу users
+- [x] DB миграция: ALTER TABLE users ADD vipEnabled boolean DEFAULT false NOT NULL
+- [x] server/db.ts: getVipUsers() — включать role='vip' OR vipEnabled=true
+- [x] server/db.ts: setUserVip() — для admin/seller менять только vipEnabled, не роль
+- [x] Admin.tsx: в списке VIP-участников показывать роль (Админ/Продавец/VIP), email, телефон
+- [x] Admin.tsx: кнопка «Отключить VIP» (вместо «Отозвать VIP»)
+- [x] Admin.tsx: обновлена инструкция — поясняет как тестировать VIP для себя
+
 ## v119 - Skeleton-заглушки на главной странице (layout shift fix)
 - [x] Home.tsx: добавить ProductCardSkeleton компонент с точными размерами карточки (paddingBottom: 70%, flex-col, p-2)
 - [x] Home.tsx: HitsSliderSkeleton — skeleton для секции "Хиты продаж" (показывается пока hitsLoading=true)

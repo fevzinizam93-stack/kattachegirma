@@ -1,0 +1,90 @@
+{
+  "query": "SELECT id, name, email, phone, role, vipEnabled FROM users ORDER BY createdAt DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute SELECT id, name, email, phone, role, vipEnabled FROM users ORDER BY createdAt DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "3510001",
+      "name": "Kamola",
+      "email": "nazarovakamola609@gmail.com",
+      "phone": "NULL",
+      "role": "user",
+      "vipEnabled": "0"
+    },
+    {
+      "id": "3120001",
+      "name": "SANJAR ",
+      "email": "isonsanjar@gmail.com",
+      "phone": "NULL",
+      "role": "user",
+      "vipEnabled": "0"
+    },
+    {
+      "id": "3000001",
+      "name": "Farrux ",
+      "email": "mrboom7277@gmail.com",
+      "phone": "NULL",
+      "role": "user",
+      "vipEnabled": "0"
+    },
+    {
+      "id": "2940001",
+      "name": "Шухрат",
+      "email": "shukrat.tillaev67@gmail.com",
+      "phone": "NULL",
+      "role": "user",
+      "vipEnabled": "0"
+    },
+    {
+      "id": "2880032",
+      "name": "Otabek ",
+      "email": "mirzabekovotabek1@gmail.com",
+      "phone": "NULL",
+      "role": "user",
+      "vipEnabled": "0"
+    },
+    {
+      "id": "2610001",
+      "name": "UTKIRJON ",
+      "email": "madalimovutkirzon@gmail.com",
+      "phone": "NULL",
+      "role": "user",
+      "vipEnabled": "0"
+    },
+    {
+      "id": "2490044",
+      "name": "Muxammadqodir ",
+      "email": "muhammadqodirroziqulov@gmail.com",
+      "phone": "NULL",
+      "role": "user",
+      "vipEnabled": "0"
+    },
+    {
+      "id": "2280001",
+      "name": "Умид Дадабаев",
+      "email": "umid1980.08@gmail.com",
+      "phone": "NULL",
+      "role": "user",
+      "vipEnabled": "0"
+    },
+    {
+      "id": "2100019",
+      "name": "ziyoviddin",
+      "email": "faziw19930105@gmail.com",
+      "phone": "NULL",
+      "role": "user",
+      "vipEnabled": "0"
+    },
+    {
+      "id": "1740001",
+      "name": "Otabek ",
+      "email": "otabekmirzabekov2907@gmail.com",
+      "phone": "NULL",
+      "role": "user",
+      "vipEnabled": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\tphone\trole\tvipEnabled\n3510001\tKamola\tnazarovakamola609@gmail.com\tNULL\tuser\t0\n3120001\tSANJAR \tisonsanjar@gmail.com\tNULL\tuser\t0\n3000001\tFarrux \tmrboom7277@gmail.com\tNULL\tuser\t0\n2940001\tШухрат\tshukrat.tillaev67@gmail.com\tNULL\tuser\t0\n2880032\tOtabek \tmirzabekovotabek1@gmail.com\tNULL\tuser\t0\n2610001\tUTKIRJON \tmadalimovutkirzon@gmail.com\tNULL\tuser\t0\n2490044\tMuxammadqodir \tmuhammadqodirroziqulov@gmail.com\tNULL\tuser\t0\n2280001\tУмид Дадабаев\tumid1980.08@gmail.com\tNULL\tuser\t0\n2100019\tziyoviddin\tfaziw19930105@gmail.com\tNULL\tuser\t0\n1740001\tOtabek \totabekmirzabekov2907@gmail.com\tNULL\tuser\t0\n",
+  "stderr": "",
+  "execution_time_ms": 278
+}

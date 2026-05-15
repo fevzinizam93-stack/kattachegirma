@@ -1,0 +1,18 @@
+{
+  "query": "SELECT id, name, email, phone, role, vipEnabled FROM users WHERE role = 'admin' LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute SELECT id, name, email, phone, role, vipEnabled FROM users WHERE role = 'admin' LIMIT 5;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Fazliddin",
+      "email": "fevzinizam93@gmail.com",
+      "phone": "NULL",
+      "role": "admin",
+      "vipEnabled": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\tphone\trole\tvipEnabled\n1\tFazliddin\tfevzinizam93@gmail.com\tNULL\tadmin\t0\n",
+  "stderr": "",
+  "execution_time_ms": 398
+}

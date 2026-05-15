@@ -21,6 +21,7 @@ export const users = mysqlTable("users", {
   phone: varchar("phone", { length: 32 }),
   telegramId: varchar("telegramId", { length: 64 }),
   vipExpiresAt: timestamp("vipExpiresAt"),
+  vipEnabled: boolean("vipEnabled").default(false).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
