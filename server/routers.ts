@@ -1525,5 +1525,89 @@ export const appRouter = router({
         return { success: true };
       }),
   }),
+
+  // ---- AI Shopping Assistant ----
+  ai: router({
+    /**
+     * Chat with AI shopping assistant.
+     * Accepts conversation history and returns assistant reply.
+     * Public — no login required.
+     */
+    chat: publicProcedure
+      .input(z.object({
+        messages: z.array(z.object({
+          role: z.enum(["user", "assistant"]),
+          content: z.string().max(4000),
+        })).max(20),
+        // Optional: current product context
+        productContext: z.object({
+          name: z.string(),
+          price: z.number().optional(),
+          category: z.string().optional(),
+        }).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        // Load top products for context (limit 40 for prompt size)
+        const products = await getProducts({ limit: 40, offset: 0 });
+        const settings = await getAllStoreSettings();
+        const settingsMap = settings as Record<string, string>;
+        const storeName = settingsMap["store_name"] ?? "Katta Chegirma";
+        const storePhone = settingsMap["phone"] ?? "";
+        const storeAddress = settingsMap["address"] ?? "";
+
+        // Build product list for system prompt (compact format)
+        const productLines = (products as Array<{ name: string; price: string; originalPrice?: string | null; brand?: string | null; stockCount?: number | null }>)
+          .slice(0, 40).map((p) => {
+          const priceNum = parseFloat(p.price) || 0;
+          const origNum = p.originalPrice ? parseFloat(p.originalPrice) : null;
+          const discount = origNum && origNum > priceNum
+            ? ` (скидка ${Math.round((1 - priceNum / origNum) * 100)}%)`
+            : "";
+          const stock = p.stockCount != null ? ` [${p.stockCount} шт]` : "";
+          return `- ${p.name}${p.brand ? ` (${p.brand})` : ""}: ${priceNum.toLocaleString("ru")} сум${discount}${stock}`;
+        }).join("\n");
+
+        const systemPrompt = `Ты — умный помощник интернет-магазина «${storeName}» (kattachegirma.uz). Помогаешь покупателям выбрать товар, отвечаешь на вопросы о ценах, наличии, доставке и оформлении заказа.
+
+Текущий каталог товаров (${products.length} позиций):
+${productLines}
+
+Информация о магазине:
+- Телефон: ${storePhone || "+998 XX XXX-XX-XX"}
+- Адрес: ${storeAddress || "Узбекистан"}
+- Доставка: по всему Узбекистану
+- Оплата: наличными при получении
+- Сайт: kattachegirma.uz
+
+Правила:
+1. Отвечай ТОЛЬКО на русском языке, кратко и по делу
+2. Рекомендуй конкретные товары из каталога с ценами
+3. Если товара нет в списке — скажи что уточнишь у менеджера
+4. Для оформления заказа направляй на кнопку «Успей по скидке» или «Купить в 1 клик»
+5. Будь дружелюбным и профессиональным
+6. Не выдумывай цены и характеристики — используй только данные из каталога`;
+
+        const llmMessages = [
+          { role: "system" as const, content: systemPrompt },
+          ...input.messages.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
+        ];
+
+        // Add product context if provided
+        if (input.productContext) {
+          const lastUserIdx = [...llmMessages].reverse().findIndex((m) => m.role === "user");
+          if (lastUserIdx !== -1) {
+            const idx = llmMessages.length - 1 - lastUserIdx;
+            llmMessages[idx] = {
+              ...llmMessages[idx],
+              content: `[Пользователь смотрит товар: ${input.productContext.name}${input.productContext.price ? ` за ${input.productContext.price.toLocaleString("ru")} сум` : ""}]\n${llmMessages[idx].content}`,
+            };
+          }
+        }
+
+        const result = await invokeLLM({ messages: llmMessages });
+        const reply = result.choices?.[0]?.message?.content ?? "Извините, не смог ответить. Попробуйте ещё раз.";
+        return { reply };
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

@@ -9,6 +9,7 @@ import { CartProvider } from "./contexts/CartContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import MobileBottomNav from "./components/MobileBottomNav";
+import { ShopAssistant } from "./components/ShopAssistant";
 // All pages are lazy-loaded for code splitting — only the current page's JS is downloaded
 const Home = lazy(() => import("./pages/Home"));
 const Catalog = lazy(() => import("./pages/Catalog"));
@@ -138,6 +139,7 @@ function App() {
               </div>
               <Suspense fallback={null}>
                 <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} defaultTab={authTab} redirectPath={authRedirect} />
+                <ShopAssistant />
               </Suspense>
             </TooltipProvider>
           </AuthModalContext.Provider>
