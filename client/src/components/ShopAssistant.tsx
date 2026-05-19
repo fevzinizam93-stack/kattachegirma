@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,6 +9,28 @@ interface Message {
   content: string;
 }
 
+interface ViewedProduct {
+  id: number;
+  name: string;
+  brand?: string | null;
+  price: string;
+  discount?: number | null;
+  categoryId?: number;
+  viewedAt?: number;
+}
+
+const STORAGE_KEY = "kc_recently_viewed";
+
+function readViewedProducts(): ViewedProduct[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw) as ViewedProduct[];
+  } catch {
+    return [];
+  }
+}
+
 const SUGGESTED_PROMPTS = [
   "Что у вас есть из бытовой техники?",
   "Какие товары сейчас со скидкой?",
@@ -16,14 +38,30 @@ const SUGGESTED_PROMPTS = [
   "Есть ли доставка по Узбекистану?",
 ];
 
+const PERSONALIZED_PROMPTS = [
+  "Посоветуйте похожие товары",
+  "Что лучше из просмотренного?",
+  "Есть ли скидки на эти товары?",
+  "Как оформить заказ?",
+];
+
 export function ShopAssistant() {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content:
-        "Привет! 👋 Я помощник магазина **Katta Chegirma**. Помогу выбрать товар, расскажу о ценах и доставке. Чем могу помочь?",
-    },
+
+  // Read viewed products from localStorage once (stable reference)
+  const viewedProducts = useMemo(() => readViewedProducts(), []);
+
+  // Build personalized greeting based on viewed history
+  const greeting = useMemo(() => {
+    if (viewedProducts.length > 0) {
+      const firstName = viewedProducts[0].name.split(" ").slice(0, 3).join(" ");
+      return `Привет! 👋 Вижу, вы смотрели **${firstName}** и ещё ${viewedProducts.length > 1 ? `${viewedProducts.length - 1} товар(а)` : "другие товары"}. Могу подобрать похожие варианты или ответить на вопросы. Чем помочь?`;
+    }
+    return "Привет! 👋 Я помощник магазина **Katta Chegirma**. Помогу выбрать товар, расскажу о ценах и доставке. Чем могу помочь?";
+  }, [viewedProducts]);
+
+  const [messages, setMessages] = useState<Message[]>(() => [
+    { role: "assistant", content: greeting },
   ]);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -58,6 +96,18 @@ export function ShopAssistant() {
     try {
       const result = await chatMutation.mutateAsync({
         messages: newMessages.slice(-10).map((m) => ({ role: m.role, content: String(m.content) })),
+        // Pass viewed products for personalization
+        viewedProducts: viewedProducts.length > 0
+          ? viewedProducts.slice(0, 10).map((p) => ({
+              id: p.id,
+              name: p.name,
+              brand: p.brand ?? null,
+              price: p.price,
+              discount: p.discount ?? null,
+              categoryId: p.categoryId,
+              viewedAt: p.viewedAt,
+            }))
+          : undefined,
       });
       const assistantMsg: Message = {
         role: "assistant",
@@ -103,6 +153,9 @@ export function ShopAssistant() {
     });
   };
 
+  // Choose prompts based on whether user has viewed products
+  const prompts = viewedProducts.length > 0 ? PERSONALIZED_PROMPTS : SUGGESTED_PROMPTS;
+
   return (
     <>
       {/* Floating button */}
@@ -127,7 +180,8 @@ export function ShopAssistant() {
 
       {/* Chat window */}
       {isOpen && (
-        <div className="fixed bottom-36 right-4 md:bottom-24 md:right-6 z-50 w-[340px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden"
+        <div
+          className="fixed bottom-36 right-4 md:bottom-24 md:right-6 z-50 w-[340px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden"
           style={{ height: "480px" }}
         >
           {/* Header */}
@@ -137,7 +191,11 @@ export function ShopAssistant() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-semibold text-sm">AI-помощник</div>
-              <div className="text-xs text-red-100">Katta Chegirma</div>
+              <div className="text-xs text-red-100">
+                {viewedProducts.length > 0
+                  ? `Знаю ваши предпочтения (${viewedProducts.length} товаров)`
+                  : "Katta Chegirma"}
+              </div>
             </div>
             <button
               onClick={() => setIsOpen(false)}
@@ -186,7 +244,7 @@ export function ShopAssistant() {
             {/* Suggested prompts — show only at start */}
             {messages.length === 1 && !chatMutation.isPending && (
               <div className="space-y-1.5 pt-1">
-                {SUGGESTED_PROMPTS.map((prompt) => (
+                {prompts.map((prompt) => (
                   <button
                     key={prompt}
                     onClick={() => sendMessage(prompt)}

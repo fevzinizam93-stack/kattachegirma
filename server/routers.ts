@@ -1545,6 +1545,16 @@ export const appRouter = router({
           price: z.number().optional(),
           category: z.string().optional(),
         }).optional(),
+        // Recently viewed products from localStorage
+        viewedProducts: z.array(z.object({
+          id: z.number(),
+          name: z.string(),
+          brand: z.string().nullable().optional(),
+          price: z.string(),
+          discount: z.number().nullable().optional(),
+          categoryId: z.number().optional(),
+          viewedAt: z.number().optional(),
+        })).max(10).optional(),
       }))
       .mutation(async ({ input }) => {
         // Load top products for context (limit 40 for prompt size)
@@ -1567,7 +1577,18 @@ export const appRouter = router({
           return `- ${p.name}${p.brand ? ` (${p.brand})` : ""}: ${priceNum.toLocaleString("ru")} сум${discount}${stock}`;
         }).join("\n");
 
-        const systemPrompt = `Ты — умный помощник интернет-магазина «${storeName}» (kattachegirma.uz). Помогаешь покупателям выбрать товар, отвечаешь на вопросы о ценах, наличии, доставке и оформлении заказа.
+        // Build viewed products section if available
+        let viewedSection = "";
+        if (input.viewedProducts && input.viewedProducts.length > 0) {
+          const viewedLines = input.viewedProducts.map((p) => {
+            const priceNum = parseFloat(p.price) || 0;
+            const discount = p.discount ? ` (скидка ${p.discount}%)` : "";
+            return `- ${p.name}${p.brand ? ` (${p.brand})` : ""}: ${priceNum.toLocaleString("ru")} сум${discount}`;
+          }).join("\n");
+          viewedSection = `\n\nНедавно просмотренные товары пользователя (${input.viewedProducts.length} шт — используй для персональных рекомендаций):\n${viewedLines}\n\nВАЖНО: Пользователь интересовался этими товарами. Учитывай его предпочтения по категориям, ценовому диапазону и брендам при рекомендациях. Если он спрашивает «что посоветуете» или «что у вас есть» — опирайся на его интересы.`;
+        }
+
+        const systemPrompt = `Ты — умный помощник интернет-магазина «${storeName}» (kattachegirma.uz). Помогаешь покупателям выбрать товар, отвечаешь на вопросы о ценах, наличии, доставке и оформлении заказа.${viewedSection}
 
 Текущий каталог товаров (${products.length} позиций):
 ${productLines}
@@ -1585,7 +1606,8 @@ ${productLines}
 3. Если товара нет в списке — скажи что уточнишь у менеджера
 4. Для оформления заказа направляй на кнопку «Успей по скидке» или «Купить в 1 клик»
 5. Будь дружелюбным и профессиональным
-6. Не выдумывай цены и характеристики — используй только данные из каталога`;
+6. Не выдумывай цены и характеристики — используй только данные из каталога
+7. Если есть история просмотров — используй её для персонализации ответов`;
 
         const llmMessages = [
           { role: "system" as const, content: systemPrompt },
