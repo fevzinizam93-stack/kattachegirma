@@ -9,6 +9,7 @@ import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { registerUploadRoute } from "../uploadRoute";
 import { registerSitemapRoute } from "../sitemap";
+import { registerFacebookFeedRoute } from "../facebookFeed";
 import { registerTelegramWebhook } from "../webhookRoute";
 import { autoRegisterTelegramWebhook } from "../telegram";
 import { createContext } from "./context";
@@ -57,6 +58,7 @@ async function startServer() {
   registerOAuthRoutes(app);
   registerUploadRoute(app);
   registerSitemapRoute(app);
+  registerFacebookFeedRoute(app);
   registerTelegramWebhook(app);
   // tRPC API
   app.use(
