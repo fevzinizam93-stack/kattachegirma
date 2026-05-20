@@ -809,11 +809,11 @@
 - [x] Wnv1y5OJEsk (775 просмотров), SB9YAiV2Q4o (пылесос), quNzhLYkid0 (холодильник)
 
 ## v115 - YouTube Data API v3 — реальные просмотры
-- [ ] Добавить секрет YOUTUBE_API_KEY
-- [ ] tRPC процедура youtube.getVideoStats(ids[]) — запрос к YouTube Data API v3
-- [ ] Кэширование ответа на сервере (5 минут) чтобы не превышать квоту
-- [ ] About.tsx VideoCard: отображать актуальные просмотры из API вместо статических
-- [ ] Fallback на статические значения при ошибке API
+- [x] Добавить секрет YOUTUBE_API_KEY
+- [x] tRPC процедура youtube.getVideoStats(ids[]) — запрос к YouTube Data API v3
+- [x] Кэширование ответа на сервере (5 минут) чтобы не превышать квоту
+- [x] About.tsx VideoCard: отображать актуальные просмотры из API вместо статических
+- [x] Fallback на статические значения при ошибке API
 
 ## v116 - Убрать кнопку «Заказать в Telegram» с карточек товаров
 - [x] ProductCard.tsx: удалить кнопку «Заказать в Telegram» и счётчик «Сейчас смотрят»
@@ -879,3 +879,14 @@
 - [x] server/routers.ts: youtube.getVideoStats — получает статистику видео через YouTube Data API v3 с 5-минутным in-memory кэшем
 - [x] client/src/pages/About.tsx: VideoCard принимает liveViews, форматирует (1.2K), fallback на статические значения
 - [x] client/src/pages/About.tsx: VideoReviewsSection вызывает trpc.youtube.getVideoStats и передаёт реальные просмотры в VideoCard
+
+## v127 - Страница «Видеообзоры» (/videos) в стиле YouTube Shorts
+- [x] server/routers.ts: youtube.getChannelVideos — загружает видео канала @KattaChegirma через YouTube Data API v3 (playlistItems + videos statistics)
+- [x] client/src/pages/Videos.tsx: вертикальный скролл в стиле Shorts (один видео на весь экран, свайп/колесо мыши)
+- [x] Videos.tsx: встроенный YouTube iframe плеер, автопауза при смене видео
+- [x] Videos.tsx: мобильный touch-свайп вверх/вниз для переключения видео
+- [x] Videos.tsx: десктоп — прокрутка колесом мыши переключает видео
+- [x] Videos.tsx: отображение названия, просмотров, лайков
+- [x] App.tsx: маршрут /videos
+- [x] Navbar: кнопка «Видеообзоры» (иконка YouTube)
+- [x] About.tsx: секция видео-обзоров — добавлена кнопка «Смотреть все видеообзоры» → /videos

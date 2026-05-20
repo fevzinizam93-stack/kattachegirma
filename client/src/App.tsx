@@ -35,6 +35,7 @@ const Sales = lazy(() => import("./pages/Sales"));
 const Favorites = lazy(() => import("./pages/Favorites"));
 const SellerMessages = lazy(() => import("./pages/SellerMessages"));
 const AuthModal = lazy(() => import("./components/AuthModal"));
+const Videos = lazy(() => import("./pages/Videos"));
 
 // Lightweight spinner shown while a page chunk is loading
 function PageLoader() {
@@ -100,6 +101,7 @@ function Router() {
       <Route path="/profile" component={Profile} />
       <Route path="/login" component={LoginPage} />
       <Route path="/sales" component={Sales} />
+      <Route path="/videos" component={Videos} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
@@ -120,6 +122,9 @@ function App() {
   const openLoginClick = () => openLogin();
   const openRegisterClick = () => openRegister();
 
+  const [location] = useLocation(); // used to hide nav on /videos
+  const isVideosPage = location === "/videos";
+
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">
@@ -128,14 +133,14 @@ function App() {
             <TooltipProvider>
               <Toaster />
               <div className="flex flex-col min-h-screen" translate="no">
-                <Navbar onOpenAuth={openLogin} />
-                <main className="flex-1 pb-14 md:pb-0">
+                {!isVideosPage && <Navbar onOpenAuth={openLogin} />}
+                <main className={isVideosPage ? "" : "flex-1 pb-14 md:pb-0"}>
                   <Suspense fallback={<PageLoader />}>
                     <Router />
                   </Suspense>
                 </main>
-                <div className="hidden md:block"><Footer /></div>
-                <MobileBottomNav />
+                {!isVideosPage && <div className="hidden md:block"><Footer /></div>}
+                {!isVideosPage && <MobileBottomNav />}
               </div>
               <Suspense fallback={null}>
                 <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} defaultTab={authTab} redirectPath={authRedirect} />

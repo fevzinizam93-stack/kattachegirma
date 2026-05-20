@@ -271,13 +271,13 @@ function VideoReviewsSection() {
       <div className="container">
         <div className="text-center mb-10">
           <span className="inline-block bg-red-50 text-red-600 font-semibold text-sm px-4 py-1.5 rounded-full mb-3 border border-red-200">
-            ▶ Видео-обзоры
+            ▶ Видеообзоры
           </span>
           <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-3">
-            Смотрите, как покупают у нас
+            Смотрите обзоры наших товаров
           </h2>
           <p className="text-gray-500 max-w-xl mx-auto">
-            Реальные видео от покупателей — распаковки, обзоры и впечатления от техники
+            Реальные видеообзоры товаров — распаковки, характеристики и впечатления
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
@@ -289,15 +289,22 @@ function VideoReviewsSection() {
             />
           ))}
         </div>
-        <div className="text-center">
+        <div className="text-center flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Link
+            href="/videos"
+            className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors shadow-sm"
+          >
+            <Youtube size={18} />
+            Смотреть все видеообзоры
+          </Link>
           <a
             href="https://www.youtube.com/@kattachegirma"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors shadow-sm"
+            className="inline-flex items-center gap-2 border border-red-200 text-red-600 hover:bg-red-50 font-semibold px-6 py-3 rounded-xl transition-colors"
           >
             <Youtube size={18} />
-            Смотреть все видео на YouTube
+            Канал на YouTube
           </a>
         </div>
       </div>

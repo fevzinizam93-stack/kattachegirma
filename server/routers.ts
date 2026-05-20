@@ -131,6 +131,8 @@ const sellerProcedure = protectedProcedure.use(async ({ ctx, next }) => {
 
 // YouTube API in-memory cache
 const youtubeCache: Record<string, { ts: number; data: Record<string, { viewCount: string; likeCount: string }> }> = {};
+type YTVideoItem = { id: string; title: string; thumbnail: string; viewCount: string; likeCount: string; publishedAt: string };
+const youtubeChanCache: Record<string, { ts: number; data: { videos: YTVideoItem[]; nextPageToken: string | null; totalResults: number } }> = {};
 
 export const appRouter = router({
   system: systemRouter,
@@ -1663,6 +1665,54 @@ ${productLines}
           return { stats };
         } catch {
           return { stats: {} as Record<string, { viewCount: string; likeCount: string }> };
+        }
+      }),
+    getChannelVideos: publicProcedure
+      .input(z.object({ pageToken: z.string().optional(), maxResults: z.number().min(1).max(50).default(20) }))
+      .query(async ({ input }) => {
+        const apiKey = ENV.youtubeApiKey;
+        const UPLOADS_PLAYLIST = "UULx3ANN-9_ccciYBwkU5puQ";
+        if (!apiKey) return { videos: [] as YTVideoItem[], nextPageToken: null as string | null, totalResults: 0 };
+        const cacheKey = `channel_${input.pageToken ?? "first"}_${input.maxResults}`;
+        const now = Date.now();
+        if (youtubeChanCache[cacheKey] && now - youtubeChanCache[cacheKey].ts < 10 * 60 * 1000) {
+          return youtubeChanCache[cacheKey].data;
+        }
+        try {
+          // Step 1: get video IDs from uploads playlist
+          let plUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${UPLOADS_PLAYLIST}&maxResults=${input.maxResults}&key=${apiKey}`;
+          if (input.pageToken) plUrl += `&pageToken=${input.pageToken}`;
+          const plRes = await fetch(plUrl);
+          if (!plRes.ok) return { videos: [] as YTVideoItem[], nextPageToken: null as string | null, totalResults: 0 };
+          const plJson = await plRes.json() as {
+            nextPageToken?: string;
+            pageInfo: { totalResults: number };
+            items?: Array<{ snippet: { resourceId: { videoId: string }; title: string; thumbnails: { high?: { url: string }; medium?: { url: string } }; publishedAt: string } }>;
+          };
+          const items = plJson.items ?? [];
+          const videoIds = items.map(i => i.snippet.resourceId.videoId).filter(Boolean);
+          if (videoIds.length === 0) return { videos: [] as YTVideoItem[], nextPageToken: plJson.nextPageToken ?? null, totalResults: plJson.pageInfo.totalResults };
+          // Step 2: get statistics for those videos
+          const statsUrl = `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoIds.join(",")}&key=${apiKey}`;
+          const statsRes = await fetch(statsUrl);
+          const statsJson = statsRes.ok ? await statsRes.json() as { items?: Array<{ id: string; statistics: { viewCount?: string; likeCount?: string } }> } : { items: [] };
+          const statsMap: Record<string, { viewCount: string; likeCount: string }> = {};
+          for (const s of statsJson.items ?? []) {
+            statsMap[s.id] = { viewCount: s.statistics.viewCount ?? "0", likeCount: s.statistics.likeCount ?? "0" };
+          }
+          const videos: YTVideoItem[] = items.map(i => ({
+            id: i.snippet.resourceId.videoId,
+            title: i.snippet.title,
+            thumbnail: i.snippet.thumbnails.high?.url ?? i.snippet.thumbnails.medium?.url ?? "",
+            viewCount: statsMap[i.snippet.resourceId.videoId]?.viewCount ?? "0",
+            likeCount: statsMap[i.snippet.resourceId.videoId]?.likeCount ?? "0",
+            publishedAt: i.snippet.publishedAt,
+          }));
+          const result = { videos, nextPageToken: plJson.nextPageToken ?? null, totalResults: plJson.pageInfo.totalResults };
+          youtubeChanCache[cacheKey] = { ts: now, data: result };
+          return result;
+        } catch {
+          return { videos: [] as YTVideoItem[], nextPageToken: null as string | null, totalResults: 0 };
         }
       }),
   }),

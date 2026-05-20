@@ -3,7 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { Bell, ChevronDown, Crown, Heart, LayoutGrid, Search, ShoppingCart, User, X } from "lucide-react";
+import { Bell, ChevronDown, Crown, Heart, LayoutGrid, Search, ShoppingCart, User, X, Youtube } from "lucide-react";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
@@ -173,6 +173,17 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           >
             <span>◈</span>
             <span>{t.nav_premium}</span>
+          </Link>
+
+          {/* Videos link */}
+          <Link
+            href="/videos"
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              location === "/videos" ? "bg-red-50 text-red-600" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            }`}
+          >
+            <Youtube size={15} className="text-red-500" />
+            <span>Видеообзоры</span>
           </Link>
 
           {/* About link */}
