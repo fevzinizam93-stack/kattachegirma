@@ -5,6 +5,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Minus, Plus, ShoppingCart, Trash2, LogIn } from "lucide-react";
 import { useEffect } from "react";
 import { Link } from "wouter";
+import { trackInitiateCheckout } from "@/hooks/useFacebookPixel";
 
 export default function Cart() {
   const { items, removeItem, updateQuantity, totalAmount, totalItems } = useCart();
@@ -144,7 +145,14 @@ export default function Cart() {
                 </div>
               </div>
               <Link href="/checkout">
-                <button className="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors text-center block active:opacity-80 touch-manipulation">
+                <button
+                  onClick={() => {
+                    trackInitiateCheckout({
+                      total: totalAmount,
+                      itemCount: totalItems,
+                    });
+                  }}
+                  className="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors text-center block active:opacity-80 touch-manipulation">
                   {t.cart_checkout}
                 </button>
               </Link>

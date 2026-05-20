@@ -854,7 +854,22 @@
 - [x] client/src/App.tsx: ShopAssistant монтируется глобально на всех страницах
 
 ## v122 - AI-ассистент: персонализация по истории просмотров
-- [ ] server/routers.ts: ai.chat принимает viewedProductIds (number[]) — загружает их из БД и добавляет в системный промпт
-- [ ] server/routers.ts: системный промпт содержит секцию "Недавно просмотренные товары пользователя" с названиями, ценами, категориями
-- [ ] client/src/components/ShopAssistant.tsx: читает историю просмотров из localStorage (ключ recentlyViewed), передаёт ID в запрос к AI
-- [ ] ShopAssistant.tsx: если есть история просмотров — меняет приветственное сообщение на персонализированное
+- [x] server/routers.ts: ai.chat принимает viewedProductIds (number[]) — загружает их из БД и добавляет в системный промпт
+- [x] server/routers.ts: системный промпт содержит секцию "Недавно просмотренные товары пользователя" с названиями, ценами, категориями
+- [x] client/src/components/ShopAssistant.tsx: читает историю просмотров из localStorage (ключ recentlyViewed), передаёт ID в запрос к AI
+- [x] ShopAssistant.tsx: если есть история просмотров — меняет приветственное сообщение на персонализированное
+
+## v123 - Facebook/Instagram Product Catalog Feed
+- [x] server/facebookFeed.ts: endpoint /api/feed/facebook.xml (RSS/XML формат)
+- [x] server/facebookFeed.ts: endpoint /api/feed/facebook.csv (CSV формат)
+- [x] Все товары с https:// URL изображений, ценами в UZS, скидками (sale_price), наличием
+
+## v124 - Facebook Pixel интеграция
+- [x] client/index.html: Facebook Pixel код (ID: 1743304776861432), noscript в body
+- [x] client/src/hooks/useFacebookPixel.ts: хук с trackViewContent, trackAddToCart, trackPurchase, trackInitiateCheckout, trackSearch
+- [x] ProductDetail.tsx: trackViewContent при загрузке товара
+- [x] ProductDetail.tsx: trackAddToCart при добавлении в корзину
+
+## v125 - Facebook Pixel — полная воронка конверсий
+- [x] Cart.tsx: trackInitiateCheckout при нажатии «Оформить заказ»
+- [x] Checkout.tsx: trackPurchase при успешном создании заказа (orderId, total, items)

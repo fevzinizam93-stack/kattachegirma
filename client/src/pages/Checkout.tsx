@@ -1,4 +1,5 @@
 import { useCart } from "@/contexts/CartContext";
+import { trackPurchase } from "@/hooks/useFacebookPixel";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -36,6 +37,12 @@ export default function Checkout() {
 
   const createOrder = trpc.orders.create.useMutation({
     onSuccess: (data) => {
+      // Track Facebook Pixel Purchase event
+      trackPurchase({
+        orderId: data.id,
+        total: totalAmount,
+        items: items.map(i => ({ id: i.productId, name: i.name, price: i.price, quantity: i.quantity })),
+      });
       setOrderId(data.id);
       setSuccess(true);
       clearCart();
