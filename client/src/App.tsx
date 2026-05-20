@@ -122,9 +122,6 @@ function App() {
   const openLoginClick = () => openLogin();
   const openRegisterClick = () => openRegister();
 
-  const [location] = useLocation(); // used to hide nav on /videos
-  const isVideosPage = location === "/videos";
-
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">
@@ -133,14 +130,14 @@ function App() {
             <TooltipProvider>
               <Toaster />
               <div className="flex flex-col min-h-screen" translate="no">
-                {!isVideosPage && <Navbar onOpenAuth={openLogin} />}
-                <main className={isVideosPage ? "" : "flex-1 pb-14 md:pb-0"}>
+                <Navbar onOpenAuth={openLogin} />
+                <main className="flex-1 pb-14 md:pb-0">
                   <Suspense fallback={<PageLoader />}>
                     <Router />
                   </Suspense>
                 </main>
-                {!isVideosPage && <div className="hidden md:block"><Footer /></div>}
-                {!isVideosPage && <MobileBottomNav />}
+                <div className="hidden md:block"><Footer /></div>
+                <MobileBottomNav />
               </div>
               <Suspense fallback={null}>
                 <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} defaultTab={authTab} redirectPath={authRedirect} />
