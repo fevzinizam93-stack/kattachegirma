@@ -1,4 +1,3 @@
-import { trpc } from "@/lib/trpc";
 import {
   MapPin, Phone, Clock, Instagram, Send, ShieldCheck, Star, Users,
   Tag, Package, HeartHandshake, X, ChevronLeft, ChevronRight,
@@ -9,6 +8,7 @@ import { Link } from "wouter";
 import { useState, useEffect, useMemo } from "react";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
+import { trpc } from "@/lib/trpc";
 
 const SHOP_PHOTOS = [
   "/manus-storage/IMG_6615_332365ec.JPG",
@@ -210,8 +210,12 @@ const VIDEO_REVIEWS = [
   },
 ];
 
-function VideoCard({ video }: { video: typeof VIDEO_REVIEWS[0] }) {
+function VideoCard({ video, liveViews }: { video: typeof VIDEO_REVIEWS[0]; liveViews?: string }) {
   const [playing, setPlaying] = useState(false);
+  const displayViews = liveViews ?? video.views;
+  const formattedViews = Number(displayViews) >= 1000
+    ? (Number(displayViews) / 1000).toFixed(1).replace(/\.0$/, "") + "K"
+    : displayViews;
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-gray-100">
       {playing ? (
@@ -244,7 +248,7 @@ function VideoCard({ video }: { video: typeof VIDEO_REVIEWS[0] }) {
           {/* YouTube badge */}
           <div className="absolute bottom-3 right-3 bg-black/70 text-white text-xs px-2 py-1 rounded-md flex items-center gap-1.5">
             <Youtube size={12} className="text-red-500" />
-            {video.views} просмотров
+            {formattedViews} просмотров
           </div>
         </button>
       )}
@@ -257,6 +261,11 @@ function VideoCard({ video }: { video: typeof VIDEO_REVIEWS[0] }) {
 }
 
 function VideoReviewsSection() {
+  const videoIds = VIDEO_REVIEWS.map(v => v.id);
+  const { data: statsData } = trpc.youtube.getVideoStats.useQuery(
+    { ids: videoIds },
+    { staleTime: 5 * 60 * 1000, retry: false }
+  );
   return (
     <section className="bg-gray-50 py-16">
       <div className="container">
@@ -272,7 +281,13 @@ function VideoReviewsSection() {
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
-          {VIDEO_REVIEWS.map(v => <VideoCard key={v.id + v.title} video={v} />)}
+          {VIDEO_REVIEWS.map(v => (
+            <VideoCard
+              key={v.id + v.title}
+              video={v}
+              liveViews={statsData?.stats?.[v.id]?.viewCount}
+            />
+          ))}
         </div>
         <div className="text-center">
           <a

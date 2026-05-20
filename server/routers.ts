@@ -129,6 +129,9 @@ const sellerProcedure = protectedProcedure.use(async ({ ctx, next }) => {
   return next({ ctx });
 });
 
+// YouTube API in-memory cache
+const youtubeCache: Record<string, { ts: number; data: Record<string, { viewCount: string; likeCount: string }> }> = {};
+
 export const appRouter = router({
   system: systemRouter,
   auth: router({
@@ -1629,6 +1632,38 @@ ${productLines}
         const result = await invokeLLM({ messages: llmMessages });
         const reply = result.choices?.[0]?.message?.content ?? "Извините, не смог ответить. Попробуйте ещё раз.";
         return { reply };
+      }),
+  }),
+  youtube: router({
+    getVideoStats: publicProcedure
+      .input(z.object({ ids: z.array(z.string()).min(1).max(50) }))
+      .query(async ({ input }) => {
+        const apiKey = ENV.youtubeApiKey;
+        if (!apiKey) return { stats: {} as Record<string, { viewCount: string; likeCount: string }> };
+        // Simple in-memory cache: 5 minutes
+        const cacheKey = input.ids.sort().join(",");
+        const now = Date.now();
+        if (youtubeCache[cacheKey] && now - youtubeCache[cacheKey].ts < 5 * 60 * 1000) {
+          return { stats: youtubeCache[cacheKey].data };
+        }
+        try {
+          const idsParam = input.ids.join(",");
+          const url = `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${idsParam}&key=${apiKey}`;
+          const res = await fetch(url);
+          if (!res.ok) return { stats: {} as Record<string, { viewCount: string; likeCount: string }> };
+          const json = await res.json() as { items?: Array<{ id: string; statistics: { viewCount?: string; likeCount?: string } }> };
+          const stats: Record<string, { viewCount: string; likeCount: string }> = {};
+          for (const item of json.items ?? []) {
+            stats[item.id] = {
+              viewCount: item.statistics.viewCount ?? "0",
+              likeCount: item.statistics.likeCount ?? "0",
+            };
+          }
+          youtubeCache[cacheKey] = { ts: now, data: stats };
+          return { stats };
+        } catch {
+          return { stats: {} as Record<string, { viewCount: string; likeCount: string }> };
+        }
       }),
   }),
 });

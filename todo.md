@@ -873,3 +873,9 @@
 ## v125 - Facebook Pixel — полная воронка конверсий
 - [x] Cart.tsx: trackInitiateCheckout при нажатии «Оформить заказ»
 - [x] Checkout.tsx: trackPurchase при успешном создании заказа (orderId, total, items)
+
+## v126 - YouTube Data API v3 — реальные просмотры видео
+- [x] server/_core/env.ts: добавлен youtubeApiKey из YOUTUBE_API_KEY
+- [x] server/routers.ts: youtube.getVideoStats — получает статистику видео через YouTube Data API v3 с 5-минутным in-memory кэшем
+- [x] client/src/pages/About.tsx: VideoCard принимает liveViews, форматирует (1.2K), fallback на статические значения
+- [x] client/src/pages/About.tsx: VideoReviewsSection вызывает trpc.youtube.getVideoStats и передаёт реальные просмотры в VideoCard
