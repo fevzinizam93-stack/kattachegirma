@@ -1743,6 +1743,48 @@ ${productLines}
           return { videos: [] as YTVideoItem[], nextPageToken: null as string | null, totalResults: 0 };
         }
       }),
+    findVideoForProduct: publicProcedure
+      .input(z.object({ productName: z.string().min(1).max(200) }))
+      .query(async ({ input }) => {
+        const apiKey = ENV.youtubeApiKey;
+        if (!apiKey) return { videoId: null as string | null, title: null as string | null, thumbnail: null as string | null };
+        // Normalize product name: extract key words (brand + model), strip noise
+        const name = input.productName.trim();
+        const cacheKey = `product_video_${name.toLowerCase().replace(/\s+/g, "_").slice(0, 80)}`;
+        const now = Date.now();
+        if (youtubeChanCache[cacheKey] && now - (youtubeChanCache[cacheKey] as any).ts < 60 * 60 * 1000) {
+          return (youtubeChanCache[cacheKey] as any).data;
+        }
+        try {
+          // Search within the channel using YouTube Data API v3 search endpoint
+          const query = encodeURIComponent(name.slice(0, 100));
+          const CHANNEL_ID = "UCo0v66OjZ8Z3LujfipwuQUA";
+          const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${CHANNEL_ID}&q=${query}&type=video&maxResults=1&order=relevance&key=${apiKey}`;
+          const res = await fetch(url);
+          if (!res.ok) return { videoId: null, title: null, thumbnail: null };
+          const json = await res.json() as {
+            items?: Array<{
+              id: { videoId: string };
+              snippet: { title: string; thumbnails: { medium?: { url: string }; default?: { url: string } } };
+            }>;
+          };
+          const item = json.items?.[0];
+          if (!item) {
+            const result = { videoId: null as string | null, title: null as string | null, thumbnail: null as string | null };
+            (youtubeChanCache as any)[cacheKey] = { ts: now, data: result };
+            return result;
+          }
+          const result = {
+            videoId: item.id.videoId,
+            title: item.snippet.title,
+            thumbnail: item.snippet.thumbnails.medium?.url ?? item.snippet.thumbnails.default?.url ?? null,
+          };
+          (youtubeChanCache as any)[cacheKey] = { ts: now, data: result };
+          return result;
+        } catch {
+          return { videoId: null as string | null, title: null as string | null, thumbnail: null as string | null };
+        }
+      }),
   }),
 });
 export type AppRouter = typeof appRouter;

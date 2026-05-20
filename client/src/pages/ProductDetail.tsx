@@ -2,7 +2,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { trpc } from "@/lib/trpc";
-import { ChevronDown, ChevronRight, MessageCircle, Minus, Phone, Plus, ShoppingCart, Star, Tag, Truck, Send, ArrowLeftRight, Zap } from "lucide-react";
+import { ChevronDown, ChevronRight, MessageCircle, Minus, Phone, Plus, ShoppingCart, Star, Tag, Truck, Send, ArrowLeftRight, Zap, Youtube } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -13,6 +13,27 @@ import CompareModal from "@/components/CompareModal";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import QuickBuyModal from "@/components/QuickBuyModal";
 import { trackViewContent, trackAddToCart } from "@/hooks/useFacebookPixel";
+
+function VideoReviewDetailButton({ productName }: { productName: string }) {
+  const { data, isLoading } = trpc.youtube.findVideoForProduct.useQuery(
+    { productName },
+    { staleTime: 60 * 60 * 1000, retry: false, refetchOnWindowFocus: false }
+  );
+
+  if (isLoading || !data?.videoId) return null;
+
+  return (
+    <a
+      href={`https://www.youtube.com/watch?v=${data.videoId}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="w-full h-9 rounded-full text-xs font-semibold border-2 border-red-200 text-red-600 bg-red-50 hover:bg-red-100 hover:border-red-400 transition-all flex items-center justify-center gap-1.5"
+    >
+      <Youtube size={14} className="shrink-0" />
+      Смотреть видеообзор на YouTube
+    </a>
+  );
+}
 
 interface ProductDetailProps {
   slug: string;
@@ -711,6 +732,9 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                   <ArrowLeftRight size={13} />
                   Сравнить с другим
                 </button>
+
+                {/* Row 2b: Video review */}
+                <VideoReviewDetailButton productName={product.name} />
 
                 {/* Row 3: Seller contacts */}
                 {((product as any).contactPhone || product.sellerPhone || product.sellerTelegram || product.sellerId) && (

@@ -921,3 +921,8 @@
 - [x] MobileBottomNav.tsx: импорт Youtube из lucide-react
 - [x] MobileBottomNav.tsx: кнопка «Видео» (иконка YouTube) вместо «Хиты» в нижней панели — ссылка на /videos
 - [x] MobileBottomNav.tsx: пункт «Видеообзоры» в выдвижном меню (Sheet) с описанием «502 видео канала @katta.chegirma»
+
+## v135 - Кнопка «Смотреть видеообзор» на карточках и странице товара
+- [x] server/routers.ts: youtube.findVideoForProduct — поиск видео в канале @katta.chegirma по ключевым словам из названия товара через YouTube Data API v3 search, кэш 1 час
+- [x] ProductCard.tsx: компонент VideoReviewButton — показывает кнопку «Смотреть видеообзор» под кнопкой «Успей по скидке» если найдено совпадение
+- [x] ProductDetail.tsx: компонент VideoReviewDetailButton — кнопка «Смотреть видеообзор на YouTube» в блоке действий (после «Сравнить с другим»)

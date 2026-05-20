@@ -2,13 +2,14 @@ import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Crown, ShoppingCart, ArrowLeftRight, Heart } from "lucide-react";
+import { Crown, ShoppingCart, ArrowLeftRight, Heart, Youtube } from "lucide-react";
 import { useWishlist } from "@/hooks/useWishlist";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import { useState } from "react";
 import CompareModal from "@/components/CompareModal";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { trpc } from "@/lib/trpc";
 
 interface Product {
   id: number;
@@ -32,6 +33,28 @@ interface Product {
 
 interface ProductCardProps {
   product: Product;
+}
+
+function VideoReviewButton({ productName }: { productName: string }) {
+  const { data, isLoading } = trpc.youtube.findVideoForProduct.useQuery(
+    { productName },
+    { staleTime: 60 * 60 * 1000, retry: false, refetchOnWindowFocus: false }
+  );
+
+  if (isLoading || !data?.videoId) return null;
+
+  return (
+    <a
+      href={`https://www.youtube.com/watch?v=${data.videoId}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={(e) => e.stopPropagation()}
+      className="mt-1.5 w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-[11px] font-semibold border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 hover:border-red-300 transition-colors"
+    >
+      <Youtube size={12} className="shrink-0" />
+      <span className="truncate">Смотреть видеообзор</span>
+    </a>
+  );
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
@@ -173,6 +196,8 @@ export default function ProductCard({ product }: ProductCardProps) {
             <ShoppingCart size={12} />
             <span className="truncate">{inStock ? t.card_add_to_cart : t.detail_out_of_stock}</span>
           </button>
+          {/* Video review button */}
+          <VideoReviewButton productName={product.name} />
           {/* Seller name is shown only on the product detail page, not here */}
         </div>
       </div>
