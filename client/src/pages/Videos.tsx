@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { Eye, ThumbsUp, Play, Youtube, X, ChevronLeft, ChevronRight, Search } from "lucide-react";
-import { Link } from "wouter";
 
 function formatCount(n: string | number): string {
   const num = typeof n === "string" ? parseInt(n, 10) : n;
@@ -56,7 +55,6 @@ function VideoModal({ video, onClose, onPrev, onNext, hasPrev, hasNext }: {
         className="bg-white rounded-2xl overflow-hidden w-full max-w-4xl max-h-[90vh] flex flex-col"
         onClick={e => e.stopPropagation()}
       >
-        {/* Modal header */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
           <div className="flex items-center gap-2">
             <Youtube size={18} className="text-red-500" />
@@ -67,7 +65,6 @@ function VideoModal({ video, onClose, onPrev, onNext, hasPrev, hasNext }: {
           </button>
         </div>
 
-        {/* Video player */}
         <div className="relative bg-black" style={{ aspectRatio: "16/9" }}>
           <iframe
             key={video.id}
@@ -77,7 +74,6 @@ function VideoModal({ video, onClose, onPrev, onNext, hasPrev, hasNext }: {
             allowFullScreen
             title={video.title}
           />
-          {/* Prev/Next arrows */}
           {hasPrev && (
             <button
               onClick={onPrev}
@@ -96,7 +92,6 @@ function VideoModal({ video, onClose, onPrev, onNext, hasPrev, hasNext }: {
           )}
         </div>
 
-        {/* Video info */}
         <div className="px-5 py-4 overflow-y-auto flex-1">
           <h2 className="font-bold text-gray-900 text-base mb-2">{video.title}</h2>
           <div className="flex items-center gap-4 text-gray-500 text-xs mb-3">
@@ -132,14 +127,19 @@ function VideoModal({ video, onClose, onPrev, onNext, hasPrev, hasNext }: {
 
 export default function Videos() {
   const [allVideos, setAllVideos] = useState<VideoItem[]>([]);
-  const [loadedPageToken, setLoadedPageToken] = useState<string | undefined>(undefined);
+  const [pageTokenQueue, setPageTokenQueue] = useState<(string | undefined)[]>([undefined]);
+  const [currentTokenIndex, setCurrentTokenIndex] = useState(0);
   const [nextPageToken, setNextPageToken] = useState<string | undefined>(undefined);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const loaderRef = useRef<HTMLDivElement>(null);
+
+  const currentToken = pageTokenQueue[currentTokenIndex];
 
   const { data, isFetching } = trpc.youtube.getChannelVideos.useQuery(
-    { maxResults: 24, pageToken: loadedPageToken },
-    { staleTime: 10 * 60 * 1000 }
+    { maxResults: 50, pageToken: currentToken },
+    { staleTime: 10 * 60 * 1000, enabled: currentTokenIndex < pageTokenQueue.length }
   );
 
   useEffect(() => {
@@ -150,8 +150,29 @@ export default function Videos() {
         return [...prev, ...newOnes];
       });
       setNextPageToken(data.nextPageToken ?? undefined);
+      setIsLoadingMore(false);
     }
   }, [data]);
+
+  const loadMore = useCallback(() => {
+    if (nextPageToken && !isFetching && !isLoadingMore) {
+      setIsLoadingMore(true);
+      setPageTokenQueue(prev => [...prev, nextPageToken]);
+      setCurrentTokenIndex(prev => prev + 1);
+    }
+  }, [nextPageToken, isFetching, isLoadingMore]);
+
+  // Infinite scroll — auto load when sentinel is visible
+  useEffect(() => {
+    const el = loaderRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      entries => { if (entries[0].isIntersecting) loadMore(); },
+      { rootMargin: "400px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [loadMore]);
 
   const filtered = searchQuery.trim()
     ? allVideos.filter(v =>
@@ -164,10 +185,6 @@ export default function Videos() {
   const closeVideo = () => setSelectedIndex(null);
   const goPrev = () => selectedIndex !== null && selectedIndex > 0 && setSelectedIndex(selectedIndex - 1);
   const goNext = () => selectedIndex !== null && selectedIndex < filtered.length - 1 && setSelectedIndex(selectedIndex + 1);
-
-  const loadMore = () => {
-    if (nextPageToken && !isFetching) setLoadedPageToken(nextPageToken);
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -182,7 +199,9 @@ export default function Videos() {
               <div>
                 <h1 className="text-lg font-black text-gray-900">Видеообзоры</h1>
                 <p className="text-xs text-gray-400">
-                  {data?.totalResults ? `${data.totalResults} видео на канале` : "Обзоры товаров Katta Chegirma"}
+                  {allVideos.length > 0
+                    ? `Загружено ${allVideos.length}${data?.totalResults ? ` из ${data.totalResults}` : ""} видео`
+                    : "Обзоры товаров Katta Chegirma"}
                 </p>
               </div>
             </div>
@@ -235,13 +254,11 @@ export default function Videos() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
                     />
-                    {/* Play overlay */}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
                       <div className="w-12 h-12 rounded-full bg-red-600/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg scale-90 group-hover:scale-100 duration-200">
                         <Play size={20} className="text-white fill-white ml-0.5" />
                       </div>
                     </div>
-                    {/* View count badge */}
                     <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-0.5 rounded flex items-center gap-1">
                       <Eye size={10} />
                       {formatCount(video.viewCount)}
@@ -270,31 +287,23 @@ export default function Videos() {
               ))}
             </div>
 
-            {/* Load more */}
-            {nextPageToken && !searchQuery && (
-              <div className="text-center mt-8">
-                <button
-                  onClick={loadMore}
-                  disabled={isFetching}
-                  className="inline-flex items-center gap-2 bg-white border border-gray-200 hover:border-red-300 text-gray-700 hover:text-red-600 font-medium px-6 py-2.5 rounded-full transition-all text-sm disabled:opacity-50"
-                >
-                  {isFetching ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-red-200 border-t-red-500 rounded-full animate-spin" />
-                      Загрузка...
-                    </>
-                  ) : (
-                    <>
-                      <Youtube size={15} />
-                      Загрузить ещё видео
-                    </>
-                  )}
-                </button>
+            {/* Infinite scroll sentinel */}
+            {!searchQuery && (
+              <div ref={loaderRef} className="flex justify-center mt-8 py-4">
+                {(isFetching || isLoadingMore) && (
+                  <div className="flex items-center gap-2 text-gray-400 text-sm">
+                    <div className="w-5 h-5 border-2 border-red-200 border-t-red-500 rounded-full animate-spin" />
+                    Загружаем ещё видео...
+                  </div>
+                )}
+                {!isFetching && !isLoadingMore && !nextPageToken && allVideos.length > 0 && (
+                  <p className="text-xs text-gray-400">Все {allVideos.length} видео загружены</p>
+                )}
               </div>
             )}
 
             {/* Channel link */}
-            <div className="text-center mt-6">
+            <div className="text-center mt-4">
               <a
                 href="https://www.youtube.com/@kattachegirma"
                 target="_blank"

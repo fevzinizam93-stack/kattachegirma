@@ -1671,7 +1671,7 @@ ${productLines}
       .input(z.object({ pageToken: z.string().optional(), maxResults: z.number().min(1).max(50).default(20) }))
       .query(async ({ input }) => {
         const apiKey = ENV.youtubeApiKey;
-        const UPLOADS_PLAYLIST = "UULx3ANN-9_ccciYBwkU5puQ";
+        const UPLOADS_PLAYLIST = "UUo0v66OjZ8Z3LujfipwuQUA";
         if (!apiKey) return { videos: [] as YTVideoItem[], nextPageToken: null as string | null, totalResults: 0 };
         const cacheKey = `channel_${input.pageToken ?? "first"}_${input.maxResults}`;
         const now = Date.now();
