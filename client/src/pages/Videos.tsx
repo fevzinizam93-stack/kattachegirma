@@ -189,7 +189,7 @@ export default function Videos() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Page header */}
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-30 shadow-sm">
+      <div className="bg-white border-b border-gray-100 shadow-sm">
         <div className="container py-4">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex items-center gap-3 flex-1">
