@@ -12,6 +12,7 @@ import ProductCard from "@/components/ProductCard";
 import CompareModal from "@/components/CompareModal";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import QuickBuyModal from "@/components/QuickBuyModal";
+import { trackViewContent, trackAddToCart } from "@/hooks/useFacebookPixel";
 
 interface ProductDetailProps {
   slug: string;
@@ -200,6 +201,13 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
     }
     sessionStorage.setItem(key, "1");
     incrementView.mutate({ productId: product.id });
+    // Track Facebook Pixel ViewContent
+    trackViewContent({
+      id: product.id,
+      name: product.name,
+      price: parseFloat(product.price || '0'),
+      category: product.categoryId ? String(product.categoryId) : undefined,
+    });
     // Save to recently viewed history
     addToRecentlyViewed({
       id: product.id,
@@ -481,6 +489,13 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
       quantity,
       imageUrl: product.imageUrl ?? undefined,
       slug: product.slug,
+    });
+    // Track Facebook Pixel AddToCart
+    trackAddToCart({
+      id: product.id,
+      name: displayName,
+      price: parseFloat(product.price),
+      quantity,
     });
     toast.success(`${quantity} ${t.detail_added_qty}`, {
       description: displayName,
