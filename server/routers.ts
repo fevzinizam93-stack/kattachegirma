@@ -131,7 +131,7 @@ const sellerProcedure = protectedProcedure.use(async ({ ctx, next }) => {
 
 // YouTube API in-memory cache
 const youtubeCache: Record<string, { ts: number; data: Record<string, { viewCount: string; likeCount: string }> }> = {};
-type YTVideoItem = { id: string; title: string; thumbnail: string; viewCount: string; likeCount: string; publishedAt: string };
+type YTVideoItem = { id: string; title: string; description: string; thumbnail: string; viewCount: string; likeCount: string; publishedAt: string };
 const youtubeChanCache: Record<string, { ts: number; data: { videos: YTVideoItem[]; nextPageToken: string | null; totalResults: number } }> = {};
 
 export const appRouter = router({
@@ -1687,7 +1687,7 @@ ${productLines}
           const plJson = await plRes.json() as {
             nextPageToken?: string;
             pageInfo: { totalResults: number };
-            items?: Array<{ snippet: { resourceId: { videoId: string }; title: string; thumbnails: { high?: { url: string }; medium?: { url: string } }; publishedAt: string } }>;
+            items?: Array<{ snippet: { resourceId: { videoId: string }; title: string; description: string; thumbnails: { high?: { url: string }; medium?: { url: string } }; publishedAt: string } }>;
           };
           const items = plJson.items ?? [];
           const videoIds = items.map(i => i.snippet.resourceId.videoId).filter(Boolean);
@@ -1703,6 +1703,7 @@ ${productLines}
           const videos: YTVideoItem[] = items.map(i => ({
             id: i.snippet.resourceId.videoId,
             title: i.snippet.title,
+            description: (i.snippet.description ?? "").split("\n")[0].slice(0, 200),
             thumbnail: i.snippet.thumbnails.high?.url ?? i.snippet.thumbnails.medium?.url ?? "",
             viewCount: statsMap[i.snippet.resourceId.videoId]?.viewCount ?? "0",
             likeCount: statsMap[i.snippet.resourceId.videoId]?.likeCount ?? "0",
