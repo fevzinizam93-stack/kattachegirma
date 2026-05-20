@@ -178,19 +178,20 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           {/* Videos link */}
           <Link
             href="/videos"
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            style={{ fontSize: "10px" }}
+            className={`shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-full font-medium transition-colors whitespace-nowrap ${
               location === "/videos" ? "bg-red-50 text-red-600" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
             }`}
           >
-            <Youtube size={15} className="text-red-500" />
+            <Youtube size={12} className="text-red-500 shrink-0" />
             <span>Видеообзоры</span>
           </Link>
 
           {/* About link */}
           <Link
             href="/about"
-            style={{ fontSize: "12px" }}
-            className={`shrink-0 font-medium px-3 py-2 rounded-full transition-colors whitespace-nowrap ${
+            style={{ fontSize: "10px" }}
+            className={`shrink-0 font-medium px-2.5 py-1.5 rounded-full transition-colors whitespace-nowrap ${
               location === "/about" ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
             }`}
           >
@@ -201,14 +202,14 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           <div className="relative" ref={catalogModalRef}>
             <button
               onClick={() => setShowCatalogModal((v) => !v)}
-              style={{ fontSize: "12px" }}
-              className={`shrink-0 font-medium px-3 py-2 rounded-full transition-colors whitespace-nowrap flex items-center gap-1.5 ${
+              style={{ fontSize: "10px" }}
+              className={`shrink-0 font-medium px-2.5 py-1.5 rounded-full transition-colors whitespace-nowrap flex items-center gap-1 ${
                 showCatalogModal ? "bg-red-600 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
               }`}
             >
-              <LayoutGrid size={14} />
+              <LayoutGrid size={12} />
               Каталог
-              <ChevronDown size={12} className={`transition-transform duration-200 ${showCatalogModal ? "rotate-180" : ""}`} />
+              <ChevronDown size={11} className={`transition-transform duration-200 ${showCatalogModal ? "rotate-180" : ""}`} />
             </button>
 
             {/* Catalog categories dropdown */}
