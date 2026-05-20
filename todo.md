@@ -890,3 +890,29 @@
 - [x] App.tsx: маршрут /videos
 - [x] Navbar: кнопка «Видеообзоры» (иконка YouTube)
 - [x] About.tsx: секция видео-обзоров — добавлена кнопка «Смотреть все видеообзоры» → /videos
+
+## v128 - Navbar — кнопки одного размера
+- [x] Navbar: все кнопки (Видеообзоры, О нас, Каталог, Premium, Стать продавцом) одинакового размера 10px, помещаются в одну строку
+
+## v129 - Страница /videos — сетка с превью
+- [x] Videos.tsx: сетка видео с превью, названием, описанием, просмотрами, лайками и датой
+- [x] Videos.tsx: при клике открывается модальный плеер
+- [x] Videos.tsx: поиск по видео, кнопки «Загрузить ещё»
+- [x] server/routers.ts: description добавлен в API ответ
+
+## v130 - Navbar на странице /videos
+- [x] App.tsx: убрана логика hideNav — Navbar и Footer отображаются на /videos
+
+## v131 - Все 502 видео канала
+- [x] server/routers.ts: исправлен playlist ID на UUo0v66OjZ8Z3LujfipwuQUA (502 видео)
+- [x] Videos.tsx: бесконечный скролл — автоматически подгружает следующие 50 видео при прокрутке вниз
+
+## v132 - Убран внутренний sticky header в Videos.tsx
+- [x] Videos.tsx: убран sticky top-0 z-30 с внутреннего page header чтобы не перекрывал основной Navbar
+
+## v133 - Баннер статистики YouTube канала на /videos
+- [x] server/routers.ts: добавлена процедура youtube.getChannelStats (viewCount, subscriberCount, videoCount) с 30-минутным кэшем
+- [x] server/routers.ts: отдельный _youtubeStatsCache для статистики канала
+- [x] Videos.tsx: импорт Users из lucide-react
+- [x] Videos.tsx: вызов trpc.youtube.getChannelStats.useQuery()
+- [x] Videos.tsx: баннер статистики под заголовком (просмотры, подписчики, кол-во видео) с красным градиентом

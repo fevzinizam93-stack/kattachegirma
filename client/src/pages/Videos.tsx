@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
-import { Eye, ThumbsUp, Play, Youtube, X, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { Eye, ThumbsUp, Play, Youtube, X, ChevronLeft, ChevronRight, Search, Users } from "lucide-react";
 
 function formatCount(n: string | number): string {
   const num = typeof n === "string" ? parseInt(n, 10) : n;
@@ -137,6 +137,11 @@ export default function Videos() {
 
   const currentToken = pageTokenQueue[currentTokenIndex];
 
+  const { data: channelStats } = trpc.youtube.getChannelStats.useQuery(undefined, {
+    staleTime: 30 * 60 * 1000,
+    retry: false,
+  });
+
   const { data, isFetching } = trpc.youtube.getChannelVideos.useQuery(
     { maxResults: 50, pageToken: currentToken },
     { staleTime: 10 * 60 * 1000, enabled: currentTokenIndex < pageTokenQueue.length }
@@ -223,6 +228,39 @@ export default function Videos() {
             </div>
           </div>
         </div>
+        {/* Channel stats banner */}
+        {channelStats && (
+          <div className="border-t border-gray-100 bg-gradient-to-r from-red-50 to-white">
+            <div className="container py-3">
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+                <a
+                  href="https://www.youtube.com/@katta.chegirma"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-red-600 hover:text-red-700"
+                >
+                  <Youtube size={14} className="shrink-0" />
+                  @katta.chegirma
+                </a>
+                <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                  <Eye size={13} className="text-red-400 shrink-0" />
+                  <span className="font-bold text-gray-800">{formatCount(channelStats.viewCount)}</span>
+                  <span>просмотров</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                  <Users size={13} className="text-red-400 shrink-0" />
+                  <span className="font-bold text-gray-800">{formatCount(channelStats.subscriberCount)}</span>
+                  <span>подписчиков</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                  <Play size={13} className="text-red-400 shrink-0" />
+                  <span className="font-bold text-gray-800">{channelStats.videoCount}</span>
+                  <span>видео</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Video grid */}

@@ -132,7 +132,9 @@ const sellerProcedure = protectedProcedure.use(async ({ ctx, next }) => {
 // YouTube API in-memory cache
 const youtubeCache: Record<string, { ts: number; data: Record<string, { viewCount: string; likeCount: string }> }> = {};
 type YTVideoItem = { id: string; title: string; description: string; thumbnail: string; viewCount: string; likeCount: string; publishedAt: string };
+type YTChannelStats = { viewCount: string; subscriberCount: string; videoCount: string };
 const youtubeChanCache: Record<string, { ts: number; data: { videos: YTVideoItem[]; nextPageToken: string | null; totalResults: number } }> = {};
+let _youtubeStatsCache: { ts: number; data: YTChannelStats } | null = null;
 
 export const appRouter = router({
   system: systemRouter,
@@ -1665,6 +1667,31 @@ ${productLines}
           return { stats };
         } catch {
           return { stats: {} as Record<string, { viewCount: string; likeCount: string }> };
+        }
+      }),
+    getChannelStats: publicProcedure
+      .query(async () => {
+        const apiKey = ENV.youtubeApiKey;
+        if (!apiKey) return { viewCount: "0", subscriberCount: "0", videoCount: "0" };
+        const now = Date.now();
+        if (_youtubeStatsCache && now - _youtubeStatsCache.ts < 30 * 60 * 1000) {
+          return _youtubeStatsCache.data;
+        }
+        try {
+          const url = `https://www.googleapis.com/youtube/v3/channels?part=statistics&forHandle=katta.chegirma&key=${apiKey}`;
+          const res = await fetch(url);
+          if (!res.ok) return { viewCount: "0", subscriberCount: "0", videoCount: "0" };
+          const json = await res.json() as { items?: Array<{ statistics: { viewCount?: string; subscriberCount?: string; videoCount?: string } }> };
+          const s = json.items?.[0]?.statistics ?? {};
+          const result: YTChannelStats = {
+            viewCount: s.viewCount ?? "0",
+            subscriberCount: s.subscriberCount ?? "0",
+            videoCount: s.videoCount ?? "0",
+          };
+          _youtubeStatsCache = { ts: now, data: result };
+          return result;
+        } catch {
+          return { viewCount: "0", subscriberCount: "0", videoCount: "0" };
         }
       }),
     getChannelVideos: publicProcedure
