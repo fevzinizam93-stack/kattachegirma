@@ -916,3 +916,8 @@
 - [x] Videos.tsx: импорт Users из lucide-react
 - [x] Videos.tsx: вызов trpc.youtube.getChannelStats.useQuery()
 - [x] Videos.tsx: баннер статистики под заголовком (просмотры, подписчики, кол-во видео) с красным градиентом
+
+## v134 - Иконка «Видео» в мобильном нижнем навбаре
+- [x] MobileBottomNav.tsx: импорт Youtube из lucide-react
+- [x] MobileBottomNav.tsx: кнопка «Видео» (иконка YouTube) вместо «Хиты» в нижней панели — ссылка на /videos
+- [x] MobileBottomNav.tsx: пункт «Видеообзоры» в выдвижном меню (Sheet) с описанием «502 видео канала @katta.chegirma»

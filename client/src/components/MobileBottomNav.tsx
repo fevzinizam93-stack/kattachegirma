@@ -3,7 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Home, Grid3X3, Flame, Heart, ShoppingCart, Menu, Store, Crown, LogIn, ShieldCheck, Users, ChevronRight, LayoutGrid, Bell } from "lucide-react";
+import { Home, Grid3X3, Flame, Heart, ShoppingCart, Menu, Store, Crown, LogIn, ShieldCheck, Users, ChevronRight, LayoutGrid, Bell, Youtube } from "lucide-react";
 import { useWishlist } from "@/hooks/useWishlist";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
@@ -68,13 +68,13 @@ export default function MobileBottomNav() {
             <span>{t.nav_catalog}</span>
           </Link>
 
-          {/* Хиты */}
+          {/* Видео */}
           <Link
-            href="/bestsellers"
-            className={`flex flex-col items-center justify-center flex-1 gap-0.5 text-[10px] font-medium transition-colors ${isActive("/bestsellers") ? activeClass : inactiveClass}`}
+            href="/videos"
+            className={`flex flex-col items-center justify-center flex-1 gap-0.5 text-[10px] font-medium transition-colors ${isActive("/videos") ? activeClass : inactiveClass}`}
           >
-            <Flame size={22} strokeWidth={isActive("/bestsellers") ? 2.5 : 1.8} />
-            <span>{t.nav_bestsellers}</span>
+            <Youtube size={22} strokeWidth={isActive("/videos") ? 2.5 : 1.8} />
+            <span>Видео</span>
           </Link>
 
           {/* Избранное */}
@@ -283,6 +283,18 @@ export default function MobileBottomNav() {
                 </Link>
               </div>
             )}
+
+            {/* Видеообзоры */}
+            <Link href="/videos" onClick={() => setMenuOpen(false)}
+              className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-red-50 active:bg-red-100 transition-colors">
+              <div className="w-9 h-9 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                <Youtube size={18} className="text-red-600" />
+              </div>
+              <div>
+                <div className="text-sm font-bold text-gray-900">Видеообзоры</div>
+                <div className="text-xs text-gray-500">502 видео канала @katta.chegirma</div>
+              </div>
+            </Link>
 
             {/* Premium */}
             <Link href="/premium" onClick={() => setMenuOpen(false)}
