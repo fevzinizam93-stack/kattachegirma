@@ -106,11 +106,36 @@ const emptyForm: ProductForm = {
 };
 
 // ---- VideoSearchPicker component ----
+/** Extract YouTube videoId from any URL format or plain ID */
+function parseYouTubeId(input: string): string | null {
+  const s = input.trim();
+  if (!s) return null;
+  // Plain 11-char ID
+  if (/^[a-zA-Z0-9_-]{11}$/.test(s)) return s;
+  try {
+    const url = new URL(s);
+    // youtu.be/ID
+    if (url.hostname === "youtu.be") return url.pathname.slice(1).split(/[?&]/)[0] || null;
+    // youtube.com/watch?v=ID
+    const v = url.searchParams.get("v");
+    if (v) return v;
+    // youtube.com/shorts/ID or /embed/ID
+    const m = url.pathname.match(/\/(shorts|embed|v)\/([a-zA-Z0-9_-]{11})/);
+    if (m) return m[2];
+  } catch {}
+  // Fallback regex
+  const m2 = s.match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([a-zA-Z0-9_-]{11})/);
+  return m2 ? m2[1] : null;
+}
+
 function VideoSearchPicker({ productName, value, onChange }: { productName: string; value: string; onChange: (v: string) => void }) {
   const [query, setQuery] = useState(productName);
   const [open, setOpen] = useState(false);
   const [selectedTitle, setSelectedTitle] = useState("");
   const [selectedThumb, setSelectedThumb] = useState("");
+  const [manualUrl, setManualUrl] = useState("");
+  const [manualError, setManualError] = useState("");
+  const [showManual, setShowManual] = useState(false);
 
   const searchQuery = trpc.youtube.searchVideos.useQuery(
     { query: query.trim(), maxResults: 6 },
@@ -122,12 +147,26 @@ function VideoSearchPicker({ productName, value, onChange }: { productName: stri
     setSelectedTitle(title);
     setSelectedThumb(thumb);
     setOpen(false);
+    setShowManual(false);
   };
 
   const handleClear = () => {
     onChange("");
     setSelectedTitle("");
     setSelectedThumb("");
+    setManualUrl("");
+    setManualError("");
+  };
+
+  const handleManualApply = () => {
+    const id = parseYouTubeId(manualUrl);
+    if (!id) { setManualError("Не удалось распознать ID видео. Проверьте ссылку."); return; }
+    setManualError("");
+    onChange(id);
+    setSelectedTitle("");
+    setSelectedThumb(`https://img.youtube.com/vi/${id}/mqdefault.jpg`);
+    setShowManual(false);
+    setManualUrl("");
   };
 
   return (
@@ -139,15 +178,20 @@ function VideoSearchPicker({ productName, value, onChange }: { productName: stri
 
       {value ? (
         <div className="flex items-center gap-3 bg-white rounded-lg p-2 border border-red-200">
-          {selectedThumb && <img src={selectedThumb} alt="" className="w-20 h-12 object-cover rounded" />}
+          <img
+            src={selectedThumb || `https://img.youtube.com/vi/${value}/mqdefault.jpg`}
+            alt="" className="w-20 h-12 object-cover rounded shrink-0"
+          />
           <div className="flex-1 min-w-0">
             <p className="text-xs font-semibold text-gray-800 truncate">{selectedTitle || "Видео привязано"}</p>
-            <p className="text-xs text-gray-400 font-mono">{value}</p>
+            <a href={`https://www.youtube.com/watch?v=${value}`} target="_blank" rel="noopener noreferrer"
+              className="text-xs text-red-500 hover:underline font-mono">{value} ↗</a>
           </div>
           <button type="button" onClick={handleClear} className="text-gray-400 hover:text-red-500 shrink-0"><X size={16} /></button>
         </div>
       ) : (
         <div className="space-y-2">
+          {/* Search row */}
           <div className="flex gap-2">
             <input
               value={query}
@@ -155,19 +199,47 @@ function VideoSearchPicker({ productName, value, onChange }: { productName: stri
               placeholder="Поиск видео по названию товара..."
               className="flex-1 border border-red-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 bg-white"
             />
-            <button type="button" onClick={() => setOpen(o => !o)}
+            <button type="button" onClick={() => { setOpen(o => !o); setShowManual(false); }}
               className="flex items-center gap-1.5 bg-red-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-red-700">
               <Search size={14} /> Найти
             </button>
           </div>
 
+          {/* Manual URL input toggle */}
+          <button type="button" onClick={() => { setShowManual(m => !m); setOpen(false); }}
+            className="text-xs text-red-600 hover:text-red-800 underline underline-offset-2">
+            Или вставьте прямую ссылку на YouTube
+          </button>
+
+          {/* Manual URL panel */}
+          {showManual && (
+            <div className="bg-white border border-red-200 rounded-xl p-3 space-y-2">
+              <p className="text-xs text-gray-500">Вставьте любую ссылку: youtube.com/watch?v=..., youtu.be/..., /shorts/... или просто ID видео</p>
+              <div className="flex gap-2">
+                <input
+                  value={manualUrl}
+                  onChange={e => { setManualUrl(e.target.value); setManualError(""); }}
+                  onKeyDown={e => e.key === "Enter" && handleManualApply()}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  className="flex-1 border border-red-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
+                />
+                <button type="button" onClick={handleManualApply}
+                  className="bg-red-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-red-700 shrink-0">
+                  Применить
+                </button>
+              </div>
+              {manualError && <p className="text-xs text-red-500">{manualError}</p>}
+            </div>
+          )}
+
+          {/* Search results */}
           {open && (
             <div className="bg-white border border-red-200 rounded-xl overflow-hidden shadow-md">
               {searchQuery.isLoading && (
                 <div className="flex justify-center py-4"><div className="w-5 h-5 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" /></div>
               )}
               {!searchQuery.isLoading && (searchQuery.data?.videos ?? []).length === 0 && (
-                <p className="text-sm text-gray-400 text-center py-4">Видео не найдено</p>
+                <p className="text-sm text-gray-400 text-center py-4">Видео не найдено — вставьте ссылку вручную</p>
               )}
               {(searchQuery.data?.videos ?? []).map((v: { videoId: string; title: string; thumbnail: string }) => (
                 <button key={v.videoId} type="button"
