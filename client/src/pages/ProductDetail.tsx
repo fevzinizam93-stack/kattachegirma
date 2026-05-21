@@ -743,49 +743,49 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
               ) : null; })()}
 
               {/* ── Action block ── */}
-              <div className="space-y-2.5">
-                {/* Row 1: Quantity stepper + CTA */}
+              <div className="space-y-2">
+                {/* Row 1: Quantity stepper + CTA + Quick buy in one line */}
                 <div className="flex items-center gap-2">
                   {(product.stock ?? 0) > 0 && (
                     <div className="flex items-center bg-gray-100 rounded-full overflow-hidden shrink-0">
                       <button
                         onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                        className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 transition-colors text-gray-600 rounded-full"
+                        className="w-7 h-7 flex items-center justify-center hover:bg-gray-200 transition-colors text-gray-600 rounded-full"
                       >
-                        <Minus size={13} />
+                        <Minus size={12} />
                       </button>
-                      <span className="w-8 text-center font-black text-sm text-gray-800">{quantity}</span>
+                      <span className="w-7 text-center font-black text-xs text-gray-800">{quantity}</span>
                       <button
                         onClick={() => setQuantity(q => Math.min(product.stock ?? 99, q + 1))}
-                        className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 transition-colors text-gray-600 rounded-full"
+                        className="w-7 h-7 flex items-center justify-center hover:bg-gray-200 transition-colors text-gray-600 rounded-full"
                       >
-                        <Plus size={13} />
+                        <Plus size={12} />
                       </button>
                     </div>
                   )}
+                  {/* Успей по скидке */}
                   <button
                     onClick={handleAddToCart}
                     disabled={(product.stock ?? 0) === 0}
-                    className={`flex-1 h-10 rounded-full font-bold text-sm flex items-center justify-center gap-2 transition-all ${
+                    className={`flex-1 h-9 rounded-full font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
                       (product.stock ?? 0) === 0
                         ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                        : "bg-primary text-white hover:bg-primary/90 active:scale-[0.98] shadow-lg shadow-primary/30"
+                        : "bg-primary text-white hover:bg-primary/90 active:scale-[0.98] shadow-md shadow-primary/30"
                     }`}
                   >
-                    <ShoppingCart size={15} />
+                    <ShoppingCart size={13} />
                     {(product.stock ?? 0) === 0 ? t.detail_out_of_stock : hasDiscount ? "Успей по скидке" : t.card_add_to_cart}
                   </button>
+                  {/* Купить в 1 клик */}
+                  <button
+                    onClick={() => setQuickBuyOpen(true)}
+                    disabled={(product.stock ?? 0) === 0}
+                    className="flex-1 h-9 rounded-full font-bold text-xs flex items-center justify-center gap-1.5 transition-all border-2 border-primary text-primary hover:bg-primary hover:text-white active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <Zap size={13} />
+                    Купить в 1 клик
+                  </button>
                 </div>
-
-                {/* Row 1b: Quick buy */}
-                <button
-                  onClick={() => setQuickBuyOpen(true)}
-                  disabled={(product.stock ?? 0) === 0}
-                  className="w-full h-10 rounded-full font-bold text-sm flex items-center justify-center gap-2 transition-all border-2 border-primary text-primary hover:bg-primary hover:text-white active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  <Zap size={15} />
-                  Купить в 1 клик
-                </button>
                 {/* Row 2: compact action row — Compare + Share */}
                 <div className="flex items-center gap-2">
                   <button
