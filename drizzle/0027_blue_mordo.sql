@@ -1,0 +1,1 @@
+ALTER TABLE `products` ADD `videoId` varchar(32);

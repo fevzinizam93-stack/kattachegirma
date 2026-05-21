@@ -14,17 +14,19 @@ import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import QuickBuyModal from "@/components/QuickBuyModal";
 import { trackViewContent, trackAddToCart } from "@/hooks/useFacebookPixel";
 
-function VideoReviewDetailButton({ productName }: { productName: string }) {
+function VideoReviewDetailButton({ productName, savedVideoId }: { productName: string; savedVideoId?: string | null }) {
   const [open, setOpen] = useState(false);
-  const { data, isLoading } = trpc.youtube.findVideoForProduct.useQuery(
+  // If product has a saved videoId in DB — use it directly, skip YouTube API call
+  const dynamicQuery = trpc.youtube.findVideoForProduct.useQuery(
     { productName },
-    { staleTime: 60 * 60 * 1000, retry: false, refetchOnWindowFocus: false }
+    { enabled: !savedVideoId, staleTime: 60 * 60 * 1000, retry: false, refetchOnWindowFocus: false }
   );
 
-  if (isLoading || !data?.videoId) return null;
+  const videoId = savedVideoId || dynamicQuery.data?.videoId;
+  const videoTitle = dynamicQuery.data?.title ?? "Видеообзор";
 
-  const videoId = data.videoId;
-  const videoTitle = data.title ?? "Видеообзор";
+  if (!savedVideoId && (dynamicQuery.isLoading || !videoId)) return null;
+  if (!videoId) return null;
 
   return (
     <>
@@ -793,7 +795,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 </button>
 
                 {/* Row 2b: Video review */}
-                <VideoReviewDetailButton productName={product.name} />
+                <VideoReviewDetailButton productName={product.name} savedVideoId={(product as any).videoId} />
 
                 {/* Row 3: Seller contacts */}
                 {((product as any).contactPhone || product.sellerPhone || product.sellerTelegram || product.sellerId) && (

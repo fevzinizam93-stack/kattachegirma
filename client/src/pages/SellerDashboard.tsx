@@ -9,7 +9,7 @@ import { useLocation } from "wouter";
 import { toast } from "sonner";
 import {
   Plus, Package, Pencil, Trash2, Clock, CheckCircle, XCircle,
-  Upload, X, Store, ImagePlus, Loader2, MessageSquare
+  Upload, X, Store, ImagePlus, Loader2, MessageSquare, Youtube, Search, PlayCircle
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -57,6 +57,69 @@ function MessagesButton() {
   );
 }
 
+function SellerVideoSearchPicker({ productName, value, onChange }: { productName: string; value: string; onChange: (v: string) => void }) {
+  const [query, setQuery] = useState(productName);
+  const [open, setOpen] = useState(false);
+  const [selectedTitle, setSelectedTitle] = useState("");
+  const [selectedThumb, setSelectedThumb] = useState("");
+
+  const searchQuery = trpc.youtube.searchVideos.useQuery(
+    { query: query.trim(), maxResults: 6 },
+    { enabled: open && query.trim().length >= 2 }
+  );
+
+  const handleSelect = (videoId: string, title: string, thumb: string) => {
+    onChange(videoId);
+    setSelectedTitle(title);
+    setSelectedThumb(thumb);
+    setOpen(false);
+  };
+
+  return (
+    <div>
+      {value ? (
+        <div className="flex items-center gap-3 bg-white rounded-lg p-2 border border-red-200">
+          {selectedThumb && <img src={selectedThumb} alt="" className="w-20 h-12 object-cover rounded" />}
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-gray-800 truncate">{selectedTitle || "Видео привязано"}</p>
+            <p className="text-xs text-gray-400 font-mono">{value}</p>
+          </div>
+          <button type="button" onClick={() => { onChange(""); setSelectedTitle(""); setSelectedThumb(""); }}
+            className="text-gray-400 hover:text-red-500 shrink-0"><X size={16} /></button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <input value={query} onChange={e => setQuery(e.target.value)}
+              placeholder="Поиск видео по названию товара..."
+              className="flex-1 border border-red-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-red-300 bg-white" />
+            <button type="button" onClick={() => setOpen(o => !o)}
+              className="flex items-center gap-1 bg-red-600 text-white px-3 py-2 rounded-lg text-xs font-semibold hover:bg-red-700">
+              <Search size={13} /> Найти
+            </button>
+          </div>
+          {open && (
+            <div className="bg-white border border-red-200 rounded-xl overflow-hidden shadow-md">
+              {searchQuery.isLoading && <div className="flex justify-center py-3"><div className="w-4 h-4 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" /></div>}
+              {!searchQuery.isLoading && (searchQuery.data?.videos ?? []).length === 0 && <p className="text-xs text-gray-400 text-center py-3">Видео не найдено</p>}
+              {(searchQuery.data?.videos ?? []).map((v: { videoId: string; title: string; thumbnail: string }) => (
+                <button key={v.videoId} type="button" onClick={() => handleSelect(v.videoId, v.title, v.thumbnail)}
+                  className="w-full flex items-center gap-2 px-3 py-2 hover:bg-red-50 text-left border-b border-gray-100 last:border-0">
+                  <img src={v.thumbnail} alt="" className="w-16 h-10 object-cover rounded shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-gray-800 line-clamp-2">{v.title}</p>
+                  </div>
+                  <PlayCircle size={16} className="text-red-500 shrink-0" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function SellerDashboard() {
   const { user, loading } = useAuth();
   const { t } = useLanguage();
@@ -73,7 +136,7 @@ export default function SellerDashboard() {
   const emptyForm = {
     name: "", slug: "", description: "", categoryId: 0,
     brand: "", price: "", originalPrice: "", discount: 0,
-    stock: 1, isNew: false, contactPhone: "", sellerName: "",
+    stock: 1, isNew: false, contactPhone: "", sellerName: "", videoId: "",
   };
   const [form, setForm] = useState(emptyForm);
 
@@ -257,6 +320,7 @@ export default function SellerDashboard() {
       stock: p.stock ?? 1, isNew: p.isNew ?? false,
       contactPhone: (p as any).contactPhone ?? "",
       sellerName: (p as any).sellerName ?? "",
+      videoId: (p as any).videoId ?? "",
     });
     // Load existing photos
     const existing: string[] = [];
@@ -598,6 +662,20 @@ export default function SellerDashboard() {
                 </p>
               </div>
             </div>
+
+            {/* Video review picker for sellers */}
+            <div className="mt-4 border border-red-200 rounded-xl p-4 bg-red-50">
+              <label className="block text-xs font-bold text-gray-600 mb-2 flex items-center gap-1.5">
+                <Youtube size={14} className="text-red-600" />
+                Видеообзор на YouTube (необязательно)
+              </label>
+              <SellerVideoSearchPicker
+                productName={form.name}
+                value={form.videoId}
+                onChange={(v) => setForm(f => ({ ...f, videoId: v }))}
+              />
+            </div>
+
             <div className="flex gap-3 mt-5">
               <button
                 onClick={handleSubmit}

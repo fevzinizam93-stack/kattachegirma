@@ -331,6 +331,7 @@ export const appRouter = router({
         stockCount: z.number().optional(),
         discountEndsAt: z.string().optional(),
         contactPhone: z.string().max(64).optional(),
+        videoId: z.string().max(32).optional(),
       }))
       .mutation(async ({ input }) => {
         // Normalize slug server-side: transliterate Cyrillic, strip emojis/special chars
@@ -386,6 +387,7 @@ export const appRouter = router({
         stockCount: z.number().optional(),
         discountEndsAt: z.string().optional(),
         contactPhone: z.string().max(64).optional(),
+        videoId: z.string().max(32).optional().nullable(),
       }))
       .mutation(async ({ input }) => {
         const { id, ...data } = input;
@@ -455,6 +457,7 @@ export const appRouter = router({
         isNew: z.boolean().default(false),
         specs: z.record(z.string(), z.string()).optional(),
         contactPhone: z.string().max(64).optional(),
+        videoId: z.string().max(32).optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         const seller = await getSellerByUserId(ctx.user.id);
@@ -504,6 +507,7 @@ export const appRouter = router({
         isNew: z.boolean().optional(),
         specs: z.record(z.string(), z.string()).optional(),
         contactPhone: z.string().max(64).optional(),
+        videoId: z.string().max(32).optional().nullable(),
       }))
       .mutation(async ({ input, ctx }) => {
         const seller = await getSellerByUserId(ctx.user.id);
@@ -606,6 +610,45 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         await toggleProductActive(input.id, input.isActive);
         return { success: true };
+      }),
+
+    setVideoReview: protectedProcedure
+      .input(z.object({ productId: z.number(), videoId: z.string().max(32).nullable() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          const product = await getProductById(input.productId);
+          if (!product) throw new TRPCError({ code: "NOT_FOUND" });
+          const seller = await getSellerByUserId(ctx.user.id);
+          if (!seller || product.sellerId !== seller.id) throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        await updateProduct(input.productId, { videoId: input.videoId ?? undefined });
+        return { success: true };
+      }),
+
+    autoScanVideoReviews: adminProcedure
+      .input(z.object({ overwrite: z.boolean().default(false) }))
+      .mutation(async ({ input }) => {
+        const apiKey = ENV.youtubeApiKey;
+        if (!apiKey) return { updated: 0, skipped: 0 };
+        const allProducts = await getProducts({ limit: 2000, offset: 0, approvedOnly: true });
+        const CHANNEL_ID = "UCo0v66OjZ8Z3LujfipwuQUA";
+        let updated = 0;
+        let skipped = 0;
+        for (const product of allProducts) {
+          if (!input.overwrite && product.videoId) { skipped++; continue; }
+          try {
+            const q = encodeURIComponent(product.name.slice(0, 100));
+            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${CHANNEL_ID}&q=${q}&type=video&maxResults=1&order=relevance&key=${apiKey}`;
+            const res = await fetch(url);
+            if (!res.ok) { skipped++; continue; }
+            const json = await res.json() as { items?: Array<{ id: { videoId: string } }> };
+            const videoId = json.items?.[0]?.id?.videoId ?? null;
+            if (videoId) { await updateProduct(product.id, { videoId }); updated++; }
+            else skipped++;
+            await new Promise(r => setTimeout(r, 250));
+          } catch { skipped++; }
+        }
+        return { updated, skipped };
       }),
   }),
 
@@ -1743,6 +1786,40 @@ ${productLines}
           return { videos: [] as YTVideoItem[], nextPageToken: null as string | null, totalResults: 0 };
         }
       }),
+    searchVideos: publicProcedure
+      .input(z.object({ query: z.string().min(1).max(200), maxResults: z.number().min(1).max(8).default(6) }))
+      .query(async ({ input }) => {
+        const apiKey = ENV.youtubeApiKey;
+        if (!apiKey) return { videos: [] as Array<{ videoId: string; title: string; thumbnail: string }> };
+        const cacheKey = `search_${input.query.toLowerCase().replace(/\s+/g, "_").slice(0, 80)}_${input.maxResults}`;
+        const now = Date.now();
+        if ((youtubeChanCache as any)[cacheKey] && now - (youtubeChanCache as any)[cacheKey].ts < 30 * 60 * 1000) {
+          return (youtubeChanCache as any)[cacheKey].data;
+        }
+        try {
+          const CHANNEL_ID = "UCo0v66OjZ8Z3LujfipwuQUA";
+          const q = encodeURIComponent(input.query.slice(0, 100));
+          const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${CHANNEL_ID}&q=${q}&type=video&maxResults=${input.maxResults}&order=relevance&key=${apiKey}`;
+          const res = await fetch(url);
+          if (!res.ok) return { videos: [] as Array<{ videoId: string; title: string; thumbnail: string }> };
+          const json = await res.json() as {
+            items?: Array<{
+              id: { videoId: string };
+              snippet: { title: string; thumbnails: { medium?: { url: string }; default?: { url: string } } };
+            }>;
+          };
+          const videos = (json.items ?? []).map(i => ({
+            videoId: i.id.videoId,
+            title: i.snippet.title,
+            thumbnail: i.snippet.thumbnails.medium?.url ?? i.snippet.thumbnails.default?.url ?? "",
+          }));
+          const result = { videos };
+          (youtubeChanCache as any)[cacheKey] = { ts: now, data: result };
+          return result;
+        } catch {
+          return { videos: [] as Array<{ videoId: string; title: string; thumbnail: string }> };
+        }
+      }),
     findVideoForProduct: publicProcedure
       .input(z.object({ productName: z.string().min(1).max(200) }))
       .query(async ({ input }) => {
@@ -1787,4 +1864,5 @@ ${productLines}
       }),
   }),
 });
+
 export type AppRouter = typeof appRouter;

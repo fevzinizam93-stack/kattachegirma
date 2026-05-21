@@ -2,7 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import ContactPhonePicker from "@/components/ContactPhonePicker";
 import BrandPicker from "@/components/BrandPicker";
 import { trpc } from "@/lib/trpc";
-import { BarChart3, Bell, Crown, Edit, FolderOpen, ImagePlus, MapPin, MessageSquare, Package, Plus, Search, Send, Settings, ShoppingBag, Star, Store, Trash2, Upload, Users, X, Zap, Phone, CheckCircle2, Clock } from "lucide-react";
+import { BarChart3, Bell, Crown, Edit, FolderOpen, ImagePlus, MapPin, MessageSquare, Package, Plus, Search, Send, Settings, ShoppingBag, Star, Store, Trash2, Upload, Users, X, Zap, Phone, CheckCircle2, Clock, Youtube, PlayCircle, RefreshCw } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -96,13 +96,98 @@ interface ProductForm {
   sellerTelegram: string;
   sellerName: string;
   contactPhone: string;
+  videoId: string;
 }
 
 const emptyForm: ProductForm = {
   name: "", nameUz: "", slug: "", description: "", descriptionUz: "", categoryId: 0, brand: "",
   price: "", priceUsd: "", originalPrice: "", originalPriceUsd: "", discount: 0, imageUrl: "", images: [], stock: 0,
-  isNew: false, isFeatured: false, isHit: false, isPremium: false, hitOrder: 0, costPrice: "", stockCount: "", discountEndsAt: "", sellerPhone: "", sellerTelegram: "", sellerName: "", contactPhone: "",
+  isNew: false, isFeatured: false, isHit: false, isPremium: false, hitOrder: 0, costPrice: "", stockCount: "", discountEndsAt: "", sellerPhone: "", sellerTelegram: "", sellerName: "", contactPhone: "", videoId: "",
 };
+
+// ---- VideoSearchPicker component ----
+function VideoSearchPicker({ productName, value, onChange }: { productName: string; value: string; onChange: (v: string) => void }) {
+  const [query, setQuery] = useState(productName);
+  const [open, setOpen] = useState(false);
+  const [selectedTitle, setSelectedTitle] = useState("");
+  const [selectedThumb, setSelectedThumb] = useState("");
+
+  const searchQuery = trpc.youtube.searchVideos.useQuery(
+    { query: query.trim(), maxResults: 6 },
+    { enabled: open && query.trim().length >= 2 }
+  );
+
+  const handleSelect = (videoId: string, title: string, thumb: string) => {
+    onChange(videoId);
+    setSelectedTitle(title);
+    setSelectedThumb(thumb);
+    setOpen(false);
+  };
+
+  const handleClear = () => {
+    onChange("");
+    setSelectedTitle("");
+    setSelectedThumb("");
+  };
+
+  return (
+    <div className="col-span-2 border border-red-200 rounded-xl p-4 bg-red-50">
+      <label className="block text-sm font-semibold mb-2 text-red-700 flex items-center gap-1.5">
+        <Youtube size={15} className="text-red-600" />
+        Видеообзор на YouTube
+      </label>
+
+      {value ? (
+        <div className="flex items-center gap-3 bg-white rounded-lg p-2 border border-red-200">
+          {selectedThumb && <img src={selectedThumb} alt="" className="w-20 h-12 object-cover rounded" />}
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-gray-800 truncate">{selectedTitle || "Видео привязано"}</p>
+            <p className="text-xs text-gray-400 font-mono">{value}</p>
+          </div>
+          <button type="button" onClick={handleClear} className="text-gray-400 hover:text-red-500 shrink-0"><X size={16} /></button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <input
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Поиск видео по названию товара..."
+              className="flex-1 border border-red-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 bg-white"
+            />
+            <button type="button" onClick={() => setOpen(o => !o)}
+              className="flex items-center gap-1.5 bg-red-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-red-700">
+              <Search size={14} /> Найти
+            </button>
+          </div>
+
+          {open && (
+            <div className="bg-white border border-red-200 rounded-xl overflow-hidden shadow-md">
+              {searchQuery.isLoading && (
+                <div className="flex justify-center py-4"><div className="w-5 h-5 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" /></div>
+              )}
+              {!searchQuery.isLoading && (searchQuery.data?.videos ?? []).length === 0 && (
+                <p className="text-sm text-gray-400 text-center py-4">Видео не найдено</p>
+              )}
+              {(searchQuery.data?.videos ?? []).map((v: { videoId: string; title: string; thumbnail: string }) => (
+                <button key={v.videoId} type="button"
+                  onClick={() => handleSelect(v.videoId, v.title, v.thumbnail)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-red-50 text-left border-b border-gray-100 last:border-0">
+                  <img src={v.thumbnail} alt="" className="w-20 h-12 object-cover rounded shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-800 line-clamp-2">{v.title}</p>
+                    <p className="text-xs text-gray-400 font-mono mt-0.5">{v.videoId}</p>
+                  </div>
+                  <PlayCircle size={20} className="text-red-500 shrink-0" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Admin() {
   const { user, loading } = useAuth();
@@ -367,6 +452,13 @@ export default function Admin() {
   const updateOrderStatus = trpc.orders.updateStatus.useMutation({
     onSuccess: () => { toast.success("Статус обновлён!"); utils.orders.list.invalidate(); },
   });
+  const [scanProgress, setScanProgress] = useState<{ updated: number; skipped: number } | null>(null);
+  const [scanLoading, setScanLoading] = useState(false);
+  const autoScanMut = trpc.products.autoScanVideoReviews.useMutation({
+    onMutate: () => { setScanLoading(true); setScanProgress(null); },
+    onSuccess: (data) => { setScanProgress(data); setScanLoading(false); utils.products.adminList.invalidate(); toast.success(`Сканирование завершено: ${data.updated} привязано`); },
+    onError: (e) => { setScanLoading(false); toast.error("Ошибка: " + e.message); },
+  });
 
   const approveSeller = trpc.sellers.approve.useMutation({
     onSuccess: () => { toast.success("Продавец одобрен!"); utils.sellers.list.invalidate(); },
@@ -542,6 +634,7 @@ export default function Admin() {
       sellerTelegram: (p as any).sellerTelegram ?? "",
       sellerName: (p as any).sellerName ?? "",
       contactPhone: (p as any).contactPhone ?? "",
+      videoId: (p as any).videoId ?? "",
     });
     setEditId(p.id);
     setShowForm(true);
@@ -611,13 +704,34 @@ export default function Admin() {
                 <h2 className="font-black text-lg text-gray-900">
                   Товары ({adminSearch.trim() ? `${filteredProducts.length} / ${products.length}` : products.length})
                 </h2>
-                <button
-                  onClick={() => { setShowForm(true); setForm(emptyForm); setEditId(null); }}
-                  className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
-                >
-                  <Plus size={16} /> Добавить
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => autoScanMut.mutate({ overwrite: false })}
+                    disabled={scanLoading}
+                    title="Автоматически найти видеообзоры для товаров без видео"
+                    className="flex items-center gap-1.5 border border-red-200 text-red-600 bg-red-50 px-3 py-2 rounded-xl font-semibold text-sm hover:bg-red-100 transition-colors disabled:opacity-50"
+                  >
+                    {scanLoading ? <div className="w-4 h-4 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" /> : <RefreshCw size={14} />}
+                    {scanLoading ? "Сканирую..." : "Скан видео"}
+                  </button>
+                  <button
+                    onClick={() => { setShowForm(true); setForm(emptyForm); setEditId(null); }}
+                    className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
+                  >
+                    <Plus size={16} /> Добавить
+                  </button>
+                </div>
               </div>
+              {scanProgress && (
+                <div className="flex items-center gap-2 text-sm bg-green-50 border border-green-200 rounded-xl px-4 py-2">
+                  <Youtube size={14} className="text-red-600" />
+                  <span className="text-green-700 font-semibold">Сканирование завершено:</span>
+                  <span className="text-green-800">привязано <strong>{scanProgress.updated}</strong> видео,</span>
+                  <span className="text-gray-500">пропущено {scanProgress.skipped}</span>
+                  <button onClick={() => setScanProgress(null)} className="ml-auto text-gray-400 hover:text-gray-600"><X size={14} /></button>
+                </div>
+              )}
               {/* Admin product search bar */}
               <div className="relative">
                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
@@ -923,6 +1037,14 @@ export default function Admin() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Video Review Search */}
+                    <VideoSearchPicker
+                      productName={form.name}
+                      value={form.videoId}
+                      onChange={videoId => setForm(f => ({ ...f, videoId }))}
+                    />
+
                     <div className="flex gap-3 pt-2">
                       <button type="submit" disabled={createProduct.isPending || updateProduct.isPending}
                         className="flex-1 bg-primary text-white py-2.5 rounded-xl font-bold hover:bg-primary/90 transition-colors disabled:opacity-50">

@@ -101,6 +101,7 @@ export const products = mysqlTable("products", {
   stockCount: int("stockCount"),
   discountEndsAt: timestamp("discountEndsAt"),
   contactPhone: varchar("contactPhone", { length: 64 }),  // contact phone shown on product page
+  videoId: varchar("videoId", { length: 32 }),  // YouTube video ID for product review
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

@@ -931,3 +931,14 @@
 - [x] ProductDetail.tsx: VideoReviewDetailButton переработан — кнопка открывает модальное окно с YouTube iframe (autoplay, 16:9, тёмный заголовок с названием видео)
 - [x] Модальное окно: закрытие кликом по оверлею или кнопкой ✕, ссылка «YouTube ↗» для открытия в новой вкладке
 - [x] TypeScript: 0 ошибок
+
+## v137 - Привязка видеообзоров к товарам (поиск в форме + автосканирование + отображение)
+- [ ] drizzle/schema.ts: добавить поле videoId (text, nullable) в таблицу products
+- [ ] Применить миграцию через webdev_execute_sql
+- [ ] server/routers.ts: youtube.searchVideos — поиск видео в канале по запросу (до 8 результатов)
+- [ ] server/routers.ts: products.setVideoReview — сохранить videoId для товара (admin + seller)
+- [ ] server/routers.ts: products.autoScanVideoReviews — массовая привязка по совпадению названий
+- [ ] AdminProducts.tsx: блок поиска видео в форме добавления/редактирования товара
+- [ ] SellerProducts.tsx: аналогичный блок поиска видео для продавцов
+- [ ] AdminProducts.tsx: кнопка «Сканировать видеообзоры» для массовой привязки
+- [ ] ProductDetail.tsx: приоритет сохранённого videoId над динамическим поиском

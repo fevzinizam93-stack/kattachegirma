@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE `products` ADD `videoId` varchar(32);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute ALTER TABLE `products` ADD `videoId` varchar(32);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 542
+}
