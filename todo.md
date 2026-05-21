@@ -926,3 +926,8 @@
 - [x] server/routers.ts: youtube.findVideoForProduct — поиск видео в канале @katta.chegirma по ключевым словам из названия товара через YouTube Data API v3 search, кэш 1 час
 - [x] ProductCard.tsx: компонент VideoReviewButton — показывает кнопку «Смотреть видеообзор» под кнопкой «Успей по скидке» если найдено совпадение
 - [x] ProductDetail.tsx: компонент VideoReviewDetailButton — кнопка «Смотреть видеообзор на YouTube» в блоке действий (после «Сравнить с другим»)
+
+## v136 - Встроенный мини-плеер YouTube на странице товара
+- [x] ProductDetail.tsx: VideoReviewDetailButton переработан — кнопка открывает модальное окно с YouTube iframe (autoplay, 16:9, тёмный заголовок с названием видео)
+- [x] Модальное окно: закрытие кликом по оверлею или кнопкой ✕, ссылка «YouTube ↗» для открытия в новой вкладке
+- [x] TypeScript: 0 ошибок

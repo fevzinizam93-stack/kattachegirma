@@ -15,6 +15,7 @@ import QuickBuyModal from "@/components/QuickBuyModal";
 import { trackViewContent, trackAddToCart } from "@/hooks/useFacebookPixel";
 
 function VideoReviewDetailButton({ productName }: { productName: string }) {
+  const [open, setOpen] = useState(false);
   const { data, isLoading } = trpc.youtube.findVideoForProduct.useQuery(
     { productName },
     { staleTime: 60 * 60 * 1000, retry: false, refetchOnWindowFocus: false }
@@ -22,16 +23,74 @@ function VideoReviewDetailButton({ productName }: { productName: string }) {
 
   if (isLoading || !data?.videoId) return null;
 
+  const videoId = data.videoId;
+  const videoTitle = data.title ?? "Видеообзор";
+
   return (
-    <a
-      href={`https://www.youtube.com/watch?v=${data.videoId}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="w-full h-9 rounded-full text-xs font-semibold border-2 border-red-200 text-red-600 bg-red-50 hover:bg-red-100 hover:border-red-400 transition-all flex items-center justify-center gap-1.5"
-    >
-      <Youtube size={14} className="shrink-0" />
-      Смотреть видеообзор на YouTube
-    </a>
+    <>
+      {/* Trigger button */}
+      <button
+        onClick={() => setOpen(true)}
+        className="w-full h-9 rounded-full text-xs font-semibold border-2 border-red-200 text-red-600 bg-red-50 hover:bg-red-100 hover:border-red-400 transition-all flex items-center justify-center gap-1.5"
+      >
+        <Youtube size={14} className="shrink-0" />
+        Смотреть видеообзор
+      </button>
+
+      {/* Modal overlay */}
+      {open && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: "rgba(0,0,0,0.75)" }}
+          onClick={() => setOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-2xl bg-black rounded-2xl overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-2.5 bg-gray-900">
+              <div className="flex items-center gap-2 min-w-0">
+                <Youtube size={16} className="text-red-500 shrink-0" />
+                <span className="text-white text-xs font-semibold truncate">{videoTitle}</span>
+              </div>
+              <div className="flex items-center gap-2 shrink-0 ml-2">
+                <a
+                  href={`https://www.youtube.com/watch?v=${videoId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-gray-400 hover:text-white transition-colors"
+                >
+                  YouTube ↗
+                </a>
+                <button
+                  onClick={() => setOpen(false)}
+                  className="w-7 h-7 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center text-white transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            {/* 16:9 iframe */}
+            <div style={{ paddingBottom: "56.25%", position: "relative" }}>
+              <iframe
+                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
+                title={videoTitle}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  width: "100%",
+                  height: "100%",
+                  border: "none",
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
