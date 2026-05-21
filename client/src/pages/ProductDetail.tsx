@@ -16,7 +16,6 @@ import { trackViewContent, trackAddToCart } from "@/hooks/useFacebookPixel";
 
 function VideoReviewDetailButton({ productName, savedVideoId }: { productName: string; savedVideoId?: string | null }) {
   const [open, setOpen] = useState(false);
-  // If product has a saved videoId in DB — use it directly, skip YouTube API call
   const dynamicQuery = trpc.youtube.findVideoForProduct.useQuery(
     { productName },
     { enabled: !savedVideoId, staleTime: 60 * 60 * 1000, retry: false, refetchOnWindowFocus: false }
@@ -28,65 +27,67 @@ function VideoReviewDetailButton({ productName, savedVideoId }: { productName: s
   if (!savedVideoId && (dynamicQuery.isLoading || !videoId)) return null;
   if (!videoId) return null;
 
+  const thumbUrl = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+
   return (
     <>
-      {/* Trigger button */}
-      <button
+      {/* Inline preview card — always visible, click to play */}
+      <div
+        className="relative w-full rounded-xl overflow-hidden cursor-pointer group border border-red-100 shadow-sm"
         onClick={() => setOpen(true)}
-        className="w-full h-9 rounded-full text-xs font-semibold border-2 border-red-200 text-red-600 bg-red-50 hover:bg-red-100 hover:border-red-400 transition-all flex items-center justify-center gap-1.5"
+        style={{ aspectRatio: "16/9" }}
       >
-        <Youtube size={14} className="shrink-0" />
-        Смотреть видеообзор
-      </button>
+        <img
+          src={thumbUrl}
+          alt={videoTitle}
+          className="w-full h-full object-cover"
+        />
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-black/30 group-hover:bg-black/45 transition-colors" />
+        {/* Play button */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+          <div className="w-14 h-14 rounded-full bg-red-600 group-hover:bg-red-700 flex items-center justify-center shadow-xl transition-all group-hover:scale-110">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21" /></svg>
+          </div>
+          <span className="text-white text-xs font-bold bg-black/50 px-3 py-1 rounded-full">Видеообзор</span>
+        </div>
+        {/* YouTube badge */}
+        <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/70 rounded-full px-2 py-0.5">
+          <Youtube size={11} className="text-red-500" />
+          <span className="text-white text-[10px] font-semibold">YouTube</span>
+        </div>
+      </div>
 
-      {/* Modal overlay */}
+      {/* Modal player */}
       {open && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ backgroundColor: "rgba(0,0,0,0.75)" }}
+          style={{ backgroundColor: "rgba(0,0,0,0.80)" }}
           onClick={() => setOpen(false)}
         >
           <div
             className="relative w-full max-w-2xl bg-black rounded-2xl overflow-hidden shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
             <div className="flex items-center justify-between px-4 py-2.5 bg-gray-900">
               <div className="flex items-center gap-2 min-w-0">
                 <Youtube size={16} className="text-red-500 shrink-0" />
                 <span className="text-white text-xs font-semibold truncate">{videoTitle}</span>
               </div>
               <div className="flex items-center gap-2 shrink-0 ml-2">
-                <a
-                  href={`https://www.youtube.com/watch?v=${videoId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[10px] text-gray-400 hover:text-white transition-colors"
-                >
-                  YouTube ↗
-                </a>
-                <button
-                  onClick={() => setOpen(false)}
-                  className="w-7 h-7 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center text-white transition-colors"
-                >
-                  ✕
-                </button>
+                <a href={`https://www.youtube.com/watch?v=${videoId}`} target="_blank" rel="noopener noreferrer"
+                  className="text-[10px] text-gray-400 hover:text-white transition-colors">YouTube ↗</a>
+                <button onClick={() => setOpen(false)}
+                  className="w-7 h-7 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center text-white transition-colors">✕</button>
               </div>
             </div>
-            {/* 16:9 iframe */}
             <div style={{ paddingBottom: "56.25%", position: "relative" }}>
               <iframe
                 src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
                 title={videoTitle}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  width: "100%",
-                  height: "100%",
-                  border: "none",
-                }}
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }}
               />
             </div>
           </div>
@@ -785,16 +786,34 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                   <Zap size={15} />
                   Купить в 1 клик
                 </button>
-                {/* Row 2: Compare (ghost pill) */}
-                <button
-                  onClick={() => setCompareOpen(true)}
-                  className="w-full h-9 rounded-full text-xs font-semibold border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50/60 transition-all flex items-center justify-center gap-1.5"
-                >
-                  <ArrowLeftRight size={13} />
-                  Сравнить с другим
-                </button>
+                {/* Row 2: compact action row — Compare + Share */}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCompareOpen(true)}
+                    className="flex items-center gap-1 h-8 px-3 rounded-full text-[11px] font-semibold border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50/60 transition-all shrink-0"
+                  >
+                    <ArrowLeftRight size={12} />
+                    Сравнить
+                  </button>
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent((product.name || '') + '\n' + window.location.href)}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1 h-8 px-3 rounded-full text-[11px] font-semibold bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#1a9b50] transition-colors shrink-0"
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                    WhatsApp
+                  </a>
+                  <a
+                    href={`https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(product.name || '')}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1 h-8 px-3 rounded-full text-[11px] font-semibold bg-[#2AABEE]/10 hover:bg-[#2AABEE]/20 text-[#1a7ab0] transition-colors shrink-0"
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+                    Telegram
+                  </a>
+                </div>
 
-                {/* Row 2b: Video review */}
+                {/* Video review inline preview */}
                 <VideoReviewDetailButton productName={product.name} savedVideoId={(product as any).videoId} />
 
                 {/* Row 3: Seller contacts */}
@@ -870,33 +889,6 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                     <span className="font-semibold text-gray-700">{t.detail_delivery}</span>
                     <span className="text-gray-400">— {t.detail_delivery_desc}</span>
                   </div>
-                </div>
-
-                {/* Row 5: Share chips */}
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-gray-400 font-medium shrink-0">Поделиться:</span>
-                  <a
-                    href={`https://wa.me/?text=${encodeURIComponent((product.name || '') + '\n' + window.location.href)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#1a9b50] px-3 py-1.5 rounded-full text-[11px] font-semibold transition-colors"
-                  >
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                    </svg>
-                    WhatsApp
-                  </a>
-                  <a
-                    href={`https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(product.name || '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 bg-[#2AABEE]/10 hover:bg-[#2AABEE]/20 text-[#1a7ab0] px-3 py-1.5 rounded-full text-[11px] font-semibold transition-colors"
-                  >
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-                    </svg>
-                    Telegram
-                  </a>
                 </div>
               </div>
             </div>
