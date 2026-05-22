@@ -66,7 +66,16 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { toggle: toggleWishlist, has: inWishlist } = useWishlist();
   const isWishlisted = inWishlist(product.id);
 
-  const isVip = user?.role === "vip" || user?.role === "admin";  const displayName = product.name;
+  // Track product click for auto-hit scoring (fire-and-forget, using fetch)
+  const trackClick = { mutate: (data: { productId: number }) => {
+    fetch('/api/trpc/hits.trackClick', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ json: data }),
+    }).catch(() => {});
+  }};
+  const isVip = user?.role === "vip" || user?.role === "admin";
+  const displayName = product.name;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -105,7 +114,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <>
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden h-full flex flex-col">
-    <Link href={`/product/${product.slug}`} className="flex flex-col flex-1 cursor-pointer active:scale-[0.98] transition-transform touch-manipulation">
+    <Link href={`/product/${product.slug}`} onClick={() => trackClick.mutate({ productId: product.id })} className="flex flex-col flex-1 cursor-pointer active:scale-[0.98] transition-transform touch-manipulation">
       <div className="flex flex-col flex-1">
         <div className="relative bg-gray-50" style={{ paddingBottom: "70%" }}>
           <div className="absolute inset-0">

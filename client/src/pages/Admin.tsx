@@ -560,7 +560,7 @@ export default function Admin() {
   // Auto-hits settings
   const [hitThreshold, setHitThreshold] = useState<number>(50);
   const [hitAutoEnabled, setHitAutoEnabled] = useState<boolean>(true);
-  const hitSettingsQuery = trpc.products.getHitSettings.useQuery(undefined, {
+  const hitSettingsQuery = trpc.hits.getHitSettings.useQuery(undefined, {
     enabled: tab === "settings",
     staleTime: 60 * 1000,
   });
@@ -570,11 +570,11 @@ export default function Admin() {
       setHitAutoEnabled(hitSettingsQuery.data.autoEnabled);
     }
   }, [hitSettingsQuery.data]);
-  const saveHitSettingsMut = trpc.products.saveHitSettings.useMutation({
+  const saveHitSettingsMut = trpc.hits.saveHitSettings.useMutation({
     onSuccess: () => { toast.success("Настройки авто-хитов сохранены!"); hitSettingsQuery.refetch(); utils.products.getHits.invalidate(); },
     onError: (e) => toast.error("Ошибка: " + e.message),
   });
-  const recalcHitsMut = trpc.products.recalcHits.useMutation({
+  const recalcHitsMut = trpc.hits.recalcHits.useMutation({
     onSuccess: () => { toast.success("Хиты пересчитаны!"); utils.products.getHits.invalidate(); utils.products.list.invalidate(); },
     onError: (e) => toast.error("Ошибка: " + e.message),
   });
@@ -2386,6 +2386,50 @@ export default function Admin() {
               >
                 {saveSettings.isPending ? "Сохраняем..." : "Сохранить"}
               </button>
+            </div>
+
+            {/* === Auto-hits settings === */}
+            <div className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-2xl p-5 mt-5">
+              <h3 className="font-bold text-base text-orange-900 mb-1 flex items-center gap-2">&#x1F525; Авто-хиты</h3>
+              <p className="text-xs text-orange-700 mb-4">Товары автоматически получают метку «Хит» когда набирают достаточно кликов, просмотров и продаж. Формула: <span className="font-mono font-bold">Балл = Просмотры&times;1 + Клики&times;3 + Продажи&times;10</span></p>
+              <div className="flex flex-wrap items-end gap-3 mb-4">
+                <div>
+                  <label className="block text-xs font-semibold text-orange-800 mb-1">Порог баллов для хита</label>
+                  <input
+                    type="number"
+                    value={hitThreshold}
+                    onChange={e => setHitThreshold(Number(e.target.value) || 50)}
+                    className="w-32 border border-orange-300 rounded-lg px-3 py-2 text-sm font-bold text-orange-900 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    min={1}
+                    max={100000}
+                  />
+                </div>
+                <div className="flex items-center gap-2 pb-2">
+                  <input
+                    type="checkbox"
+                    id="hitAutoEnabled"
+                    checked={hitAutoEnabled}
+                    onChange={e => setHitAutoEnabled(e.target.checked)}
+                    className="w-4 h-4 accent-orange-500"
+                  />
+                  <label htmlFor="hitAutoEnabled" className="text-sm font-semibold text-orange-800">Авто-продвижение включено</label>
+                </div>
+                <button
+                  onClick={() => saveHitSettingsMut.mutate({ threshold: hitThreshold, autoEnabled: hitAutoEnabled })}
+                  disabled={saveHitSettingsMut.isPending}
+                  className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-bold transition-colors disabled:opacity-50"
+                >
+                  {saveHitSettingsMut.isPending ? "Сохраняем..." : "Сохранить"}
+                </button>
+                <button
+                  onClick={() => { if (confirm("Пересчитать баллы всех товаров и обновить хиты?")) recalcHitsMut.mutate(); }}
+                  disabled={recalcHitsMut.isPending}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold transition-colors disabled:opacity-50 flex items-center gap-2"
+                >
+                  {recalcHitsMut.isPending ? <><span className="animate-spin">&#x23F3;</span> Пересчёт...</> : <>&#x1F504; Пересчитать хиты</>}
+                </button>
+              </div>
+              <p className="text-xs text-orange-600">Можно вручную убрать товар из хитов через редактирование товара (сняв галочку «Хит»).</p>
             </div>
           </div>
         )}

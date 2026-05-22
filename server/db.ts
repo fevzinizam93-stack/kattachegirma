@@ -424,7 +424,7 @@ export async function getSellerProducts(sellerId: number) {
 export async function getHitProducts(limit?: number, sortByOrder?: boolean) {
   const db = await getDb();
   if (!db) return [];
-  const orderCol = sortByOrder ? asc(products.hitOrder) : desc(products.createdAt);
+  const orderCol = sortByOrder ? asc(products.hitOrder) : desc(products.hitScore);
   const query = db.select().from(products).where(and(eq(products.isHit, true), eq(products.isActive, true))).orderBy(orderCol);
   if (limit) query.limit(limit);
   return query;
@@ -433,7 +433,84 @@ export async function getHitProducts(limit?: number, sortByOrder?: boolean) {
 export async function toggleProductHit(id: number, isHit: boolean) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
-  await db.update(products).set({ isHit }).where(eq(products.id, id));
+  // isHitManual = true means admin manually set this, bypass auto-calc
+  await db.update(products).set({ isHit, isHitManual: isHit }).where(eq(products.id, id));
+}
+
+/** Increment click counter for a product */
+export async function trackProductClick(productId: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.execute(
+    sql`UPDATE products SET clickCount = clickCount + 1,
+      hitScore = FLOOR(viewCount * 1 + (clickCount + 1) * 3 + salesCount * 10)
+      WHERE id = ${productId}`
+  );
+  // Auto-promote to hit if score exceeds threshold (default 100)
+  const settingRows = await db.select().from(storeSettings).where(eq(storeSettings.key, 'auto_hit_threshold'));
+  const threshold = settingRows[0] ? parseInt(settingRows[0].value ?? '100') : 100;
+  const autoRows = await db.select().from(storeSettings).where(eq(storeSettings.key, 'auto_hit_enabled'));
+  const autoEnabled = (autoRows[0]?.value ?? 'true') === 'true';
+  if (autoEnabled) {
+    await db.execute(
+      sql`UPDATE products
+        SET isHit = CASE WHEN hitScore >= ${threshold} THEN TRUE ELSE isHit END
+        WHERE id = ${productId} AND isHitManual = FALSE`
+    );
+  }
+}
+
+/** Recalculate hitScore for all products and auto-promote/demote hits */
+export async function recalcAllHitScores() {
+  const db = await getDb();
+  if (!db) return;
+  await db.execute(
+    sql`UPDATE products SET hitScore = FLOOR(viewCount * 1 + clickCount * 3 + salesCount * 10)`
+  );
+  const settingRows = await db.select().from(storeSettings).where(eq(storeSettings.key, 'auto_hit_threshold'));
+  const threshold = settingRows[0] ? parseInt(settingRows[0].value ?? '100') : 100;
+  const autoRows = await db.select().from(storeSettings).where(eq(storeSettings.key, 'auto_hit_enabled'));
+  const autoEnabled = (autoRows[0]?.value ?? 'true') === 'true';
+  if (autoEnabled) {
+    await db.execute(
+      sql`UPDATE products
+        SET isHit = CASE
+          WHEN isHitManual = TRUE THEN isHit
+          WHEN hitScore >= ${threshold} THEN TRUE
+          ELSE FALSE
+        END
+        WHERE isHitManual = FALSE`
+    );
+  }
+}
+
+/** Get auto-hit settings */
+export async function getHitSettings() {
+  const db = await getDb();
+  if (!db) return { threshold: 100, autoEnabled: true };
+  const rows = await db.select().from(storeSettings).where(
+    sql`\`key\` IN ('auto_hit_threshold', 'auto_hit_enabled')`
+  );
+  const map: Record<string, string> = {};
+  for (const r of rows) map[r.key] = r.value ?? '';
+  return {
+    threshold: parseInt(map['auto_hit_threshold'] ?? '100'),
+    autoEnabled: (map['auto_hit_enabled'] ?? 'true') === 'true',
+  };
+}
+
+/** Save auto-hit settings */
+export async function saveHitSettings(threshold: number, autoEnabled: boolean) {
+  const db = await getDb();
+  if (!db) return;
+  await db.execute(
+    sql`INSERT INTO store_settings (\`key\`, value) VALUES ('auto_hit_threshold', ${String(threshold)})
+        ON DUPLICATE KEY UPDATE value = ${String(threshold)}`
+  );
+  await db.execute(
+    sql`INSERT INTO store_settings (\`key\`, value) VALUES ('auto_hit_enabled', ${autoEnabled ? 'true' : 'false'})
+        ON DUPLICATE KEY UPDATE value = ${autoEnabled ? 'true' : 'false'}`
+  );
 }
 
 export async function toggleProductActive(id: number, isActive: boolean) {
@@ -1247,3 +1324,5 @@ export async function setYoutubeCache(cacheKey: string, data: string): Promise<v
     // silently ignore cache write errors
   }
 }
+
+export const _hitFunctionsLoaded = true;

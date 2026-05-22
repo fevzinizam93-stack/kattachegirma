@@ -98,6 +98,10 @@ export const products = mysqlTable("products", {
   moderationStatus: mysqlEnum("moderationStatus", ["approved", "pending", "rejected"]).default("approved").notNull(),
   costPrice: decimal("costPrice", { precision: 12, scale: 2 }),
   viewCount: int("viewCount").default(0),
+  clickCount: int("clickCount").default(0),
+  salesCount: int("salesCount").default(0),
+  hitScore: int("hitScore").default(0),
+  isHitManual: boolean("isHitManual").default(false),
   stockCount: int("stockCount"),
   discountEndsAt: timestamp("discountEndsAt"),
   contactPhone: varchar("contactPhone", { length: 64 }),  // contact phone shown on product page

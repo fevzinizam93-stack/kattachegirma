@@ -2,10 +2,20 @@ import ProductCard from "@/components/ProductCard";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { ArrowRight, ChevronLeft, ChevronRight, Flame } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import RecentlyViewed from "@/components/RecentlyViewed";
+
+/** Fisher-Yates shuffle — returns a new shuffled array */
+function shuffleArray<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 // Categories that have products (with their slugs for linking)
 const CATEGORY_ORDER = [120001, 1, 2, 30001, 9, 150001, 8, 13];
@@ -103,7 +113,9 @@ export default function Home() {
     { limit: 50 },
     { staleTime: 3 * 60 * 1000 }
   );
-  const hitProducts = hitsData ?? [];
+  // Shuffle hits on each page load so different products appear first
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const hitProducts = useMemo(() => shuffleArray(hitsData ?? []), [hitsData]);
   const sliderRef = useRef<HTMLDivElement>(null);
   const sliderPausedRef = useRef(false);
   const scrollSlider = (dir: "left" | "right") => {
@@ -135,18 +147,15 @@ export default function Home() {
   );
   const banners = activeBanners ?? [];
   const categories = categoriesData ?? [];
-
   // All products — used for category sections
   const { data: allProductsData, isLoading: productsLoading } = trpc.products.list.useQuery(
     { limit: 200, offset: 0 },
     { staleTime: 3 * 60 * 1000 }
   );
   const allProducts = allProductsData?.items ?? [];
-
-  // Shuffle products once per page load (useMemo with empty deps = stable per mount)
+  // Shuffle products once per page load — each visitor sees a different order
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const shuffledProducts = useMemo(() => shuffleArray(allProducts), [allProductsData]);
-
 
   // Group shuffled products by categoryId
   const productsByCategory: Record<number, typeof allProducts> = {};
