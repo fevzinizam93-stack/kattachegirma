@@ -23,16 +23,21 @@ interface ReelsPlayerProps {
   videos: VideoItem[];
   initialIndex: number;
   onClose: () => void;
-  onNeedMore?: () => void; // called when near end of list
+  onNeedMore?: () => void;
 }
 
 export function ReelsPlayer({ videos, initialIndex, onClose, onNeedMore }: ReelsPlayerProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  // overlayActive: true = overlay is on top (swipe mode), false = iframe gets touch (play/pause mode)
+  const [overlayActive, setOverlayActive] = useState(true);
+
   const containerRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef<number | null>(null);
   const touchStartX = useRef<number | null>(null);
+  const touchStartTime = useRef<number>(0);
   const wheelAccum = useRef(0);
   const wheelTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -42,9 +47,9 @@ export function ReelsPlayer({ videos, initialIndex, onClose, onNeedMore }: Reels
     if (idx < 0 || idx >= videos.length || isTransitioning) return;
     setIsTransitioning(true);
     setShowInfo(false);
+    setOverlayActive(true); // re-enable overlay on new video
     setCurrentIndex(idx);
     setTimeout(() => setIsTransitioning(false), 400);
-    // Preload next
     if (idx >= videos.length - 3 && onNeedMore) onNeedMore();
   }, [videos.length, isTransitioning, onNeedMore]);
 
@@ -82,19 +87,41 @@ export function ReelsPlayer({ videos, initialIndex, onClose, onNeedMore }: Reels
     return () => el.removeEventListener("wheel", onWheel);
   }, [goNext, goPrev]);
 
-  // Touch swipe navigation
-  const onTouchStart = (e: React.TouchEvent) => {
+  // Touch handlers on the overlay div (sits on top of iframe)
+  const handleOverlayTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
     touchStartX.current = e.touches[0].clientX;
+    touchStartTime.current = Date.now();
   };
-  const onTouchEnd = (e: React.TouchEvent) => {
+
+  const handleOverlayTouchMove = (e: React.TouchEvent) => {
+    // Prevent page scroll while swiping
+    if (touchStartY.current !== null) {
+      const dy = Math.abs(touchStartY.current - e.touches[0].clientY);
+      const dx = Math.abs((touchStartX.current ?? 0) - e.touches[0].clientX);
+      if (dy > dx && dy > 10) {
+        e.preventDefault();
+      }
+    }
+  };
+
+  const handleOverlayTouchEnd = (e: React.TouchEvent) => {
     if (touchStartY.current === null || touchStartX.current === null) return;
     const dy = touchStartY.current - e.changedTouches[0].clientY;
     const dx = touchStartX.current - e.changedTouches[0].clientX;
+    const dt = Date.now() - touchStartTime.current;
+
     if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 40) {
+      // Vertical swipe — navigate
       if (dy > 0) goNext();
       else goPrev();
+    } else if (Math.abs(dy) < 10 && Math.abs(dx) < 10 && dt < 300) {
+      // Quick tap — disable overlay so iframe gets next tap (play/pause)
+      setOverlayActive(false);
+      // Re-enable overlay after 3s so swipe works again
+      setTimeout(() => setOverlayActive(true), 3000);
     }
+
     touchStartY.current = null;
     touchStartX.current = null;
   };
@@ -115,11 +142,9 @@ export function ReelsPlayer({ videos, initialIndex, onClose, onNeedMore }: Reels
     <div
       ref={containerRef}
       className="fixed inset-0 z-[100] bg-black flex flex-col"
-      onTouchStart={onTouchStart}
-      onTouchEnd={onTouchEnd}
     >
       {/* Top bar */}
-      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 pt-safe-top py-3 bg-gradient-to-b from-black/70 to-transparent pointer-events-none">
+      <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 pt-4 py-3 bg-gradient-to-b from-black/70 to-transparent pointer-events-none">
         <div className="flex items-center gap-2 pointer-events-auto">
           <div className="w-7 h-7 rounded-lg bg-red-600 flex items-center justify-center">
             <Youtube size={14} className="text-white" />
@@ -146,16 +171,40 @@ export function ReelsPlayer({ videos, initialIndex, onClose, onNeedMore }: Reels
           style={{ border: "none" }}
         />
 
+        {/* Touch overlay — intercepts swipes, passes taps through */}
+        <div
+          ref={overlayRef}
+          onTouchStart={handleOverlayTouchStart}
+          onTouchMove={handleOverlayTouchMove}
+          onTouchEnd={handleOverlayTouchEnd}
+          className="absolute inset-0 z-10"
+          style={{
+            // When overlayActive=true: overlay is on top, catches swipes
+            // When overlayActive=false: pointer-events none, iframe gets touch for 3s
+            pointerEvents: overlayActive ? "auto" : "none",
+            background: "transparent",
+          }}
+        />
+
+        {/* Tap hint — shown briefly */}
+        {overlayActive && !isTransitioning && (
+          <div className="absolute bottom-32 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
+            <div className="bg-black/40 rounded-full px-3 py-1 flex items-center gap-1.5">
+              <span className="text-white/60 text-[10px]">Нажмите для паузы • Свайп для перехода</span>
+            </div>
+          </div>
+        )}
+
         {/* Transition overlay */}
         {isTransitioning && (
-          <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
+          <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-20">
             <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
           </div>
         )}
       </div>
 
       {/* Bottom info bar */}
-      <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-black/90 via-black/50 to-transparent px-4 pb-safe-bottom pb-6 pt-16">
+      <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/90 via-black/50 to-transparent px-4 pb-6 pt-16">
         {/* Counter */}
         <div className="flex items-center justify-between mb-2">
           <span className="text-white/50 text-xs">
@@ -203,7 +252,7 @@ export function ReelsPlayer({ videos, initialIndex, onClose, onNeedMore }: Reels
       </div>
 
       {/* Side navigation buttons */}
-      <div className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-3">
+      <div className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-3">
         <button
           onClick={goPrev}
           disabled={!hasPrev}
@@ -228,9 +277,15 @@ export function ReelsPlayer({ videos, initialIndex, onClose, onNeedMore }: Reels
         </button>
       </div>
 
+      {/* Swipe indicator arrows — mobile hint */}
+      <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-20 pointer-events-none flex flex-col items-center gap-6 opacity-0 animate-pulse">
+        {hasPrev && <ChevronUp size={32} className="text-white/20" />}
+        {hasNext && <ChevronDown size={32} className="text-white/20" />}
+      </div>
+
       {/* Vertical progress dots */}
       {videos.length <= 30 && (
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-1.5 max-h-[60vh] overflow-hidden">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-1.5 max-h-[60vh] overflow-hidden">
           {videos.map((_, i) => (
             <button
               key={i}
