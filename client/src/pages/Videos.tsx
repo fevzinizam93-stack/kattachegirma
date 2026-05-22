@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
-import { Eye, ThumbsUp, Play, Youtube, X, ChevronLeft, ChevronRight, Search, Users } from "lucide-react";
+import { Eye, ThumbsUp, Play, Youtube, X, Search, Users } from "lucide-react";
+import { ReelsPlayer } from "@/components/ReelsPlayer";
 
 function formatCount(n: string | number): string {
   const num = typeof n === "string" ? parseInt(n, 10) : n;
@@ -28,102 +29,7 @@ type VideoItem = {
   publishedAt: string;
 };
 
-function VideoModal({ video, onClose, onPrev, onNext, hasPrev, hasNext }: {
-  video: VideoItem;
-  onClose: () => void;
-  onPrev: () => void;
-  onNext: () => void;
-  hasPrev: boolean;
-  hasNext: boolean;
-}) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-      if (e.key === "ArrowLeft") onPrev();
-      if (e.key === "ArrowRight") onNext();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose, onPrev, onNext]);
-
-  return (
-    <div
-      className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-2xl overflow-hidden w-full max-w-4xl max-h-[90vh] flex flex-col"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
-          <div className="flex items-center gap-2">
-            <Youtube size={18} className="text-red-500" />
-            <span className="font-semibold text-gray-800 text-sm line-clamp-1">{video.title}</span>
-          </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 transition-colors p-1">
-            <X size={20} />
-          </button>
-        </div>
-
-        <div className="relative bg-black" style={{ aspectRatio: "16/9" }}>
-          <iframe
-            key={video.id}
-            src={`https://www.youtube.com/embed/${video.id}?autoplay=1&rel=0&modestbranding=1`}
-            className="w-full h-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            title={video.title}
-          />
-          {hasPrev && (
-            <button
-              onClick={onPrev}
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors"
-            >
-              <ChevronLeft size={20} />
-            </button>
-          )}
-          {hasNext && (
-            <button
-              onClick={onNext}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors"
-            >
-              <ChevronRight size={20} />
-            </button>
-          )}
-        </div>
-
-        <div className="px-5 py-4 overflow-y-auto flex-1">
-          <h2 className="font-bold text-gray-900 text-base mb-2">{video.title}</h2>
-          <div className="flex items-center gap-4 text-gray-500 text-xs mb-3">
-            <span className="flex items-center gap-1">
-              <Eye size={13} />
-              {formatCount(video.viewCount)} просмотров
-            </span>
-            <span className="flex items-center gap-1">
-              <ThumbsUp size={13} />
-              {formatCount(video.likeCount)}
-            </span>
-            <span>{formatDate(video.publishedAt)}</span>
-          </div>
-          {video.description && (
-            <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-line line-clamp-4">
-              {video.description}
-            </p>
-          )}
-          <a
-            href={`https://www.youtube.com/watch?v=${video.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 mt-3 text-xs text-red-600 hover:underline"
-          >
-            <Youtube size={13} />
-            Открыть на YouTube
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-}
+// VideoModal replaced by ReelsPlayer
 
 export default function Videos() {
   const [allVideos, setAllVideos] = useState<VideoItem[]>([]);
@@ -188,8 +94,6 @@ export default function Videos() {
 
   const openVideo = (idx: number) => setSelectedIndex(idx);
   const closeVideo = () => setSelectedIndex(null);
-  const goPrev = () => selectedIndex !== null && selectedIndex > 0 && setSelectedIndex(selectedIndex - 1);
-  const goNext = () => selectedIndex !== null && selectedIndex < filtered.length - 1 && setSelectedIndex(selectedIndex + 1);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -356,15 +260,13 @@ export default function Videos() {
         )}
       </div>
 
-      {/* Video modal */}
-      {selectedIndex !== null && filtered[selectedIndex] && (
-        <VideoModal
-          video={filtered[selectedIndex]}
+      {/* Reels fullscreen player */}
+      {selectedIndex !== null && (
+        <ReelsPlayer
+          videos={filtered}
+          initialIndex={selectedIndex}
           onClose={closeVideo}
-          onPrev={goPrev}
-          onNext={goNext}
-          hasPrev={selectedIndex > 0}
-          hasNext={selectedIndex < filtered.length - 1}
+          onNeedMore={loadMore}
         />
       )}
     </div>
