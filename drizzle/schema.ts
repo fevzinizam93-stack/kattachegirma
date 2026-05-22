@@ -305,3 +305,11 @@ export const quickOrders = mysqlTable("quick_orders", {
 });
 export type QuickOrder = typeof quickOrders.$inferSelect;
 export type InsertQuickOrder = typeof quickOrders.$inferInsert;
+
+// YouTube persistent cache — survives server restarts and API quota exhaustion
+export const youtubeCache = mysqlTable("youtube_cache", {
+  cacheKey: varchar("cacheKey", { length: 256 }).primaryKey(),
+  data: text("data").notNull(), // JSON string
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+export type YoutubeCache = typeof youtubeCache.$inferSelect;

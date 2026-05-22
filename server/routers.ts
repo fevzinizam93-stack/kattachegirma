@@ -104,6 +104,8 @@ import {
   createQuickOrder,
   getAllQuickOrders,
   updateQuickOrderStatus,
+  getYoutubeCache,
+  setYoutubeCache,
 } from "./db";
 import { storagePut } from "./storage";
 import { invokeLLM } from "./_core/llm";
@@ -1715,76 +1717,108 @@ ${productLines}
     getChannelStats: publicProcedure
       .query(async () => {
         const apiKey = ENV.youtubeApiKey;
-        if (!apiKey) return { viewCount: "0", subscriberCount: "0", videoCount: "0" };
+        const DB_CACHE_KEY = "channel_stats";
         const now = Date.now();
+        // 1. In-memory cache (30 min)
         if (_youtubeStatsCache && now - _youtubeStatsCache.ts < 30 * 60 * 1000) {
           return _youtubeStatsCache.data;
         }
-        try {
-          const url = `https://www.googleapis.com/youtube/v3/channels?part=statistics&forHandle=katta.chegirma&key=${apiKey}`;
-          const res = await fetch(url);
-          if (!res.ok) return { viewCount: "0", subscriberCount: "0", videoCount: "0" };
-          const json = await res.json() as { items?: Array<{ statistics: { viewCount?: string; subscriberCount?: string; videoCount?: string } }> };
-          const s = json.items?.[0]?.statistics ?? {};
-          const result: YTChannelStats = {
-            viewCount: s.viewCount ?? "0",
-            subscriberCount: s.subscriberCount ?? "0",
-            videoCount: s.videoCount ?? "0",
-          };
-          _youtubeStatsCache = { ts: now, data: result };
-          return result;
-        } catch {
-          return { viewCount: "0", subscriberCount: "0", videoCount: "0" };
+        // 2. Try YouTube API
+        if (apiKey) {
+          try {
+            const url = `https://www.googleapis.com/youtube/v3/channels?part=statistics&forHandle=katta.chegirma&key=${apiKey}`;
+            const res = await fetch(url);
+            if (res.ok) {
+              const json = await res.json() as { items?: Array<{ statistics: { viewCount?: string; subscriberCount?: string; videoCount?: string } }> };
+              const s = json.items?.[0]?.statistics ?? {};
+              // Only store if we got real data (not quota error)
+              if (json.items && json.items.length > 0) {
+                const result: YTChannelStats = {
+                  viewCount: s.viewCount ?? "0",
+                  subscriberCount: s.subscriberCount ?? "0",
+                  videoCount: s.videoCount ?? "0",
+                };
+                _youtubeStatsCache = { ts: now, data: result };
+                // Persist to DB
+                await setYoutubeCache(DB_CACHE_KEY, JSON.stringify(result));
+                return result;
+              }
+            }
+          } catch { /* fall through to DB cache */ }
         }
+        // 3. Fallback: DB persistent cache
+        const cached = await getYoutubeCache(DB_CACHE_KEY);
+        if (cached) {
+          try {
+            const result = JSON.parse(cached) as YTChannelStats;
+            _youtubeStatsCache = { ts: now - 25 * 60 * 1000, data: result }; // keep in memory but allow refresh soon
+            return result;
+          } catch { /* ignore parse error */ }
+        }
+        return { viewCount: "0", subscriberCount: "0", videoCount: "0" };
       }),
     getChannelVideos: publicProcedure
       .input(z.object({ pageToken: z.string().optional(), maxResults: z.number().min(1).max(50).default(20) }))
       .query(async ({ input }) => {
         const apiKey = ENV.youtubeApiKey;
         const UPLOADS_PLAYLIST = "UUo0v66OjZ8Z3LujfipwuQUA";
-        if (!apiKey) return { videos: [] as YTVideoItem[], nextPageToken: null as string | null, totalResults: 0 };
         const cacheKey = `channel_${input.pageToken ?? "first"}_${input.maxResults}`;
+        const DB_CACHE_KEY = `videos_${cacheKey}`;
         const now = Date.now();
+        // 1. In-memory cache (10 min)
         if (youtubeChanCache[cacheKey] && now - youtubeChanCache[cacheKey].ts < 10 * 60 * 1000) {
           return youtubeChanCache[cacheKey].data;
         }
-        try {
-          // Step 1: get video IDs from uploads playlist
-          let plUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${UPLOADS_PLAYLIST}&maxResults=${input.maxResults}&key=${apiKey}`;
-          if (input.pageToken) plUrl += `&pageToken=${input.pageToken}`;
-          const plRes = await fetch(plUrl);
-          if (!plRes.ok) return { videos: [] as YTVideoItem[], nextPageToken: null as string | null, totalResults: 0 };
-          const plJson = await plRes.json() as {
-            nextPageToken?: string;
-            pageInfo: { totalResults: number };
-            items?: Array<{ snippet: { resourceId: { videoId: string }; title: string; description: string; thumbnails: { high?: { url: string }; medium?: { url: string } }; publishedAt: string } }>;
-          };
-          const items = plJson.items ?? [];
-          const videoIds = items.map(i => i.snippet.resourceId.videoId).filter(Boolean);
-          if (videoIds.length === 0) return { videos: [] as YTVideoItem[], nextPageToken: plJson.nextPageToken ?? null, totalResults: plJson.pageInfo.totalResults };
-          // Step 2: get statistics for those videos
-          const statsUrl = `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoIds.join(",")}&key=${apiKey}`;
-          const statsRes = await fetch(statsUrl);
-          const statsJson = statsRes.ok ? await statsRes.json() as { items?: Array<{ id: string; statistics: { viewCount?: string; likeCount?: string } }> } : { items: [] };
-          const statsMap: Record<string, { viewCount: string; likeCount: string }> = {};
-          for (const s of statsJson.items ?? []) {
-            statsMap[s.id] = { viewCount: s.statistics.viewCount ?? "0", likeCount: s.statistics.likeCount ?? "0" };
-          }
-          const videos: YTVideoItem[] = items.map(i => ({
-            id: i.snippet.resourceId.videoId,
-            title: i.snippet.title,
-            description: (i.snippet.description ?? "").split("\n")[0].slice(0, 200),
-            thumbnail: i.snippet.thumbnails.high?.url ?? i.snippet.thumbnails.medium?.url ?? "",
-            viewCount: statsMap[i.snippet.resourceId.videoId]?.viewCount ?? "0",
-            likeCount: statsMap[i.snippet.resourceId.videoId]?.likeCount ?? "0",
-            publishedAt: i.snippet.publishedAt,
-          }));
-          const result = { videos, nextPageToken: plJson.nextPageToken ?? null, totalResults: plJson.pageInfo.totalResults };
-          youtubeChanCache[cacheKey] = { ts: now, data: result };
-          return result;
-        } catch {
-          return { videos: [] as YTVideoItem[], nextPageToken: null as string | null, totalResults: 0 };
+        // 2. Try YouTube API
+        if (apiKey) {
+          try {
+            let plUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${UPLOADS_PLAYLIST}&maxResults=${input.maxResults}&key=${apiKey}`;
+            if (input.pageToken) plUrl += `&pageToken=${input.pageToken}`;
+            const plRes = await fetch(plUrl);
+            if (plRes.ok) {
+              const plJson = await plRes.json() as {
+                nextPageToken?: string;
+                pageInfo: { totalResults: number };
+                items?: Array<{ snippet: { resourceId: { videoId: string }; title: string; description: string; thumbnails: { high?: { url: string }; medium?: { url: string } }; publishedAt: string } }>;
+              };
+              const items = plJson.items ?? [];
+              const videoIds = items.map(i => i.snippet.resourceId.videoId).filter(Boolean);
+              if (videoIds.length > 0) {
+                const statsUrl = `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoIds.join(",")}&key=${apiKey}`;
+                const statsRes = await fetch(statsUrl);
+                const statsJson = statsRes.ok ? await statsRes.json() as { items?: Array<{ id: string; statistics: { viewCount?: string; likeCount?: string } }> } : { items: [] };
+                const statsMap: Record<string, { viewCount: string; likeCount: string }> = {};
+                for (const s of statsJson.items ?? []) {
+                  statsMap[s.id] = { viewCount: s.statistics.viewCount ?? "0", likeCount: s.statistics.likeCount ?? "0" };
+                }
+                const videos: YTVideoItem[] = items.map(i => ({
+                  id: i.snippet.resourceId.videoId,
+                  title: i.snippet.title,
+                  description: (i.snippet.description ?? "").split("\n")[0].slice(0, 200),
+                  thumbnail: i.snippet.thumbnails.high?.url ?? i.snippet.thumbnails.medium?.url ?? "",
+                  viewCount: statsMap[i.snippet.resourceId.videoId]?.viewCount ?? "0",
+                  likeCount: statsMap[i.snippet.resourceId.videoId]?.likeCount ?? "0",
+                  publishedAt: i.snippet.publishedAt,
+                }));
+                const result = { videos, nextPageToken: plJson.nextPageToken ?? null, totalResults: plJson.pageInfo.totalResults };
+                youtubeChanCache[cacheKey] = { ts: now, data: result };
+                // Persist to DB
+                await setYoutubeCache(DB_CACHE_KEY, JSON.stringify(result));
+                return result;
+              }
+            }
+          } catch { /* fall through to DB cache */ }
         }
+        // 3. Fallback: DB persistent cache
+        const cached = await getYoutubeCache(DB_CACHE_KEY);
+        if (cached) {
+          try {
+            const result = JSON.parse(cached) as { videos: YTVideoItem[]; nextPageToken: string | null; totalResults: number };
+            youtubeChanCache[cacheKey] = { ts: now - 8 * 60 * 1000, data: result };
+            return result;
+          } catch { /* ignore */ }
+        }
+        return { videos: [] as YTVideoItem[], nextPageToken: null as string | null, totalResults: 0 };
       }),
     searchVideos: publicProcedure
       .input(z.object({ query: z.string().min(1).max(200), maxResults: z.number().min(1).max(8).default(6) }))

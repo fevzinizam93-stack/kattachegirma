@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, gte, ilike, inArray, like, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool } from "mysql2";
-import { analyticsEvents, banners, Banner, InsertBanner, brands, Brand, InsertBrand, categories, conversations, Conversation, InsertConversation, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, messages, Message, InsertMessage, notifications, InsertNotification, orders, products, reviews, InsertReview, sellers, sellerContacts, SellerContact, InsertSellerContact, sellerReviews, InsertSellerReview, storeSettings, telegramRecipients, TelegramRecipient, users, User, utmVisits, UtmVisit, quickOrders, QuickOrder } from "../drizzle/schema";
+import { analyticsEvents, banners, Banner, InsertBanner, brands, Brand, InsertBrand, categories, conversations, Conversation, InsertConversation, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, messages, Message, InsertMessage, notifications, InsertNotification, orders, products, reviews, InsertReview, sellers, sellerContacts, SellerContact, InsertSellerContact, sellerReviews, InsertSellerReview, storeSettings, telegramRecipients, TelegramRecipient, users, User, utmVisits, UtmVisit, quickOrders, QuickOrder, youtubeCache } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import bcrypt from "bcryptjs";
 
@@ -1222,4 +1222,28 @@ export async function updateQuickOrderStatus(id: number, status: string): Promis
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   await db.update(quickOrders).set({ status }).where(eq(quickOrders.id, id));
+}
+
+// ── YouTube persistent cache helpers ──────────────────────────────────────
+export async function getYoutubeCache(cacheKey: string): Promise<string | null> {
+  const db = await getDb();
+  if (!db) return null;
+  try {
+    const rows = await db.select().from(youtubeCache).where(eq(youtubeCache.cacheKey, cacheKey)).limit(1);
+    return rows[0]?.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function setYoutubeCache(cacheKey: string, data: string): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  try {
+    await db.insert(youtubeCache)
+      .values({ cacheKey, data, updatedAt: new Date() })
+      .onDuplicateKeyUpdate({ set: { data, updatedAt: new Date() } });
+  } catch {
+    // silently ignore cache write errors
+  }
 }

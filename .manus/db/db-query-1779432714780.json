@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE `youtube_cache` (\n\t`cacheKey` varchar(256) NOT NULL,\n\t`data` text NOT NULL,\n\t`updatedAt` timestamp NOT NULL DEFAULT (now()),\n\tCONSTRAINT `youtube_cache_cacheKey` PRIMARY KEY(`cacheKey`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute CREATE TABLE `youtube_cache` (\n\t`cacheKey` varchar(256) NOT NULL,\n\t`data` text NOT NULL,\n\t`updatedAt` timestamp NOT NULL DEFAULT (now()),\n\tCONSTRAINT `youtube_cache_cacheKey` PRIMARY KEY(`cacheKey`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 342
+}
