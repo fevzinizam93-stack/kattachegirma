@@ -143,9 +143,14 @@ export default function Home() {
   );
   const allProducts = allProductsData?.items ?? [];
 
-  // Group products by categoryId
+  // Shuffle products once per page load (useMemo with empty deps = stable per mount)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const shuffledProducts = useMemo(() => shuffleArray(allProducts), [allProductsData]);
+
+
+  // Group shuffled products by categoryId
   const productsByCategory: Record<number, typeof allProducts> = {};
-  for (const p of allProducts) {
+  for (const p of shuffledProducts) {
     if (!productsByCategory[p.categoryId]) productsByCategory[p.categoryId] = [];
     productsByCategory[p.categoryId].push(p);
   }

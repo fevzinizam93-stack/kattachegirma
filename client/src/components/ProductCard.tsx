@@ -66,8 +66,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { toggle: toggleWishlist, has: inWishlist } = useWishlist();
   const isWishlisted = inWishlist(product.id);
 
-  const isVip = user?.role === "vip" || user?.role === "admin";
-  const displayName = product.name;
+  const isVip = user?.role === "vip" || user?.role === "admin";  const displayName = product.name;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();

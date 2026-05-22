@@ -557,6 +557,28 @@ export default function Admin() {
     onError: (e) => toast.error("Ошибка: " + e.message),
   });
 
+  // Auto-hits settings
+  const [hitThreshold, setHitThreshold] = useState<number>(50);
+  const [hitAutoEnabled, setHitAutoEnabled] = useState<boolean>(true);
+  const hitSettingsQuery = trpc.products.getHitSettings.useQuery(undefined, {
+    enabled: tab === "settings",
+    staleTime: 60 * 1000,
+  });
+  useEffect(() => {
+    if (hitSettingsQuery.data) {
+      setHitThreshold(hitSettingsQuery.data.threshold);
+      setHitAutoEnabled(hitSettingsQuery.data.autoEnabled);
+    }
+  }, [hitSettingsQuery.data]);
+  const saveHitSettingsMut = trpc.products.saveHitSettings.useMutation({
+    onSuccess: () => { toast.success("Настройки авто-хитов сохранены!"); hitSettingsQuery.refetch(); utils.products.getHits.invalidate(); },
+    onError: (e) => toast.error("Ошибка: " + e.message),
+  });
+  const recalcHitsMut = trpc.products.recalcHits.useMutation({
+    onSuccess: () => { toast.success("Хиты пересчитаны!"); utils.products.getHits.invalidate(); utils.products.list.invalidate(); },
+    onError: (e) => toast.error("Ошибка: " + e.message),
+  });
+
   const upsertCategory = trpc.categories.upsert.useMutation({
     onSuccess: () => {
       toast.success(catEditId ? "Категория обновлена!" : "Категория добавлена!");

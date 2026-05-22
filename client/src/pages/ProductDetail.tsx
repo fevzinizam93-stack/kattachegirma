@@ -747,9 +747,9 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
 
               {/* ── Action block ── */}
               <div className="space-y-2">
-                {/* Row 1: Quantity stepper + Успей по скидке + Купить в 1 клик */}
-                <div className="flex items-center gap-2">
-                  {(product.stock ?? 0) > 0 && (
+                {/* Row 1: Quantity stepper */}
+                {(product.stock ?? 0) > 0 && (
+                  <div className="flex items-center gap-1.5">
                     <div className="flex items-center bg-gray-100 rounded-full overflow-hidden shrink-0">
                       <button
                         onClick={() => setQuantity(q => Math.max(1, q - 1))}
@@ -765,28 +765,33 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                         <Plus size={12} />
                       </button>
                     </div>
-                  )}
+                    <span className="text-[10px] text-gray-400">шт.</span>
+                  </div>
+                )}
+
+                {/* Row 1b: 3 кнопки в один ряд — Успей, Купить, Связаться */}
+                <div className="flex items-center gap-1.5">
                   {/* Успей по скидке */}
                   <button
                     onClick={handleAddToCart}
                     disabled={(product.stock ?? 0) === 0}
-                    className={`flex-1 h-9 rounded-full font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
+                    className={`flex-1 h-8 rounded-full font-bold text-[11px] flex items-center justify-center gap-1 transition-all ${
                       (product.stock ?? 0) === 0
                         ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                        : "bg-primary text-white hover:bg-primary/90 active:scale-[0.98] shadow-md shadow-primary/30"
+                        : "bg-primary text-white hover:bg-primary/90 active:scale-[0.98] shadow-sm shadow-primary/30"
                     }`}
                   >
-                    <ShoppingCart size={13} />
-                    {(product.stock ?? 0) === 0 ? t.detail_out_of_stock : hasDiscount ? "Успей по скидке" : t.card_add_to_cart}
+                    <ShoppingCart size={12} />
+                    <span className="truncate">{(product.stock ?? 0) === 0 ? t.detail_out_of_stock : hasDiscount ? "По скидке" : t.card_add_to_cart}</span>
                   </button>
                   {/* Купить в 1 клик */}
                   <button
                     onClick={() => setQuickBuyOpen(true)}
                     disabled={(product.stock ?? 0) === 0}
-                    className="flex-1 h-9 rounded-full font-bold text-xs flex items-center justify-center gap-1.5 transition-all border-2 border-primary text-primary hover:bg-primary hover:text-white active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="flex-1 h-8 rounded-full font-bold text-[11px] flex items-center justify-center gap-1 transition-all border-2 border-primary text-primary hover:bg-primary hover:text-white active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    <Zap size={13} />
-                    Купить в 1 клик
+                    <Zap size={12} />
+                    <span className="truncate">1 клик</span>
                   </button>
                   {/* Связаться с продавцом */}
                   {(() => {
@@ -795,17 +800,17 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                     const tgUser = tg.replace("@", "").replace("https://t.me/", "");
                     if (!phone && !tgUser) return null;
                     return (
-                      <div className="relative shrink-0">
+                      <div className="relative flex-1">
                         <button
                           onClick={() => setContactOpen(v => !v)}
-                          className="h-9 px-3 rounded-full font-bold text-xs flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-[0.98] shadow-md shadow-emerald-600/30 whitespace-nowrap"
+                          className="w-full h-8 rounded-full font-bold text-[11px] flex items-center justify-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-[0.98] shadow-sm shadow-emerald-600/30"
                         >
-                          <MessageSquare size={13} />
-                          Связаться
-                          <ChevronDown size={11} className={`transition-transform shrink-0 ${contactOpen ? "rotate-180" : ""}`} />
+                          <MessageSquare size={12} />
+                          <span className="truncate">Связаться</span>
+                          <ChevronDown size={10} className={`transition-transform shrink-0 ${contactOpen ? "rotate-180" : ""}`} />
                         </button>
                         {contactOpen && (
-                          <div className="absolute top-full right-0 mt-1.5 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-30" style={{minWidth: '190px'}}>
+                          <div className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-30" style={{minWidth: '180px'}}>
                             {phone && (
                               <a
                                 href={`tel:${phone}`}
@@ -862,7 +867,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                   })()}
                 </div>
 
-                {/* Row 2: Сравнить + Поделиться */}
+                                {/* Row 2: Сравнить + Поделиться */}
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setCompareOpen(true)}
@@ -929,6 +934,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 {/* Video review inline preview */}
                 <VideoReviewDetailButton productName={product.name} savedVideoId={(product as any).videoId} />
 
+                {/* Row 3: Seller contacts */}
                 {/* Row 3: Seller info — name + disclaimer only */}
                 {product.sellerName && product.sellerId && (
                   <div className="flex items-center gap-2 px-1">
@@ -944,7 +950,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                   </div>
                 )}
 
-                                {/* Row 4: Delivery chip */}
+                {/* Row 4: Delivery chip */}
                 <div className="flex items-center gap-2 text-xs text-gray-500">
                   <div className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-full px-3 py-1.5 shadow-sm">
                     <Truck size={13} className="text-primary shrink-0" />
