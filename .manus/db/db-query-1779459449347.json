@@ -1,0 +1,18 @@
+{
+  "query": "\nSELECT \n  COALESCE(utmSource, 'прямой') as source,\n  COUNT(*) as total_visits\nFROM utm_visits\nGROUP BY utmSource\nORDER BY total_visits DESC;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute \nSELECT \n  COALESCE(utmSource, 'прямой') as source,\n  COUNT(*) as total_visits\nFROM utm_visits\nGROUP BY utmSource\nORDER BY total_visits DESC;\n",
+  "rows": [
+    {
+      "source": "ig",
+      "total_visits": "620"
+    },
+    {
+      "source": "instagram",
+      "total_visits": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "source\ttotal_visits\nig\t620\ninstagram\t1\n",
+  "stderr": "",
+  "execution_time_ms": 412
+}

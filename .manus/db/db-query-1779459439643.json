@@ -1,0 +1,130 @@
+{
+  "query": "\n-- UTM источники трафика\nSELECT \n  utmSource,\n  utmMedium,\n  COUNT(*) as visits,\n  DATE(createdAt) as day\nFROM utm_visits\nWHERE createdAt >= DATE_SUB(NOW(), INTERVAL 30 DAY)\nGROUP BY utmSource, utmMedium, DATE(createdAt)\nORDER BY visits DESC\nLIMIT 20;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute \n-- UTM источники трафика\nSELECT \n  utmSource,\n  utmMedium,\n  COUNT(*) as visits,\n  DATE(createdAt) as day\nFROM utm_visits\nWHERE createdAt >= DATE_SUB(NOW(), INTERVAL 30 DAY)\nGROUP BY utmSource, utmMedium, DATE(createdAt)\nORDER BY visits DESC\nLIMIT 20;\n",
+  "rows": [
+    {
+      "utmSource": "ig",
+      "utmMedium": "social",
+      "visits": "239",
+      "day": "2026-05-21"
+    },
+    {
+      "utmSource": "ig",
+      "utmMedium": "social",
+      "visits": "120",
+      "day": "2026-05-22"
+    },
+    {
+      "utmSource": "ig",
+      "utmMedium": "social",
+      "visits": "43",
+      "day": "2026-05-20"
+    },
+    {
+      "utmSource": "ig",
+      "utmMedium": "social",
+      "visits": "27",
+      "day": "2026-05-14"
+    },
+    {
+      "utmSource": "ig",
+      "utmMedium": "social",
+      "visits": "20",
+      "day": "2026-05-15"
+    },
+    {
+      "utmSource": "ig",
+      "utmMedium": "social",
+      "visits": "16",
+      "day": "2026-05-18"
+    },
+    {
+      "utmSource": "ig",
+      "utmMedium": "social",
+      "visits": "14",
+      "day": "2026-05-10"
+    },
+    {
+      "utmSource": "ig",
+      "utmMedium": "social",
+      "visits": "13",
+      "day": "2026-05-17"
+    },
+    {
+      "utmSource": "ig",
+      "utmMedium": "social",
+      "visits": "12",
+      "day": "2026-05-05"
+    },
+    {
+      "utmSource": "ig",
+      "utmMedium": "social",
+      "visits": "11",
+      "day": "2026-05-16"
+    },
+    {
+      "utmSource": "ig",
+      "utmMedium": "social",
+      "visits": "10",
+      "day": "2026-05-03"
+    },
+    {
+      "utmSource": "ig",
+      "utmMedium": "social",
+      "visits": "10",
+      "day": "2026-05-09"
+    },
+    {
+      "utmSource": "ig",
+      "utmMedium": "social",
+      "visits": "10",
+      "day": "2026-05-02"
+    },
+    {
+      "utmSource": "ig",
+      "utmMedium": "social",
+      "visits": "9",
+      "day": "2026-05-13"
+    },
+    {
+      "utmSource": "ig",
+      "utmMedium": "social",
+      "visits": "9",
+      "day": "2026-05-01"
+    },
+    {
+      "utmSource": "ig",
+      "utmMedium": "social",
+      "visits": "9",
+      "day": "2026-04-29"
+    },
+    {
+      "utmSource": "ig",
+      "utmMedium": "social",
+      "visits": "8",
+      "day": "2026-05-12"
+    },
+    {
+      "utmSource": "ig",
+      "utmMedium": "social",
+      "visits": "7",
+      "day": "2026-05-06"
+    },
+    {
+      "utmSource": "ig",
+      "utmMedium": "social",
+      "visits": "7",
+      "day": "2026-05-07"
+    },
+    {
+      "utmSource": "ig",
+      "utmMedium": "social",
+      "visits": "7",
+      "day": "2026-05-08"
+    }
+  ],
+  "messages": [],
+  "stdout": "utmSource\tutmMedium\tvisits\tday\nig\tsocial\t239\t2026-05-21\nig\tsocial\t120\t2026-05-22\nig\tsocial\t43\t2026-05-20\nig\tsocial\t27\t2026-05-14\nig\tsocial\t20\t2026-05-15\nig\tsocial\t16\t2026-05-18\nig\tsocial\t14\t2026-05-10\nig\tsocial\t13\t2026-05-17\nig\tsocial\t12\t2026-05-05\nig\tsocial\t11\t2026-05-16\nig\tsocial\t10\t2026-05-03\nig\tsocial\t10\t2026-05-09\nig\tsocial\t10\t2026-05-02\nig\tsocial\t9\t2026-05-13\nig\tsocial\t9\t2026-05-01\nig\tsocial\t9\t2026-04-29\nig\tsocial\t8\t2026-05-12\nig\tsocial\t7\t2026-05-06\nig\tsocial\t7\t2026-05-07\nig\tsocial\t7\t2026-05-08\n",
+  "stderr": "",
+  "execution_time_ms": 264
+}

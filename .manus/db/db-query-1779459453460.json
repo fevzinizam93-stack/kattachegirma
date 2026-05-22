@@ -1,0 +1,30 @@
+{
+  "query": "\n-- Трафик по неделям\nSELECT \n  YEARWEEK(createdAt, 1) as week,\n  MIN(DATE(createdAt)) as week_start,\n  COUNT(*) as visits\nFROM utm_visits\nGROUP BY YEARWEEK(createdAt, 1)\nORDER BY week ASC;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute \n-- Трафик по неделям\nSELECT \n  YEARWEEK(createdAt, 1) as week,\n  MIN(DATE(createdAt)) as week_start,\n  COUNT(*) as visits\nFROM utm_visits\nGROUP BY YEARWEEK(createdAt, 1)\nORDER BY week ASC;\n",
+  "rows": [
+    {
+      "week": "202618",
+      "week_start": "2026-04-29",
+      "visits": "44"
+    },
+    {
+      "week": "202619",
+      "week_start": "2026-05-04",
+      "visits": "61"
+    },
+    {
+      "week": "202620",
+      "week_start": "2026-05-11",
+      "visits": "93"
+    },
+    {
+      "week": "202621",
+      "week_start": "2026-05-18",
+      "visits": "423"
+    }
+  ],
+  "messages": [],
+  "stdout": "week\tweek_start\tvisits\n202618\t2026-04-29\t44\n202619\t2026-05-04\t61\n202620\t2026-05-11\t93\n202621\t2026-05-18\t423\n",
+  "stderr": "",
+  "execution_time_ms": 265
+}

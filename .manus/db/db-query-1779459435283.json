@@ -1,0 +1,30 @@
+{
+  "query": "\n-- Посещения по дням за последние 30 дней\nSELECT \n  DATE(createdAt) as day,\n  COUNT(*) as total_events,\n  COUNT(DISTINCT sessionId) as sessions\nFROM analytics_events\nWHERE createdAt >= DATE_SUB(NOW(), INTERVAL 30 DAY)\nGROUP BY DATE(createdAt)\nORDER BY day DESC\nLIMIT 30;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute \n-- Посещения по дням за последние 30 дней\nSELECT \n  DATE(createdAt) as day,\n  COUNT(*) as total_events,\n  COUNT(DISTINCT sessionId) as sessions\nFROM analytics_events\nWHERE createdAt >= DATE_SUB(NOW(), INTERVAL 30 DAY)\nGROUP BY DATE(createdAt)\nORDER BY day DESC\nLIMIT 30;\n",
+  "rows": [
+    {
+      "day": "2026-04-25",
+      "total_events": "1",
+      "sessions": "1"
+    },
+    {
+      "day": "2026-04-24",
+      "total_events": "3",
+      "sessions": "3"
+    },
+    {
+      "day": "2026-04-23",
+      "total_events": "3",
+      "sessions": "3"
+    },
+    {
+      "day": "2026-04-22",
+      "total_events": "4",
+      "sessions": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "day\ttotal_events\tsessions\n2026-04-25\t1\t1\n2026-04-24\t3\t3\n2026-04-23\t3\t3\n2026-04-22\t4\t2\n",
+  "stderr": "",
+  "execution_time_ms": 261
+}

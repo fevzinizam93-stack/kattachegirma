@@ -1,0 +1,11 @@
+{
+  "query": "\n-- Все уникальные источники трафика за всё время\nSELECT \n  COALESCE(utmSource, 'прямой/неизвестный') as source,\n  COUNT(*) as total_visits\nFROM utm_visits\nGROUP BY utmSource\nORDER BY total_visits DESC;\n\n-- Количество заказов по дням\nSELECT \n  DATE(createdAt) as day,\n  COUNT(*) as orders,\n  SUM(total) as revenue\nFROM orders\nWHERE createdAt >= DATE_SUB(NOW(), INTERVAL 30 DAY)\nGROUP BY DATE(createdAt)\nORDER BY day DESC\nLIMIT 20;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute \n-- Все уникальные источники трафика за всё время\nSELECT \n  COALESCE(utmSource, 'прямой/неизвестный') as source,\n  COUNT(*) as total_visits\nFROM utm_visits\nGROUP BY utmSource\nORDER BY total_visits DESC;\n\n-- Количество заказов по дням\nSELECT \n  DATE(createdAt) as day,\n  COUNT(*) as orders,\n  SUM(total) as revenue\nFROM orders\nWHERE createdAt >= DATE_SUB(NOW(), INTERVAL 30 DAY)\nGROUP BY DATE(createdAt)\nORDER BY day DESC\nLIMIT 20;\n",
+  "returncode": 1,
+  "logs": [
+    "source\ttotal_visits",
+    "ig\t620",
+    "instagram\t1",
+    "ERROR 1054 (42S22) at line 11: Unknown column 'total' in 'where clause'"
+  ]
+}

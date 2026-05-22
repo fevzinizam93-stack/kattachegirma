@@ -1,0 +1,8 @@
+{
+  "query": "\n-- Общее количество событий по дням за последние 30 дней\nSELECT \n  DATE(FROM_UNIXTIME(created_at/1000)) as day,\n  COUNT(*) as total_events,\n  COUNT(DISTINCT session_id) as sessions,\n  COUNT(DISTINCT user_id) as unique_users\nFROM analytics_events\nWHERE created_at >= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 30 DAY)) * 1000\nGROUP BY day\nORDER BY day DESC\nLIMIT 30;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute \n-- Общее количество событий по дням за последние 30 дней\nSELECT \n  DATE(FROM_UNIXTIME(created_at/1000)) as day,\n  COUNT(*) as total_events,\n  COUNT(DISTINCT session_id) as sessions,\n  COUNT(DISTINCT user_id) as unique_users\nFROM analytics_events\nWHERE created_at >= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 30 DAY)) * 1000\nGROUP BY day\nORDER BY day DESC\nLIMIT 30;\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 3: Unknown column 'created_at' in 'group statement'"
+  ]
+}
