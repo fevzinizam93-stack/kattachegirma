@@ -747,9 +747,9 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
 
               {/* ── Action block ── */}
               <div className="space-y-2">
-                {/* Row 1: Quantity stepper + Успей по скидке + Купить в 1 клик */}
-                <div className="flex items-center gap-2">
-                  {(product.stock ?? 0) > 0 && (
+                {/* Row 1: Quantity stepper */}
+                {(product.stock ?? 0) > 0 && (
+                  <div className="flex items-center gap-1.5">
                     <div className="flex items-center bg-gray-100 rounded-full overflow-hidden shrink-0">
                       <button
                         onClick={() => setQuantity(q => Math.max(1, q - 1))}
@@ -765,105 +765,109 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                         <Plus size={12} />
                       </button>
                     </div>
-                  )}
+                    <span className="text-[10px] text-gray-400">шт.</span>
+                  </div>
+                )}
+
+                {/* Row 1b: 3 кнопки в один ряд — Успей, Купить, Связаться */}
+                <div className="flex items-center gap-1.5">
                   {/* Успей по скидке */}
                   <button
                     onClick={handleAddToCart}
                     disabled={(product.stock ?? 0) === 0}
-                    className={`flex-1 h-9 rounded-full font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
+                    className={`flex-1 h-8 rounded-full font-bold text-[11px] flex items-center justify-center gap-1 transition-all ${
                       (product.stock ?? 0) === 0
                         ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                        : "bg-primary text-white hover:bg-primary/90 active:scale-[0.98] shadow-md shadow-primary/30"
+                        : "bg-primary text-white hover:bg-primary/90 active:scale-[0.98] shadow-sm shadow-primary/30"
                     }`}
                   >
-                    <ShoppingCart size={13} />
-                    {(product.stock ?? 0) === 0 ? t.detail_out_of_stock : hasDiscount ? "Успей по скидке" : t.card_add_to_cart}
+                    <ShoppingCart size={12} />
+                    <span className="truncate">{(product.stock ?? 0) === 0 ? t.detail_out_of_stock : hasDiscount ? "По скидке" : t.card_add_to_cart}</span>
                   </button>
                   {/* Купить в 1 клик */}
                   <button
                     onClick={() => setQuickBuyOpen(true)}
                     disabled={(product.stock ?? 0) === 0}
-                    className="flex-1 h-9 rounded-full font-bold text-xs flex items-center justify-center gap-1.5 transition-all border-2 border-primary text-primary hover:bg-primary hover:text-white active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="flex-1 h-8 rounded-full font-bold text-[11px] flex items-center justify-center gap-1 transition-all border-2 border-primary text-primary hover:bg-primary hover:text-white active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    <Zap size={13} />
-                    Купить в 1 клик
+                    <Zap size={12} />
+                    <span className="truncate">1 клик</span>
                   </button>
+                  {/* Связаться с продавцом */}
+                  {(() => {
+                    const phone = (product as any).contactPhone || product.sellerPhone || "";
+                    const tg = product.sellerTelegram || "";
+                    const tgUser = tg.replace("@", "").replace("https://t.me/", "");
+                    if (!phone && !tgUser) return null;
+                    return (
+                      <div className="relative flex-1">
+                        <button
+                          onClick={() => setContactOpen(v => !v)}
+                          className="w-full h-8 rounded-full font-bold text-[11px] flex items-center justify-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-[0.98] shadow-sm shadow-emerald-600/30"
+                        >
+                          <MessageSquare size={12} />
+                          <span className="truncate">Связаться</span>
+                          <ChevronDown size={10} className={`transition-transform shrink-0 ${contactOpen ? "rotate-180" : ""}`} />
+                        </button>
+                        {contactOpen && (
+                          <div className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-30" style={{minWidth: '180px'}}>
+                            {phone && (
+                              <a
+                                href={`tel:${phone}`}
+                                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                                onClick={() => setContactOpen(false)}
+                              >
+                                <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                                  <Phone size={14} className="text-emerald-600" />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-semibold text-gray-900">Позвонить</p>
+                                  <p className="text-xs text-gray-500">{phone}</p>
+                                </div>
+                              </a>
+                            )}
+                            {phone && <div className="border-t border-gray-100" />}
+                            {phone && (
+                              <a
+                                href={`https://wa.me/${phone.replace(/\D/g, "")}`}
+                                target="_blank" rel="noopener noreferrer"
+                                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                                onClick={() => setContactOpen(false)}
+                              >
+                                <div className="w-8 h-8 rounded-full bg-[#25D366]/15 flex items-center justify-center shrink-0">
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-semibold text-gray-900">WhatsApp</p>
+                                  <p className="text-xs text-gray-500">{phone}</p>
+                                </div>
+                              </a>
+                            )}
+                            {tgUser && <div className="border-t border-gray-100" />}
+                            {tgUser && (
+                              <a
+                                href={`https://t.me/${tgUser}`}
+                                target="_blank" rel="noopener noreferrer"
+                                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                                onClick={() => setContactOpen(false)}
+                              >
+                                <div className="w-8 h-8 rounded-full bg-[#2AABEE]/15 flex items-center justify-center shrink-0">
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="#2AABEE"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-semibold text-gray-900">Telegram</p>
+                                  <p className="text-xs text-gray-500">@{tgUser}</p>
+                                </div>
+                              </a>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
 
-                {/* Row 1b: Связаться с продавцом — полная ширина */}
-                {(() => {
-                  const phone = (product as any).contactPhone || product.sellerPhone || "";
-                  const tg = product.sellerTelegram || "";
-                  const tgUser = tg.replace("@", "").replace("https://t.me/", "");
-                  if (!phone && !tgUser) return null;
-                  return (
-                    <div className="relative">
-                      <button
-                        onClick={() => setContactOpen(v => !v)}
-                        className="w-full h-9 rounded-full font-bold text-xs flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-[0.98] shadow-md shadow-emerald-600/30"
-                      >
-                        <MessageSquare size={13} />
-                        Связаться с продавцом
-                        <ChevronDown size={12} className={`ml-auto mr-1 transition-transform ${contactOpen ? "rotate-180" : ""}`} />
-                      </button>
-                      {contactOpen && (
-                        <div className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-30">
-                          {phone && (
-                            <a
-                              href={`tel:${phone}`}
-                              className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
-                              onClick={() => setContactOpen(false)}
-                            >
-                              <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-                                <Phone size={16} className="text-emerald-600" />
-                              </div>
-                              <div>
-                                <p className="text-sm font-semibold text-gray-900">Позвонить</p>
-                                <p className="text-xs text-gray-500">{phone}</p>
-                              </div>
-                            </a>
-                          )}
-                          {phone && tgUser && <div className="border-t border-gray-100" />}
-                          {phone && (
-                            <a
-                              href={`https://wa.me/${phone.replace(/\D/g, "")}`}
-                              target="_blank" rel="noopener noreferrer"
-                              className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
-                              onClick={() => setContactOpen(false)}
-                            >
-                              <div className="w-9 h-9 rounded-full bg-[#25D366]/15 flex items-center justify-center shrink-0">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                              </div>
-                              <div>
-                                <p className="text-sm font-semibold text-gray-900">WhatsApp</p>
-                                <p className="text-xs text-gray-500">{phone}</p>
-                              </div>
-                            </a>
-                          )}
-                          {tgUser && <div className="border-t border-gray-100" />}
-                          {tgUser && (
-                            <a
-                              href={`https://t.me/${tgUser}`}
-                              target="_blank" rel="noopener noreferrer"
-                              className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
-                              onClick={() => setContactOpen(false)}
-                            >
-                              <div className="w-9 h-9 rounded-full bg-[#2AABEE]/15 flex items-center justify-center shrink-0">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="#2AABEE"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
-                              </div>
-                              <div>
-                                <p className="text-sm font-semibold text-gray-900">Telegram</p>
-                                <p className="text-xs text-gray-500">{tg}</p>
-                              </div>
-                            </a>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
-
-                {/* Row 2: Сравнить + Поделиться */}
+                                {/* Row 2: Сравнить + Поделиться */}
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setCompareOpen(true)}
@@ -930,22 +934,73 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 {/* Video review inline preview */}
                 <VideoReviewDetailButton productName={product.name} savedVideoId={(product as any).videoId} />
 
-                {/* Row 3: Seller info — name + disclaimer only */}
-                {product.sellerName && product.sellerId && (
-                  <div className="flex items-center gap-2 px-1">
-                    <Link
-                      href={`/seller/${product.sellerId}`}
-                      className="flex items-center gap-2 text-xs font-bold text-gray-600 hover:text-primary transition-colors"
-                    >
-                      <span className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center text-xs">🏦</span>
-                      <span>{product.sellerName}</span>
-                      <span className="text-[10px] text-gray-400 font-normal">Все товары →</span>
-                    </Link>
-                    <span className="ml-auto text-[9px] text-gray-400">⚠️ Катта Чегирма не несёт ответственности</span>
+                {/* Row 3: Seller contacts */}
+                {((product as any).contactPhone || product.sellerPhone || product.sellerTelegram || product.sellerId) && (
+                  <div className="rounded-2xl border border-gray-100 bg-gray-50 p-3 space-y-2">
+                    {product.sellerName && product.sellerId && (
+                      <Link
+                        href={`/seller/${product.sellerId}`}
+                        className="flex items-center gap-2 text-xs font-bold text-gray-700 hover:text-primary transition-colors"
+                      >
+                        <span className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center text-sm">🏦</span>
+                        <span>{product.sellerName}</span>
+                        <span className="ml-auto text-[10px] text-gray-400 font-normal">Все товары →</span>
+                      </Link>
+                    )}
+                    {/* Disclaimer */}
+                    <p className="text-[9px] text-gray-400 leading-relaxed">
+                      ⚠️ Katta Chegirma не несёт ответственности за этого продавца.
+                    </p>
+                    {/* Contact buttons: WhatsApp + Telegram side by side */}
+                    {(() => {
+                      const phone = (product as any).contactPhone || product.sellerPhone || "";
+                      const tg = product.sellerTelegram || "";
+                      const tgUser = tg.replace("@", "").replace("https://t.me/", "");
+                      return (
+                        <div className="flex gap-2">
+                          {phone && (
+                            <a
+                              href={`https://wa.me/${phone.replace(/\D/g, "")}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-full bg-[#25D366] hover:bg-[#1ebe5d] text-white text-xs font-bold transition-all active:scale-95 shadow-sm"
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                              </svg>
+                              WhatsApp
+                            </a>
+                          )}
+                          {tgUser && (
+                            <a
+                              href={`https://t.me/${tgUser}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-full bg-[#2AABEE] hover:bg-[#1a9bde] text-white text-xs font-bold transition-all active:scale-95 shadow-sm"
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                              </svg>
+                              Telegram
+                            </a>
+                          )}
+                          {/* Fallback: phone call only */}
+                          {phone && !tgUser && (
+                            <a
+                              href={`tel:${phone}`}
+                              className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all active:scale-95 shadow-sm"
+                            >
+                              <Phone size={14} />
+                              Позвонить
+                            </a>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
 
-                                {/* Row 4: Delivery chip */}
+                {/* Row 4: Delivery chip */}
                 <div className="flex items-center gap-2 text-xs text-gray-500">
                   <div className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-full px-3 py-1.5 shadow-sm">
                     <Truck size={13} className="text-primary shrink-0" />
