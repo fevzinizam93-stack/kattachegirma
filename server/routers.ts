@@ -110,6 +110,7 @@ import {
   recalcAllHitScores,
   getHitSettings,
   saveHitSettings,
+  getProductsNeedingTranslation,
 } from "./db";
 import { storagePut } from "./storage";
 import { invokeLLM } from "./_core/llm";
@@ -581,6 +582,86 @@ export const appRouter = router({
           nameUz: parsed.nameUz ?? "",
           descriptionUz: parsed.descriptionUz ?? "",
         };
+      }),
+
+    // Admin: bulk translate all products without UZ fields
+    bulkTranslate: adminProcedure
+      .mutation(async () => {
+        const toTranslate = await getProductsNeedingTranslation(2000);
+        const total = toTranslate.length;
+        let translated = 0;
+        let skipped = 0;
+        let errors = 0;
+
+        // Process in batches of 5 to avoid LLM rate limits
+        const BATCH_SIZE = 5;
+        for (let i = 0; i < toTranslate.length; i += BATCH_SIZE) {
+          const batch = toTranslate.slice(i, i + BATCH_SIZE);
+          await Promise.all(
+            batch.map(async (product) => {
+              try {
+                // Skip if both fields already exist
+                if (product.nameUz && product.descriptionUz) {
+                  skipped++;
+                  return;
+                }
+                const prompt = [
+                  "Translate the following product information from Russian to Uzbek (Latin script, as used in modern Uzbekistan).",
+                  "Return ONLY a JSON object with keys \"nameUz\" and \"descriptionUz\". No extra text.",
+                  "",
+                  `Name (Russian): ${product.name}`,
+                  product.description ? `Description (Russian): ${product.description}` : "",
+                ].filter(Boolean).join("\n");
+
+                const response = await invokeLLM({
+                  messages: [
+                    { role: "system", content: "You are a professional Russian-to-Uzbek translator. Output only valid JSON." },
+                    { role: "user", content: prompt },
+                  ],
+                  response_format: {
+                    type: "json_schema",
+                    json_schema: {
+                      name: "product_translation",
+                      strict: true,
+                      schema: {
+                        type: "object",
+                        properties: {
+                          nameUz: { type: "string", description: "Product name in Uzbek" },
+                          descriptionUz: { type: "string", description: "Product description in Uzbek" },
+                        },
+                        required: ["nameUz", "descriptionUz"],
+                        additionalProperties: false,
+                      },
+                    },
+                  },
+                });
+
+                const content = response.choices?.[0]?.message?.content ?? "{}";
+                const parsed = JSON.parse(typeof content === "string" ? content : JSON.stringify(content));
+
+                const updateData: Record<string, string> = {};
+                if (!product.nameUz && parsed.nameUz) updateData.nameUz = parsed.nameUz;
+                if (!product.descriptionUz && parsed.descriptionUz) updateData.descriptionUz = parsed.descriptionUz;
+
+                if (Object.keys(updateData).length > 0) {
+                  await updateProduct(product.id, updateData as any);
+                  translated++;
+                } else {
+                  skipped++;
+                }
+              } catch (e) {
+                console.error(`[bulkTranslate] Error translating product ${product.id}:`, e);
+                errors++;
+              }
+            })
+          );
+          // Small delay between batches to be gentle on the LLM API
+          if (i + BATCH_SIZE < toTranslate.length) {
+            await new Promise(r => setTimeout(r, 500));
+          }
+        }
+
+        return { total, translated, skipped, errors };
       }),
 
     // Seller: list own products

@@ -302,6 +302,25 @@ export async function countProducts(opts?: { categoryId?: number; search?: strin
   return Number(result[0]?.count ?? 0);
 }
 
+// Get products that need translation (missing nameUz or descriptionUz)
+export async function getProductsNeedingTranslation(limit = 2000): Promise<Array<{ id: number; name: string; description: string | null; nameUz: string | null; descriptionUz: string | null }>> {
+  const db = await getDb();
+  if (!db) return [];
+  const result = await db
+    .select({ id: products.id, name: products.name, description: products.description, nameUz: (products as any).nameUz, descriptionUz: (products as any).descriptionUz })
+    .from(products)
+    .where(
+      or(
+        sql`${(products as any).nameUz} IS NULL`,
+        sql`${(products as any).nameUz} = ''`,
+        sql`${(products as any).descriptionUz} IS NULL`,
+        sql`${(products as any).descriptionUz} = ''`,
+      )
+    )
+    .limit(limit);
+  return result as Array<{ id: number; name: string; description: string | null; nameUz: string | null; descriptionUz: string | null }>;
+}
+
 // ---- Orders ----
 export async function createOrder(data: InsertOrder) {
   const db = await getDb();

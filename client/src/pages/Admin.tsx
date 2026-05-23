@@ -523,6 +523,20 @@ export default function Admin() {
     onError: (e) => { setScanLoading(false); toast.error("Ошибка: " + e.message); },
   });
 
+  // Bulk translate state
+  const [bulkTranslateProgress, setBulkTranslateProgress] = useState<{ total: number; translated: number; skipped: number; errors: number } | null>(null);
+  const [bulkTranslating, setBulkTranslating] = useState(false);
+  const bulkTranslateMut = trpc.products.bulkTranslate.useMutation({
+    onMutate: () => { setBulkTranslating(true); setBulkTranslateProgress(null); },
+    onSuccess: (data) => {
+      setBulkTranslateProgress(data);
+      setBulkTranslating(false);
+      utils.products.adminList.invalidate();
+      toast.success(`Перевод завершён: ${data.translated} товаров переведено`);
+    },
+    onError: (e) => { setBulkTranslating(false); toast.error("Ошибка массового перевода: " + e.message); },
+  });
+
   const approveSeller = trpc.sellers.approve.useMutation({
     onSuccess: () => { toast.success("Продавец одобрен!"); utils.sellers.list.invalidate(); },
     onError: (e) => toast.error(e.message),
@@ -852,6 +866,19 @@ export default function Admin() {
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
+                    onClick={() => {
+                      if (!bulkTranslating && window.confirm('Перевести все товары без узбекского названия/описания? Это может занять несколько минут.'))
+                        bulkTranslateMut.mutate();
+                    }}
+                    disabled={bulkTranslating}
+                    title="Перевести все товары без узбекского названия/описания RU→UZ"
+                    className="flex items-center gap-1.5 border border-blue-200 text-blue-700 bg-blue-50 px-3 py-2 rounded-xl font-semibold text-sm hover:bg-blue-100 transition-colors disabled:opacity-50"
+                  >
+                    {bulkTranslating ? <div className="w-4 h-4 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" /> : <span className="text-base leading-none">🌐</span>}
+                    {bulkTranslating ? "Переводится..." : "Перевести все"}
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => autoScanMut.mutate({ overwrite: false })}
                     disabled={scanLoading}
                     title="Автоматически найти видеообзоры для товаров без видео"
@@ -875,6 +902,30 @@ export default function Admin() {
                   <span className="text-green-800">привязано <strong>{scanProgress.updated}</strong> видео,</span>
                   <span className="text-gray-500">пропущено {scanProgress.skipped}</span>
                   <button onClick={() => setScanProgress(null)} className="ml-auto text-gray-400 hover:text-gray-600"><X size={14} /></button>
+                </div>
+              )}
+              {/* Bulk translate: loading indicator */}
+              {bulkTranslating && (
+                <div className="flex items-center gap-3 text-sm bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
+                  <div className="w-4 h-4 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-blue-800 font-semibold">🌐 Перевод товаров RU→UZ...</p>
+                    <p className="text-blue-600 text-xs mt-0.5">Пожалуйста, подождите. Это может занять несколько минут в зависимости от количества товаров.</p>
+                  </div>
+                </div>
+              )}
+              {/* Bulk translate: result statistics */}
+              {bulkTranslateProgress && !bulkTranslating && (
+                <div className="flex items-center gap-2 text-sm bg-blue-50 border border-blue-200 rounded-xl px-4 py-2">
+                  <span className="text-base">🌐</span>
+                  <span className="text-blue-800 font-semibold">Перевод завершён:</span>
+                  <span className="text-blue-700">переведено <strong>{bulkTranslateProgress.translated}</strong>,</span>
+                  <span className="text-gray-500">всего {bulkTranslateProgress.total},</span>
+                  <span className="text-gray-400">пропущено {bulkTranslateProgress.skipped}</span>
+                  {bulkTranslateProgress.errors > 0 && (
+                    <span className="text-red-500">ошибок {bulkTranslateProgress.errors}</span>
+                  )}
+                  <button onClick={() => setBulkTranslateProgress(null)} className="ml-auto text-gray-400 hover:text-gray-600"><X size={14} /></button>
                 </div>
               )}
               {/* Admin product search bar */}
