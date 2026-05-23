@@ -1,0 +1,19 @@
+{
+  "query": "SELECT id FROM products WHERE slug = '-philips-fc-8632'; SELECT COUNT(*) as cnt, AVG(rating) as avg_rating FROM reviews WHERE productId = (SELECT id FROM products WHERE slug = '-philips-fc-8632') AND status = 'approved';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute SELECT id FROM products WHERE slug = '-philips-fc-8632'; SELECT COUNT(*) as cnt, AVG(rating) as avg_rating FROM reviews WHERE productId = (SELECT id FROM products WHERE slug = '-philips-fc-8632') AND status = 'approved';",
+  "rows": [
+    {
+      "id": "60010"
+    },
+    {
+      "id": "cnt\tavg_rating"
+    },
+    {
+      "id": "0\tNULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\n60010\ncnt\tavg_rating\n0\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 274
+}

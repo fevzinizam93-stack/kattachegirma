@@ -1,0 +1,26 @@
+{
+  "query": "SHOW COLUMNS FROM products WHERE Field LIKE '%approv%' OR Field LIKE '%active%' OR Field LIKE '%slug%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute SHOW COLUMNS FROM products WHERE Field LIKE '%approv%' OR Field LIKE '%active%' OR Field LIKE '%slug%';",
+  "rows": [
+    {
+      "Field": "slug",
+      "Type": "varchar(256)",
+      "Null": "NO",
+      "Key": "UNI",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "slugUz",
+      "Type": "varchar(256)",
+      "Null": "YES",
+      "Key": "UNI",
+      "Default": "NULL",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nslug\tvarchar(256)\tNO\tUNI\tNULL\t\nslugUz\tvarchar(256)\tYES\tUNI\tNULL\t\n",
+  "stderr": "",
+  "execution_time_ms": 268
+}

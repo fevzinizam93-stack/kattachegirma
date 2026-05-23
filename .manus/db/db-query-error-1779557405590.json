@@ -1,0 +1,8 @@
+{
+  "query": "SELECT slug, is_approved, is_active FROM products WHERE slug LIKE '%philips%' OR slug LIKE '%pylesos%' LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute SELECT slug, is_approved, is_active FROM products WHERE slug LIKE '%philips%' OR slug LIKE '%pylesos%' LIMIT 5;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'is_approved' in 'field list'"
+  ]
+}

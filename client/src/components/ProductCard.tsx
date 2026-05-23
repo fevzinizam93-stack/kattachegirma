@@ -29,6 +29,8 @@ interface Product {
   sellerId?: number | null;
   sellerName?: string | null;
   costPrice?: string | null;
+  avgRating?: number | null;
+  reviewCount?: number | null;
 }
 
 interface ProductCardProps {
@@ -176,6 +178,12 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         <div className="p-2 flex flex-col flex-1">
           {product.brand && <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-0.5 truncate">{product.brand}</p>}
+          {(product.reviewCount ?? 0) > 0 && (
+            <div className="flex items-center gap-0.5 mb-0.5">
+              <span className="text-[10px] text-yellow-500">{'★'.repeat(Math.round(product.avgRating ?? 0))}{'☆'.repeat(5 - Math.round(product.avgRating ?? 0))}</span>
+              <span className="text-[9px] text-gray-400">({product.reviewCount})</span>
+            </div>
+          )}
           <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 flex-1 mb-1.5 leading-snug">{displayName}</h3>
           <div className="mb-1.5">
             {hasVipPrice ? (

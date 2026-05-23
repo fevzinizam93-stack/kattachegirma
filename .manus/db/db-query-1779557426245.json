@@ -1,0 +1,35 @@
+{
+  "query": "SELECT slug, isApproved, isActive FROM products WHERE slug LIKE '%philips%' OR slug LIKE '%pylesos%' LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute SELECT slug, isApproved, isActive FROM products WHERE slug LIKE '%philips%' OR slug LIKE '%pylesos%' LIMIT 5;",
+  "rows": [
+    {
+      "slug": "-philips-fc-8632",
+      "isApproved": "1",
+      "isActive": "1"
+    },
+    {
+      "slug": "-philips-fc972801-",
+      "isApproved": "1",
+      "isActive": "1"
+    },
+    {
+      "slug": "-philips-xb202201",
+      "isApproved": "1",
+      "isActive": "1"
+    },
+    {
+      "slug": "pylesos-philips-fc9735",
+      "isApproved": "1",
+      "isActive": "1"
+    },
+    {
+      "slug": "pylesos-bosch-bgl41wfamp",
+      "isApproved": "1",
+      "isActive": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "slug\tisApproved\tisActive\n-philips-fc-8632\t1\t1\n-philips-fc972801-\t1\t1\n-philips-xb202201\t1\t1\npylesos-philips-fc9735\t1\t1\npylesos-bosch-bgl41wfamp\t1\t1\n",
+  "stderr": "",
+  "execution_time_ms": 277
+}

@@ -251,6 +251,10 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
   const { data: product, isLoading } = trpc.products.bySlug.useQuery({ slug }, {
     staleTime: 2 * 60 * 1000, // 2 min — avoid refetch on back-navigation
   });
+  const { data: reviewSummary } = trpc.reviews.summary.useQuery(
+    { productId: product?.id ?? 0 },
+    { enabled: !!product?.id, staleTime: 5 * 60 * 1000 }
+  );
   const { data: categoriesData } = trpc.categories.list.useQuery(undefined, {
     staleTime: 10 * 60 * 1000, // 10 min — categories rarely change
   });
@@ -743,6 +747,14 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
               <h1 className="text-xl font-bold text-gray-900 leading-snug">{displayName}</h1>
               {product.brand && (
                 <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide -mt-1">{product.brand}</p>
+              )}
+              {/* ── Rating summary near title ── */}
+              {(reviewSummary?.count ?? 0) > 0 && (
+                <div className="flex items-center gap-1.5 -mt-0.5">
+                  <span className="text-yellow-500 text-sm">{'★'.repeat(Math.round(reviewSummary!.avgRating))}{'☆'.repeat(5 - Math.round(reviewSummary!.avgRating))}</span>
+                  <span className="text-sm font-bold text-gray-700">{reviewSummary!.avgRating}</span>
+                  <span className="text-xs text-gray-400">({reviewSummary!.count} отзывов)</span>
+                </div>
               )}
 
               {/* ── Price + Stock ── */}

@@ -21,15 +21,19 @@ export async function setupVite(app: Express, server: Server) {
     appType: "custom",
   });
 
-  app.use(vite.middlewares);
-  app.use("*", async (req: Request, res: Response, next: NextFunction) => {
-    // SEO prerender: serve pre-built HTML to search engine bots
+  // SEO prerender MUST run before vite.middlewares to intercept bot requests
+  app.use(async (req: Request, res: Response, next: NextFunction) => {
     const prerenderResult = await seoPrerender(req);
     if (prerenderResult) {
       res.setHeader("X-Prerender", "true");
       res.setHeader("Cache-Control", "public, max-age=3600");
       return res.status(200).set({ "Content-Type": "text/html; charset=utf-8" }).end(prerenderResult);
     }
+    next();
+  });
+
+  app.use(vite.middlewares);
+  app.use("*", async (req: Request, res: Response, next: NextFunction) => {
 
     const url = req.originalUrl;
 

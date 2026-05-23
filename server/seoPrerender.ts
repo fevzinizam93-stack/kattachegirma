@@ -11,8 +11,8 @@
  */
 import { Express, Request, Response, NextFunction } from "express";
 import { getDb } from "./db";
-import { products, categories } from "../drizzle/schema";
-import { eq, and } from "drizzle-orm";
+import { products, categories, reviews } from "../drizzle/schema";
+import { eq, and, desc as descOrder } from "drizzle-orm";
 
 const BASE_URL = "https://kattachegirma.uz";
 const SITE_NAME = "Katta Chegirma";
@@ -131,6 +131,16 @@ async function prerenderProduct(slug: string, isUz: boolean): Promise<string | n
     .where(eq(categories.id, product.categoryId))
     .limit(1);
 
+  // Get approved reviews for AggregateRating
+  const approvedReviews = await db.select().from(reviews)
+    .where(and(eq(reviews.productId, product.id), eq(reviews.status, "approved")))
+    .orderBy(descOrder(reviews.createdAt))
+    .limit(10);
+  const reviewCount = approvedReviews.length;
+  const avgRating = reviewCount > 0
+    ? Math.round((approvedReviews.reduce((s, r) => s + r.rating, 0) / reviewCount) * 10) / 10
+    : 0;
+
   const name = product.name;
   const nameUz = (product as any).nameUz || name;
   const displayName = isUz ? nameUz : name;
@@ -176,6 +186,24 @@ async function prerenderProduct(slug: string, isUz: boolean): Promise<string | n
   };
   if (!productSchema.brand) delete productSchema.brand;
 
+  // AggregateRating + individual Reviews
+  if (reviewCount > 0) {
+    productSchema.aggregateRating = {
+      "@type": "AggregateRating",
+      "ratingValue": avgRating,
+      "reviewCount": reviewCount,
+      "bestRating": 5,
+      "worstRating": 1
+    };
+    productSchema.review = approvedReviews.slice(0, 5).map(r => ({
+      "@type": "Review",
+      "author": { "@type": "Person", "name": r.authorName },
+      "reviewRating": { "@type": "Rating", "ratingValue": r.rating, "bestRating": 5 },
+      "reviewBody": r.comment,
+      "datePublished": r.createdAt ? new Date(r.createdAt).toISOString().split("T")[0] : undefined
+    }));
+  }
+
   // BreadcrumbList
   const breadcrumb = {
     "@context": "https://schema.org",
@@ -209,6 +237,7 @@ async function prerenderProduct(slug: string, isUz: boolean): Promise<string | n
       </div>
       ${desc ? `<section><h2>Описание</h2><p>${escapeHtml(desc)}</p></section>` : ""}
       ${specsHtml}
+      ${reviewCount > 0 ? `<section><h2>Рейтинг и отзывы</h2><p>Средний рейтинг: ${avgRating} из 5 (${reviewCount} отзывов)</p>${approvedReviews.slice(0, 5).map(r => `<div><strong>${escapeHtml(r.authorName)}</strong> — ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)} <p>${escapeHtml(r.comment)}</p></div>`).join('')}</section>` : ''}
       <p>Бренд: ${escapeHtml(brand || "—")}</p>
       <p>Категория: <a href="${BASE_URL}/category/${catSlug}">${escapeHtml(catName)}</a></p>
       <p>Доставка по Ташкенту и всему Узбекистану</p>
@@ -470,7 +499,7 @@ export async function seoPrerender(req: Request): Promise<string | null> {
   if (!isBot(ua)) return null;
 
   // Use originalUrl (req.path is '/' in wildcard routes like app.use('*', ...))
-  const reqPath = (req.originalUrl || req.path).split("?")[0];
+  const reqPath = (req.originalUrl || req.url || req.path).split("?")[0];
   if (reqPath.startsWith("/api/") || reqPath.startsWith("/assets/") || reqPath.startsWith("/manus-storage/") ||
       reqPath === "/sitemap.xml" || reqPath === "/robots.txt" || reqPath === "/favicon.ico" ||
       reqPath.endsWith(".js") || reqPath.endsWith(".css") || reqPath.endsWith(".png") || reqPath.endsWith(".jpg") ||

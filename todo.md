@@ -1054,3 +1054,11 @@
 - [x] Admin.tsx: кнопка «Сгенерировать описания для всех» (массовая) в панели инструментов
 - [x] SellerDashboard.tsx: кнопка «🤖 Сгенерировать описание» для продавцов
 - [x] TypeScript: 0 ошибок, тесты проходят
+
+## v150 - Рейтинг и отзывы: SEO + отображение на карточках
+- [x] DB helper: getProductRatingSummary (avgRating, reviewCount по productId) — уже есть getReviewCountsByProduct
+- [x] tRPC: reviews.summary уже возвращает avgRating и count
+- [x] seoPrerender.ts: Schema.org AggregateRating + Review в JSON-LD для товаров
+- [x] ProductCard: звёздный рейтинг и количество отзывов
+- [x] ProductDetail: сводка рейтинга (средний балл + количество) вверху страницы
+- [x] TypeScript: 0 ошибок, тесты проходят
