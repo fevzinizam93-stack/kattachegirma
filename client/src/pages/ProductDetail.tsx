@@ -245,7 +245,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
   const [copied, setCopied] = useState(false);
   const { addItem } = useCart();
   const { addItem: addToRecentlyViewed } = useRecentlyViewed();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { formatPrice } = useCurrency();
 
   const { data: product, isLoading } = trpc.products.bySlug.useQuery({ slug }, {
@@ -420,6 +420,21 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
     return () => { document.getElementById("product-schema")?.remove(); };
   }, [product]);
 
+  // Auto-translate description when lang=uz and no descriptionUz exists
+  useEffect(() => {
+    if (
+      lang === "uz" &&
+      product &&
+      product.description &&
+      !(product as any).descriptionUz &&
+      !translatedDesc &&
+      !translateDescMut.isPending
+    ) {
+      translateDescMut.mutate({ text: product.description });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang, product]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -584,8 +599,12 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
   const hasDiscount = (product.discount ?? 0) > 0 && product.originalPrice;
   const specs = (product.specs as Record<string, string> | null) ?? {};
   const telegramUsername = product.sellerTelegram?.replace("@", "").replace("https://t.me/", "");
-  const displayName = product.name;
-  const descriptionText = product.description;
+  const displayName = lang === "uz" && (product as any).nameUz ? (product as any).nameUz : product.name;
+  const descriptionText = lang === "uz" && (product as any).descriptionUz
+    ? (product as any).descriptionUz
+    : lang === "uz" && translatedDesc
+      ? translatedDesc
+      : product.description;
   const allImages: string[] = (product as any).images?.length
     ? (product as any).images
     : product.imageUrl ? [product.imageUrl] : [];
@@ -631,7 +650,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
               </>
             )}
             <ChevronRight size={10} />
-            <span className="text-gray-700 truncate max-w-[160px]">{product.name}</span>
+            <span className="text-gray-700 truncate max-w-[160px]">{displayName}</span>
           </div>
         </div>
       </div>
@@ -687,7 +706,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 {activeUrl ? (
                   <img
                     src={activeUrl}
-                    alt={product.name}
+                    alt={displayName}
                     className="w-full h-full object-contain p-4 transition-transform duration-300 ease-out"
                     style={{
                       transform: zoomed ? `scale(2.2)` : "scale(1)",
@@ -721,7 +740,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
               )}
 
               {/* ── Product name ── */}
-              <h1 className="text-xl font-bold text-gray-900 leading-snug">{product.name}</h1>
+              <h1 className="text-xl font-bold text-gray-900 leading-snug">{displayName}</h1>
               {product.brand && (
                 <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide -mt-1">{product.brand}</p>
               )}
@@ -953,7 +972,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 </div>
 
                 {/* Video review inline preview */}
-                <VideoReviewDetailButton productName={product.name} savedVideoId={(product as any).videoId} />
+                <VideoReviewDetailButton productName={displayName} savedVideoId={(product as any).videoId} />
 
                 {/* Row 3: Seller info — name + disclaimer only */}
                 {product.sellerName && product.sellerId && (
@@ -987,49 +1006,61 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
               <AccordionSection title={t.detail_about} defaultOpen={true}>
                 {descriptionText ? (
                   <div className="flex flex-col gap-2">
-                    {/* Translate button row */}
-                    <div className="flex items-center gap-2">
-                      {!showTranslated ? (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (translatedDesc) {
-                              setShowTranslated(true);
-                            } else {
-                              translateDescMut.mutate({ text: descriptionText });
-                            }
-                          }}
-                          disabled={translateDescMut.isPending}
-                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-60"
-                        >
-                          {translateDescMut.isPending ? (
-                            <>
-                              <div className="w-3 h-3 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" />
-                              O‘zbek tiliga tarjima qilinmoqda...
-                            </>
-                          ) : (
-                            <>
-                              <span className="text-sm leading-none">🌐</span>
-                              O‘zbek tiliga tarjima qilish
-                            </>
-                          )}
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => setShowTranslated(false)}
-                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-200 transition-colors"
-                        >
-                          <span className="text-sm leading-none">🇷🇺</span>
-                          Русский тилда кўрсатиш
-                        </button>
-                      )}
-                    </div>
+                    {/* Manual translate button — only show when lang=ru */}
+                    {lang === "ru" && (
+                      <div className="flex items-center gap-2">
+                        {!showTranslated ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (translatedDesc) {
+                                setShowTranslated(true);
+                              } else {
+                                translateDescMut.mutate({ text: product.description || "" });
+                              }
+                            }}
+                            disabled={translateDescMut.isPending}
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-60"
+                          >
+                            {translateDescMut.isPending ? (
+                              <>
+                                <div className="w-3 h-3 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" />
+                                O'zbek tiliga tarjima qilinmoqda...
+                              </>
+                            ) : (
+                              <>
+                                <span className="text-sm leading-none">🌐</span>
+                                O'zbek tiliga tarjima qilish
+                              </>
+                            )}
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setShowTranslated(false)}
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-200 transition-colors"
+                          >
+                            <span className="text-sm leading-none">🇷🇺</span>
+                            Русский тилда кўрсатиш
+                          </button>
+                        )}
+                      </div>
+                    )}
+                    {/* Auto-translate loading indicator when lang=uz and no descriptionUz yet */}
+                    {lang === "uz" && !(product as any).descriptionUz && translateDescMut.isPending && (
+                      <div className="flex items-center gap-2 text-xs text-blue-600">
+                        <div className="w-3 h-3 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" />
+                        Tarjima qilinmoqda...
+                      </div>
+                    )}
                     {/* Description text */}
                     <p className="text-gray-700 leading-relaxed text-sm whitespace-pre-line">
-                      {showTranslated && translatedDesc ? translatedDesc : descriptionText}
+                      {lang === "ru" && showTranslated && translatedDesc ? translatedDesc : descriptionText}
                     </p>
-                    {showTranslated && (
+                    {lang === "ru" && showTranslated && (
+                      <p className="text-[11px] text-gray-400 italic">AI yordamida tarjima qilindi</p>
+                    )}
+                    {lang === "uz" && !(product as any).descriptionUz && translatedDesc && (
                       <p className="text-[11px] text-gray-400 italic">AI yordamida tarjima qilindi</p>
                     )}
                   </div>
@@ -1097,7 +1128,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
       open={quickBuyOpen}
       onClose={() => setQuickBuyOpen(false)}
       productId={product.id}
-      productName={product.name}
+      productName={displayName}
       productPrice={product.price ? String(Number(product.price).toLocaleString('ru-RU')) : undefined}
     />
     </>

@@ -997,3 +997,13 @@
 - [x] LanguageContext: при первом визите (нет сохранённого языка в localStorage) определяет navigator.language
 - [x] Если язык начинается с "uz" — устанавливает UZ, иначе RU (по умолчанию)
 - [x] Не перезаписывает выбор пользователя если он уже переключал язык ранее (localStorage)
+
+## v145 - Автоматический показ nameUz/descriptionUz при lang=uz
+- [x] ProductDetail.tsx: если lang=uz и есть nameUz — показывает nameUz вместо name
+- [x] ProductDetail.tsx: если lang=uz и есть descriptionUz — показывает descriptionUz вместо description
+- [x] ProductDetail.tsx: если lang=uz и НЕТ descriptionUz — автоматически вызывает translateDescription (useEffect)
+- [x] ProductDetail.tsx: кнопка перевода показывается только при lang=ru
+- [x] ProductCard: если lang=uz и есть nameUz — показывает nameUz
+- [x] CategoryPage: если lang=uz и есть nameUz категории — показывает его
+- [x] Home.tsx: категории показывают nameUz при lang=uz
+- [x] Navbar.tsx: категории в меню показывают nameUz при lang=uz

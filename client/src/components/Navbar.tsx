@@ -268,7 +268,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                       }`}
                     >
                       {cat.icon && <span className="text-lg leading-none shrink-0">{cat.icon}</span>}
-                      <span className="leading-tight line-clamp-2">{cat.name}</span>
+                      <span className="leading-tight line-clamp-2">{lang === "uz" && (cat as any).nameUz ? (cat as any).nameUz : cat.name}</span>
                     </Link>
                   ))}
                 </div>

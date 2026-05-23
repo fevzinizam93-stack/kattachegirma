@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Link } from "wouter";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const LIMIT = 12;
 
@@ -13,6 +14,7 @@ interface CategoryPageProps {
 }
 
 export default function CategoryPage({ slug }: CategoryPageProps) {
+  const { lang } = useLanguage();
   const [page, setPage] = useState(0);
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
@@ -96,11 +98,11 @@ export default function CategoryPage({ slug }: CategoryPageProps) {
             <ChevronRight size={14} />
             <Link href="/catalog" className="hover:text-primary">Katalog</Link>
             <ChevronRight size={14} />
-            <span className="text-foreground font-medium">{category?.name ?? slug}</span>
+            <span className="text-foreground font-medium">{lang === "uz" && (category as any)?.nameUz ? (category as any).nameUz : (category?.name ?? slug)}</span>
           </div>
           <h1 className="text-xl font-black mt-2 flex items-center gap-2">
             <span>{category?.icon}</span>
-            <span>{category?.name ?? slug}</span>
+            <span>{lang === "uz" && (category as any)?.nameUz ? (category as any).nameUz : (category?.name ?? slug)}</span>
           </h1>
           <p className="text-sm text-muted-foreground">{total} товаров</p>
         </div>

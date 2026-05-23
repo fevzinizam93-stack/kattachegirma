@@ -97,7 +97,7 @@ function CategorySectionSkeleton({ count = 5 }: { count?: number }) {
 }
 
 export default function Home() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [, navigate] = useLocation();
 
   // SEO: dynamic meta tags for homepage
@@ -207,7 +207,7 @@ export default function Home() {
                 className="shrink-0 flex flex-col items-center gap-1 px-3 py-2 rounded-xl bg-gray-50 hover:bg-red-50 active:bg-red-100 transition-colors touch-manipulation min-w-[64px]"
               >
                 <span className="text-2xl leading-none">{cat.icon}</span>
-                <span className="text-[10px] font-semibold text-gray-600 text-center leading-tight line-clamp-2 max-w-[60px]">{cat.name}</span>
+                <span className="text-[10px] font-semibold text-gray-600 text-center leading-tight line-clamp-2 max-w-[60px]">{lang === "uz" && (cat as any).nameUz ? (cat as any).nameUz : cat.name}</span>
               </button>
             ))}
           </div>
@@ -301,7 +301,7 @@ export default function Home() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 {cat.icon && <span className="text-xl leading-none">{cat.icon}</span>}
-                <h2 className="text-base md:text-lg font-black text-gray-900">{cat.name}</h2>
+                <h2 className="text-base md:text-lg font-black text-gray-900">{lang === "uz" && (cat as any).nameUz ? (cat as any).nameUz : cat.name}</h2>
               </div>
               <Link
                 href={`/category/${cat.slug}`}
