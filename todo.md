@@ -933,15 +933,15 @@
 - [x] TypeScript: 0 ошибок
 
 ## v137 - Привязка видеообзоров к товарам (поиск в форме + автосканирование + отображение)
-- [ ] drizzle/schema.ts: добавить поле videoId (text, nullable) в таблицу products
-- [ ] Применить миграцию через webdev_execute_sql
-- [ ] server/routers.ts: youtube.searchVideos — поиск видео в канале по запросу (до 8 результатов)
-- [ ] server/routers.ts: products.setVideoReview — сохранить videoId для товара (admin + seller)
-- [ ] server/routers.ts: products.autoScanVideoReviews — массовая привязка по совпадению названий
-- [ ] AdminProducts.tsx: блок поиска видео в форме добавления/редактирования товара
-- [ ] SellerProducts.tsx: аналогичный блок поиска видео для продавцов
-- [ ] AdminProducts.tsx: кнопка «Сканировать видеообзоры» для массовой привязки
-- [ ] ProductDetail.tsx: приоритет сохранённого videoId над динамическим поиском
+- [x] drizzle/schema.ts: добавить поле videoId (text, nullable) в таблицу products
+- [x] Применить миграцию через webdev_execute_sql
+- [x] server/routers.ts: youtube.searchVideos — поиск видео в канале по запросу (до 8 результатов)
+- [x] server/routers.ts: products.setVideoReview — сохранить videoId для товара (admin + seller)
+- [x] server/routers.ts: products.autoScanVideoReviews — массовая привязка по совпадению названий
+- [x] AdminProducts.tsx: блок поиска видео в форме добавления/редактирования товара
+- [x] SellerProducts.tsx: аналогичный блок поиска видео для продавцов
+- [x] AdminProducts.tsx: кнопка «Сканировать видеообзоры» для массовой привязки
+- [x] ProductDetail.tsx: приоритет сохранённого videoId над динамическим поиском
 
 ## v138 - Авто-перевод описания RU→UZ в Admin панели
 - [x] tRPC процедура `products.translate` — перевод через invokeLLM (RU→UZ) — уже существовала
@@ -1022,3 +1022,11 @@
 - [x] SellersList: SEO-текстовый блок
 - [x] PremiumCatalog: SEO-текстовый блок
 - [x] Admin.tsx: исправлены TS ошибки generateUzSlugs/bulkTranslate (0 ошибок)
+
+## v147 - Sitemap и robots.txt для новых SEO-страниц
+- [x] sitemap.ts: добавлены /sales, /videos, /sellers в STATIC_PAGES с hreflang
+- [x] robots.txt: добавлены Disallow для /seller-register, /favorites, /login, /search
+- [x] robots.txt: отдельный блок Googlebot с Allow для SEO-страниц
+- [x] robots.txt: Host директива для Yandex
+- [x] Проверка: sitemap.xml содержит 337 URL, все новые страницы включены
+- [x] TypeScript: 0 ошибок, тесты: 22/22

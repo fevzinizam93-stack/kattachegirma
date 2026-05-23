@@ -1,3 +1,5 @@
+# robots.txt — kattachegirma.uz
+
 User-agent: *
 Allow: /
 Disallow: /admin
@@ -9,7 +11,29 @@ Disallow: /checkout
 Disallow: /seller-panel
 Disallow: /seller-dashboard
 Disallow: /seller/dashboard
+Disallow: /seller-register
+Disallow: /favorites
+Disallow: /login
+Disallow: /search
 Disallow: /404
+
+User-agent: Googlebot
+Allow: /sales
+Allow: /videos
+Allow: /sellers
+Allow: /premium
+Allow: /bestsellers
+Allow: /catalog
+Allow: /
+Disallow: /admin
+Disallow: /api/
+Disallow: /profile
+Disallow: /cart
+Disallow: /checkout
+Disallow: /seller-register
+Disallow: /favorites
+Disallow: /login
+Disallow: /search
 
 User-agent: Yandex
 Allow: /
@@ -22,7 +46,12 @@ Disallow: /checkout
 Disallow: /seller-panel
 Disallow: /seller-dashboard
 Disallow: /seller/dashboard
+Disallow: /seller-register
+Disallow: /favorites
+Disallow: /login
+Disallow: /search
 Disallow: /404
 Clean-param: utm_source&utm_medium&utm_campaign&utm_content&utm_term&ref&fbclid&gclid
 
 Sitemap: https://kattachegirma.uz/sitemap.xml
+Host: https://kattachegirma.uz
