@@ -348,6 +348,17 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
       })()
     : "Катта Чегирма — самая дешёвая бытовая техника в Узбекистане. Пылесосы, стиральные машины, холодильники, телевизоры, кондиционеры.";
 
+  // UZ keywords: use nameUz if available, otherwise transliterate product name
+  const productKeywordsUz = product
+    ? (() => {
+        const nameUz = (product as any).nameUz as string | null;
+        const brand = product.brand ?? "";
+        const catUz = categories.find(c => c.id === product.categoryId)?.name ?? "";
+        const uzName = nameUz || product.name;
+        return `${uzName} sotib olish, ${uzName} narxi, ${brand} ${catUz} arzon, ${uzName} Toshkent`
+          .replace(/\s+/g, " ").trim();
+      })()
+    : undefined;
   usePageMeta({
     title: productTitle,
     description: productDesc,
@@ -355,6 +366,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
     canonicalPath: product ? `/product/${product.slug}` : undefined,
     noindex: (product as any)?.isActive === false,
     type: "product",
+    keywordsUz: productKeywordsUz,
   });
 
   // SEO: BreadcrumbList Schema.org

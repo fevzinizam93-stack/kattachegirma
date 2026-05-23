@@ -51,10 +51,16 @@ export default function CategoryPage({ slug }: CategoryPageProps) {
     ? `Купить ${category.name} со скидкой в Ташкенте. ${total > 0 ? `${total} товаров в наличии.` : ""} Выгодные цены, рассрочка, быстрая доставка по Ташкенту и всему Узбекистану. Гарантия качества.`
     : `Каталог техники в Ташкенте. Телефоны, холодильники, пылесосы, кондиционеры. Рассрочка, быстрая доставка по Узбекистану.`;
 
+  // UZ keywords: category name used as UZ search term (category names are already in Russian,
+  // but Google also indexes them when combined with UZ keywords)
+  const categoryKeywordsUz = category
+    ? `${category.name} sotib olish, ${category.name} arzon, ${category.name} Toshkent, ${category.name} narxi O'zbekiston`
+    : undefined;
   usePageMeta({
     title: categoryTitle,
     description: categoryDesc,
     canonicalPath: `/category/${slug}`,
+    keywordsUz: categoryKeywordsUz,
   });
 
   // SEO: BreadcrumbList Schema.org

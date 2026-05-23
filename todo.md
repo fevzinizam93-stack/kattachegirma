@@ -962,3 +962,12 @@
 - [x] ProductDetail.tsx: показывать переведённый текст вместо оригинала после нажатия
 - [x] ProductDetail.tsx: кнопка «Русский тилда кўрсатиш» для возврата к русскому тексту
 - [x] ProductDetail.tsx: индикатор загрузки во время перевода
+
+## v141 - SEO для узбекскоязычного поиска
+- [x] usePageMeta хук: добавлен параметр keywordsUz + объединённые RU+UZ keywords meta-тег
+- [x] Home.tsx: keywordsUz с узбекскими ключевыми словами
+- [x] CategoryPage.tsx: keywordsUz с названием категории + sotib olish, arzon, narxi
+- [x] ProductDetail.tsx: keywordsUz с nameUz (если есть) + sotib olish, narxi, Toshkent
+- [x] index.html: hreflang ru/uz/x-default теги + og:locale:alternate uz_UZ + UZ keywords
+- [x] Динамический sitemap: xmlns:xhtml + hreflang alternate ru/uz/x-default для каждого URL
+- [x] robots.txt: домен kattachegirma.uz уже указан верно

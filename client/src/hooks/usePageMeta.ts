@@ -3,6 +3,17 @@ import { useEffect } from "react";
 const SITE_NAME = "Катта Чегирма";
 const BASE_URL = "https://kattachegirma.uz";
 
+// Default Uzbek keywords for all pages — helps Google/Yandex index UZ queries
+const DEFAULT_KEYWORDS_UZ =
+  "katta chegirma, arzon texnika, maishiy texnika, Toshkent, O'zbekiston, " +
+  "kir yuvish mashina, muzlatgich, changyutgich, konditsioner, televizor, " +
+  "telefon, uy texnikasi, chegirma, sotib olish, bo'lib to'lash";
+
+const DEFAULT_KEYWORDS_RU =
+  "Катта Чегирма, бытовая техника, Ташкент, Узбекистан, " +
+  "стиральная машина, холодильник, пылесос, кондиционер, телевизор, " +
+  "телефон, купить технику, скидки, рассрочка, дешевая техника";
+
 interface PageMetaOptions {
   title: string;
   description: string;
@@ -10,11 +21,13 @@ interface PageMetaOptions {
   canonicalPath?: string;
   noindex?: boolean;
   type?: "website" | "product";
+  /** Extra UZ keywords to prepend to defaults (e.g. product/category name in UZ) */
+  keywordsUz?: string;
 }
 
 /**
  * Dynamically sets <title>, meta description, og:title, og:description,
- * og:image, og:url, canonical link for each page.
+ * og:image, og:url, canonical link, keywords for each page.
  * Restores defaults on unmount.
  */
 export function usePageMeta({
@@ -24,6 +37,7 @@ export function usePageMeta({
   canonicalPath,
   noindex = false,
   type = "website",
+  keywordsUz,
 }: PageMetaOptions) {
   useEffect(() => {
     const DEFAULT_TITLE = `${SITE_NAME} — Магазин бытовой техники со скидками`;
@@ -72,10 +86,19 @@ export function usePageMeta({
         : description;
     setMeta('meta[name="description"]', "content", desc);
 
+    // --- Keywords (RU + UZ combined — helps Uzbek search queries) ---
+    const uzPart = keywordsUz
+      ? `${keywordsUz}, ${DEFAULT_KEYWORDS_UZ}`
+      : DEFAULT_KEYWORDS_UZ;
+    const keywords = `${uzPart}, ${DEFAULT_KEYWORDS_RU}`;
+    setMeta('meta[name="keywords"]', "content", keywords);
+
     // --- Open Graph ---
     setMeta('meta[property="og:title"]', "content", fullTitle);
     setMeta('meta[property="og:description"]', "content", desc);
     setMeta('meta[property="og:type"]', "content", type);
+    setMeta('meta[property="og:locale"]', "content", "ru_RU");
+    setMeta('meta[property="og:locale:alternate"]', "content", "uz_UZ");
     if (imageUrl) {
       setMeta('meta[property="og:image"]', "content", imageUrl);
     }
@@ -99,16 +122,19 @@ export function usePageMeta({
     return () => {
       document.title = DEFAULT_TITLE;
       setMeta('meta[name="description"]', "content", DEFAULT_DESC);
+      setMeta('meta[name="keywords"]', "content", `${DEFAULT_KEYWORDS_UZ}, ${DEFAULT_KEYWORDS_RU}`);
       setMeta('meta[property="og:title"]', "content", DEFAULT_TITLE);
       setMeta('meta[property="og:description"]', "content", DEFAULT_DESC);
       setMeta('meta[property="og:type"]', "content", "website");
       setMeta('meta[property="og:image"]', "content", DEFAULT_IMAGE);
       setMeta('meta[property="og:url"]', "content", BASE_URL + "/");
+      setMeta('meta[property="og:locale"]', "content", "ru_RU");
+      setMeta('meta[property="og:locale:alternate"]', "content", "uz_UZ");
       setMeta('meta[name="twitter:title"]', "content", DEFAULT_TITLE);
       setMeta('meta[name="twitter:description"]', "content", DEFAULT_DESC);
       setMeta('meta[name="twitter:image"]', "content", DEFAULT_IMAGE);
       setMeta('meta[name="robots"]', "content", "index, follow");
       setLink("canonical", BASE_URL + "/");
     };
-  }, [title, description, imageUrl, canonicalPath, noindex, type]);
+  }, [title, description, imageUrl, canonicalPath, noindex, type, keywordsUz]);
 }

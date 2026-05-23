@@ -106,6 +106,7 @@ export default function Home() {
     description: "Катта Чегирма — самая дешёвая бытовая техника в Узбекистане. Пылесосы, стиральные машины, холодильники, телевизоры, кондиционеры и другая техника ведущих брендов со скидками до 60%. Быстрая доставка по Ташкенту и всему Узбекистану.",
     canonicalPath: "/",
     imageUrl: "https://kattachegirma.uz/logo-512.png?v=4",
+    keywordsUz: "arzon maishiy texnika, kir yuvish mashina sotib olish, muzlatgich arzon, changyutgich Toshkent, konditsioner narxi, televizor chegirma, Katta Chegirma",
   });
 
   // Hits — primary content, load first

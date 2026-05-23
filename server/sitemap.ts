@@ -27,6 +27,28 @@ function formatDate(date: Date): string {
   return date.toISOString().split("T")[0];
 }
 
+/**
+ * Build a <url> entry with hreflang alternate links for RU and UZ.
+ * Google uses hreflang to understand the site serves both Russian and Uzbek audiences.
+ */
+function buildUrl(
+  loc: string,
+  lastmod: string,
+  changefreq: string,
+  priority: string
+): string {
+  const fullUrl = `${BASE_URL}${loc}`;
+  return `  <url>
+    <loc>${fullUrl}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>${changefreq}</changefreq>
+    <priority>${priority}</priority>
+    <xhtml:link rel="alternate" hreflang="ru" href="${fullUrl}"/>
+    <xhtml:link rel="alternate" hreflang="uz" href="${fullUrl}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${fullUrl}"/>
+  </url>`;
+}
+
 export function registerSitemapRoute(app: Express) {
   app.get("/sitemap.xml", async (req, res) => {
     try {
@@ -44,12 +66,7 @@ export function registerSitemapRoute(app: Express) {
 
         productEntries = allProducts.map((p) => {
           const lastmod = formatDate(new Date(p.updatedAt));
-          return `  <url>
-    <loc>${BASE_URL}/product/${escapeXml(p.slug)}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>`;
+          return buildUrl(`/product/${escapeXml(p.slug)}`, lastmod, "weekly", "0.7");
         });
 
         // Fetch all categories
@@ -59,29 +76,20 @@ export function registerSitemapRoute(app: Express) {
 
         categoryEntries = allCategories.map((c) => {
           const lastmod = formatDate(new Date(c.createdAt));
-          return `  <url>
-    <loc>${BASE_URL}/category/${escapeXml(c.slug)}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>`;
+          return buildUrl(`/category/${escapeXml(c.slug)}`, lastmod, "weekly", "0.8");
         });
       }
 
-      const staticEntries = STATIC_PAGES.map((page) => {
-        const today = formatDate(new Date());
-        return `  <url>
-    <loc>${BASE_URL}${page.loc}</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>${page.changefreq}</changefreq>
-    <priority>${page.priority}</priority>
-  </url>`;
-      });
+      const today = formatDate(new Date());
+      const staticEntries = STATIC_PAGES.map((page) =>
+        buildUrl(page.loc, today, page.changefreq, page.priority)
+      );
 
       const allEntries = [...staticEntries, ...categoryEntries, ...productEntries];
 
       const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
