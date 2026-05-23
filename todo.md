@@ -1030,3 +1030,19 @@
 - [x] robots.txt: Host директива для Yandex
 - [x] Проверка: sitemap.xml содержит 337 URL, все новые страницы включены
 - [x] TypeScript: 0 ошибок, тесты: 22/22
+
+## v148 - SSR/Prerender для ботов поисковиков + Schema.org + мета-теги
+- [x] Middleware определения ботов (Googlebot, Yandex, Bingbot и др.)
+- [x] Пререндер HTML для /product/:slug — полный контент товара (название, цена, описание, бренд)
+- [x] Пререндер HTML для /mahsulot/:slugUz — узбекская версия товара
+- [x] Пререндер HTML для /category/:slug и /kategoriya/:slugUz — категории с товарами
+- [x] Пререндер HTML для статических SEO-страниц (/sales, /videos, /sellers, /premium, /bestsellers)
+- [x] Schema.org Product JSON-LD на страницах товаров (name, brand, price, availability, image)
+- [x] Schema.org BreadcrumbList JSON-LD на всех страницах
+- [x] Schema.org Organization JSON-LD на главной
+- [x] Динамический <title> и <meta description> для каждого товара
+- [x] Динамический <title> и <meta description> для каждой категории
+- [x] Open Graph теги (og:title, og:description, og:image) для товаров
+- [x] Canonical теги для предотвращения дублей
+- [x] Тестирование: curl с User-Agent Googlebot возвращает HTML с контентом
+- [x] TypeScript: 0 ошибок, тесты проходят

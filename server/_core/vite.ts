@@ -1,10 +1,11 @@
-import express, { type Express } from "express";
+import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import fs from "fs";
 import { type Server } from "http";
 import { nanoid } from "nanoid";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import viteConfig from "../../vite.config";
+import { seoPrerender } from "../seoPrerender";
 
 export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
@@ -21,7 +22,15 @@ export async function setupVite(app: Express, server: Server) {
   });
 
   app.use(vite.middlewares);
-  app.use("*", async (req, res, next) => {
+  app.use("*", async (req: Request, res: Response, next: NextFunction) => {
+    // SEO prerender: serve pre-built HTML to search engine bots
+    const prerenderResult = await seoPrerender(req);
+    if (prerenderResult) {
+      res.setHeader("X-Prerender", "true");
+      res.setHeader("Cache-Control", "public, max-age=3600");
+      return res.status(200).set({ "Content-Type": "text/html; charset=utf-8" }).end(prerenderResult);
+    }
+
     const url = req.originalUrl;
 
     try {
@@ -75,7 +84,15 @@ export function serveStatic(app: Express) {
   // SPA fallback: serve index.html for all non-file routes
   // Known 404 paths return proper 404 HTTP status
   const KNOWN_404_PATHS = ["/404"];
-  app.use("*", (req, res) => {
+  app.use("*", async (req: Request, res: Response) => {
+    // SEO prerender for production bots
+    const prerenderResult = await seoPrerender(req);
+    if (prerenderResult) {
+      res.setHeader("X-Prerender", "true");
+      res.setHeader("Cache-Control", "public, max-age=3600");
+      return res.status(200).set({ "Content-Type": "text/html; charset=utf-8" }).end(prerenderResult);
+    }
+
     const status = KNOWN_404_PATHS.includes(req.path) ? 404 : 200;
     res.status(status).sendFile(path.resolve(distPath, "index.html"));
   });
