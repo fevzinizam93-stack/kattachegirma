@@ -3,8 +3,14 @@ import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Store, Search, ArrowLeft, Calendar, ChevronRight, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 export default function SellersList() {
+  usePageMeta({
+    title: "Продавцы бытовой техники | Катта Чегирма",
+    description: "Проверенные продавцы бытовой техники в Узбекистане. Официальные дилеры стиральных машин, холодильников, пылесосов и кондиционеров.",
+    keywordsUz: "sotuvchilar maishiy texnika, rasmiy diler Toshkent, ishonchli do'kon texnika",
+  });
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
@@ -108,6 +114,23 @@ export default function SellersList() {
           </>
         )}
       </div>
+
+      {/* SEO text block */}
+      <section className="container py-8">
+        <div className="bg-white rounded-xl border border-gray-100 p-6 text-sm text-gray-600 leading-relaxed space-y-3">
+          <h2 className="text-lg font-bold text-gray-800">Продавцы бытовой техники в Узбекистане</h2>
+          <p>
+            На платформе <strong>Katta Chegirma</strong> представлены проверенные продавцы бытовой техники из Ташкента и других городов Узбекистана.
+            Каждый продавец проходит модерацию — мы гарантируем качество товаров и надёжность сделок.
+          </p>
+          <p>
+            Выбирайте продавца, смотрите его ассортимент и связывайтесь напрямую через Telegram или WhatsApp.
+          </p>
+          <p className="text-xs text-gray-400">
+            Maishiy texnika sotuvchilari: rasmiy dilerlar, ishonchli do‘konlar, Toshkentda yetkazib berish bilan.
+          </p>
+        </div>
+      </section>
     </div>
   );
 }

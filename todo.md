@@ -1007,3 +1007,18 @@
 - [x] CategoryPage: если lang=uz и есть nameUz категории — показывает его
 - [x] Home.tsx: категории показывают nameUz при lang=uz
 - [x] Navbar.tsx: категории в меню показывают nameUz при lang=uz
+
+## v146 - SEO: noindex, usePageMeta, SEO-тексты
+- [x] usePageMeta: добавить поддержку noindex параметра
+- [x] Favorites: noindex meta тег
+- [x] LoginPage: noindex meta тег
+- [x] SellerRegister: noindex meta тег
+- [x] SearchResults: noindex meta тег
+- [x] Sales: usePageMeta с title/description/keywords
+- [x] Videos: usePageMeta с title/description/keywords
+- [x] SellersList: usePageMeta с title/description/keywords
+- [x] Sales: SEO-текстовый блок внизу страницы
+- [x] Videos: SEO-текстовый блок с описанием
+- [x] SellersList: SEO-текстовый блок
+- [x] PremiumCatalog: SEO-текстовый блок
+- [x] Admin.tsx: исправлены TS ошибки generateUzSlugs/bulkTranslate (0 ошибок)

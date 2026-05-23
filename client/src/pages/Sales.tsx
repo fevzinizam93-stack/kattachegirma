@@ -6,6 +6,7 @@ import { Link } from "wouter";
 import { Tag, Clock, Flame, ShoppingCart, ChevronRight } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 // Countdown timer hook
 function useCountdown(targetDate: Date | null) {
@@ -93,11 +94,13 @@ export default function Sales() {
   const { formatPrice } = useCurrency();
   const { addItem } = useCart();
 
-  const { data: products, isLoading } = trpc.products.getSales.useQuery({});
+  usePageMeta({
+    title: "Акции и скидки на бытовую технику | Катта Чегирма",
+    description: "Горячие акции и скидки на стиральные машины, холодильники, пылесосы и кондиционеры в Узбекистане. Бесплатная доставка по Ташкенту.",
+    keywordsUz: "chegirma maishiy texnika, aksiya kir yuvish mashinalar, aksiya muzlatgichlar, chegirma Toshkent",
+  });
 
-  useEffect(() => {
-    document.title = "Акции и скидки | Катта Чегирма";
-  }, []);
+  const { data: products, isLoading } = trpc.products.getSales.useQuery({});
 
   const handleAddToCart = useCallback((product: any) => {
     addItem({
@@ -258,6 +261,24 @@ export default function Sales() {
           </div>
         )}
       </div>
+
+      {/* SEO text block */}
+      <section className="container py-8">
+        <div className="bg-white rounded-xl border border-gray-100 p-6 text-sm text-gray-600 leading-relaxed space-y-3">
+          <h2 className="text-lg font-bold text-gray-800">Акции и скидки на бытовую технику в Узбекистане</h2>
+          <p>
+            Интернет-магазин <strong>Katta Chegirma</strong> предлагает выгодные акции и скидки на стиральные машины, холодильники, пылесосы, кондиционеры и другую крупную бытовую технику.
+            Мы сотрудничаем с официальными дилерами и проверенными продавцами, чтобы обеспечить лучшие цены и гарантию качества.
+          </p>
+          <p>
+            Следите за ограниченными предложениями — каждая акция действует ограниченное время.
+            Доставка по Ташкенту бесплатная, отправка по всему Узбекистану.
+          </p>
+          <p className="text-xs text-gray-400">
+            Maishiy texnika uchun chegirmalar: kir yuvish mashinalari, muzlatgichlar, changyutkichlar, konditsionerlar. Toshkentda bepul yetkazib berish.
+          </p>
+        </div>
+      </section>
     </div>
   );
 }

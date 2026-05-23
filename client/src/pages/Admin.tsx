@@ -528,13 +528,13 @@ export default function Admin() {
   const [bulkTranslating, setBulkTranslating] = useState(false);
   const bulkTranslateMut = trpc.products.bulkTranslate.useMutation({
     onMutate: () => { setBulkTranslating(true); setBulkTranslateProgress(null); },
-    onSuccess: (data) => {
+    onSuccess: (data: { total: number; translated: number; skipped: number; errors: number }) => {
       setBulkTranslateProgress(data);
       setBulkTranslating(false);
       utils.products.adminList.invalidate();
       toast.success(`Перевод завершён: ${data.translated} товаров переведено`);
     },
-    onError: (e) => { setBulkTranslating(false); toast.error("Ошибка массового перевода: " + e.message); },
+    onError: (e: any) => { setBulkTranslating(false); toast.error("Ошибка массового перевода: " + e.message); },
   });
 
   // UZ slug generation state
@@ -542,12 +542,12 @@ export default function Admin() {
   const [genUzSlugsLoading, setGenUzSlugsLoading] = useState(false);
   const genCatUzSlugsMut = trpc.categories.generateUzSlugs.useMutation({
     onMutate: () => { setGenUzSlugsLoading(true); setGenUzSlugsProgress(null); },
-    onSuccess: (data) => { setGenUzSlugsProgress(data); setGenUzSlugsLoading(false); toast.success(`UZ slug-и категорий: ${data.updated} сгенерировано`); },
+    onSuccess: (data: { total: number; updated: number }) => { setGenUzSlugsProgress(data); setGenUzSlugsLoading(false); toast.success(`UZ slug-и категорий: ${data.updated} сгенерировано`); },
     onError: (e: any) => { setGenUzSlugsLoading(false); toast.error('Ошибка: ' + e.message); },
   });
   const genProdUzSlugsMut = trpc.products.generateUzSlugs.useMutation({
     onMutate: () => { setGenUzSlugsLoading(true); setGenUzSlugsProgress(null); },
-    onSuccess: (data) => { setGenUzSlugsProgress(data); setGenUzSlugsLoading(false); toast.success(`UZ slug-и товаров: ${data.updated} сгенерировано`); },
+    onSuccess: (data: { total: number; updated: number }) => { setGenUzSlugsProgress(data); setGenUzSlugsLoading(false); toast.success(`UZ slug-и товаров: ${data.updated} сгенерировано`); },
     onError: (e: any) => { setGenUzSlugsLoading(false); toast.error('Ошибка: ' + e.message); },
   });
 

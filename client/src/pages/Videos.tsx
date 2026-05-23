@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { Eye, ThumbsUp, Play, Youtube, X, Search, Users } from "lucide-react";
 import { ReelsPlayer } from "@/components/ReelsPlayer";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 function formatCount(n: string | number): string {
   const num = typeof n === "string" ? parseInt(n, 10) : n;
@@ -32,6 +33,12 @@ type VideoItem = {
 // VideoModal replaced by ReelsPlayer
 
 export default function Videos() {
+  usePageMeta({
+    title: "Видеообзоры бытовой техники | Катта Чегирма",
+    description: "Смотрите видеообзоры стиральных машин, холодильников, пылесосов и кондиционеров. Подробные обзоры от продавцов и экспертов.",
+    keywordsUz: "video obzor kir yuvish mashinasi, muzlatgich obzor, changyutkich video, konditsioner obzor, maishiy texnika video",
+  });
+
   const [allVideos, setAllVideos] = useState<VideoItem[]>([]);
   const [pageTokenQueue, setPageTokenQueue] = useState<(string | undefined)[]>([undefined]);
   const [currentTokenIndex, setCurrentTokenIndex] = useState(0);
@@ -269,6 +276,24 @@ export default function Videos() {
           onNeedMore={loadMore}
         />
       )}
+
+      {/* SEO text block */}
+      <section className="container py-8">
+        <div className="bg-white rounded-xl border border-gray-100 p-6 text-sm text-gray-600 leading-relaxed space-y-3">
+          <h2 className="text-lg font-bold text-gray-800">Видеообзоры бытовой техники в Узбекистане</h2>
+          <p>
+            На нашем канале вы найдёте подробные видеообзоры стиральных машин, холодильников, пылесосов и кондиционеров.
+            Каждое видео поможет вам сделать правильный выбор перед покупкой — мы показываем реальные тесты, сравнения и отзывы.
+          </p>
+          <p>
+            <strong>Katta Chegirma</strong> — единственный магазин в Узбекистане, где каждый товар сопровождается видеообзором от продавца.
+            Смотрите, сравнивайте и покупайте с уверенностью!
+          </p>
+          <p className="text-xs text-gray-400">
+            Maishiy texnika video obzorlari: kir yuvish mashinasi, muzlatgich, changyutkich, konditsioner. Sotib olishdan oldin ko‘ring!
+          </p>
+        </div>
+      </section>
     </div>
   );
 }

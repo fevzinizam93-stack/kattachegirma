@@ -321,6 +321,23 @@ export default function PremiumCatalog() {
           </div>
         </div>
       </div>
+
+      {/* SEO text block */}
+      <section className="container py-8">
+        <div className="bg-white rounded-xl border border-gray-100 p-6 text-sm text-gray-600 leading-relaxed space-y-3">
+          <h2 className="text-lg font-bold text-gray-800">Премиум бытовая техника в Узбекистане</h2>
+          <p>
+            Раздел <strong>Premium</strong> на Katta Chegirma — это техника премиум-класса от ведущих мировых брендов: Bosch, LG, Samsung, Siemens, Miele, Electrolux.
+            Официальная гарантия, бесплатная доставка по Ташкенту и выгодные цены.
+          </p>
+          <p>
+            Выбирайте технику, которая прослужит долгие годы — премиум-качество по лучшим ценам в Узбекистане.
+          </p>
+          <p className="text-xs text-gray-400">
+            Premium maishiy texnika: Bosch, LG, Samsung, Siemens, Miele. Rasmiy kafolat, Toshkentda bepul yetkazib berish.
+          </p>
+        </div>
+      </section>
     </div>
   );
 }

@@ -5,8 +5,14 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 import { Heart, Trash2 } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 export default function Favorites() {
+  usePageMeta({
+    title: "Избранное | Катта Чегирма",
+    description: "Ваши избранные товары",
+    noindex: true,
+  });
   const { ids, clear, count } = useWishlist();
 
   // Загружаем товары по id из wishlist

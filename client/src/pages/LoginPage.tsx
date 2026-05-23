@@ -4,8 +4,14 @@ import { toast } from "sonner";
 import { Eye, EyeOff, User, Mail, Lock, ArrowLeft } from "lucide-react";
 import { useLocation } from "wouter";
 import { Link } from "wouter";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 export default function LoginPage() {
+  usePageMeta({
+    title: "Вход | Катта Чегирма",
+    description: "Войдите в аккаунт",
+    noindex: true,
+  });
   const [, navigate] = useLocation();
   const [location] = useLocation();
 

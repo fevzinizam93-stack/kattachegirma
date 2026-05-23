@@ -12,8 +12,14 @@ import { useAuthModal } from "@/App";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { SellerSuccessModal } from "@/components/SellerSuccessModal";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 export default function SellerRegister() {
+  usePageMeta({
+    title: "Регистрация продавца | Катта Чегирма",
+    description: "Станьте продавцом на Катта Чегирма",
+    noindex: true,
+  });
   const { user, loading } = useAuth();
   const { openLogin } = useAuthModal();
   const [, navigate] = useLocation();
