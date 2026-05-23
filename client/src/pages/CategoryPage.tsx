@@ -60,6 +60,8 @@ export default function CategoryPage({ slug }: CategoryPageProps) {
     title: categoryTitle,
     description: categoryDesc,
     canonicalPath: `/category/${slug}`,
+    // If category has a UZ slug, provide hreflang alternate for /kategoriya/:slugUz
+    hreflangUzPath: (category as any)?.slugUz ? `/kategoriya/${(category as any).slugUz}` : undefined,
     keywordsUz: categoryKeywordsUz,
   });
 

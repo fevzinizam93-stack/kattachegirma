@@ -28,24 +28,51 @@ function formatDate(date: Date): string {
 }
 
 /**
- * Build a <url> entry with hreflang alternate links for RU and UZ.
- * Google uses hreflang to understand the site serves both Russian and Uzbek audiences.
+ * Build a <url> entry with hreflang alternate links.
+ * ruLoc: canonical RU URL (e.g. /category/stiralnye-mashiny)
+ * uzLoc: UZ URL alias (e.g. /kategoriya/kir-yuvish-mashinalar) — if available
  */
 function buildUrl(
-  loc: string,
+  ruLoc: string,
+  uzLoc: string | null,
   lastmod: string,
   changefreq: string,
   priority: string
 ): string {
-  const fullUrl = `${BASE_URL}${loc}`;
+  const ruUrl = `${BASE_URL}${ruLoc}`;
+  const uzUrl = uzLoc ? `${BASE_URL}${uzLoc}` : ruUrl;
   return `  <url>
-    <loc>${fullUrl}</loc>
+    <loc>${ruUrl}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>${changefreq}</changefreq>
     <priority>${priority}</priority>
-    <xhtml:link rel="alternate" hreflang="ru" href="${fullUrl}"/>
-    <xhtml:link rel="alternate" hreflang="uz" href="${fullUrl}"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="${fullUrl}"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="${ruUrl}"/>
+    <xhtml:link rel="alternate" hreflang="uz" href="${uzUrl}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${ruUrl}"/>
+  </url>`;
+}
+
+/**
+ * Build a separate <url> entry for the UZ URL alias (so it also appears in sitemap).
+ * This helps Google discover and index the UZ URL independently.
+ */
+function buildUzUrl(
+  ruLoc: string,
+  uzLoc: string,
+  lastmod: string,
+  changefreq: string,
+  priority: string
+): string {
+  const ruUrl = `${BASE_URL}${ruLoc}`;
+  const uzUrl = `${BASE_URL}${uzLoc}`;
+  return `  <url>
+    <loc>${uzUrl}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>${changefreq}</changefreq>
+    <priority>${priority}</priority>
+    <xhtml:link rel="alternate" hreflang="ru" href="${ruUrl}"/>
+    <xhtml:link rel="alternate" hreflang="uz" href="${uzUrl}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${ruUrl}"/>
   </url>`;
 }
 
@@ -58,31 +85,45 @@ export function registerSitemapRoute(app: Express) {
       let categoryEntries: string[] = [];
 
       if (db) {
-        // Fetch all approved products
+        // Fetch all approved products (including slugUz)
         const allProducts = await db
-          .select({ slug: products.slug, updatedAt: products.updatedAt })
+          .select({ slug: products.slug, slugUz: (products as any).slugUz, updatedAt: products.updatedAt })
           .from(products)
           .where(eq(products.isApproved, true));
 
-        productEntries = allProducts.map((p) => {
+        productEntries = allProducts.flatMap((p) => {
           const lastmod = formatDate(new Date(p.updatedAt));
-          return buildUrl(`/product/${escapeXml(p.slug)}`, lastmod, "weekly", "0.7");
+          const ruLoc = `/product/${escapeXml(p.slug)}`;
+          const uzLoc = p.slugUz ? `/mahsulot/${escapeXml(p.slugUz)}` : null;
+          const entries = [buildUrl(ruLoc, uzLoc, lastmod, "weekly", "0.7")];
+          // Also add a separate entry for the UZ URL so Google indexes it
+          if (uzLoc) {
+            entries.push(buildUzUrl(ruLoc, uzLoc, lastmod, "weekly", "0.7"));
+          }
+          return entries;
         });
 
-        // Fetch all categories
+        // Fetch all categories (including slugUz)
         const allCategories = await db
-          .select({ slug: categories.slug, createdAt: categories.createdAt })
+          .select({ slug: categories.slug, slugUz: (categories as any).slugUz, createdAt: categories.createdAt })
           .from(categories);
 
-        categoryEntries = allCategories.map((c) => {
+        categoryEntries = allCategories.flatMap((c) => {
           const lastmod = formatDate(new Date(c.createdAt));
-          return buildUrl(`/category/${escapeXml(c.slug)}`, lastmod, "weekly", "0.8");
+          const ruLoc = `/category/${escapeXml(c.slug)}`;
+          const uzLoc = c.slugUz ? `/kategoriya/${escapeXml(c.slugUz)}` : null;
+          const entries = [buildUrl(ruLoc, uzLoc, lastmod, "weekly", "0.8")];
+          // Also add a separate entry for the UZ URL
+          if (uzLoc) {
+            entries.push(buildUzUrl(ruLoc, uzLoc, lastmod, "weekly", "0.8"));
+          }
+          return entries;
         });
       }
 
       const today = formatDate(new Date());
       const staticEntries = STATIC_PAGES.map((page) =>
-        buildUrl(page.loc, today, page.changefreq, page.priority)
+        buildUrl(page.loc, null, today, page.changefreq, page.priority)
       );
 
       const allEntries = [...staticEntries, ...categoryEntries, ...productEntries];

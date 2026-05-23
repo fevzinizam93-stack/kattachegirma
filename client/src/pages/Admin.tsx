@@ -537,6 +537,20 @@ export default function Admin() {
     onError: (e) => { setBulkTranslating(false); toast.error("Ошибка массового перевода: " + e.message); },
   });
 
+  // UZ slug generation state
+  const [genUzSlugsProgress, setGenUzSlugsProgress] = useState<{ total: number; updated: number } | null>(null);
+  const [genUzSlugsLoading, setGenUzSlugsLoading] = useState(false);
+  const genCatUzSlugsMut = trpc.categories.generateUzSlugs.useMutation({
+    onMutate: () => { setGenUzSlugsLoading(true); setGenUzSlugsProgress(null); },
+    onSuccess: (data) => { setGenUzSlugsProgress(data); setGenUzSlugsLoading(false); toast.success(`UZ slug-и категорий: ${data.updated} сгенерировано`); },
+    onError: (e: any) => { setGenUzSlugsLoading(false); toast.error('Ошибка: ' + e.message); },
+  });
+  const genProdUzSlugsMut = trpc.products.generateUzSlugs.useMutation({
+    onMutate: () => { setGenUzSlugsLoading(true); setGenUzSlugsProgress(null); },
+    onSuccess: (data) => { setGenUzSlugsProgress(data); setGenUzSlugsLoading(false); toast.success(`UZ slug-и товаров: ${data.updated} сгенерировано`); },
+    onError: (e: any) => { setGenUzSlugsLoading(false); toast.error('Ошибка: ' + e.message); },
+  });
+
   const approveSeller = trpc.sellers.approve.useMutation({
     onSuccess: () => { toast.success("Продавец одобрен!"); utils.sellers.list.invalidate(); },
     onError: (e) => toast.error(e.message),
@@ -864,6 +878,16 @@ export default function Admin() {
                   Товары ({adminSearch.trim() ? `${filteredProducts.length} / ${products.length}` : products.length})
                 </h2>
                 <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => { if (!genUzSlugsLoading && window.confirm('Сгенерировать UZ URL slug-и для всех товаров без slugUz? Это займёт несколько минут.')) genProdUzSlugsMut.mutate(); }}
+                    disabled={genUzSlugsLoading}
+                    title="Сгенерировать узбекские URL slug-и для товаров"
+                    className="flex items-center gap-1.5 border border-emerald-200 text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl font-semibold text-sm hover:bg-emerald-100 transition-colors disabled:opacity-50"
+                  >
+                    {genUzSlugsLoading ? <div className="w-4 h-4 border-2 border-emerald-300 border-t-emerald-600 rounded-full animate-spin" /> : <span>🔗</span>}
+                    {genUzSlugsLoading ? "Генерирую..." : "UZ slug-и"}
+                  </button>
                   <button
                     type="button"
                     onClick={() => {
@@ -1369,15 +1393,32 @@ export default function Admin() {
         {/* ==================== CATEGORIES TAB ==================== */}
         {tab === "categories" && (
           <div>
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
               <h2 className="font-black text-lg text-gray-900">Категории ({categories.length})</h2>
-              <button
-                onClick={() => { setShowCatForm(true); setCatForm({ id: 0, name: "", slug: "", icon: "" }); setCatEditId(null); }}
-                className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
-              >
-                <Plus size={16} /> Добавить
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => { if (!genUzSlugsLoading && window.confirm('Сгенерировать UZ URL slug-и для всех категорий без slugUz? Это займёт ~1 мин.')) genCatUzSlugsMut.mutate(); }}
+                  disabled={genUzSlugsLoading}
+                  className="flex items-center gap-1.5 bg-emerald-600 text-white px-3 py-2 rounded-xl font-semibold text-sm hover:bg-emerald-700 transition-colors disabled:opacity-60"
+                  title="Сгенерировать узбекские URL для категорий"
+                >
+                  {genUzSlugsLoading ? <div className="w-4 h-4 border-2 border-emerald-300 border-t-white rounded-full animate-spin" /> : <span>🔗</span>}
+                  UZ slug-и
+                </button>
+                <button
+                  onClick={() => { setShowCatForm(true); setCatForm({ id: 0, name: "", slug: "", icon: "" }); setCatEditId(null); }}
+                  className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
+                >
+                  <Plus size={16} /> Добавить
+                </button>
+              </div>
             </div>
+            {genUzSlugsProgress && !genUzSlugsLoading && (
+              <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 mb-3 text-sm">
+                <span className="text-emerald-700">✅ UZ slug-и: <strong>{genUzSlugsProgress.updated}</strong> из {genUzSlugsProgress.total} сгенерировано</span>
+                <button onClick={() => setGenUzSlugsProgress(null)} className="ml-auto text-gray-400 hover:text-gray-600">✕</button>
+              </div>
+            )}
 
             {/* Category Form Modal */}
             {showCatForm && (

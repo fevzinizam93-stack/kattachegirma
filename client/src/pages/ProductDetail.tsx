@@ -364,6 +364,8 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
     description: productDesc,
     imageUrl: product?.imageUrl ?? undefined,
     canonicalPath: product ? `/product/${product.slug}` : undefined,
+    // If product has a UZ slug, provide hreflang alternate for /mahsulot/:slugUz
+    hreflangUzPath: (product as any)?.slugUz ? `/mahsulot/${(product as any).slugUz}` : undefined,
     noindex: (product as any)?.isActive === false,
     type: "product",
     keywordsUz: productKeywordsUz,

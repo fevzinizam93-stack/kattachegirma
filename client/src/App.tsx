@@ -75,7 +75,14 @@ function Router() {
       <Route path="/category/:slug">
         {(params) => <CategoryPage slug={params.slug} />}
       </Route>
+      {/* UZ SEO URL aliases — same components, different URL prefix */}
+      <Route path="/kategoriya/:slug">
+        {(params) => <CategoryPage slug={params.slug} />}
+      </Route>
       <Route path="/product/:slug">
+        {(params) => <ProductDetail slug={params.slug} />}
+      </Route>
+      <Route path="/mahsulot/:slug">
         {(params) => <ProductDetail slug={params.slug} />}
       </Route>
       <Route path="/cart" component={Cart} />

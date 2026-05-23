@@ -971,3 +971,16 @@
 - [x] index.html: hreflang ru/uz/x-default теги + og:locale:alternate uz_UZ + UZ keywords
 - [x] Динамический sitemap: xmlns:xhtml + hreflang alternate ru/uz/x-default для каждого URL
 - [x] robots.txt: домен kattachegirma.uz уже указан верно
+
+## v142 - Узбекские URL для категорий и товаров (SEO)
+- [x] drizzle/schema.ts: добавлено поле slugUz в categories и products
+- [x] Миграция SQL: ALTER TABLE categories ADD COLUMN slugUz, ALTER TABLE products ADD COLUMN slugUz
+- [x] server/db.ts: getCategoryBySlug ищет по slug ИЛИ slugUz
+- [x] server/db.ts: getProductBySlug ищет по slug ИЛИ slugUz
+- [x] server/routers.ts: categories.generateUzSlugs — авто-генерация slugUz через LLM
+- [x] server/routers.ts: products.generateUzSlugs — авто-генерация slugUz через LLM
+- [x] App.tsx: маршруты /kategoriya/:slug и /mahsulot/:slug добавлены
+- [x] CategoryPage.tsx: canonical = /category/:slug, hreflang uz = /kategoriya/:slugUz
+- [x] ProductDetail.tsx: canonical = /product/:slug, hreflang uz = /mahsulot/:slugUz
+- [x] sitemap.ts: /kategoriya/:slugUz и /mahsulot/:slugUz включены как отдельные URL
+- [x] Admin.tsx: кнопки генерации UZ slug-ов для категорий и товаров

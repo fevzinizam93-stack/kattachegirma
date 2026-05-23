@@ -123,7 +123,10 @@ export async function getAllCategories() {
 export async function getCategoryBySlug(slug: string) {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await db.select().from(categories).where(eq(categories.slug, slug)).limit(1);
+  // Support both RU slug (/category/stiralnye-mashiny) and UZ slug (/kategoriya/kir-yuvish-mashinalar)
+  const result = await db.select().from(categories)
+    .where(or(eq(categories.slug, slug), eq((categories as any).slugUz, slug)))
+    .limit(1);
   return result[0];
 }
 
@@ -218,7 +221,10 @@ export async function getSlugExists(slug: string, excludeId?: number): Promise<b
 export async function getProductBySlug(slug: string) {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await db.select().from(products).where(eq(products.slug, slug)).limit(1);
+  // Support both RU slug (/product/...) and UZ slug (/mahsulot/...)
+  const result = await db.select().from(products)
+    .where(or(eq(products.slug, slug), eq((products as any).slugUz, slug)))
+    .limit(1);
   return result[0];
 }
 

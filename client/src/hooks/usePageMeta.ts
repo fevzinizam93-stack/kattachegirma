@@ -19,6 +19,8 @@ interface PageMetaOptions {
   description: string;
   imageUrl?: string;
   canonicalPath?: string;
+  /** UZ URL path for hreflang alternate (e.g. /kategoriya/kir-yuvish-mashinalar) */
+  hreflangUzPath?: string;
   noindex?: boolean;
   type?: "website" | "product";
   /** Extra UZ keywords to prepend to defaults (e.g. product/category name in UZ) */
@@ -27,7 +29,7 @@ interface PageMetaOptions {
 
 /**
  * Dynamically sets <title>, meta description, og:title, og:description,
- * og:image, og:url, canonical link, keywords for each page.
+ * og:image, og:url, canonical link, keywords, and hreflang alternate links for each page.
  * Restores defaults on unmount.
  */
 export function usePageMeta({
@@ -35,6 +37,7 @@ export function usePageMeta({
   description,
   imageUrl,
   canonicalPath,
+  hreflangUzPath,
   noindex = false,
   type = "website",
   keywordsUz,
@@ -61,15 +64,26 @@ export function usePageMeta({
       el.setAttribute(attr, value);
     }
 
-    // Helper: upsert a <link> tag
-    function setLink(rel: string, href: string) {
-      let el = document.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`);
+    // Helper: upsert a <link> tag by rel (and optional hreflang)
+    function setLink(rel: string, href: string, hreflang?: string) {
+      const selector = hreflang
+        ? `link[rel="${rel}"][hreflang="${hreflang}"]`
+        : `link[rel="${rel}"]:not([hreflang])`;
+      let el = document.querySelector<HTMLLinkElement>(selector);
       if (!el) {
         el = document.createElement("link");
         el.rel = rel;
+        if (hreflang) el.setAttribute("hreflang", hreflang);
         document.head.appendChild(el);
       }
       el.href = href;
+    }
+
+    function removeLink(rel: string, hreflang?: string) {
+      const selector = hreflang
+        ? `link[rel="${rel}"][hreflang="${hreflang}"]`
+        : `link[rel="${rel}"]:not([hreflang])`;
+      document.querySelector(selector)?.remove();
     }
 
     // --- Title ---
@@ -106,6 +120,17 @@ export function usePageMeta({
       const url = `${BASE_URL}${canonicalPath}`;
       setMeta('meta[property="og:url"]', "content", url);
       setLink("canonical", url);
+      // hreflang: RU version = canonical, x-default = canonical
+      setLink("alternate", url, "ru");
+      setLink("alternate", url, "x-default");
+    }
+
+    // hreflang: UZ version (if slugUz is available)
+    if (hreflangUzPath) {
+      setLink("alternate", `${BASE_URL}${hreflangUzPath}`, "uz");
+    } else if (canonicalPath) {
+      // Fallback: point UZ hreflang to same canonical
+      setLink("alternate", `${BASE_URL}${canonicalPath}`, "uz");
     }
 
     // --- Twitter Card ---
@@ -135,6 +160,10 @@ export function usePageMeta({
       setMeta('meta[name="twitter:image"]', "content", DEFAULT_IMAGE);
       setMeta('meta[name="robots"]', "content", "index, follow");
       setLink("canonical", BASE_URL + "/");
+      // Remove hreflang alternates on unmount
+      removeLink("alternate", "ru");
+      removeLink("alternate", "uz");
+      removeLink("alternate", "x-default");
     };
-  }, [title, description, imageUrl, canonicalPath, noindex, type, keywordsUz]);
+  }, [title, description, imageUrl, canonicalPath, hreflangUzPath, noindex, type, keywordsUz]);
 }

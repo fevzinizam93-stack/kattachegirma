@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE `categories` ADD `slugUz` varchar(128);\nALTER TABLE `products` ADD `slugUz` varchar(256);\nALTER TABLE `categories` ADD CONSTRAINT `categories_slugUz_unique` UNIQUE(`slugUz`);\nALTER TABLE `products` ADD CONSTRAINT `products_slugUz_unique` UNIQUE(`slugUz`);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute ALTER TABLE `categories` ADD `slugUz` varchar(128);\nALTER TABLE `products` ADD `slugUz` varchar(256);\nALTER TABLE `categories` ADD CONSTRAINT `categories_slugUz_unique` UNIQUE(`slugUz`);\nALTER TABLE `products` ADD CONSTRAINT `products_slugUz_unique` UNIQUE(`slugUz`);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1182
+}

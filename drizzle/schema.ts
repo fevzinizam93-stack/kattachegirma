@@ -34,6 +34,7 @@ export const categories = mysqlTable("categories", {
   id: int("id").autoincrement().primaryKey(),
   name: varchar("name", { length: 128 }).notNull(),
   slug: varchar("slug", { length: 128 }).notNull().unique(),
+  slugUz: varchar("slugUz", { length: 128 }).unique(),
   icon: varchar("icon", { length: 64 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
@@ -72,6 +73,7 @@ export const products = mysqlTable("products", {
   name: varchar("name", { length: 256 }).notNull(),
   nameUz: varchar("nameUz", { length: 256 }),
   slug: varchar("slug", { length: 256 }).notNull().unique(),
+  slugUz: varchar("slugUz", { length: 256 }).unique(),
   description: text("description"),
   descriptionUz: text("descriptionUz"),
   categoryId: int("categoryId").notNull(),
