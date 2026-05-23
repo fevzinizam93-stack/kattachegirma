@@ -11,13 +11,15 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 
 const LIMIT = 12;
 
-type SortBy = 'newest' | 'price_asc' | 'price_desc' | 'discount';
+type SortBy = 'newest' | 'price_asc' | 'price_desc' | 'discount' | 'rating' | 'reviews';
 
 const SORT_OPTIONS: { value: SortBy; label: string }[] = [
   { value: 'newest', label: 'Новинки' },
   { value: 'price_asc', label: 'Дешевле' },
   { value: 'price_desc', label: 'Дороже' },
   { value: 'discount', label: 'По скидке' },
+  { value: 'rating', label: 'По рейтингу' },
+  { value: 'reviews', label: 'По отзывам' },
 ];
 
 export default function Catalog() {
@@ -52,7 +54,7 @@ export default function Catalog() {
       maxPrice: maxP ? parseInt(maxP, 10) : undefined,
       minPriceInput: minP ?? '',
       maxPriceInput: maxP ?? '',
-      sortBy: (sort && ['newest','price_asc','price_desc','discount'].includes(sort) ? sort : 'newest') as SortBy,
+      sortBy: (sort && ['newest','price_asc','price_desc','discount','rating','reviews'].includes(sort) ? sort : 'newest') as SortBy,
       selectedBrands: brandsParam ? brandsParam.split(',').filter(Boolean) : [],
       minRating: params.get('minRating') ? parseInt(params.get('minRating')!, 10) : undefined,
     };

@@ -148,7 +148,7 @@ export async function deleteCategory(id: number) {
 }
 
 // ---- Products ----
-export async function getProducts(opts?: { categoryId?: number; search?: string; featured?: boolean; limit?: number; offset?: number; approvedOnly?: boolean; isPremium?: boolean; includeInactive?: boolean; minPrice?: number; maxPrice?: number; sortBy?: 'newest' | 'price_asc' | 'price_desc' | 'discount'; brands?: string[]; minRating?: number }) {
+export async function getProducts(opts?: { categoryId?: number; search?: string; featured?: boolean; limit?: number; offset?: number; approvedOnly?: boolean; isPremium?: boolean; includeInactive?: boolean; minPrice?: number; maxPrice?: number; sortBy?: 'newest' | 'price_asc' | 'price_desc' | 'discount' | 'rating' | 'reviews'; brands?: string[]; minRating?: number }) {
   const db = await getDb();
   if (!db) return [];
   const conditions = [];
@@ -188,6 +188,10 @@ export async function getProducts(opts?: { categoryId?: number; search?: string;
     query.orderBy(desc(sql`CAST(${products.price} AS DECIMAL)`));
   } else if (sortBy === 'discount') {
     query.orderBy(desc(sql`CASE WHEN ${products.originalPrice} IS NOT NULL AND CAST(${products.originalPrice} AS DECIMAL) > 0 THEN (CAST(${products.originalPrice} AS DECIMAL) - CAST(${products.price} AS DECIMAL)) / CAST(${products.originalPrice} AS DECIMAL) ELSE 0 END`));
+  } else if (sortBy === 'rating') {
+    query.orderBy(desc(sql`(SELECT COALESCE(AVG(r.rating), 0) FROM reviews r WHERE r.productId = ${products.id} AND r.status = 'approved')`));
+  } else if (sortBy === 'reviews') {
+    query.orderBy(desc(sql`(SELECT COUNT(*) FROM reviews r WHERE r.productId = ${products.id} AND r.status = 'approved')`));
   } else {
     query.orderBy(desc(products.createdAt));
   }
