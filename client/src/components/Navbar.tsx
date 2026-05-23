@@ -1,5 +1,5 @@
 import { useCart } from "@/contexts/CartContext";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, getLocalizedPath } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
@@ -16,8 +16,9 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
   const { totalItems } = useCart();
   const { count: wishlistCount } = useWishlist();
   const { user, isAuthenticated } = useAuth();
-  const { t } = useLanguage();
+  const { lang, setLang, t } = useLanguage();
   const { currency, setCurrency } = useCurrency();
+  const { data: categoriesData } = trpc.categories.list.useQuery();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
@@ -32,6 +33,8 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const currMenuRef = useRef<HTMLDivElement>(null);
+  const langMenuRef = useRef<HTMLDivElement>(null);
+  const [showLangMenu, setShowLangMenu] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(searchQuery), 300);
@@ -79,6 +82,11 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
       ) {
         setShowNotifDropdown(false);
       }
+      if (
+        langMenuRef.current && !langMenuRef.current.contains(e.target as Node)
+      ) {
+        setShowLangMenu(false);
+      }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -103,6 +111,31 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
       document.removeEventListener("keydown", keyHandler);
     };
   }, [showCatalogModal]);
+
+  // Handle language switch with URL navigation
+  const handleLangSwitch = (newLang: "ru" | "uz") => {
+    if (newLang === lang) return;
+    const cats = (categoriesData ?? []) as Array<{ slug: string; slugUz?: string | null }>;
+    // For product pages, we need to get the product's slugUz from the current page data
+    // We'll extract slug from URL and find it in the page context
+    const prodRuMatch = location.match(/^\/product\/([^/]+)/);
+    const prodUzMatch = location.match(/^\/mahsulot\/([^/]+)/);
+    let productSlugMap: { slug: string; slugUz?: string | null } | null = null;
+    if (prodRuMatch || prodUzMatch) {
+      // Product slug mapping will be handled by reading data attribute from DOM
+      const el = document.querySelector('[data-product-slug-map]');
+      if (el) {
+        try {
+          productSlugMap = JSON.parse(el.getAttribute('data-product-slug-map') || 'null');
+        } catch { /* ignore */ }
+      }
+    }
+    const newPath = getLocalizedPath(location, newLang, cats, productSlugMap);
+    setLang(newLang);
+    if (newPath !== location) {
+      navigate(newPath);
+    }
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -492,7 +525,29 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
               )}
             </div>
 
-            {/* Language fixed to Russian — switcher removed */}
+            {/* Language switcher */}
+            <div className="relative" ref={langMenuRef}>
+              <button
+                onClick={() => setShowLangMenu((v) => !v)}
+                className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer select-none"
+              >
+                <span className="text-base leading-none">{lang === "ru" ? "🇷🇺" : "🇺🇿"}</span>
+                <span className="text-[10px] text-gray-600 font-medium flex items-center gap-0.5">
+                  {lang === "ru" ? "RU" : "UZ"}
+                  <ChevronDown size={9} className={`transition-transform ${showLangMenu ? "rotate-180" : ""}`} />
+                </span>
+              </button>
+              {showLangMenu && (
+                <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden z-50 min-w-[130px]">
+                  <button onClick={() => { handleLangSwitch("ru"); setShowLangMenu(false); }} className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-red-50 transition-colors ${lang === "ru" ? "bg-red-50 text-red-700 font-semibold" : "text-gray-700"}`}>
+                    <span>🇷🇺</span><span>Русский</span>{lang === "ru" && <span className="ml-auto text-red-500">✓</span>}
+                  </button>
+                  <button onClick={() => { handleLangSwitch("uz"); setShowLangMenu(false); }} className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-red-50 transition-colors ${lang === "uz" ? "bg-red-50 text-red-700 font-semibold" : "text-gray-700"}`}>
+                    <span>🇺🇿</span><span>O‘zbek</span>{lang === "uz" && <span className="ml-auto text-red-500">✓</span>}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

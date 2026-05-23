@@ -20,7 +20,7 @@ export default function CategoryPage({ slug }: CategoryPageProps) {
 
   const { data: categoriesData } = trpc.categories.list.useQuery();
   const categories = categoriesData ?? [];
-  const category = categories.find(c => c.slug === slug);
+  const category = categories.find(c => c.slug === slug || (c as any).slugUz === slug);
 
   const { data, isLoading } = trpc.products.list.useQuery({
     categoryId: category?.id,

@@ -1,5 +1,5 @@
 import { useCart } from "@/contexts/CartContext";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, getLocalizedPath } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -13,7 +13,8 @@ import { trpc } from "@/lib/trpc";
 export default function MobileBottomNav() {
   const [location] = useLocation();
   const { totalItems } = useCart();
-  const { t } = useLanguage();
+  const { lang, setLang, t } = useLanguage();
+  const [, navigate] = useLocation();
   const { currency, setCurrency } = useCurrency();
   const { user, isAuthenticated } = useAuth();
   const { data: sellerProfile } = trpc.sellers.me.useQuery(undefined, { enabled: isAuthenticated, staleTime: 5 * 60 * 1000 });
@@ -373,6 +374,47 @@ export default function MobileBottomNav() {
             )}
 
             <div className="h-px bg-gray-100 my-1" />
+
+            {/* Language selector */}
+            <div className="px-3 py-2">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Язык / Til</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    if (lang !== "ru") {
+                      const cats = (categories ?? []) as Array<{ slug: string; slugUz?: string | null }>;
+                      let productSlugMap: { slug: string; slugUz?: string | null } | null = null;
+                      const el = document.querySelector('[data-product-slug-map]');
+                      if (el) { try { productSlugMap = JSON.parse(el.getAttribute('data-product-slug-map') || 'null'); } catch {} }
+                      const newPath = getLocalizedPath(location, "ru", cats, productSlugMap);
+                      setLang("ru");
+                      if (newPath !== location) navigate(newPath);
+                      setMenuOpen(false);
+                    }
+                  }}
+                  className={`flex items-center gap-2 flex-1 px-3 py-2.5 rounded-xl border-2 text-sm font-semibold transition-all ${lang === "ru" ? "border-red-500 bg-red-50 text-red-700" : "border-gray-200 text-gray-600 hover:border-gray-300"}`}
+                >
+                  <span>🇷🇺</span> Русский {lang === "ru" && <span className="ml-auto text-red-500 text-xs">✓</span>}
+                </button>
+                <button
+                  onClick={() => {
+                    if (lang !== "uz") {
+                      const cats = (categories ?? []) as Array<{ slug: string; slugUz?: string | null }>;
+                      let productSlugMap: { slug: string; slugUz?: string | null } | null = null;
+                      const el = document.querySelector('[data-product-slug-map]');
+                      if (el) { try { productSlugMap = JSON.parse(el.getAttribute('data-product-slug-map') || 'null'); } catch {} }
+                      const newPath = getLocalizedPath(location, "uz", cats, productSlugMap);
+                      setLang("uz");
+                      if (newPath !== location) navigate(newPath);
+                      setMenuOpen(false);
+                    }
+                  }}
+                  className={`flex items-center gap-2 flex-1 px-3 py-2.5 rounded-xl border-2 text-sm font-semibold transition-all ${lang === "uz" ? "border-red-500 bg-red-50 text-red-700" : "border-gray-200 text-gray-600 hover:border-gray-300"}`}
+                >
+                  <span>🇺🇿</span> O'zbek {lang === "uz" && <span className="ml-auto text-red-500 text-xs">✓</span>}
+                </button>
+              </div>
+            </div>
 
             {/* Currency selector */}
             <div className="px-3 py-2">

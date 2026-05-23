@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, ReactNode } from "react";
 
 export type Language = "ru" | "uz";
 
@@ -835,17 +835,69 @@ const LanguageContext = createContext<LanguageContextType>({
   t: ru,
 });
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  // Language is fixed to Russian — Uzbek support removed for now
-  const lang: Language = "ru";
-  // Clear any saved UZ preference from localStorage
-  if (typeof localStorage !== "undefined") {
-    localStorage.setItem("kc_lang", "ru");
+/**
+ * Map current URL path to the equivalent path in the target language.
+ * Handles:
+ *   /category/:slug  <->  /kategoriya/:slugUz
+ *   /product/:slug   <->  /mahsulot/:slugUz
+ * For other pages the URL stays unchanged.
+ */
+function getLocalizedPath(
+  currentPath: string,
+  targetLang: Language,
+  categoriesList: Array<{ slug: string; slugUz?: string | null }>,
+  productSlugUzMap?: { slug: string; slugUz?: string | null } | null
+): string {
+  // Category pages
+  const catRuMatch = currentPath.match(/^\/category\/([^/]+)/);
+  const catUzMatch = currentPath.match(/^\/kategoriya\/([^/]+)/);
+
+  if (targetLang === "uz") {
+    if (catRuMatch) {
+      const ruSlug = catRuMatch[1];
+      const cat = categoriesList.find(c => c.slug === ruSlug);
+      if (cat?.slugUz) return `/kategoriya/${cat.slugUz}`;
+    }
+  } else {
+    if (catUzMatch) {
+      const uzSlug = catUzMatch[1];
+      const cat = categoriesList.find(c => (c as any).slugUz === uzSlug);
+      if (cat) return `/category/${cat.slug}`;
+    }
   }
 
-  const setLang = (_newLang: Language) => {
-    // No-op: language is fixed to Russian
-  };
+  // Product pages
+  const prodRuMatch = currentPath.match(/^\/product\/([^/]+)/);
+  const prodUzMatch = currentPath.match(/^\/mahsulot\/([^/]+)/);
+
+  if (targetLang === "uz") {
+    if (prodRuMatch && productSlugUzMap?.slugUz) {
+      return `/mahsulot/${productSlugUzMap.slugUz}`;
+    }
+  } else {
+    if (prodUzMatch && productSlugUzMap?.slug) {
+      return `/product/${productSlugUzMap.slug}`;
+    }
+  }
+
+  return currentPath;
+}
+
+export function LanguageProvider({ children }: { children: ReactNode }) {
+  const [lang, setLangState] = useState<Language>(() => {
+    if (typeof localStorage !== "undefined") {
+      const saved = localStorage.getItem("kc_lang");
+      if (saved === "uz" || saved === "ru") return saved;
+    }
+    return "ru";
+  });
+
+  const setLang = useCallback((newLang: Language) => {
+    setLangState(newLang);
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem("kc_lang", newLang);
+    }
+  }, []);
 
   const t = translations[lang];
 
@@ -859,3 +911,5 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 export function useLanguage() {
   return useContext(LanguageContext);
 }
+
+export { getLocalizedPath };

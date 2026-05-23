@@ -984,3 +984,11 @@
 - [x] ProductDetail.tsx: canonical = /product/:slug, hreflang uz = /mahsulot/:slugUz
 - [x] sitemap.ts: /kategoriya/:slugUz и /mahsulot/:slugUz включены как отдельные URL
 - [x] Admin.tsx: кнопки генерации UZ slug-ов для категорий и товаров
+
+## v143 - Автоматическая смена URL при переключении языка
+- [x] LanguageContext: функция getLocalizedPath — /category/:slug ↔ /kategoriya/:slugUz, /product/:slug ↔ /mahsulot/:slugUz
+- [x] Navbar.tsx: переключатель языка с навигацией по URL (desktop)
+- [x] MobileBottomNav.tsx: переключатель языка с навигацией по URL (mobile)
+- [x] ProductDetail.tsx: data-product-slug-map для маппинга slug/slugUz
+- [x] CategoryPage.tsx: поиск категории по slug ИЛИ slugUz
+- [x] Если slugUz недоступен — остаётся на текущем URL без перенаправления

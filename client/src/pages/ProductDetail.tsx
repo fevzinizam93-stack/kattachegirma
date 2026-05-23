@@ -614,6 +614,8 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
 
   return (
     <>
+    {/* Hidden element for language switcher to read product slug mapping */}
+    <div data-product-slug-map={JSON.stringify({ slug: product.slug, slugUz: (product as any)?.slugUz || null })} className="hidden" />
     <div className="min-h-screen bg-gray-50">
       {/* Breadcrumb */}
       <div className="bg-white border-b border-gray-200">
