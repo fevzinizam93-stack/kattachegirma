@@ -664,6 +664,22 @@ export const appRouter = router({
         return { total, translated, skipped, errors };
       }),
 
+    // Public: translate product description on demand (RU→UZ) for users who don't know Russian
+    translateDescription: publicProcedure
+      .input(z.object({
+        text: z.string().min(1).max(8000),
+      }))
+      .mutation(async ({ input }) => {
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: "You are a professional Russian-to-Uzbek translator. Translate the given text to Uzbek using modern Latin script (as used in Uzbekistan). Output only the translated text, no explanations." },
+            { role: "user", content: input.text },
+          ],
+        });
+        const translated = response.choices?.[0]?.message?.content ?? "";
+        return { translated: typeof translated === "string" ? translated : JSON.stringify(translated) };
+      }),
+
     // Seller: list own products
     sellerList: sellerProcedure.query(async ({ ctx }) => {
       const seller = await getSellerByUserId(ctx.user.id);

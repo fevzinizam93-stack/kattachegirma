@@ -226,6 +226,16 @@ function ContactButton({ phone, telegram }: { phone: string; telegram: string })
 export default function ProductDetail({ slug }: ProductDetailProps) {
   const [quantity, setQuantity] = useState(1);
   const [activeImageIdx, setActiveImageIdx] = useState(0);
+  // On-demand description translation (RU→UZ)
+  const [translatedDesc, setTranslatedDesc] = useState<string | null>(null);
+  const [showTranslated, setShowTranslated] = useState(false);
+  const translateDescMut = trpc.products.translateDescription.useMutation({
+    onSuccess: (data) => {
+      setTranslatedDesc(data.translated);
+      setShowTranslated(true);
+    },
+    onError: () => toast.error("Tarjimada xatolik yuz berdi"),
+  });
   const [zoomed, setZoomed] = useState(false);
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
   const [compareOpen, setCompareOpen] = useState(false);
@@ -958,20 +968,62 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
             {/* ===== RIGHT COLUMN: Description + Specs (accordion) ===== */}
             <div className="flex flex-col gap-3 p-3 md:p-4">
 
-              {descriptionText ? (
-                <AccordionSection title={t.detail_about} defaultOpen={true}>
-                  <p className="text-gray-700 leading-relaxed text-sm whitespace-pre-line">
-                    {descriptionText}
-                  </p>
-                </AccordionSection>
-              ) : (
-                <AccordionSection title={t.detail_about} defaultOpen={true}>
+              <AccordionSection title={t.detail_about} defaultOpen={true}>
+                {descriptionText ? (
+                  <div className="flex flex-col gap-2">
+                    {/* Translate button row */}
+                    <div className="flex items-center gap-2">
+                      {!showTranslated ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (translatedDesc) {
+                              setShowTranslated(true);
+                            } else {
+                              translateDescMut.mutate({ text: descriptionText });
+                            }
+                          }}
+                          disabled={translateDescMut.isPending}
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-60"
+                        >
+                          {translateDescMut.isPending ? (
+                            <>
+                              <div className="w-3 h-3 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" />
+                              O‘zbek tiliga tarjima qilinmoqda...
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-sm leading-none">🌐</span>
+                              O‘zbek tiliga tarjima qilish
+                            </>
+                          )}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setShowTranslated(false)}
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-200 transition-colors"
+                        >
+                          <span className="text-sm leading-none">🇷🇺</span>
+                          Русский тилда кўрсатиш
+                        </button>
+                      )}
+                    </div>
+                    {/* Description text */}
+                    <p className="text-gray-700 leading-relaxed text-sm whitespace-pre-line">
+                      {showTranslated && translatedDesc ? translatedDesc : descriptionText}
+                    </p>
+                    {showTranslated && (
+                      <p className="text-[11px] text-gray-400 italic">AI yordamida tarjima qilindi</p>
+                    )}
+                  </div>
+                ) : (
                   <div className="flex flex-col items-center justify-center text-center py-8 text-gray-400">
                     <span className="text-4xl mb-2">📋</span>
                     <p className="text-sm">{t.detail_no_description}</p>
                   </div>
-                </AccordionSection>
-              )}
+                )}
+              </AccordionSection>
 
               {Object.keys(specs).length > 0 && (
                 <AccordionSection title={t.detail_specs} defaultOpen={true}>
