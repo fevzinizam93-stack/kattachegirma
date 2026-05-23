@@ -3,7 +3,7 @@ import ContactPhonePicker from "@/components/ContactPhonePicker";
 import BrandPicker from "@/components/BrandPicker";
 import { trpc } from "@/lib/trpc";
 import { BarChart3, Bell, Crown, Edit, FolderOpen, ImagePlus, MapPin, MessageSquare, Package, Plus, Search, Send, Settings, ShoppingBag, Star, Store, Trash2, Upload, Users, X, Zap, Phone, CheckCircle2, Clock, Youtube, PlayCircle, RefreshCw } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import { useAuthModal } from "@/App";
@@ -255,6 +255,10 @@ export default function Admin() {
   const [imageUploading, setImageUploading] = useState(false);
   const [uploadingCount, setUploadingCount] = useState(0);
   const [isTranslating, setIsTranslating] = useState(false);
+  const [isAutoTranslatingDesc, setIsAutoTranslatingDesc] = useState(false);
+  // Track if user manually edited the UZ description — if so, don't auto-overwrite
+  const descUzManualRef = useRef(false);
+  const autoTranslateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [exchangeRate, setExchangeRate] = useState<number>(12700); // UZS per 1 USD
   const [rateUpdatedAt, setRateUpdatedAt] = useState<string | null>(null);
   const [adminSearch, setAdminSearch] = useState("");
@@ -487,11 +491,11 @@ export default function Admin() {
   }, [storeSettingsRaw, settingsLoaded]);
 
   const createProduct = trpc.products.create.useMutation({
-    onSuccess: () => { toast.success("Товар добавлен!"); utils.products.list.invalidate(); setShowForm(false); setForm(emptyForm); },
+    onSuccess: () => { toast.success("Товар добавлен!"); utils.products.list.invalidate(); setShowForm(false); setForm(emptyForm); descUzManualRef.current = false; },
     onError: (e) => toast.error("Ошибка: " + e.message),
   });
   const updateProduct = trpc.products.update.useMutation({
-    onSuccess: () => { toast.success("Товар обновлён!"); utils.products.list.invalidate(); setShowForm(false); setForm(emptyForm); setEditId(null); },
+    onSuccess: () => { toast.success("Товар обновлён!"); utils.products.list.invalidate(); setShowForm(false); setForm(emptyForm); setEditId(null); descUzManualRef.current = false; },
     onError: (e) => toast.error("Ошибка: " + e.message),
   });
   const deleteProduct = trpc.products.delete.useMutation({
@@ -534,23 +538,47 @@ export default function Admin() {
     onError: (e) => toast.error(e.message),
   });
 
-  const translateProduct = trpc.products.translate.useMutation({
+   const translateProduct = trpc.products.translate.useMutation({
     onSuccess: (data) => {
       setForm(f => ({ ...f, nameUz: data.nameUz, descriptionUz: data.descriptionUz }));
       toast.success("Перевод выполнен!");
       setIsTranslating(false);
+      setIsAutoTranslatingDesc(false);
     },
     onError: (e) => {
       toast.error("Ошибка перевода: " + e.message);
       setIsTranslating(false);
+      setIsAutoTranslatingDesc(false);
     },
   });
-
   const handleTranslate = () => {
     if (!form.name.trim()) { toast.error("Сначала введите название на русском"); return; }
     setIsTranslating(true);
     translateProduct.mutate({ name: form.name, description: form.description || undefined });
   };
+
+  // Auto-translate description RU→UZ with 1.5s debounce
+  // Only triggers when UZ description was NOT manually edited by user
+  const handleDescriptionRuChange = useCallback((value: string) => {
+    setForm(f => ({ ...f, description: value }));
+    // Clear existing timer
+    if (autoTranslateTimerRef.current) clearTimeout(autoTranslateTimerRef.current);
+    // Only auto-translate if UZ field was not manually edited
+    if (descUzManualRef.current) return;
+    if (!value.trim()) return;
+    autoTranslateTimerRef.current = setTimeout(() => {
+      setIsAutoTranslatingDesc(true);
+      translateProduct.mutate({ name: form.name || "товар", description: value });
+    }, 1500);
+  }, [form.name, translateProduct]);
+
+  // When user manually types in UZ description — mark as manual, stop auto-translate
+  const handleDescriptionUzChange = useCallback((value: string) => {
+    descUzManualRef.current = true; // user manually edited
+    if (autoTranslateTimerRef.current) clearTimeout(autoTranslateTimerRef.current);
+    setIsAutoTranslatingDesc(false);
+    setForm(f => ({ ...f, descriptionUz: value }));
+  }, []);
 
   const saveSettings = trpc.storeSettings.setMany.useMutation({
     onSuccess: () => { toast.success("Настройки сохранены!"); utils.storeSettings.getAll.invalidate(); },
@@ -716,6 +744,9 @@ export default function Admin() {
     });
     setEditId(p.id);
     setShowForm(true);
+    // Reset manual UZ description flag when editing a product
+    descUzManualRef.current = false;
+    if (autoTranslateTimerRef.current) clearTimeout(autoTranslateTimerRef.current);
   };
 
   const statusLabels: Record<string, string> = {
@@ -794,7 +825,7 @@ export default function Admin() {
                     {scanLoading ? "Сканирую..." : "Скан видео"}
                   </button>
                   <button
-                    onClick={() => { setShowForm(true); setForm(emptyForm); setEditId(null); }}
+                    onClick={() => { setShowForm(true); setForm(emptyForm); setEditId(null); descUzManualRef.current = false; if (autoTranslateTimerRef.current) clearTimeout(autoTranslateTimerRef.current); }}
                     className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
                   >
                     <Plus size={16} /> Добавить
@@ -1033,13 +1064,24 @@ export default function Admin() {
                       </div>
                       <div className="col-span-2">
                         <label className="block text-sm font-semibold mb-1">Описание (русский)</label>
-                        <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                        <textarea value={form.description} onChange={e => handleDescriptionRuChange(e.target.value)}
                           rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" placeholder="Описание на русском..." />
+                        {isAutoTranslatingDesc && (
+                          <p className="text-xs text-blue-500 mt-1 flex items-center gap-1">
+                            <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" /></svg>
+                            Переводится на узбекский...
+                          </p>
+                        )}
                       </div>
                       <div className="col-span-2">
-                        <label className="block text-sm font-semibold mb-1">Описание (узбекский, необязательно)</label>
-                        <textarea value={form.descriptionUz} onChange={e => setForm(f => ({ ...f, descriptionUz: e.target.value }))}
-                          rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" placeholder="Описание на узбекском (необязательно)..." />
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="block text-sm font-semibold">Описание (узбекский, необязательно)</label>
+                          {descUzManualRef.current && (
+                            <button type="button" onClick={() => { descUzManualRef.current = false; setForm(f => ({ ...f, descriptionUz: "" })); if (form.description.trim()) { setIsAutoTranslatingDesc(true); translateProduct.mutate({ name: form.name || "товар", description: form.description }); } }} className="text-xs text-blue-500 hover:underline">↺ Авто-перевод</button>
+                          )}
+                        </div>
+                        <textarea value={form.descriptionUz} onChange={e => handleDescriptionUzChange(e.target.value)}
+                          rows={3} className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 resize-none ${descUzManualRef.current ? 'border-orange-300 focus:ring-orange-300' : 'border-gray-200 focus:ring-primary/30'}`} placeholder={descUzManualRef.current ? "Введено вручную (авто-перевод отключён)" : "Заполнится автоматически при вводе русского описания..."} />
                       </div>
                       {/* Seller info */}
                       <div className="col-span-2 border-t border-gray-100 pt-3">

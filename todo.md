@@ -942,3 +942,10 @@
 - [ ] SellerProducts.tsx: аналогичный блок поиска видео для продавцов
 - [ ] AdminProducts.tsx: кнопка «Сканировать видеообзоры» для массовой привязки
 - [ ] ProductDetail.tsx: приоритет сохранённого videoId над динамическим поиском
+
+## v138 - Авто-перевод описания RU→UZ в Admin панели
+- [x] tRPC процедура `products.translate` — перевод через invokeLLM (RU→UZ) — уже существовала
+- [x] Admin.tsx: handleDescriptionRuChange — debounce 1.5s, авто-перевод RU→UZ при вводе русского описания
+- [x] Admin.tsx: handleDescriptionUzChange — если введено вручную, авто-перевод не запускается
+- [x] Admin.tsx: индикатор "Переводится на узбекский..." под русским полем
+- [x] Admin.tsx: кнопка "↺ Авто-перевод" если узбекское было введено вручную
