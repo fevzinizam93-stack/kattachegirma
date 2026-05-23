@@ -751,6 +751,164 @@ export const appRouter = router({
         return { total: needsSlug.length, updated };
       }),
 
+    // Admin/Seller: generate unique SEO description for a product using AI
+    generateDescription: protectedProcedure
+      .input(z.object({
+        productId: z.number(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const product = await getProductById(input.productId);
+        if (!product) throw new TRPCError({ code: "NOT_FOUND", message: "Product not found" });
+        // Allow admin or the seller who owns the product
+        if (ctx.user.role !== "admin") {
+          const seller = await getSellerByUserId(ctx.user.id);
+          if (!seller || (product as any).sellerId !== seller.id) {
+            throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+          }
+        }
+        const categories = await getAllCategories();
+        const category = categories.find((c: any) => c.id === (product as any).categoryId);
+        const categoryName = category ? (category as any).name : "бытовая техника";
+
+        const prompt = [
+          "Ты — SEO-копирайтер интернет-магазина бытовой техники в Узбекистане.",
+          "Напиши уникальное, привлекательное описание товара для карточки товара (150-250 слов).",
+          "Описание должно:",
+          "- Содержать ключевые слова для поиска (название, бренд, категория)",
+          "- Описывать преимущества и характеристики товара",
+          "- Быть написано простым языком для покупателей",
+          "- Включать призыв к покупке",
+          "",
+          `Товар: ${product.name}`,
+          `Бренд: ${(product as any).brand || 'не указан'}`,
+          `Категория: ${categoryName}`,
+          `Цена: ${product.price} сум`,
+          (product as any).originalPrice ? `Старая цена: ${(product as any).originalPrice} сум (скидка!)` : "",
+          (product as any).specs && Object.keys((product as any).specs).length > 0 ? `Характеристики: ${JSON.stringify((product as any).specs)}` : "",
+          "",
+          "Верни JSON с двумя полями:",
+          '"description" — описание на русском языке',
+          '"descriptionUz" — описание на узбекском языке (латиница)',
+        ].filter(Boolean).join("\n");
+
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: "Ты SEO-копирайтер. Пиши только JSON без дополнительного текста." },
+            { role: "user", content: prompt },
+          ],
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "product_description",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  description: { type: "string", description: "Product description in Russian" },
+                  descriptionUz: { type: "string", description: "Product description in Uzbek Latin" },
+                },
+                required: ["description", "descriptionUz"],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+
+        const content = response.choices?.[0]?.message?.content ?? "{}";
+        const parsed = JSON.parse(typeof content === "string" ? content : JSON.stringify(content));
+        const description = parsed.description ?? "";
+        const descriptionUz = parsed.descriptionUz ?? "";
+
+        // Save to DB
+        await updateProduct(input.productId, { description, descriptionUz } as any);
+
+        return { description, descriptionUz };
+      }),
+
+    // Admin: bulk generate descriptions for all products without descriptions
+    bulkGenerateDescriptions: adminProcedure
+      .mutation(async () => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB not available" });
+        const allProducts = await getProducts({ limit: 5000, offset: 0, includeInactive: true });
+        const needsDescription = allProducts.filter((p: any) => !p.description || p.description.trim().length < 20);
+        const total = needsDescription.length;
+        let generated = 0;
+        let skipped = 0;
+        let errors = 0;
+
+        const categories = await getAllCategories();
+
+        const BATCH_SIZE = 3;
+        for (let i = 0; i < needsDescription.length; i += BATCH_SIZE) {
+          const batch = needsDescription.slice(i, i + BATCH_SIZE);
+          await Promise.all(
+            batch.map(async (product: any) => {
+              try {
+                const category = categories.find((c: any) => c.id === product.categoryId);
+                const categoryName = category ? (category as any).name : "бытовая техника";
+
+                const prompt = [
+                  "Ты — SEO-копирайтер интернет-магазина бытовой техники в Узбекистане.",
+                  "Напиши уникальное описание товара (150-250 слов) с ключевыми словами для поиска.",
+                  "",
+                  `Товар: ${product.name}`,
+                  `Бренд: ${product.brand || 'не указан'}`,
+                  `Категория: ${categoryName}`,
+                  product.specs && Object.keys(product.specs).length > 0 ? `Характеристики: ${JSON.stringify(product.specs)}` : "",
+                  "",
+                  "Верни JSON: {\"description\": \"...\", \"descriptionUz\": \"...\"}",
+                ].filter(Boolean).join("\n");
+
+                const response = await invokeLLM({
+                  messages: [
+                    { role: "system", content: "Ты SEO-копирайтер. Пиши только JSON." },
+                    { role: "user", content: prompt },
+                  ],
+                  response_format: {
+                    type: "json_schema",
+                    json_schema: {
+                      name: "product_description",
+                      strict: true,
+                      schema: {
+                        type: "object",
+                        properties: {
+                          description: { type: "string", description: "Product description in Russian" },
+                          descriptionUz: { type: "string", description: "Product description in Uzbek Latin" },
+                        },
+                        required: ["description", "descriptionUz"],
+                        additionalProperties: false,
+                      },
+                    },
+                  },
+                });
+
+                const content = response.choices?.[0]?.message?.content ?? "{}";
+                const parsed = JSON.parse(typeof content === "string" ? content : JSON.stringify(content));
+
+                if (parsed.description && parsed.description.length > 20) {
+                  await updateProduct(product.id, {
+                    description: parsed.description,
+                    descriptionUz: parsed.descriptionUz || "",
+                  } as any);
+                  generated++;
+                } else {
+                  skipped++;
+                }
+              } catch (e) {
+                console.error(`[bulkGenerateDescriptions] Error for product ${product.id}:`, e);
+                errors++;
+              }
+            })
+          );
+          if (i + BATCH_SIZE < needsDescription.length) {
+            await new Promise(r => setTimeout(r, 1000));
+          }
+        }
+
+        return { total, generated, skipped, errors };
+      }),
+
     // Seller: list own products
     sellerList: sellerProcedure.query(async ({ ctx }) => {
       const seller = await getSellerByUserId(ctx.user.id);

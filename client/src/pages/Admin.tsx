@@ -551,6 +551,30 @@ export default function Admin() {
     onError: (e: any) => { setGenUzSlugsLoading(false); toast.error('Ошибка: ' + e.message); },
   });
 
+  // AI description generation state
+  const [bulkGenDescProgress, setBulkGenDescProgress] = useState<{ total: number; generated: number; skipped: number; errors: number } | null>(null);
+  const [bulkGenDescLoading, setBulkGenDescLoading] = useState(false);
+  const bulkGenDescMut = trpc.products.bulkGenerateDescriptions.useMutation({
+    onMutate: () => { setBulkGenDescLoading(true); setBulkGenDescProgress(null); },
+    onSuccess: (data: { total: number; generated: number; skipped: number; errors: number }) => {
+      setBulkGenDescProgress(data);
+      setBulkGenDescLoading(false);
+      utils.products.adminList.invalidate();
+      toast.success(`Описания сгенерированы: ${data.generated} товаров`);
+    },
+    onError: (e: any) => { setBulkGenDescLoading(false); toast.error("Ошибка генерации описаний: " + e.message); },
+  });
+  const [genDescLoading, setGenDescLoading] = useState(false);
+  const genDescMut = trpc.products.generateDescription.useMutation({
+    onMutate: () => setGenDescLoading(true),
+    onSuccess: (data: { description: string; descriptionUz: string }) => {
+      setGenDescLoading(false);
+      setForm(f => ({ ...f, description: data.description, descriptionUz: data.descriptionUz }));
+      toast.success("Описание сгенерировано ИИ!");
+    },
+    onError: (e: any) => { setGenDescLoading(false); toast.error("Ошибка генерации: " + e.message); },
+  });
+
   const approveSeller = trpc.sellers.approve.useMutation({
     onSuccess: () => { toast.success("Продавец одобрен!"); utils.sellers.list.invalidate(); },
     onError: (e) => toast.error(e.message),
@@ -903,6 +927,19 @@ export default function Admin() {
                   </button>
                   <button
                     type="button"
+                    onClick={() => {
+                      if (!bulkGenDescLoading && window.confirm('Сгенерировать SEO-описания для всех товаров без описания? Это может занять несколько минут.'))
+                        bulkGenDescMut.mutate();
+                    }}
+                    disabled={bulkGenDescLoading}
+                    title="Сгенерировать SEO-описания для товаров без описания"
+                    className="flex items-center gap-1.5 border border-purple-200 text-purple-700 bg-purple-50 px-3 py-2 rounded-xl font-semibold text-sm hover:bg-purple-100 transition-colors disabled:opacity-50"
+                  >
+                    {bulkGenDescLoading ? <div className="w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin" /> : <span>🤖</span>}
+                    {bulkGenDescLoading ? "Генерирую..." : "ИИ описания"}
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => autoScanMut.mutate({ overwrite: false })}
                     disabled={scanLoading}
                     title="Автоматически найти видеообзоры для товаров без видео"
@@ -950,6 +987,30 @@ export default function Admin() {
                     <span className="text-red-500">ошибок {bulkTranslateProgress.errors}</span>
                   )}
                   <button onClick={() => setBulkTranslateProgress(null)} className="ml-auto text-gray-400 hover:text-gray-600"><X size={14} /></button>
+                </div>
+              )}
+              {/* Bulk AI descriptions: loading indicator */}
+              {bulkGenDescLoading && (
+                <div className="flex items-center gap-3 text-sm bg-purple-50 border border-purple-200 rounded-xl px-4 py-3">
+                  <div className="w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-purple-800 font-semibold">🤖 Генерация SEO-описаний...</p>
+                    <p className="text-purple-600 text-xs mt-0.5">ИИ создаёт уникальные описания на русском и узбекском. Это может занять несколько минут.</p>
+                  </div>
+                </div>
+              )}
+              {/* Bulk AI descriptions: result statistics */}
+              {bulkGenDescProgress && !bulkGenDescLoading && (
+                <div className="flex items-center gap-2 text-sm bg-purple-50 border border-purple-200 rounded-xl px-4 py-2">
+                  <span className="text-base">🤖</span>
+                  <span className="text-purple-800 font-semibold">Генерация завершена:</span>
+                  <span className="text-purple-700">создано <strong>{bulkGenDescProgress.generated}</strong>,</span>
+                  <span className="text-gray-500">всего {bulkGenDescProgress.total},</span>
+                  <span className="text-gray-400">пропущено {bulkGenDescProgress.skipped}</span>
+                  {bulkGenDescProgress.errors > 0 && (
+                    <span className="text-red-500">ошибок {bulkGenDescProgress.errors}</span>
+                  )}
+                  <button onClick={() => setBulkGenDescProgress(null)} className="ml-auto text-gray-400 hover:text-gray-600"><X size={14} /></button>
                 </div>
               )}
               {/* Admin product search bar */}
@@ -1185,7 +1246,20 @@ export default function Admin() {
                         )}
                       </div>
                       <div className="col-span-2">
-                        <label className="block text-sm font-semibold mb-1">Описание (русский)</label>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="block text-sm font-semibold">Описание (русский)</label>
+                          {editId && (
+                            <button
+                              type="button"
+                              onClick={() => genDescMut.mutate({ productId: editId })}
+                              disabled={genDescLoading}
+                              className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800 font-semibold disabled:opacity-50"
+                            >
+                              {genDescLoading ? <div className="w-3 h-3 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin" /> : <span>🤖</span>}
+                              {genDescLoading ? "Генерирую..." : "Сгенерировать ИИ"}
+                            </button>
+                          )}
+                        </div>
                         <textarea value={form.description} onChange={e => handleDescriptionRuChange(e.target.value)}
                           rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" placeholder="Описание на русском..." />
                         {isAutoTranslatingDesc && (

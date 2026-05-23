@@ -168,6 +168,16 @@ export default function SellerDashboard() {
   const [, navigate] = useLocation();
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
+  const [genDescLoading, setGenDescLoading] = useState(false);
+  const genDescMut = trpc.products.generateDescription.useMutation({
+    onMutate: () => setGenDescLoading(true),
+    onSuccess: (data: { description: string; descriptionUz: string }) => {
+      setGenDescLoading(false);
+      setForm(f => ({ ...f, description: data.description }));
+      toast.success("Описание сгенерировано ИИ!");
+    },
+    onError: (e: any) => { setGenDescLoading(false); toast.error("Ошибка генерации: " + e.message); },
+  });
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Multi-photo state
@@ -600,9 +610,22 @@ export default function SellerDashboard() {
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-gray-600 mb-1">
-                  {t.admin_product_description}
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-bold text-gray-600">
+                    {t.admin_product_description}
+                  </label>
+                  {editId && (
+                    <button
+                      type="button"
+                      onClick={() => genDescMut.mutate({ productId: editId })}
+                      disabled={genDescLoading}
+                      className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800 font-semibold disabled:opacity-50"
+                    >
+                      {genDescLoading ? <div className="w-3 h-3 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin" /> : <span>🤖</span>}
+                      {genDescLoading ? "Генерирую..." : "Сгенерировать ИИ"}
+                    </button>
+                  )}
+                </div>
                 <textarea
                   value={form.description}
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}

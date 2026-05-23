@@ -1046,3 +1046,11 @@
 - [x] Canonical теги для предотвращения дублей
 - [x] Тестирование: curl с User-Agent Googlebot возвращает HTML с контентом
 - [x] TypeScript: 0 ошибок, тесты проходят
+
+## v149 - AI-генерация описаний товаров для SEO
+- [x] server/routers.ts: products.generateDescription — генерация описания для одного товара (RU + UZ) через LLM
+- [x] server/routers.ts: products.bulkGenerateDescriptions — массовая генерация для товаров без описания
+- [x] Admin.tsx: кнопка «🤖 Сгенерировать описание» в форме редактирования товара
+- [x] Admin.tsx: кнопка «Сгенерировать описания для всех» (массовая) в панели инструментов
+- [x] SellerDashboard.tsx: кнопка «🤖 Сгенерировать описание» для продавцов
+- [x] TypeScript: 0 ошибок, тесты проходят
