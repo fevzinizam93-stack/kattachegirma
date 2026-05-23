@@ -889,6 +889,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       const saved = localStorage.getItem("kc_lang");
       if (saved === "uz" || saved === "ru") return saved;
     }
+    // Auto-detect browser language on first visit
+    if (typeof navigator !== "undefined") {
+      const browserLang = navigator.language || (navigator as any).userLanguage || "";
+      if (browserLang.toLowerCase().startsWith("uz")) return "uz";
+    }
     return "ru";
   });
 

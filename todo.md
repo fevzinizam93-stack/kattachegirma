@@ -992,3 +992,8 @@
 - [x] ProductDetail.tsx: data-product-slug-map для маппинга slug/slugUz
 - [x] CategoryPage.tsx: поиск категории по slug ИЛИ slugUz
 - [x] Если slugUz недоступен — остаётся на текущем URL без перенаправления
+
+## v144 - Автоопределение языка браузера
+- [x] LanguageContext: при первом визите (нет сохранённого языка в localStorage) определяет navigator.language
+- [x] Если язык начинается с "uz" — устанавливает UZ, иначе RU (по умолчанию)
+- [x] Не перезаписывает выбор пользователя если он уже переключал язык ранее (localStorage)
