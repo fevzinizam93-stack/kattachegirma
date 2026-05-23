@@ -242,9 +242,9 @@ export default function Home() {
                   <h2 className="text-base md:text-xl font-black" style={{ color: "#c2410c" }}>
                     {t.nav_bestsellers}
                   </h2>
-                  <p className="text-xs font-medium" style={{ color: "#ea580c" }}>Самые горячие скидки</p>
+                  <p className="text-xs font-medium" style={{ color: "#ea580c" }}>{lang === 'uz' ? "Eng katta chegirmalar" : "Самые горячие скидки"}</p>
                 </div>
-                <span className="ml-1 text-xs font-bold px-2 py-0.5 rounded-full animate-pulse" style={{ background: "#f97316", color: "white" }}>ГОРЯЧО</span>
+                <span className="ml-1 text-xs font-bold px-2 py-0.5 rounded-full animate-pulse" style={{ background: "#f97316", color: "white" }}>{lang === 'uz' ? "CHEGIRMA" : "ГОРЯЧО"}</span>
               </div>
               <div className="flex items-center gap-2">
                 <button onClick={() => scrollSlider("left")} className="hidden md:flex items-center justify-center w-8 h-8 rounded-full border-2 border-orange-300 bg-white hover:bg-orange-50 hover:border-orange-500 transition-colors shadow-sm">

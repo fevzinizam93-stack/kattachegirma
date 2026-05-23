@@ -292,7 +292,7 @@ const ru: Translations = {
   nav_not_found_on_site: "На сайте ничего не найдено по",
   nav_search_internet: "Поиск в интернете",
   nav_premium: "Premium",
-  nav_bestsellers: "Хиты",
+  nav_bestsellers: "Большая скидка!!!",
   nav_become_seller: "Стать продавцом",
 
   // Footer
@@ -565,7 +565,7 @@ const uz: Translations = {
   nav_not_found_on_site: "Saytda topilmadi",
   nav_search_internet: "Internetda qidirish",
   nav_premium: "Premium",
-  nav_bestsellers: "Hitlar",
+  nav_bestsellers: "Katta Chegirmada!!!",
   nav_become_seller: "Sotuvchi bo'lish",
 
   // Footer
