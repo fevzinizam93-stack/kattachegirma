@@ -123,8 +123,8 @@ export function registerGoogleMerchantFeedRoute(app: Express) {
           (p.description || p.name || "").substring(0, 5000)
         );
 
-        // Use slug as item ID for Google Merchant Center (stable, human-readable)
-        const itemId = p.slug || String(p.id);
+        // Use numeric ID for Google Merchant Center (max 50 chars limit)
+        const itemId = String(p.id);
 
         // Display price (original if discounted, else current)
         const displayPrice = originalPrice && originalPrice > price ? originalPrice : price;
