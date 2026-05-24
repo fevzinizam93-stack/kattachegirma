@@ -107,23 +107,38 @@ const SITEMAP_URL = "https://kattachegirma.uz/sitemap.xml";
 let pingTimer: ReturnType<typeof setTimeout> | null = null;
 
 /**
- * Notify Google and Bing that the sitemap has been updated.
+ * Notify search engines that the sitemap has been updated.
+ * Uses IndexNow (Yandex + Bing) which replaced the deprecated /ping endpoints.
  * Debounced to 30 seconds so bulk admin operations only fire one ping.
  */
 export function pingSitemaps(): void {
   if (pingTimer) clearTimeout(pingTimer);
   pingTimer = setTimeout(async () => {
     pingTimer = null;
-    const engines = [
-      `https://www.google.com/ping?sitemap=${encodeURIComponent(SITEMAP_URL)}`,
-      `https://www.bing.com/ping?sitemap=${encodeURIComponent(SITEMAP_URL)}`,
+    const INDEX_NOW_KEY = "c426dc7430f65451d4a4a45d3111fadb";
+    const SITE_HOST = "kattachegirma.uz";
+    // IndexNow batch: submit sitemap URL to Yandex and Bing
+    const indexNowEngines = [
+      "https://yandex.com/indexnow",
+      "https://www.bing.com/indexnow",
     ];
-    for (const url of engines) {
+    const body = JSON.stringify({
+      host: SITE_HOST,
+      key: INDEX_NOW_KEY,
+      keyLocation: `https://${SITE_HOST}/${INDEX_NOW_KEY}.txt`,
+      urlList: [SITEMAP_URL],
+    });
+    for (const endpoint of indexNowEngines) {
       try {
-        const res = await fetch(url, { method: "GET", signal: AbortSignal.timeout(10_000) });
-        console.log(`[SitemapPing] ${url} → HTTP ${res.status}`);
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json; charset=utf-8" },
+          body,
+          signal: AbortSignal.timeout(10_000),
+        });
+        console.log(`[SitemapPing] IndexNow → ${endpoint} HTTP ${res.status}`);
       } catch (err) {
-        console.warn(`[SitemapPing] Failed to ping ${url}:`, err);
+        console.warn(`[SitemapPing] Failed to ping ${endpoint}:`, err);
       }
     }
   }, 30_000); // 30-second debounce

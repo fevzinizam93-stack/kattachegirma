@@ -1095,3 +1095,13 @@
 - [x] Исправить расхождение цен: цена на странице товара ($134) отличается от цены в админ панели ($140) — разобраться с курсом доллара и логикой отображения цены
 - [x] Исправить slug категорий с заглавными буквами в БД (MOROZILKA → morozilka и т.д.)
 - [x] Добавить 301-редиректы для URL категорий с заглавными буквами → строчные (/catalog/MOROZILKA → /catalog/morozilka)
+
+## SEO + IndexNow + Canonical (v153)
+- [x] Убрать дублирующий canonical тег из client/index.html (вызывал ошибку Google "canonical not chosen by user")
+- [x] Добавить 301-редиректы для URL с заглавными буквами → строчные (/catalog/MOROZILKA → /catalog/morozilka)
+- [x] Исправить slug категорий в БД: Televizor→televizor, Fotoepilyator→fotoepilyator
+- [x] Добавить pingSitemaps() в server/sitemap.ts (дебаунс 30с, IndexNow для Yandex + Bing)
+- [x] Подключить pingSitemaps() к мутациям products.create/update/delete и categories.upsert/delete
+- [x] Файл ключа IndexNow c426dc7430f65451d4a4a45d3111fadb.txt существует в client/public/ и доступен на продакшне
+- [x] Checkpoint b100caec создан, ожидает публикации (нужно нажать Publish в UI)
+- NOTE: IndexNow POST запросы возвращают HTTP 000 из sandbox-среды (ограничение сети), но будут работать на продакшне (Cloud Run имеет исходящий доступ в интернет)

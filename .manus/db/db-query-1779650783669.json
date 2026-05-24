@@ -1,0 +1,14 @@
+{
+  "query": "SELECT id, name FROM products LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute SELECT id, name FROM products LIMIT 1;",
+  "rows": [
+    {
+      "id": "30001",
+      "name": "МОРОЗИЛЬКА FRANCO Cfr252-G"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\n30001\tМОРОЗИЛЬКА FRANCO Cfr252-G\n",
+  "stderr": "",
+  "execution_time_ms": 320
+}
