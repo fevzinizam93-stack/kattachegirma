@@ -40,6 +40,11 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
 
+  // Debug endpoint to verify which server version is running
+  app.get("/__version", (req, res) => {
+    res.json({ version: "v2-seoprerender", nodeEnv: process.env.NODE_ENV, ts: new Date().toISOString() });
+  });
+
   // Redirect www to non-www for canonical SEO (301 permanent)
   // Canonical domain is kattachegirma.uz (without www)
   app.use((req, res, next) => {
