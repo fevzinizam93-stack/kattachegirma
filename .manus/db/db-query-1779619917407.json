@@ -1,0 +1,90 @@
+{
+  "query": "SELECT id, name, slug FROM products WHERE name LIKE '%Franco FR-50%' OR name LIKE '%franco fr-50%' LIMIT 5;\nSELECT id, name, slug FROM products WHERE slug LIKE '%franco%' LIMIT 15;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute SELECT id, name, slug FROM products WHERE name LIKE '%Franco FR-50%' OR name LIKE '%franco fr-50%' LIMIT 5;\nSELECT id, name, slug FROM products WHERE slug LIKE '%franco%' LIMIT 15;",
+  "rows": [
+    {
+      "id": "60018",
+      "name": "Очиститель и увлажнитель воздуха Franco FR-50E",
+      "slug": "franco-fr-50e"
+    },
+    {
+      "id": "id",
+      "name": "name",
+      "slug": "slug"
+    },
+    {
+      "id": "30001",
+      "name": "МОРОЗИЛЬКА FRANCO Cfr252-G",
+      "slug": "franco-cfr252-g"
+    },
+    {
+      "id": "60015",
+      "name": "Стиралная машинка Franco 6 KG FRC60-1720B",
+      "slug": "franco-frc60-1720b"
+    },
+    {
+      "id": "60016",
+      "name": "Стиралная машинка Franco 7 KG",
+      "slug": "franco-7-kg"
+    },
+    {
+      "id": "60017",
+      "name": "Очиститель и увлажнитель воздух Franco FR-15",
+      "slug": "franco-fr-15"
+    },
+    {
+      "id": "60018",
+      "name": "Очиститель и увлажнитель воздуха Franco FR-50E",
+      "slug": "franco-fr-50e"
+    },
+    {
+      "id": "180001",
+      "name": "куллер FRANCO TEA BAR",
+      "slug": "franco-tea-bar"
+    },
+    {
+      "id": "900001",
+      "name": "Кулеры для воды FRANCO BL95-BL Верхняя загрузка",
+      "slug": "kulery-dlya-vody-franco-bl95-bl-verkhnyaya-zagruzka"
+    },
+    {
+      "id": "900002",
+      "name": "Кулеры для воды FRANCO RTL80-MB С холодильником ",
+      "slug": "kulery-dlya-vody-franco-rtl80-mb-s-kholodilnikom"
+    },
+    {
+      "id": "900003",
+      "name": "Кулеры для воды FRANCO RTL85-MG С холодильником ",
+      "slug": "kulery-dlya-vody-franco-rtl85-mg-s-kholodilnikom"
+    },
+    {
+      "id": "900004",
+      "name": "Кулеры для воды FRANCO TI75-DG",
+      "slug": "kulery-dlya-vody-franco-rtl-85mg"
+    },
+    {
+      "id": "900005",
+      "name": "Кулеры для воды FRANCO TI70-BL",
+      "slug": "kulery-dlya-vody-franco-ti70-bl"
+    },
+    {
+      "id": "990001",
+      "name": "Климатический оборудование  FRANCO Z-1530",
+      "slug": "klimaticheskiy-oborudovanie-franco-z-1530"
+    },
+    {
+      "id": "1170001",
+      "name": "морозилка Franco cfr300g",
+      "slug": "morozilka-franco-cfr300g"
+    },
+    {
+      "id": "1170002",
+      "name": "морозилка Franco cfr252g",
+      "slug": "morozilka-franco-cfr252g"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tslug\n60018\tОчиститель и увлажнитель воздуха Franco FR-50E\tfranco-fr-50e\nid\tname\tslug\n30001\tМОРОЗИЛЬКА FRANCO Cfr252-G\tfranco-cfr252-g\n60015\tСтиралная машинка Franco 6 KG FRC60-1720B\tfranco-frc60-1720b\n60016\tСтиралная машинка Franco 7 KG\tfranco-7-kg\n60017\tОчиститель и увлажнитель воздух Franco FR-15\tfranco-fr-15\n60018\tОчиститель и увлажнитель воздуха Franco FR-50E\tfranco-fr-50e\n180001\tкуллер FRANCO TEA BAR\tfranco-tea-bar\n900001\tКулеры для воды FRANCO BL95-BL Верхняя загрузка\tkulery-dlya-vody-franco-bl95-bl-verkhnyaya-zagruzka\n900002\tКулеры для воды FRANCO RTL80-MB С холодильником \tkulery-dlya-vody-franco-rtl80-mb-s-kholodilnikom\n900003\tКулеры для воды FRANCO RTL85-MG С холодильником \tkulery-dlya-vody-franco-rtl85-mg-s-kholodilnikom\n900004\tКулеры для воды FRANCO TI75-DG\tkulery-dlya-vody-franco-rtl-85mg\n900005\tКулеры для воды FRANCO TI70-BL\tkulery-dlya-vody-franco-ti70-bl\n990001\tКлиматический оборудование  FRANCO Z-1530\tklimaticheskiy-oborudovanie-franco-z-1530\n1170001\tморозилка Franco cfr300g\tmorozilka-franco-cfr300g\n1170002\tморозилка Franco cfr252g\tmorozilka-franco-cfr252g\n",
+  "stderr": "",
+  "execution_time_ms": 281
+}

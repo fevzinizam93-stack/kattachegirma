@@ -1,0 +1,13 @@
+{
+  "query": "UPDATE products SET slug = REGEXP_REPLACE(slug, '^-+', '') WHERE slug REGEXP '^-+';\nSELECT COUNT(*) as remaining_bad_slugs FROM products WHERE slug REGEXP '^-+';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute UPDATE products SET slug = REGEXP_REPLACE(slug, '^-+', '') WHERE slug REGEXP '^-+';\nSELECT COUNT(*) as remaining_bad_slugs FROM products WHERE slug REGEXP '^-+';",
+  "rows": [
+    {
+      "remaining_bad_slugs": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "remaining_bad_slugs\n0\n",
+  "stderr": "",
+  "execution_time_ms": 298
+}

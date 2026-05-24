@@ -1,0 +1,106 @@
+{
+  "query": "SELECT COUNT(*) as total FROM products WHERE slug REGEXP '^-+';\nSELECT id, name, slug FROM products WHERE slug REGEXP '^-+' LIMIT 30;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute SELECT COUNT(*) as total FROM products WHERE slug REGEXP '^-+';\nSELECT id, name, slug FROM products WHERE slug REGEXP '^-+' LIMIT 30;",
+  "rows": [
+    {
+      "total": "33"
+    },
+    {
+      "total": "id\tname\tslug"
+    },
+    {
+      "total": "30001\tМОРОЗИЛЬКА FRANCO Cfr252-G\t-franco-cfr252-g"
+    },
+    {
+      "total": "60001\tМорозильная камера Xingx SD/SC-326SY\t--xingx-sdsc-326sy"
+    },
+    {
+      "total": "60002\tпылесос Avangard Av-2003\t-avangard-av-2003"
+    },
+    {
+      "total": "60003\tСтиральная машина LG F2Y1VS5W 9 Кг\t--lg-f2y1vs5w-9-"
+    },
+    {
+      "total": "60004\tКондиционер 7TECH 7AC4G12WS3 Inverter 12\t-7tech-7ac4g12ws3-inverter-12"
+    },
+    {
+      "total": "60005\tКондиционер AUX Серия C-Smart Premium INVERTER Crystal CCRE\t-aux--c-smart-premium-inverter-crystal-ccre"
+    },
+    {
+      "total": "60006\tКондиционер AUX Серия J Inverter с теном JLR\t-aux--j-inverter---jlr"
+    },
+    {
+      "total": "60007\tКондиционер AUX Серия Classic Pro Inverter CAR3DI\t-aux--classic-pro-inverter-car3di"
+    },
+    {
+      "total": "60008\tКондиционер AUX Серия Premium Progressive Inverter C PRO\t-aux--premium-progressive-inverter-c-pro"
+    },
+    {
+      "total": "60009\tКондиционер AUX Серия Q Fresh series Inverter FADR (с подачей свежего воздуха)\t-aux--q-fresh-series-inverter-fadr----"
+    },
+    {
+      "total": "60010\tПылесос Philips FC 8632\t-philips-fc-8632"
+    },
+    {
+      "total": "60011\tПылесос PHILIPS FC9728/01 \t-philips-fc972801-"
+    },
+    {
+      "total": "60012\tПылесос Philips XB2022/01\t-philips-xb202201"
+    },
+    {
+      "total": "60013\tКондиционер Avangard AV 12, белый\t-avangard-av-12-"
+    },
+    {
+      "total": "60014\tКондиционер Aucma 12\t-aucma-12"
+    },
+    {
+      "total": "60015\tСтиралная машинка Franco 6 KG FRC60-1720B\t--franco-frc60-1720b"
+    },
+    {
+      "total": "60016\tСтиралная машинка Franco 7 KG\t--franco-7-kg"
+    },
+    {
+      "total": "60017\tОчиститель и увлажнитель воздух Franco FR-15\t----franco-fr-15"
+    },
+    {
+      "total": "60018\tОчиститель и увлажнитель воздуха Franco FR-50E\t----franco-fr-50e"
+    },
+    {
+      "total": "60019\tКулер для воды 7TECH 7TB4P2TLGS1\t---7tech-7tb4p2tlgs1"
+    },
+    {
+      "total": "60020\tЧайный бар 4 в 1, графитовый Series PLATINUM  7TB4P2TLGS1\t--4--1--series-platinum-7tb4p2tlgs1"
+    },
+    {
+      "total": "60021\tЧайный бар 4 в 1, белый Series PLATINUM  7TB4P1TWS1\t--4--1--series-platinum-7tb4p1tws1"
+    },
+    {
+      "total": "90001\tСтиральная машинка AVANGARD на 10 кг AV-100 MXLB Grey\t--avangard--10--av-100-mxlb-grey"
+    },
+    {
+      "total": "90002\tСтиральная машинка AVANGARD на AV-100 HXLB Grey \t--avangard--av-100-hxlb-grey-"
+    },
+    {
+      "total": "90003\tСоковжималька HANTAJI HDX 606\t-hantaji-hdx-606"
+    },
+    {
+      "total": "120001\tХолодильник Muzbek 2 eshiklik\t-muzbek-2-eshiklik"
+    },
+    {
+      "total": "120002\tМорозилька Hisense FC31DT-GREY \t-hisense-fc31dt-grey-"
+    },
+    {
+      "total": "150002\tОтпариватель Lamo LM-GS24\t-lamo-lm-gs24"
+    },
+    {
+      "total": "150003\tМоноблок 24\" MATRIX H61 / i5-2400 / DDR 8 GB / SSD 256 GB  + бонус комбо\t-24-matrix-h61--i5-2400--ddr-8-gb--ssd-256-gb---"
+    },
+    {
+      "total": "180001\tкуллер FRANCO TEA BAR\t-franco-tea-bar"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\n33\nid\tname\tslug\n30001\tМОРОЗИЛЬКА FRANCO Cfr252-G\t-franco-cfr252-g\n60001\tМорозильная камера Xingx SD/SC-326SY\t--xingx-sdsc-326sy\n60002\tпылесос Avangard Av-2003\t-avangard-av-2003\n60003\tСтиральная машина LG F2Y1VS5W 9 Кг\t--lg-f2y1vs5w-9-\n60004\tКондиционер 7TECH 7AC4G12WS3 Inverter 12\t-7tech-7ac4g12ws3-inverter-12\n60005\tКондиционер AUX Серия C-Smart Premium INVERTER Crystal CCRE\t-aux--c-smart-premium-inverter-crystal-ccre\n60006\tКондиционер AUX Серия J Inverter с теном JLR\t-aux--j-inverter---jlr\n60007\tКондиционер AUX Серия Classic Pro Inverter CAR3DI\t-aux--classic-pro-inverter-car3di\n60008\tКондиционер AUX Серия Premium Progressive Inverter C PRO\t-aux--premium-progressive-inverter-c-pro\n60009\tКондиционер AUX Серия Q Fresh series Inverter FADR (с подачей свежего воздуха)\t-aux--q-fresh-series-inverter-fadr----\n60010\tПылесос Philips FC 8632\t-philips-fc-8632\n60011\tПылесос PHILIPS FC9728/01 \t-philips-fc972801-\n60012\tПылесос Philips XB2022/01\t-philips-xb202201\n60013\tКондиционер Avangard AV 12, белый\t-avangard-av-12-\n60014\tКондиционер Aucma 12\t-aucma-12\n60015\tСтиралная машинка Franco 6 KG FRC60-1720B\t--franco-frc60-1720b\n60016\tСтиралная машинка Franco 7 KG\t--franco-7-kg\n60017\tОчиститель и увлажнитель воздух Franco FR-15\t----franco-fr-15\n60018\tОчиститель и увлажнитель воздуха Franco FR-50E\t----franco-fr-50e\n60019\tКулер для воды 7TECH 7TB4P2TLGS1\t---7tech-7tb4p2tlgs1\n60020\tЧайный бар 4 в 1, графитовый Series PLATINUM  7TB4P2TLGS1\t--4--1--series-platinum-7tb4p2tlgs1\n60021\tЧайный бар 4 в 1, белый Series PLATINUM  7TB4P1TWS1\t--4--1--series-platinum-7tb4p1tws1\n90001\tСтиральная машинка AVANGARD на 10 кг AV-100 MXLB Grey\t--avangard--10--av-100-mxlb-grey\n90002\tСтиральная машинка AVANGARD на AV-100 HXLB Grey \t--avangard--av-100-hxlb-grey-\n90003\tСоковжималька HANTAJI HDX 606\t-hantaji-hdx-606\n120001\tХолодильник Muzbek 2 eshiklik\t-muzbek-2-eshiklik\n120002\tМорозилька Hisense FC31DT-GREY \t-hisense-fc31dt-grey-\n150002\tОтпариватель Lamo LM-GS24\t-lamo-lm-gs24\n150003\tМоноблок 24\" MATRIX H61 / i5-2400 / DDR 8 GB / SSD 256 GB  + бонус комбо\t-24-matrix-h61--i5-2400--ddr-8-gb--ssd-256-gb---\n180001\tкуллер FRANCO TEA BAR\t-franco-tea-bar\n",
+  "stderr": "",
+  "execution_time_ms": 316
+}

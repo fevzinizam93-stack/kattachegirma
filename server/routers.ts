@@ -508,8 +508,14 @@ export const appRouter = router({
         const seller = await getSellerByUserId(ctx.user.id);
         if (!seller) throw new TRPCError({ code: "FORBIDDEN", message: "Seller profile not found" });
         if (!seller.isApproved) throw new TRPCError({ code: "FORBIDDEN", message: "Seller not approved yet" });
+        // Normalize slug: transliterate Cyrillic, strip leading/trailing dashes
+        const cyrMap2: Record<string, string> = { а:"a",б:"b",в:"v",г:"g",д:"d",е:"e",ё:"yo",ж:"zh",з:"z",и:"i",й:"y",к:"k",л:"l",м:"m",н:"n",о:"o",п:"p",р:"r",с:"s",т:"t",у:"u",ф:"f",х:"kh",ц:"ts",ч:"ch",ш:"sh",щ:"sch",ъ:"",ы:"y",ь:"",э:"e",ю:"yu",я:"ya" };
+        const translit2 = (s: string) => s.toLowerCase().split("").map(c => cyrMap2[c] ?? c).join("");
+        const rawSlug2 = translit2(input.slug).replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-").replace(/^-|-$/g, "");
+        const safeSlug2 = rawSlug2 || `product-${Date.now()}`;
         const id = await createProduct({
           ...input,
+          slug: safeSlug2,
           images: input.images ?? [],
           specs: (input.specs ?? {}) as Record<string, string>,
           sellerId: seller.id,
