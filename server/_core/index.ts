@@ -11,6 +11,7 @@ import { appRouter } from "../routers";
 import { registerUploadRoute } from "../uploadRoute";
 import { registerSitemapRoute } from "../sitemap";
 import { registerFacebookFeedRoute } from "../facebookFeed";
+import { registerGoogleMerchantFeedRoute } from "../googleMerchantFeed";
 import { registerTelegramWebhook } from "../webhookRoute";
 import { autoRegisterTelegramWebhook } from "../telegram";
 import { createContext } from "./context";
@@ -61,6 +62,7 @@ async function startServer() {
   registerUploadRoute(app);
   registerSitemapRoute(app);
   registerFacebookFeedRoute(app);
+  registerGoogleMerchantFeedRoute(app);
   registerTelegramWebhook(app);
   // tRPC API
   app.use(

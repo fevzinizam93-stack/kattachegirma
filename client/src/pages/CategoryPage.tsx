@@ -6,6 +6,7 @@ import { Link } from "wouter";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useEffect } from "react";
 
 const LIMIT = 12;
 
@@ -66,6 +67,31 @@ export default function CategoryPage({ slug }: CategoryPageProps) {
     hreflangUzPath: (category as any)?.slugUz ? `/kategoriya/${(category as any).slugUz}` : undefined,
     keywordsUz: categoryKeywordsUz,
   });
+
+  // SEO: FAQ Schema.org — inject FAQPage structured data for this category
+  useEffect(() => {
+    if (!category) return;
+    const faqs = getCategoryFAQs(category.name, total);
+    if (!faqs.length) return;
+    const schemaId = `faq-schema-${category.id}`;
+    let el = document.getElementById(schemaId);
+    if (!el) {
+      el = document.createElement("script");
+      el.id = schemaId;
+      (el as HTMLScriptElement).type = "application/ld+json";
+      document.head.appendChild(el);
+    }
+    el.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": faqs.map(faq => ({
+        "@type": "Question",
+        "name": faq.q,
+        "acceptedAnswer": { "@type": "Answer", "text": faq.a }
+      }))
+    });
+    return () => { el?.remove(); };
+  }, [category, total]);
 
   // SEO: BreadcrumbList Schema.org
   useBreadcrumbSchema(
@@ -215,6 +241,82 @@ export default function CategoryPage({ slug }: CategoryPageProps) {
           </div>
         </div>
       </div>
+      {/* FAQ Section — helps Google show rich snippets and improves E-E-A-T */}
+      {category && (() => {
+        const faqs = getCategoryFAQs(category.name, total);
+        if (!faqs.length) return null;
+        return (
+          <div className="container py-8">
+            <div className="bg-white rounded-xl border border-border p-6">
+              <h2 className="text-lg font-bold mb-4 text-foreground">Часто задаваемые вопросы</h2>
+              <div className="space-y-3">
+                {faqs.map((faq, i) => (
+                  <FAQItem key={i} question={faq.q} answer={faq.a} />
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
+}
+
+function FAQItem({ question, answer }: { question: string; answer: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border border-border rounded-lg overflow-hidden">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-4 py-3 text-left text-sm font-medium hover:bg-accent/50 transition-colors"
+      >
+        <span>{question}</span>
+        <ChevronRight className={`w-4 h-4 shrink-0 transition-transform ${open ? "rotate-90" : ""}`} />
+      </button>
+      {open && (
+        <div className="px-4 pb-3 text-sm text-muted-foreground">{answer}</div>
+      )}
+    </div>
+  );
+}
+
+function getCategoryFAQs(categoryName: string, total: number): { q: string; a: string }[] {
+  const n = categoryName;
+  const count = total > 0 ? `${total} моделей` : "широкий ассортимент";
+  const base: { q: string; a: string }[] = [
+    {
+      q: `Сколько моделей ${n} доступно на Катта Чегирма?`,
+      a: `На нашем сайте представлено ${count} ${n}. Ассортимент регулярно обновляется — новые товары добавляются каждую неделю.`,
+    },
+    {
+      q: `Есть ли доставка ${n} по Ташкенту?`,
+      a: `Да, мы осуществляем доставку ${n} по всему Ташкенту и Узбекистану. Доставка по Ташкенту в течение 1-2 дней.`,
+    },
+    {
+      q: `Можно ли купить ${n} в рассрочку?`,
+      a: `Да, большинство товаров категории «${n}» доступны в рассрочку. Свяжитесь с продавцом для уточнения условий рассрочки.`,
+    },
+    {
+      q: `Как выбрать ${n} на Катта Чегирма?`,
+      a: `Используйте фильтры на странице категории: цена, бренд. Сравните несколько моделей и читайте описания товаров. Если нужна помощь — напишите продавцу напрямую через кнопку «Связаться».`,
+    },
+    {
+      q: `Есть ли гарантия на ${n}?`,
+      a: `Все ${n} на Катта Чегирма продаются с официальной гарантией производителя. Срок гарантии указан в описании каждого товара.`,
+    },
+  ];
+  // Add category-specific FAQs
+  if (n.toLowerCase().includes("пылесос")) {
+    base.push({ q: "Какой пылесос лучше выбрать — с мешком или без?", a: "Пылесосы без мешка (циклонные) удобнее в обслуживании — не нужно покупать расходники. Пылесосы с мешком лучше удерживают мелкую пыль и аллергены. Для аллергиков рекомендуем модели с HEPA-фильтром." });
+  }
+  if (n.toLowerCase().includes("холодильник") || n.toLowerCase().includes("морозил")) {
+    base.push({ q: "Какой объём холодильника выбрать для семьи?", a: "Для семьи из 2-3 человек оптимальный объём 200-300 литров. Для семьи из 4-5 человек — 300-400 литров. Двухкамерные модели с No Frost удобнее в уходе." });
+  }
+  if (n.toLowerCase().includes("кондиционер") || n.toLowerCase().includes("куллер")) {
+    base.push({ q: "Какой кондиционер подходит для комнаты 20 кв.м?", a: "Для комнаты 20 кв.м рекомендуется кондиционер мощностью 7000-9000 BTU (2-2.5 кВт). Инверторные модели экономичнее на 30-40% по сравнению с обычными." });
+  }
+  if (n.toLowerCase().includes("стирал")) {
+    base.push({ q: "Стиральная машина с фронтальной или вертикальной загрузкой?", a: "Фронтальные машины экономичнее по воде и электричеству, вертикальные занимают меньше места. Для небольших квартир вертикальная загрузка удобнее." });
+  }
+  return base;
 }
