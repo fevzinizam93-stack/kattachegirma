@@ -1,0 +1,210 @@
+{
+  "query": "SELECT slug, name FROM products WHERE isActive = 1 AND isApproved = 1 ORDER BY createdAt DESC LIMIT 50;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute SELECT slug, name FROM products WHERE isActive = 1 AND isApproved = 1 ORDER BY createdAt DESC LIMIT 50;",
+  "rows": [
+    {
+      "slug": "konditsioner-immer-12-aero-inverterten",
+      "name": "Кондиционер IMMER 12 AERO Inverter+TEN"
+    },
+    {
+      "slug": "konditsioner-immer-pure-121824-r32-dc-inverter-ten-1218-split-sistema",
+      "name": "Кондиционер IMMER PURE 12/18/24, R32, DC Inverter + TEN, 12/18, сплит система"
+    },
+    {
+      "slug": "konditsioner-immer-12-trend-turbo-air-purefrenzio-inverterten",
+      "name": "Кондиционер IMMER 12 TREND ,TURBO, AIR, PURE,FRENZIO Inverter+TEN"
+    },
+    {
+      "slug": "konditsioner-immer-turbo-12-full-dc-inverter",
+      "name": "Кондиционер Immer Turbo 12 Full DC Inverter"
+    },
+    {
+      "slug": "konditsioner-hisense-wings-12-dc-inverter",
+      "name": "Кондиционер Hisense WINGS 12 DC inverter"
+    },
+    {
+      "slug": "konditsioner-samsung-ar12dxhqasinev",
+      "name": "Кондиционер Samsung AR12DXHQASINEV"
+    },
+    {
+      "slug": "morozilka-franco-cfr252g",
+      "name": "морозилка Franco cfr252g"
+    },
+    {
+      "slug": "morozilka-franco-cfr300g",
+      "name": "морозилка Franco cfr300g"
+    },
+    {
+      "slug": "konditsioner-midea-alba-pro-ai-inverter-12",
+      "name": "Кондиционер Midea Alba PRO AI Inverter 12"
+    },
+    {
+      "slug": "pylesos-elgrid-bd1001-s-vodyanym-filtrom-aquafilter-hepa-filtr-antiallergennyy-pylesos",
+      "name": "Пылесос Elgrid BD1001 с водяным фильтром aquafilter, HEPA фильтр, антиаллергенный пылесос"
+    },
+    {
+      "slug": "konditsioner-rulls-strom-inverter-12",
+      "name": "Кондиционер Rulls STROM Inverter 12"
+    },
+    {
+      "slug": "konditsioner-hisense-wings-12-inverter-r32-a-nastennyy-split-sistema",
+      "name": "Кондиционер Hisense WINGS 12 Inverter R32 A++ настенный сплит-система"
+    },
+    {
+      "slug": "kholodilnik-dvukhkamernyy-rulls-rs210-grey-black-210-l",
+      "name": "Холодильник двухкамерный Rulls RS210-GREY, Black, 210 л"
+    },
+    {
+      "slug": "fotoepilyator-philips-lumea-9000",
+      "name": "Фотоэпилятор Philips Lumea 9000"
+    },
+    {
+      "slug": "morozilnaya-vitrina-muzbek-600-litrov",
+      "name": "❄️ Морозильная витрина MuzBek — 720 литров"
+    },
+    {
+      "slug": "morozilnaya-vitrina-muzbek-450-litrov",
+      "name": "❄️ Морозильная витрина MuzBek — 450 литров"
+    },
+    {
+      "slug": "klimaticheskiy-oborudovanie-franco-z-1530",
+      "name": "Климатический оборудование  FRANCO Z-1530"
+    },
+    {
+      "slug": "pylesos-ferre-2011-moschnost-2400-vt-sila-vsasyvaniya-505-vt-obyom-pylesbornika-5l",
+      "name": "Пылесос Ferre 2011, мощность: 2400 Вт, сила всасывания 505 Вт, объём пылесборника 5л"
+    },
+    {
+      "slug": "televizor-volto-43-9000-smart-tv",
+      "name": "Телевизор Volto 43-9000 Smart TV"
+    },
+    {
+      "slug": "televizor-volto-32-9000-smart-tv",
+      "name": "Телевизор Volto 32-9000 Smart TV"
+    },
+    {
+      "slug": "kulery-dlya-vody-frctbc-1170-202-dg",
+      "name": "Кулеры для воды FRCTBC-1170 202 DG"
+    },
+    {
+      "slug": "kulery-dlya-vody-franco-ti70-bl",
+      "name": "Кулеры для воды FRANCO TI70-BL"
+    },
+    {
+      "slug": "kulery-dlya-vody-franco-rtl-85mg",
+      "name": "Кулеры для воды FRANCO TI75-DG"
+    },
+    {
+      "slug": "kulery-dlya-vody-franco-rtl85-mg-s-kholodilnikom",
+      "name": "Кулеры для воды FRANCO RTL85-MG С холодильником "
+    },
+    {
+      "slug": "kulery-dlya-vody-franco-rtl80-mb-s-kholodilnikom",
+      "name": "Кулеры для воды FRANCO RTL80-MB С холодильником "
+    },
+    {
+      "slug": "kulery-dlya-vody-franco-bl95-bl-verkhnyaya-zagruzka",
+      "name": "Кулеры для воды FRANCO BL95-BL Верхняя загрузка"
+    },
+    {
+      "slug": "uaken-konditsioner-mobilnyy",
+      "name": "Uaken кондиционер мобилный"
+    },
+    {
+      "slug": "televizor-7tech-7tv4s55qleds2-4k-uhd-android-tv",
+      "name": "Телевизор 7TECH 7TV4S55QLEDS2 4K UHD Android TV"
+    },
+    {
+      "slug": "7tech-7tv4g55qleds1-google-tv-televizori",
+      "name": "7TECH 7TV4G55QLEDS1 Google TV televizori"
+    },
+    {
+      "slug": "televizor-7tech-7tv4s65qleds2-4k-uhd-android-tv",
+      "name": "Телевизор 7TECH 7TV4S65QLEDS2 4K UHD Android TV"
+    },
+    {
+      "slug": "kholodilnik-7tech-7ref4p503bgs3-2",
+      "name": "Холодильник 7TECH 7REF4P503BGS3"
+    },
+    {
+      "slug": "kholodilnik-7tech-7ref4p503bgs3",
+      "name": "Холодильник 7TECH 7REF4P503BGS3"
+    },
+    {
+      "slug": "kholodilnik-7tech-7ref4p536dis2",
+      "name": "Холодильник 7TECH 7REF4P536DIS2"
+    },
+    {
+      "slug": "kholodilnik-no-frost-s-verkhney-morozilkoy-i-obemom-415-litrov-series-gold-7ref4g415bs1",
+      "name": "Холодильник No Frost с верхней морозилкой и объемом 415 литров Series GOLD  7REF4G415BS1"
+    },
+    {
+      "slug": "belyy-kholodilnik-s-uvelichennym-zapasom-khraneniya-series-silver-7ref4s261ws3",
+      "name": "Белый холодильник с увеличенным запасом хранения Series SILVER  7REF4S261WS3"
+    },
+    {
+      "slug": "kholodilnik-s-verkhney-morozilnoy-kameroy-i-udobnym-obemom-7ref4s211ss3",
+      "name": "Холодильник с верхней морозильной камерой и удобным объемом 7REF4S211SS3"
+    },
+    {
+      "slug": "kholodilnik-no-frost-s-nizhney-morozilnoy-kameroy-310-l-series-gold-7ref4g310dis3",
+      "name": "Холодильник No Frost с нижней морозильной камерой, 310 л Series GOLD  7REF4G310DIS3"
+    },
+    {
+      "slug": "kholodilnik-side-by-side-no-frost-series-platinum-7ref4p515bgs2",
+      "name": "Холодильник Side-by-Side No Frost Series PLATINUM  7REF4P515BGS2"
+    },
+    {
+      "slug": "kholodilnik-no-frost-s-uvelichennym-obemom-531-l-series-platinum-7ref4p531bgs3-2",
+      "name": "Холодильник No Frost с увеличенным объемом, 531 л Series PLATINUM  7REF4P531BGS3"
+    },
+    {
+      "slug": "vstraivaemyy-kholodilnik-no-frost-s-nizhney-morozilnoy-kameroy-270-l-series-gold-7ref4g270wbis3",
+      "name": "Встраиваемый холодильник No Frost с нижней морозильной камерой, 270 л Series GOLD  7REF4G270WBIS3"
+    },
+    {
+      "slug": "kholodilnik-kompaktnogo-formata-90-l-series-silver-7ref4s90ss3",
+      "name": "Холодильник компактного формата, 90 л Series SILVER  7REF4S90SS3"
+    },
+    {
+      "slug": "stiralnaya-mashina-s-funktsiey-parovoy-obrabotki-8-kg-series-silver-7wm4s1480wss1",
+      "name": "Стиральная машина с функцией паровой обработки, 8 кг Series SILVER  7WM4S1480WSS1"
+    },
+    {
+      "slug": "belaya-stiralnaya-mashina-s-parom-i-15-programmami-7-kg-series-silver-7wm4s1270wss2",
+      "name": "Белая стиральная машина с паром и 15 программами, 7 кг Series SILVER  7WM4S1270WSS2"
+    },
+    {
+      "slug": "stiralnaya-mashina-s-funktsiey-parovoy-obrabotki-7-kg-series-silver-7wm4s1270gss1",
+      "name": "Стиральная машина с функцией паровой обработки, 7 кг Series SILVER  7WM4S1270GSS1"
+    },
+    {
+      "slug": "umnaya-stiralnaya-mashina-platinum-8-kg-series-platinum-7wm4p1480gss1",
+      "name": "Умная стиральная машина PLATINUM, 8 кг Series PLATINUM  7WM4P1480GSS1"
+    },
+    {
+      "slug": "stiralnaya-mashina-s-sensornym-upravleniem-series-platinum-7wm4p1410gbps1",
+      "name": "Стиральная машина с сенсорным управлением Series PLATINUM  7WM4P1410GBPS1"
+    },
+    {
+      "slug": "stiralnaya-mashina-8-kg-gold-s-invertornym-dvigatelem-i-parovoy-stirkoy-series-gold-7wm4g1480wss3",
+      "name": "Стиральная машина 8 кг Gold с инверторным двигателем и паровой стиркой Series GOLD  7WM4G1480WSS3"
+    },
+    {
+      "slug": "stiralnaya-mashina-s-parom-i-funktsiey-moya-programma-8-kg-series-silver-7wm4s1280gss2",
+      "name": "Стиральная машина с паром и функцией «Моя программа», 8 кг Series SILVER  7WM4S1280GSS2"
+    },
+    {
+      "slug": "dvoynaya-stiralnaya-mashina-s-sushkoy-platinum-16-kg-series-platinum-7wm4p1216twins1",
+      "name": "Двойная стиральная машина с сушкой, Platinum 16 кг Series PLATINUM  7WM4P1216TWINS1"
+    },
+    {
+      "slug": "seraya-stiralnaya-mashina-s-invertornym-dvigatelem-i-parom-8-kg-series-silver-7wm4s1280gcs1",
+      "name": "Серая стиральная машина с инверторным двигателем и паром, 8 кг Series SILVER  7WM4S1280GCS1"
+    }
+  ],
+  "messages": [],
+  "stdout": "slug\tname\nkonditsioner-immer-12-aero-inverterten\tКондиционер IMMER 12 AERO Inverter+TEN\nkonditsioner-immer-pure-121824-r32-dc-inverter-ten-1218-split-sistema\tКондиционер IMMER PURE 12/18/24, R32, DC Inverter + TEN, 12/18, сплит система\nkonditsioner-immer-12-trend-turbo-air-purefrenzio-inverterten\tКондиционер IMMER 12 TREND ,TURBO, AIR, PURE,FRENZIO Inverter+TEN\nkonditsioner-immer-turbo-12-full-dc-inverter\tКондиционер Immer Turbo 12 Full DC Inverter\nkonditsioner-hisense-wings-12-dc-inverter\tКондиционер Hisense WINGS 12 DC inverter\nkonditsioner-samsung-ar12dxhqasinev\tКондиционер Samsung AR12DXHQASINEV\nmorozilka-franco-cfr252g\tморозилка Franco cfr252g\nmorozilka-franco-cfr300g\tморозилка Franco cfr300g\nkonditsioner-midea-alba-pro-ai-inverter-12\tКондиционер Midea Alba PRO AI Inverter 12\npylesos-elgrid-bd1001-s-vodyanym-filtrom-aquafilter-hepa-filtr-antiallergennyy-pylesos\tПылесос Elgrid BD1001 с водяным фильтром aquafilter, HEPA фильтр, антиаллергенный пылесос\nkonditsioner-rulls-strom-inverter-12\tКондиционер Rulls STROM Inverter 12\nkonditsioner-hisense-wings-12-inverter-r32-a-nastennyy-split-sistema\tКондиционер Hisense WINGS 12 Inverter R32 A++ настенный сплит-система\nkholodilnik-dvukhkamernyy-rulls-rs210-grey-black-210-l\tХолодильник двухкамерный Rulls RS210-GREY, Black, 210 л\nfotoepilyator-philips-lumea-9000\tФотоэпилятор Philips Lumea 9000\nmorozilnaya-vitrina-muzbek-600-litrov\t❄️ Морозильная витрина MuzBek — 720 литров\nmorozilnaya-vitrina-muzbek-450-litrov\t❄️ Морозильная витрина MuzBek — 450 литров\nklimaticheskiy-oborudovanie-franco-z-1530\tКлиматический оборудование  FRANCO Z-1530\npylesos-ferre-2011-moschnost-2400-vt-sila-vsasyvaniya-505-vt-obyom-pylesbornika-5l\tПылесос Ferre 2011, мощность: 2400 Вт, сила всасывания 505 Вт, объём пылесборника 5л\ntelevizor-volto-43-9000-smart-tv\tТелевизор Volto 43-9000 Smart TV\ntelevizor-volto-32-9000-smart-tv\tТелевизор Volto 32-9000 Smart TV\nkulery-dlya-vody-frctbc-1170-202-dg\tКулеры для воды FRCTBC-1170 202 DG\nkulery-dlya-vody-franco-ti70-bl\tКулеры для воды FRANCO TI70-BL\nkulery-dlya-vody-franco-rtl-85mg\tКулеры для воды FRANCO TI75-DG\nkulery-dlya-vody-franco-rtl85-mg-s-kholodilnikom\tКулеры для воды FRANCO RTL85-MG С холодильником \nkulery-dlya-vody-franco-rtl80-mb-s-kholodilnikom\tКулеры для воды FRANCO RTL80-MB С холодильником \nkulery-dlya-vody-franco-bl95-bl-verkhnyaya-zagruzka\tКулеры для воды FRANCO BL95-BL Верхняя загрузка\nuaken-konditsioner-mobilnyy\tUaken кондиционер мобилный\ntelevizor-7tech-7tv4s55qleds2-4k-uhd-android-tv\tТелевизор 7TECH 7TV4S55QLEDS2 4K UHD Android TV\n7tech-7tv4g55qleds1-google-tv-televizori\t7TECH 7TV4G55QLEDS1 Google TV televizori\ntelevizor-7tech-7tv4s65qleds2-4k-uhd-android-tv\tТелевизор 7TECH 7TV4S65QLEDS2 4K UHD Android TV\nkholodilnik-7tech-7ref4p503bgs3-2\tХолодильник 7TECH 7REF4P503BGS3\nkholodilnik-7tech-7ref4p503bgs3\tХолодильник 7TECH 7REF4P503BGS3\nkholodilnik-7tech-7ref4p536dis2\tХолодильник 7TECH 7REF4P536DIS2\nkholodilnik-no-frost-s-verkhney-morozilkoy-i-obemom-415-litrov-series-gold-7ref4g415bs1\tХолодильник No Frost с верхней морозилкой и объемом 415 литров Series GOLD  7REF4G415BS1\nbelyy-kholodilnik-s-uvelichennym-zapasom-khraneniya-series-silver-7ref4s261ws3\tБелый холодильник с увеличенным запасом хранения Series SILVER  7REF4S261WS3\nkholodilnik-s-verkhney-morozilnoy-kameroy-i-udobnym-obemom-7ref4s211ss3\tХолодильник с верхней морозильной камерой и удобным объемом 7REF4S211SS3\nkholodilnik-no-frost-s-nizhney-morozilnoy-kameroy-310-l-series-gold-7ref4g310dis3\tХолодильник No Frost с нижней морозильной камерой, 310 л Series GOLD  7REF4G310DIS3\nkholodilnik-side-by-side-no-frost-series-platinum-7ref4p515bgs2\tХолодильник Side-by-Side No Frost Series PLATINUM  7REF4P515BGS2\nkholodilnik-no-frost-s-uvelichennym-obemom-531-l-series-platinum-7ref4p531bgs3-2\tХолодильник No Frost с увеличенным объемом, 531 л Series PLATINUM  7REF4P531BGS3\nvstraivaemyy-kholodilnik-no-frost-s-nizhney-morozilnoy-kameroy-270-l-series-gold-7ref4g270wbis3\tВстраиваемый холодильник No Frost с нижней морозильной камерой, 270 л Series GOLD  7REF4G270WBIS3\nkholodilnik-kompaktnogo-formata-90-l-series-silver-7ref4s90ss3\tХолодильник компактного формата, 90 л Series SILVER  7REF4S90SS3\nstiralnaya-mashina-s-funktsiey-parovoy-obrabotki-8-kg-series-silver-7wm4s1480wss1\tСтиральная машина с функцией паровой обработки, 8 кг Series SILVER  7WM4S1480WSS1\nbelaya-stiralnaya-mashina-s-parom-i-15-programmami-7-kg-series-silver-7wm4s1270wss2\tБелая стиральная машина с паром и 15 программами, 7 кг Series SILVER  7WM4S1270WSS2\nstiralnaya-mashina-s-funktsiey-parovoy-obrabotki-7-kg-series-silver-7wm4s1270gss1\tСтиральная машина с функцией паровой обработки, 7 кг Series SILVER  7WM4S1270GSS1\numnaya-stiralnaya-mashina-platinum-8-kg-series-platinum-7wm4p1480gss1\tУмная стиральная машина PLATINUM, 8 кг Series PLATINUM  7WM4P1480GSS1\nstiralnaya-mashina-s-sensornym-upravleniem-series-platinum-7wm4p1410gbps1\tСтиральная машина с сенсорным управлением Series PLATINUM  7WM4P1410GBPS1\nstiralnaya-mashina-8-kg-gold-s-invertornym-dvigatelem-i-parovoy-stirkoy-series-gold-7wm4g1480wss3\tСтиральная машина 8 кг Gold с инверторным двигателем и паровой стиркой Series GOLD  7WM4G1480WSS3\nstiralnaya-mashina-s-parom-i-funktsiey-moya-programma-8-kg-series-silver-7wm4s1280gss2\tСтиральная машина с паром и функцией «Моя программа», 8 кг Series SILVER  7WM4S1280GSS2\ndvoynaya-stiralnaya-mashina-s-sushkoy-platinum-16-kg-series-platinum-7wm4p1216twins1\tДвойная стиральная машина с сушкой, Platinum 16 кг Series PLATINUM  7WM4P1216TWINS1\nseraya-stiralnaya-mashina-s-invertornym-dvigatelem-i-parom-8-kg-series-silver-7wm4s1280gcs1\tСерая стиральная машина с инверторным двигателем и паром, 8 кг Series SILVER  7WM4S1280GCS1\n",
+  "stderr": "",
+  "execution_time_ms": 300
+}
