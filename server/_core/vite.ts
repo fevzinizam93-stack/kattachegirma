@@ -122,8 +122,23 @@ export function serveStatic(app: Express) {
   }));
 
   // SPA fallback: serve index.html for all non-file routes
-  // Known 404 paths return proper 404 HTTP status
-  const KNOWN_404_PATHS = ["/404"];
+  // Known 404 paths and unknown routes return proper 404 HTTP status
+  const KNOWN_VALID_PATHS = new Set([
+    "/", "/catalog", "/bestsellers", "/sales", "/premium",
+    "/videos", "/sellers", "/about", "/cart", "/checkout",
+    "/search", "/login", "/favorites", "/profile",
+    "/seller", "/seller/register", "/seller/dashboard", "/seller/messages",
+    "/admin", "/admin/analytics", "/admin/reviews", "/404",
+  ]);
+  const VALID_PATH_PREFIXES = [
+    "/category/", "/kategoriya/", "/product/", "/mahsulot/", "/seller/",
+  ];
+
+  function isValidSpaPath(reqPath: string): boolean {
+    if (KNOWN_VALID_PATHS.has(reqPath)) return true;
+    return VALID_PATH_PREFIXES.some(prefix => reqPath.startsWith(prefix));
+  }
+
   app.use("*", async (req: Request, res: Response) => {
     // SEO prerender for production bots
     const prerenderResult = await seoPrerender(req);
@@ -135,7 +150,9 @@ export function serveStatic(app: Express) {
       return res.status(200).set({ "Content-Type": "text/html; charset=utf-8" }).end(prerenderResult);
     }
 
-    const status = KNOWN_404_PATHS.includes(req.path) ? 404 : 200;
+    const reqPath = req.path;
+    // Return 404 for /404 page and unknown routes (fixes Google Search Console false-404 issues)
+    const status = isValidSpaPath(reqPath) ? 200 : 404;
     res.status(status).sendFile(path.resolve(distPath, "index.html"));
   });
 }

@@ -9,6 +9,7 @@ export default function SellersList() {
   usePageMeta({
     title: "Продавцы бытовой техники | Катта Чегирма",
     description: "Проверенные продавцы бытовой техники в Узбекистане. Официальные дилеры стиральных машин, холодильников, пылесосов и кондиционеров.",
+    canonicalPath: "/sellers",
     keywordsUz: "sotuvchilar maishiy texnika, rasmiy diler Toshkent, ishonchli do'kon texnika",
   });
   const [search, setSearch] = useState("");

@@ -36,6 +36,7 @@ export default function Videos() {
   usePageMeta({
     title: "Видеообзоры бытовой техники | Катта Чегирма",
     description: "Смотрите видеообзоры стиральных машин, холодильников, пылесосов и кондиционеров. Подробные обзоры от продавцов и экспертов.",
+    canonicalPath: "/videos",
     keywordsUz: "video obzor kir yuvish mashinasi, muzlatgich obzor, changyutkich video, konditsioner obzor, maishiy texnika video",
   });
 

@@ -1,0 +1,55 @@
+{
+  "query": "\n-- Fix category slugs with spaces\nUPDATE categories SET slug = REPLACE(slug, ' ', '-') WHERE slug LIKE '% %';\n-- Show updated slugs\nSELECT id, name, slug FROM categories WHERE slug LIKE '%-%' ORDER BY id;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute \n-- Fix category slugs with spaces\nUPDATE categories SET slug = REPLACE(slug, ' ', '-') WHERE slug LIKE '% %';\n-- Show updated slugs\nSELECT id, name, slug FROM categories WHERE slug LIKE '%-%' ORDER BY id;\n",
+  "rows": [
+    {
+      "id": "2",
+      "name": "Стиральные машины",
+      "slug": "kir-yuvish-mashinalari"
+    },
+    {
+      "id": "6",
+      "name": "Посудомоечные машины",
+      "slug": "idish-yuvish-mashinalari"
+    },
+    {
+      "id": "7",
+      "name": "Микроволновка",
+      "slug": "mikrotoqinli-pechlar"
+    },
+    {
+      "id": "10",
+      "name": "Водонагреватели",
+      "slug": "suv-isitgichlar"
+    },
+    {
+      "id": "12",
+      "name": "Электрочайники",
+      "slug": "elektr-choynaklar"
+    },
+    {
+      "id": "180001",
+      "name": "Варочная поверхность",
+      "slug": "varochnaya-panel"
+    },
+    {
+      "id": "240001",
+      "name": "мелкая бытовая",
+      "slug": "kichik-maishiy-texnika"
+    },
+    {
+      "id": "300001",
+      "name": "Очиститель воздуха",
+      "slug": "xavo-tozalagich"
+    },
+    {
+      "id": "330001",
+      "name": "Вытяжка",
+      "slug": "dud-boron"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tslug\n2\tСтиральные машины\tkir-yuvish-mashinalari\n6\tПосудомоечные машины\tidish-yuvish-mashinalari\n7\tМикроволновка\tmikrotoqinli-pechlar\n10\tВодонагреватели\tsuv-isitgichlar\n12\tЭлектрочайники\telektr-choynaklar\n180001\tВарочная поверхность\tvarochnaya-panel\n240001\tмелкая бытовая\tkichik-maishiy-texnika\n300001\tОчиститель воздуха\txavo-tozalagich\n330001\tВытяжка\tdud-boron\n",
+  "stderr": "",
+  "execution_time_ms": 460
+}

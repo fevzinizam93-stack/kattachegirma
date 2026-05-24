@@ -1068,3 +1068,16 @@
 - [x] Frontend Catalog: добавить опции сортировки «По рейтингу» и «По отзывам»
 - [x] Frontend Catalog: фильтр «Минимальный рейтинг» (4+, 3+, 2+) — уже был реализован
 - [x] TypeScript: 0 ошибок, тесты проходят
+
+## SEO & Google Search Console Fixes (v5)
+- [ ] Fix www→non-www canonical: add canonical tag pointing to non-www in HTML index
+- [ ] Fix false 404: server should return 404 for unknown product/category slugs (not 200 SPA fallback)
+- [ ] Fix robots.txt: remove /search from Disallow (it's blocking category search pages)
+- [ ] Fix sitemap: encode spaces in category slugs (varochnaya panel → varochnaya%20panel)
+- [ ] Add Search Console property for non-www version (kattachegirma.uz) if missing
+- [ ] Improve meta tags: add canonical to all pages via usePageMeta
+- [ ] Add noindex to /404 page
+- [ ] Submit updated sitemap to Search Console
+- [ ] Request indexing for key pages in Search Console
+- [ ] Add structured data: WebSite, Organization on homepage
+- [ ] Fix category slugs with spaces in DB (replace spaces with hyphens)

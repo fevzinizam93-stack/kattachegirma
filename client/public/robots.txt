@@ -2,6 +2,17 @@
 
 User-agent: *
 Allow: /
+Allow: /category/
+Allow: /product/
+Allow: /mahsulot/
+Allow: /kategoriya/
+Allow: /catalog
+Allow: /bestsellers
+Allow: /sales
+Allow: /premium
+Allow: /videos
+Allow: /sellers
+Allow: /about
 Disallow: /admin
 Disallow: /admin/
 Disallow: /api/
@@ -14,18 +25,23 @@ Disallow: /seller/dashboard
 Disallow: /seller-register
 Disallow: /favorites
 Disallow: /login
-Disallow: /search
 Disallow: /404
 
 User-agent: Googlebot
+Allow: /
+Allow: /category/
+Allow: /product/
+Allow: /mahsulot/
+Allow: /kategoriya/
+Allow: /catalog
+Allow: /bestsellers
 Allow: /sales
+Allow: /premium
 Allow: /videos
 Allow: /sellers
-Allow: /premium
-Allow: /bestsellers
-Allow: /catalog
-Allow: /
+Allow: /about
 Disallow: /admin
+Disallow: /admin/
 Disallow: /api/
 Disallow: /profile
 Disallow: /cart
@@ -33,10 +49,23 @@ Disallow: /checkout
 Disallow: /seller-register
 Disallow: /favorites
 Disallow: /login
-Disallow: /search
+
+User-agent: Googlebot-Image
+Allow: /
 
 User-agent: Yandex
 Allow: /
+Allow: /category/
+Allow: /product/
+Allow: /mahsulot/
+Allow: /kategoriya/
+Allow: /catalog
+Allow: /bestsellers
+Allow: /sales
+Allow: /premium
+Allow: /videos
+Allow: /sellers
+Allow: /about
 Disallow: /admin
 Disallow: /admin/
 Disallow: /api/
@@ -49,9 +78,8 @@ Disallow: /seller/dashboard
 Disallow: /seller-register
 Disallow: /favorites
 Disallow: /login
-Disallow: /search
 Disallow: /404
 Clean-param: utm_source&utm_medium&utm_campaign&utm_content&utm_term&ref&fbclid&gclid
 
 Sitemap: https://kattachegirma.uz/sitemap.xml
-Host: https://kattachegirma.uz
+Host: kattachegirma.uz

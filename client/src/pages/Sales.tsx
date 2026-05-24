@@ -97,6 +97,7 @@ export default function Sales() {
   usePageMeta({
     title: "Акции и скидки на бытовую технику | Катта Чегирма",
     description: "Горячие акции и скидки на стиральные машины, холодильники, пылесосы и кондиционеры в Узбекистане. Бесплатная доставка по Ташкенту.",
+    canonicalPath: "/sales",
     keywordsUz: "chegirma maishiy texnika, aksiya kir yuvish mashinalar, aksiya muzlatgichlar, chegirma Toshkent",
   });
 
