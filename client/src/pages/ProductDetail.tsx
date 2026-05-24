@@ -367,7 +367,9 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
     title: productTitle,
     description: productDesc,
     imageUrl: product?.imageUrl ?? undefined,
-    canonicalPath: product ? `/product/${product.slug}` : undefined,
+    // Always set canonical from slug immediately — don't wait for product data
+    // This prevents Google from seeing canonical = homepage during loading state
+    canonicalPath: product ? `/product/${product.slug}` : `/product/${slug}`,
     // If product has a UZ slug, provide hreflang alternate for /mahsulot/:slugUz
     hreflangUzPath: (product as any)?.slugUz ? `/mahsulot/${(product as any).slugUz}` : undefined,
     noindex: (product as any)?.isActive === false,
