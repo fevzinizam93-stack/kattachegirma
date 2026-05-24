@@ -18,6 +18,29 @@ const BASE_URL = "https://kattachegirma.uz";
 const SITE_NAME = "Katta Chegirma";
 const LOGO_URL = `${BASE_URL}/logo-512.png?v=4`;
 
+// In-memory cache for prerendered pages (TTL: 30 minutes)
+const prerenderCache = new Map<string, { html: string; expires: number }>();
+const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
+function getCached(key: string): string | null {
+  const entry = prerenderCache.get(key);
+  if (!entry) return null;
+  if (Date.now() > entry.expires) {
+    prerenderCache.delete(key);
+    return null;
+  }
+  return entry.html;
+}
+
+function setCache(key: string, html: string): void {
+  // Limit cache size to 500 entries
+  if (prerenderCache.size >= 500) {
+    const firstKey = prerenderCache.keys().next().value;
+    if (firstKey) prerenderCache.delete(firstKey);
+  }
+  prerenderCache.set(key, { html, expires: Date.now() + CACHE_TTL_MS });
+}
+
 // Bot User-Agent patterns
 const BOT_PATTERNS = [
   /googlebot/i,
@@ -151,7 +174,9 @@ async function prerenderProduct(slug: string, isUz: boolean): Promise<string | n
   const catName = category?.name || "";
   const catSlug = category?.slug || "";
   const catSlugUz = (category as any)?.slugUz || "";
-  const imageUrl = product.imageUrl || LOGO_URL;
+  // Always use absolute URL — Google requires absolute URLs in og:image and Schema.org
+  const rawImageUrl = product.imageUrl || LOGO_URL;
+  const imageUrl = rawImageUrl.startsWith("http") ? rawImageUrl : `${BASE_URL}${rawImageUrl}`;
   const discount = product.discount || 0;
 
   const title = `${displayName}${brand ? ` ${brand}` : ""} — купить${discount ? ` со скидкой ${discount}%` : ""} | ${SITE_NAME}`;
@@ -163,24 +188,53 @@ async function prerenderProduct(slug: string, isUz: boolean): Promise<string | n
   const hreflangRu = `${BASE_URL}/product/${ruSlug}`;
   const hreflangUz = uzSlug ? `${BASE_URL}/mahsulot/${uzSlug}` : hreflangRu;
 
-  // Schema.org Product
+  // Schema.org Product — all required fields for Google rich results
+  const priceNum = Math.round(parseFloat(product.price as string));
   const productSchema: any = {
     "@context": "https://schema.org",
     "@type": "Product",
     "name": name,
     "description": desc || `${name} — купить в Ташкенте со скидкой`,
-    "image": imageUrl,
+    "image": [
+      {
+        "@type": "ImageObject",
+        "url": imageUrl,
+        "width": 800,
+        "height": 800
+      }
+    ],
     "brand": brand ? { "@type": "Brand", "name": brand } : undefined,
     "sku": `KC-${product.id}`,
+    "mpn": `KC-${product.id}`,
+    "itemCondition": "https://schema.org/NewCondition",
     "offers": {
       "@type": "Offer",
       "url": canonical,
       "priceCurrency": "UZS",
-      "price": Math.round(parseFloat(product.price as string)),
-      "availability": (product.stock || 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/PreOrder",
+      "price": priceNum,
+      "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+      "availability": (product.stock === null || (product.stock as number) > 0) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      "itemCondition": "https://schema.org/NewCondition",
+      "hasMerchantReturnPolicy": {
+        "@type": "MerchantReturnPolicy",
+        "applicableCountry": "UZ",
+        "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+        "merchantReturnDays": 14
+      },
+      "shippingDetails": {
+        "@type": "OfferShippingDetails",
+        "shippingRate": { "@type": "MonetaryAmount", "value": "0", "currency": "UZS" },
+        "shippingDestination": { "@type": "DefinedRegion", "addressCountry": "UZ" },
+        "deliveryTime": {
+          "@type": "ShippingDeliveryTime",
+          "handlingTime": { "@type": "QuantitativeValue", "minValue": 0, "maxValue": 1, "unitCode": "DAY" },
+          "transitTime": { "@type": "QuantitativeValue", "minValue": 1, "maxValue": 3, "unitCode": "DAY" }
+        }
+      },
       "seller": {
         "@type": "Organization",
-        "name": SITE_NAME
+        "name": SITE_NAME,
+        "url": BASE_URL
       }
     }
   };
@@ -229,7 +283,7 @@ async function prerenderProduct(slug: string, isUz: boolean): Promise<string | n
   <main>
     <article>
       <h1>${escapeHtml(displayName)}${brand ? ` <span>${escapeHtml(brand)}</span>` : ""}</h1>
-      <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(displayName)}" width="600" height="600" />
+      <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(displayName)}" width="800" height="800" />
       <div class="price">
         <p><strong>${price} сум</strong></p>
         ${originalPrice ? `<p><del>${originalPrice} сум</del></p>` : ""}
@@ -340,14 +394,26 @@ async function prerenderCategory(slug: string, isUz: boolean): Promise<string | 
       </a>
     </li>`).join("");
 
+  // Get all categories for internal linking
+  const allCats = await db.select({ name: categories.name, slug: categories.slug }).from(categories);
+  const otherCatsHtml = allCats
+    .filter(c => c.slug !== catSlug)
+    .slice(0, 12)
+    .map(c => `<li><a href="${BASE_URL}/category/${c.slug}">${escapeHtml(c.name)}</a></li>`)
+    .join("");
+
   const bodyContent = `
   <header>
     <nav><a href="${BASE_URL}">Главная</a> › ${escapeHtml(catName)}</nav>
   </header>
   <main>
     <h1>${escapeHtml(catName)} — купить в Ташкенте</h1>
-    <p>В категории "${escapeHtml(catName)}" ${categoryProducts.length} товаров со скидкой. Быстрая доставка по Ташкенту и всему Узбекистану. Рассрочка.</p>
+    <p>В категории "${escapeHtml(catName)}" ${categoryProducts.length} товаров со скидкой. Быстрая доставка по Ташкенту и всему Узбекистану. Рассрочка без переплат.</p>
     <ul>${productsHtml}</ul>
+    <section>
+      <h2>Другие категории</h2>
+      <ul>${otherCatsHtml}</ul>
+    </section>
   </main>
   <footer>
     <p>© ${new Date().getFullYear()} ${SITE_NAME} — Купить бытовую технику со скидкой в Ташкенте</p>
@@ -356,6 +422,8 @@ async function prerenderCategory(slug: string, isUz: boolean): Promise<string | 
       <a href="${BASE_URL}/sales">Акции</a>
       <a href="${BASE_URL}/premium">Premium</a>
       <a href="${BASE_URL}/videos">Видеообзоры</a>
+      <a href="${BASE_URL}/bestsellers">Хиты продаж</a>
+      <a href="${BASE_URL}/about">О нас</a>
     </nav>
   </footer>`;
 
@@ -479,11 +547,56 @@ async function prerenderStaticPage(path: string): Promise<string | null> {
     </nav>
   </footer>`;
 
+  // Organization schema — helps Google show logo in search results
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": SITE_NAME,
+    "url": BASE_URL,
+    "logo": {
+      "@type": "ImageObject",
+      "url": LOGO_URL,
+      "width": 512,
+      "height": 512
+    },
+    "sameAs": [
+      "https://t.me/kattachegirma",
+      "https://www.instagram.com/kattachegirma"
+    ],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "customer service",
+      "availableLanguage": ["Russian", "Uzbek"],
+      "areaServed": "UZ"
+    }
+  };
+
+  // WebSite schema with SearchAction — enables Google Sitelinks Searchbox
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": SITE_NAME,
+    "url": BASE_URL,
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": `${BASE_URL}/catalog?search={search_term_string}`
+      },
+      "query-input": "required name=search_term_string"
+    }
+  };
+
+  const jsonLdSchemas: object[] = [breadcrumb];
+  if (path === "/") {
+    jsonLdSchemas.push(organizationSchema, websiteSchema);
+  }
+
   return buildHtmlPage({
     title: page.title,
     description: page.description,
     canonical,
-    jsonLd: [breadcrumb],
+    jsonLd: jsonLdSchemas,
     bodyContent,
   });
 }
@@ -506,6 +619,10 @@ export async function seoPrerender(req: Request): Promise<string | null> {
       reqPath.endsWith(".svg") || reqPath.endsWith(".webp") || reqPath.endsWith(".ico") || reqPath.endsWith(".woff2")) {
     return null;
   }
+
+  // Check cache first
+  const cached = getCached(reqPath);
+  if (cached) return cached;
 
   try {
     let html: string | null = null;
@@ -534,6 +651,8 @@ export async function seoPrerender(req: Request): Promise<string | null> {
       html = await prerenderStaticPage(reqPath);
     }
 
+    // Store in cache for next bot request
+    if (html) setCache(reqPath, html);
     return html;
   } catch (err) {
     console.error("[SEO Prerender] Error:", err);

@@ -30,25 +30,39 @@ function formatDate(date: Date): string {
   return date.toISOString().split("T")[0];
 }
 
+/** Make a URL absolute — Google requires absolute URLs in image:loc */
+function toAbsoluteUrl(url: string): string {
+  if (!url) return "";
+  if (url.startsWith("http")) return url;
+  return `${BASE_URL}${url}`;
+}
+
 /**
- * Build a <url> entry with hreflang alternate links.
- * ruLoc: canonical RU URL (e.g. /category/stiralnye-mashiny)
- * uzLoc: UZ URL alias (e.g. /kategoriya/kir-yuvish-mashinalar) — if available
+ * Build a <url> entry with hreflang alternate links and optional image sitemap tag.
  */
 function buildUrl(
   ruLoc: string,
   uzLoc: string | null,
   lastmod: string,
   changefreq: string,
-  priority: string
+  priority: string,
+  imageUrl?: string,
+  imageName?: string
 ): string {
   const ruUrl = `${BASE_URL}${ruLoc}`;
   const uzUrl = uzLoc ? `${BASE_URL}${uzLoc}` : ruUrl;
+  const imageTag = imageUrl
+    ? `
+    <image:image>
+      <image:loc>${escapeXml(toAbsoluteUrl(imageUrl))}</image:loc>
+      <image:title>${escapeXml(imageName || "")}</image:title>
+    </image:image>`
+    : "";
   return `  <url>
     <loc>${ruUrl}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>${changefreq}</changefreq>
-    <priority>${priority}</priority>
+    <priority>${priority}</priority>${imageTag}
     <xhtml:link rel="alternate" hreflang="ru" href="${ruUrl}"/>
     <xhtml:link rel="alternate" hreflang="uz" href="${uzUrl}"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="${ruUrl}"/>
@@ -57,22 +71,30 @@ function buildUrl(
 
 /**
  * Build a separate <url> entry for the UZ URL alias (so it also appears in sitemap).
- * This helps Google discover and index the UZ URL independently.
  */
 function buildUzUrl(
   ruLoc: string,
   uzLoc: string,
   lastmod: string,
   changefreq: string,
-  priority: string
+  priority: string,
+  imageUrl?: string,
+  imageName?: string
 ): string {
   const ruUrl = `${BASE_URL}${ruLoc}`;
   const uzUrl = `${BASE_URL}${uzLoc}`;
+  const imageTag = imageUrl
+    ? `
+    <image:image>
+      <image:loc>${escapeXml(toAbsoluteUrl(imageUrl))}</image:loc>
+      <image:title>${escapeXml(imageName || "")}</image:title>
+    </image:image>`
+    : "";
   return `  <url>
     <loc>${uzUrl}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>${changefreq}</changefreq>
-    <priority>${priority}</priority>
+    <priority>${priority}</priority>${imageTag}
     <xhtml:link rel="alternate" hreflang="ru" href="${ruUrl}"/>
     <xhtml:link rel="alternate" hreflang="uz" href="${uzUrl}"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="${ruUrl}"/>
@@ -88,9 +110,15 @@ export function registerSitemapRoute(app: Express) {
       let categoryEntries: string[] = [];
 
       if (db) {
-        // Fetch all approved products (including slugUz)
+        // Fetch all approved products (including slugUz, imageUrl, name for image sitemap)
         const allProducts = await db
-          .select({ slug: products.slug, slugUz: (products as any).slugUz, updatedAt: products.updatedAt })
+          .select({
+            slug: products.slug,
+            slugUz: (products as any).slugUz,
+            updatedAt: products.updatedAt,
+            imageUrl: products.imageUrl,
+            name: products.name,
+          })
           .from(products)
           .where(eq(products.isApproved, true));
 
@@ -98,17 +126,19 @@ export function registerSitemapRoute(app: Express) {
           const lastmod = formatDate(new Date(p.updatedAt));
           const ruLoc = `/product/${escapeXml(p.slug)}`;
           const uzLoc = p.slugUz ? `/mahsulot/${escapeXml(p.slugUz)}` : null;
-          const entries = [buildUrl(ruLoc, uzLoc, lastmod, "weekly", "0.7")];
+          const imgUrl = p.imageUrl || undefined;
+          const imgName = p.name || undefined;
+          const entries = [buildUrl(ruLoc, uzLoc, lastmod, "weekly", "0.7", imgUrl, imgName)];
           // Also add a separate entry for the UZ URL so Google indexes it
           if (uzLoc) {
-            entries.push(buildUzUrl(ruLoc, uzLoc, lastmod, "weekly", "0.7"));
+            entries.push(buildUzUrl(ruLoc, uzLoc, lastmod, "weekly", "0.7", imgUrl, imgName));
           }
           return entries;
         });
 
         // Fetch all categories (including slugUz)
         const allCategories = await db
-          .select({ slug: categories.slug, slugUz: (categories as any).slugUz, createdAt: categories.createdAt })
+          .select({ slug: categories.slug, slugUz: (categories as any).slugUz, createdAt: categories.createdAt, name: categories.name })
           .from(categories);
 
         categoryEntries = allCategories.flatMap((c) => {
@@ -134,6 +164,7 @@ export function registerSitemapRoute(app: Express) {
       const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
