@@ -1070,14 +1070,14 @@
 - [x] TypeScript: 0 ошибок, тесты проходят
 
 ## SEO & Google Search Console Fixes (v5)
-- [ ] Fix www→non-www canonical: add canonical tag pointing to non-www in HTML index
-- [ ] Fix false 404: server should return 404 for unknown product/category slugs (not 200 SPA fallback)
-- [ ] Fix robots.txt: remove /search from Disallow (it's blocking category search pages)
-- [ ] Fix sitemap: encode spaces in category slugs (varochnaya panel → varochnaya%20panel)
-- [ ] Add Search Console property for non-www version (kattachegirma.uz) if missing
-- [ ] Improve meta tags: add canonical to all pages via usePageMeta
-- [ ] Add noindex to /404 page
-- [ ] Submit updated sitemap to Search Console
-- [ ] Request indexing for key pages in Search Console
-- [ ] Add structured data: WebSite, Organization on homepage
-- [ ] Fix category slugs with spaces in DB (replace spaces with hyphens)
+- [x] Fix www→non-www canonical: add canonical tag pointing to non-www in HTML index
+- [x] Fix false 404: server should return 404 for unknown product/category slugs (not 200 SPA fallback)
+- [x] Fix robots.txt: remove /search from Disallow (it's blocking category search pages)
+- [x] Fix sitemap: encode spaces in category slugs (varochnaya panel → varochnaya%20panel - fixed by updating DB slugs)
+- [x] Add Search Console property for non-www version (kattachegirma.uz) if missing
+- [x] Improve meta tags: add canonical to all pages via usePageMeta
+- [x] Add noindex to /404 page
+- [x] Submit updated sitemap to Search Console
+- [x] Request indexing for key pages in Search Console
+- [x] Add structured data: WebSite, Organization on homepage
+- [x] Fix category slugs with spaces in DB (replace spaces with hyphens)

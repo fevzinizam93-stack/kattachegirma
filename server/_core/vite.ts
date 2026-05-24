@@ -140,18 +140,35 @@ export function serveStatic(app: Express) {
   }
 
   app.use("*", async (req: Request, res: Response) => {
-    // SEO prerender for production bots
+    const reqPath = req.path;
+
+    // For product and category pages: attempt prerender
+    // If prerender returns null (not found in DB), return 404
+    const isProductPath = reqPath.startsWith("/product/") || reqPath.startsWith("/mahsulot/");
+    const isCategoryPath = reqPath.startsWith("/category/") || reqPath.startsWith("/kategoriya/");
+
+    if (isProductPath || isCategoryPath) {
+      const prerenderResult = await seoPrerender(req);
+      if (prerenderResult) {
+        res.setHeader("X-Prerender", "true");
+        res.setHeader("Cache-Control", "public, max-age=3600");
+        res.setHeader("Vary", "User-Agent");
+        return res.status(200).set({ "Content-Type": "text/html; charset=utf-8" }).end(prerenderResult);
+      }
+      // Product/category not found in DB → true 404
+      return res.status(404).sendFile(path.resolve(distPath, "index.html"));
+    }
+
+    // For other paths: SEO prerender for bots only
     const prerenderResult = await seoPrerender(req);
     if (prerenderResult) {
       res.setHeader("X-Prerender", "true");
       res.setHeader("Cache-Control", "public, max-age=3600");
-      // Vary: User-Agent tells Google that bots and browsers get different content
       res.setHeader("Vary", "User-Agent");
       return res.status(200).set({ "Content-Type": "text/html; charset=utf-8" }).end(prerenderResult);
     }
 
-    const reqPath = req.path;
-    // Return 404 for /404 page and unknown routes (fixes Google Search Console false-404 issues)
+    // Return 404 for unknown routes (fixes Google Search Console false-404 issues)
     const status = isValidSpaPath(reqPath) ? 200 : 404;
     res.status(status).sendFile(path.resolve(distPath, "index.html"));
   });
