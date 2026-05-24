@@ -115,7 +115,7 @@ export default function Catalog() {
     offset: page * LIMIT,
     minPrice: minPrice,
     maxPrice: maxPrice,
-    sortBy: sortBy,
+    sortBy: sortBy as 'newest' | 'price_asc' | 'price_desc' | 'discount',
     brands: selectedBrands.length > 0 ? selectedBrands : undefined,
   });
 

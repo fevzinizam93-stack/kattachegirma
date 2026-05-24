@@ -2368,15 +2368,15 @@ ${productLines}
     submitAllProducts: adminProcedure
       .input(z.object({ limit: z.number().min(1).max(200).default(200) }))
       .mutation(async ({ input }) => {
-        const db = getDb();
-        const allProducts = await db
+        const db = await getDb();
+        const allProducts = await db!
           .select({ slug: productsTable.slug })
           .from(productsTable)
           .where(eq(productsTable.isActive, true))
           .limit(input.limit);
 
         const urls = allProducts.map(
-          (p) => `https://kattachegirma.uz/product/${p.slug}`
+          (p: { slug: string }) => `https://kattachegirma.uz/product/${p.slug}`
         );
 
         const results = await submitUrlsBatch(urls, "URL_UPDATED", 300);
@@ -2398,13 +2398,13 @@ ${productLines}
     submitAllProductsYandex: adminProcedure
       .input(z.object({ limit: z.number().min(1).max(10000).default(500) }))
       .mutation(async ({ input }) => {
-        const db = getDb();
-        const allProducts = await db
+        const db = await getDb();
+        const allProducts = await db!
           .select({ slug: productsTable.slug })
           .from(productsTable)
           .where(eq(productsTable.isActive, true))
           .limit(input.limit);
-        const urls = allProducts.map((p) => `https://kattachegirma.uz/product/${p.slug}`);
+        const urls = allProducts.map((p: { slug: string }) => `https://kattachegirma.uz/product/${p.slug}`);
         await indexNowSubmit(urls);
         return { total: urls.length, success: true };
       }),

@@ -44,6 +44,8 @@ export interface Translations {
   home_time_left: string;
   home_days: string;
   home_hours: string;
+  home_hits_title: string;
+  home_hits_subtitle: string;
 
   // Catalog
   catalog_title: string;
@@ -317,6 +319,8 @@ const ru: Translations = {
   home_time_left: "Осталось:",
   home_days: "д",
   home_hours: "ч",
+  home_hits_title: "Хиты продаж",
+  home_hits_subtitle: "Самые популярные товары",
 
   // Catalog
   catalog_title: "Каталог товаров",
@@ -590,6 +594,8 @@ const uz: Translations = {
   home_time_left: "Tugashiga:",
   home_days: "kun",
   home_hours: "soat",
+  home_hits_title: "Sotuvdagi hitlar",
+  home_hits_subtitle: "Eng mashhur mahsulotlar",
 
   // Catalog
   catalog_title: "Mahsulotlar katalogi",
