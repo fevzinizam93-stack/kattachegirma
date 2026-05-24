@@ -55,6 +55,21 @@ async function startServer() {
     next();
   });
 
+  // 301 redirect: uppercase or mixed-case category/catalog slugs → lowercase
+  // Prevents duplicate content and 404s for old Google-indexed URLs like /catalog/MOROZILKA
+  app.use((req, res, next) => {
+    const path = req.path;
+    // Check if path contains /catalog/ or /category/ or /kategoriya/ segments with uppercase
+    const categoryPrefixes = ["/catalog/", "/category/", "/kategoriya/"];
+    const hasUppercase = /[A-Z]/.test(path);
+    if (hasUppercase && categoryPrefixes.some(prefix => path.startsWith(prefix))) {
+      const lowercasePath = path.toLowerCase();
+      const query = req.originalUrl.includes("?") ? req.originalUrl.slice(req.originalUrl.indexOf("?")) : "";
+      return res.redirect(301, lowercasePath + query);
+    }
+    next();
+  });
+
   // Enable gzip compression for all responses (reduces transfer size ~70%)
   app.use(compression({ level: 6, threshold: 1024 }));
 

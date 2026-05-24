@@ -1,0 +1,90 @@
+{
+  "query": "SELECT slug, name FROM categories ORDER BY slug;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute SELECT slug, name FROM categories ORDER BY slug;",
+  "rows": [
+    {
+      "slug": "changyutgichlar",
+      "name": "Пылесосы"
+    },
+    {
+      "slug": "dazmollar",
+      "name": "Утюги"
+    },
+    {
+      "slug": "dud-boron",
+      "name": "Вытяжка"
+    },
+    {
+      "slug": "duxovka",
+      "name": "Духовка"
+    },
+    {
+      "slug": "elektr-choynaklar",
+      "name": "Электрочайники"
+    },
+    {
+      "slug": "fotoepilyator",
+      "name": "Фотоэпилятор"
+    },
+    {
+      "slug": "idish-yuvish-mashinalari",
+      "name": "Посудомоечные машины"
+    },
+    {
+      "slug": "kichik-maishiy-texnika",
+      "name": "мелкая бытовая"
+    },
+    {
+      "slug": "kir-yuvish-mashinalari",
+      "name": "Стиральные машины"
+    },
+    {
+      "slug": "kiyim",
+      "name": "Одежда "
+    },
+    {
+      "slug": "konder",
+      "name": "Кондиционер"
+    },
+    {
+      "slug": "kuller",
+      "name": "Куллер"
+    },
+    {
+      "slug": "mikrotoqinli-pechlar",
+      "name": "Микроволновка"
+    },
+    {
+      "slug": "morozilka",
+      "name": "Морозилька"
+    },
+    {
+      "slug": "muzlatgich",
+      "name": "Холодилник"
+    },
+    {
+      "slug": "pechlar",
+      "name": "Газовая плиты"
+    },
+    {
+      "slug": "suv-isitgichlar",
+      "name": "Водонагреватели"
+    },
+    {
+      "slug": "televizor",
+      "name": "Телевизоры"
+    },
+    {
+      "slug": "varochnaya-panel",
+      "name": "Варочная поверхность"
+    },
+    {
+      "slug": "xavo-tozalagich",
+      "name": "Очиститель воздуха"
+    }
+  ],
+  "messages": [],
+  "stdout": "slug\tname\nchangyutgichlar\tПылесосы\ndazmollar\tУтюги\ndud-boron\tВытяжка\nduxovka\tДуховка\nelektr-choynaklar\tЭлектрочайники\nfotoepilyator\tФотоэпилятор\nidish-yuvish-mashinalari\tПосудомоечные машины\nkichik-maishiy-texnika\tмелкая бытовая\nkir-yuvish-mashinalari\tСтиральные машины\nkiyim\tОдежда \nkonder\tКондиционер\nkuller\tКуллер\nmikrotoqinli-pechlar\tМикроволновка\nmorozilka\tМорозилька\nmuzlatgich\tХолодилник\npechlar\tГазовая плиты\nsuv-isitgichlar\tВодонагреватели\ntelevizor\tТелевизоры\nvarochnaya-panel\tВарочная поверхность\nxavo-tozalagich\tОчиститель воздуха\n",
+  "stderr": "",
+  "execution_time_ms": 274
+}
