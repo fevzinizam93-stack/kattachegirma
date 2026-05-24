@@ -2369,12 +2369,12 @@ ${productLines}
       .input(z.object({ limit: z.number().min(1).max(200).default(200) }))
       .mutation(async ({ input }) => {
         const db = await getDb();
-        const allProducts = await db!
+        if (!db) return { total: 0, succeeded: 0, failed: 0, results: [] };
+        const allProducts = await db
           .select({ slug: productsTable.slug })
           .from(productsTable)
           .where(eq(productsTable.isActive, true))
           .limit(input.limit);
-
         const urls = allProducts.map(
           (p: { slug: string }) => `https://kattachegirma.uz/product/${p.slug}`
         );

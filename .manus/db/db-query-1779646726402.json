@@ -1,0 +1,20 @@
+{
+  "query": "SELECT id, name, slug FROM categories WHERE slug COLLATE utf8mb4_bin REGEXP '[A-Z]' ORDER BY name;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute SELECT id, name, slug FROM categories WHERE slug COLLATE utf8mb4_bin REGEXP '[A-Z]' ORDER BY name;",
+  "rows": [
+    {
+      "id": "150001",
+      "name": "Телевизоры",
+      "slug": "Televizor"
+    },
+    {
+      "id": "390001",
+      "name": "Фотоэпилятор",
+      "slug": "Fotoepilyator"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tslug\n150001\tТелевизоры\tTelevizor\n390001\tФотоэпилятор\tFotoepilyator\n",
+  "stderr": "",
+  "execution_time_ms": 263
+}

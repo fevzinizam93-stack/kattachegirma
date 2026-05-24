@@ -1,0 +1,110 @@
+{
+  "query": "SELECT id, name, slug FROM categories WHERE slug != LOWER(slug) OR slug REGEXP '[A-Z]' ORDER BY name;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute SELECT id, name, slug FROM categories WHERE slug != LOWER(slug) OR slug REGEXP '[A-Z]' ORDER BY name;",
+  "rows": [
+    {
+      "id": "180001",
+      "name": "Варочная поверхность",
+      "slug": "varochnaya-panel"
+    },
+    {
+      "id": "10",
+      "name": "Водонагреватели",
+      "slug": "suv-isitgichlar"
+    },
+    {
+      "id": "330001",
+      "name": "Вытяжка",
+      "slug": "dud-boron"
+    },
+    {
+      "id": "8",
+      "name": "Газовая плиты",
+      "slug": "pechlar"
+    },
+    {
+      "id": "90001",
+      "name": "Духовка",
+      "slug": "duxovka"
+    },
+    {
+      "id": "210001",
+      "name": "Кондиционер",
+      "slug": "konder"
+    },
+    {
+      "id": "270001",
+      "name": "Куллер",
+      "slug": "kuller"
+    },
+    {
+      "id": "240001",
+      "name": "мелкая бытовая",
+      "slug": "kichik-maishiy-texnika"
+    },
+    {
+      "id": "7",
+      "name": "Микроволновка",
+      "slug": "mikrotoqinli-pechlar"
+    },
+    {
+      "id": "30001",
+      "name": "Морозилька",
+      "slug": "morozilka"
+    },
+    {
+      "id": "360001",
+      "name": "Одежда ",
+      "slug": "kiyim"
+    },
+    {
+      "id": "300001",
+      "name": "Очиститель воздуха",
+      "slug": "xavo-tozalagich"
+    },
+    {
+      "id": "6",
+      "name": "Посудомоечные машины",
+      "slug": "idish-yuvish-mashinalari"
+    },
+    {
+      "id": "1",
+      "name": "Пылесосы",
+      "slug": "changyutgichlar"
+    },
+    {
+      "id": "2",
+      "name": "Стиральные машины",
+      "slug": "kir-yuvish-mashinalari"
+    },
+    {
+      "id": "150001",
+      "name": "Телевизоры",
+      "slug": "Televizor"
+    },
+    {
+      "id": "13",
+      "name": "Утюги",
+      "slug": "dazmollar"
+    },
+    {
+      "id": "390001",
+      "name": "Фотоэпилятор",
+      "slug": "Fotoepilyator"
+    },
+    {
+      "id": "210002",
+      "name": "Холодилник",
+      "slug": "muzlatgich"
+    },
+    {
+      "id": "12",
+      "name": "Электрочайники",
+      "slug": "elektr-choynaklar"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tslug\n180001\tВарочная поверхность\tvarochnaya-panel\n10\tВодонагреватели\tsuv-isitgichlar\n330001\tВытяжка\tdud-boron\n8\tГазовая плиты\tpechlar\n90001\tДуховка\tduxovka\n210001\tКондиционер\tkonder\n270001\tКуллер\tkuller\n240001\tмелкая бытовая\tkichik-maishiy-texnika\n7\tМикроволновка\tmikrotoqinli-pechlar\n30001\tМорозилька\tmorozilka\n360001\tОдежда \tkiyim\n300001\tОчиститель воздуха\txavo-tozalagich\n6\tПосудомоечные машины\tidish-yuvish-mashinalari\n1\tПылесосы\tchangyutgichlar\n2\tСтиральные машины\tkir-yuvish-mashinalari\n150001\tТелевизоры\tTelevizor\n13\tУтюги\tdazmollar\n390001\tФотоэпилятор\tFotoepilyator\n210002\tХолодилник\tmuzlatgich\n12\tЭлектрочайники\telektr-choynaklar\n",
+  "stderr": "",
+  "execution_time_ms": 329
+}

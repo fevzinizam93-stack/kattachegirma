@@ -1,0 +1,20 @@
+{
+  "query": "SELECT id, name, slug FROM categories WHERE id IN (150001, 390001);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute SELECT id, name, slug FROM categories WHERE id IN (150001, 390001);",
+  "rows": [
+    {
+      "id": "150001",
+      "name": "Телевизоры",
+      "slug": "televizor"
+    },
+    {
+      "id": "390001",
+      "name": "Фотоэпилятор",
+      "slug": "fotoepilyator"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tslug\n150001\tТелевизоры\ttelevizor\n390001\tФотоэпилятор\tfotoepilyator\n",
+  "stderr": "",
+  "execution_time_ms": 262
+}
