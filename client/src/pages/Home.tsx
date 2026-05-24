@@ -17,45 +17,35 @@ function shuffleArray<T>(arr: T[]): T[] {
   return a;
 }
 
-// Categories that have products (with their slugs for linking)
-const CATEGORY_ORDER = [120001, 1, 2, 30001, 9, 150001, 8, 13];
-
-// How many products to load per page
+// How many products to show per category section on home page
+const PER_CATEGORY = 8;
+// How many products to load per infinite scroll page
 const PAGE_SIZE = 40;
-// Initial load — slightly more for first paint
-const INITIAL_SIZE = 60;
 
-// ---- Skeleton card — точно повторяет размер ProductCard ----
+// ---- Skeleton card ----
 function ProductCardSkeleton() {
   return (
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden h-full flex flex-col animate-pulse">
-      {/* image area — same paddingBottom as real card */}
       <div className="relative bg-gray-100" style={{ paddingBottom: "70%" }}>
         <div className="absolute inset-0 bg-gray-200" />
       </div>
       <div className="p-2 flex flex-col flex-1 gap-1.5">
-        {/* brand */}
         <div className="h-2.5 w-12 bg-gray-200 rounded" />
-        {/* name — 2 lines */}
         <div className="flex-1 space-y-1">
           <div className="h-3.5 bg-gray-200 rounded w-full" />
           <div className="h-3.5 bg-gray-200 rounded w-3/4" />
         </div>
-        {/* price */}
         <div className="h-4 w-20 bg-gray-200 rounded mt-1" />
-        {/* button */}
         <div className="h-7 bg-gray-200 rounded-lg mt-0.5" />
       </div>
     </div>
   );
 }
 
-// ---- Skeleton для горизонтального слайдера хитов ----
 function HitsSliderSkeleton() {
   return (
     <section className="py-4" style={{ background: "linear-gradient(135deg, #fff7ed 0%, #fff3e0 50%, #fef9f0 100%)", borderTop: "3px solid #ffffff", borderBottom: "3px solid #ffffff" }}>
       <div className="container">
-        {/* header skeleton */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-xl bg-orange-200 animate-pulse" />
@@ -66,7 +56,6 @@ function HitsSliderSkeleton() {
           </div>
           <div className="h-7 w-20 bg-orange-100 rounded-full animate-pulse" />
         </div>
-        {/* cards row */}
         <div className="flex gap-3 overflow-hidden">
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="shrink-0" style={{ width: "220px" }}>
@@ -79,11 +68,9 @@ function HitsSliderSkeleton() {
   );
 }
 
-// ---- Skeleton для одной секции категории ----
 function CategorySectionSkeleton({ count = 5 }: { count?: number }) {
   return (
     <section className="container py-3">
-      {/* header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <div className="h-5 w-5 bg-gray-200 rounded animate-pulse" />
@@ -91,7 +78,6 @@ function CategorySectionSkeleton({ count = 5 }: { count?: number }) {
         </div>
         <div className="h-5 w-16 bg-gray-100 rounded animate-pulse" />
       </div>
-      {/* grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
         {Array.from({ length: count }).map((_, i) => (
           <ProductCardSkeleton key={i} />
@@ -105,7 +91,6 @@ export default function Home() {
   const { t, lang } = useLanguage();
   const [, navigate] = useLocation();
 
-  // SEO: dynamic meta tags for homepage
   usePageMeta({
     title: "Катта Чегирма — Магазин бытовой техники со скидками",
     description: "Катта Чегирма — самая дешёвая бытовая техника в Узбекистане. Пылесосы, стиральные машины, холодильники, телевизоры, кондиционеры и другая техника ведущих брендов со скидками до 60%. Быстрая доставка по Ташкенту и всему Узбекистану.",
@@ -114,13 +99,11 @@ export default function Home() {
     keywordsUz: "arzon maishiy texnika, kir yuvish mashina sotib olish, muzlatgich arzon, changyutgich Toshkent, konditsioner narxi, televizor chegirma, Katta Chegirma",
   });
 
-  // Hits — primary content, load first (limit 20 for fast initial render)
+  // Hits — load first
   const { data: hitsData, isLoading: hitsLoading } = trpc.products.getHits.useQuery(
     { limit: 20 },
     { staleTime: 5 * 60 * 1000 }
   );
-  // Shuffle hits on each page load so different products appear first
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const hitProducts = useMemo(() => shuffleArray(hitsData ?? []), [hitsData]);
   const sliderRef = useRef<HTMLDivElement>(null);
   const sliderPausedRef = useRef(false);
@@ -128,21 +111,18 @@ export default function Home() {
     if (!sliderRef.current) return;
     sliderRef.current.scrollBy({ left: dir === "right" ? 280 : -280, behavior: "smooth" });
   };
-  // Auto-scroll: every 3s move one card; seamless infinite loop via doubled array
   useEffect(() => {
     const interval = setInterval(() => {
       if (sliderPausedRef.current || !sliderRef.current) return;
       const el = sliderRef.current;
       const half = el.scrollWidth / 2;
-      if (el.scrollLeft >= half - 5) {
-        el.scrollLeft = el.scrollLeft - half;
-      }
+      if (el.scrollLeft >= half - 5) el.scrollLeft = el.scrollLeft - half;
       el.scrollBy({ left: 240, behavior: "smooth" });
     }, 2500);
     return () => clearInterval(interval);
   }, []);
 
-  // Secondary content — categories and banners
+  // Categories
   const { data: categoriesData, isLoading: categoriesLoading } = trpc.categories.list.useQuery(
     undefined,
     { staleTime: 10 * 60 * 1000 }
@@ -154,31 +134,43 @@ export default function Home() {
   const banners = activeBanners ?? [];
   const categories = categoriesData ?? [];
 
-  // ── Infinite scroll state ──────────────────────────────────────────────────
-  // We accumulate all loaded products in a stable array across pages.
-  // Each page fetch uses offset = loadedCount, limit = PAGE_SIZE.
-  const [loadedProducts, setLoadedProducts] = useState<NonNullable<ReturnType<typeof trpc.products.list.useQuery>["data"]>["items"]>([]);
+  // Build stable list of category IDs once categories are loaded
+  const categoryIds = useMemo(
+    () => categories.map(c => c.id),
+    [categories]
+  );
+
+  // Load products per category — guaranteed N items per section
+  const { data: productsByCatRaw, isLoading: productsByCatLoading } = trpc.products.listByCategories.useQuery(
+    { categoryIds, perCategory: PER_CATEGORY },
+    {
+      enabled: categoryIds.length > 0,
+      staleTime: 3 * 60 * 1000,
+    }
+  );
+
+  // productsByCat: Record<number, Product[]>
+  const productsByCat = (productsByCatRaw ?? {}) as Record<number, any[]>;
+
+  // Build ordered category list — only categories with products
+  const catMap: Record<number, (typeof categories)[0]> = {};
+  for (const c of categories) catMap[c.id] = c;
+
+  // Preferred order: popular categories first
+  const PREFERRED_ORDER = [210001, 2, 210002, 1, 150001, 30001, 270001, 180001, 300001, 8, 330001, 6, 240001, 90001, 13];
+  const orderedCatIds = useMemo(() => {
+    const withProducts = Object.keys(productsByCat).map(Number).filter(id => productsByCat[id]?.length > 0);
+    return [
+      ...PREFERRED_ORDER.filter(id => withProducts.includes(id)),
+      ...withProducts.filter(id => !PREFERRED_ORDER.includes(id)),
+    ];
+  }, [productsByCat]);
+
+  // ── Infinite scroll for "all products" section at the bottom ──────────────
+  const [moreProducts, setMoreProducts] = useState<any[]>([]);
   const [currentOffset, setCurrentOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
-  const totalRef = useRef<number | null>(null);
-
-  // Initial page — always fetched
-  const { data: initialData, isLoading: productsLoading } = trpc.products.list.useQuery(
-    { limit: INITIAL_SIZE, offset: 0 },
-    { staleTime: 3 * 60 * 1000 }
-  );
-
-  // When initial data arrives, seed loadedProducts
-  useEffect(() => {
-    if (!initialData) return;
-    totalRef.current = initialData.total;
-    setLoadedProducts(initialData.items);
-    setCurrentOffset(initialData.items.length);
-    setHasMore(initialData.items.length < initialData.total);
-  }, [initialData]);
-
-  // tRPC utils for manual fetching of next pages
   const utils = trpc.useUtils();
 
   const fetchNextPage = useCallback(async () => {
@@ -192,18 +184,18 @@ export default function Home() {
       if (result.items.length === 0) {
         setHasMore(false);
       } else {
-        setLoadedProducts(prev => [...prev, ...result.items]);
-        setCurrentOffset(prev => prev + result.items.length);
-        setHasMore(currentOffset + result.items.length < result.total);
+        setMoreProducts(prev => [...prev, ...result.items]);
+        const newOffset = currentOffset + result.items.length;
+        setCurrentOffset(newOffset);
+        setHasMore(newOffset < result.total);
       }
     } catch {
-      // silently ignore — user can scroll again to retry
+      // silently ignore
     } finally {
       setIsFetchingMore(false);
     }
   }, [isFetchingMore, hasMore, currentOffset, utils]);
 
-  // IntersectionObserver sentinel at the bottom of the page
   const sentinelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = sentinelRef.current;
@@ -214,44 +206,27 @@ export default function Home() {
           fetchNextPage();
         }
       },
-      { rootMargin: "300px" } // start loading 300px before the bottom
+      { rootMargin: "400px" }
     );
     observer.observe(el);
     return () => observer.disconnect();
   }, [hasMore, isFetchingMore, fetchNextPage]);
 
-  // Shuffle products once per page load — each visitor sees a different order
-  // We keep a stable shuffle seed per session so re-renders don't re-shuffle
-  const shuffledProducts = useMemo(() => shuffleArray(loadedProducts), [loadedProducts]);
-
-  // Group shuffled products by categoryId
-  const productsByCategory: Record<number, typeof shuffledProducts> = {};
-  for (const p of shuffledProducts) {
-    if (!productsByCategory[p.categoryId]) productsByCategory[p.categoryId] = [];
-    productsByCategory[p.categoryId].push(p);
+  // Group extra products by category for display
+  const moreProductsByCat: Record<number, any[]> = {};
+  for (const p of moreProducts) {
+    if (!moreProductsByCat[p.categoryId]) moreProductsByCat[p.categoryId] = [];
+    moreProductsByCat[p.categoryId].push(p);
   }
 
-  // Build category sections: only categories that have products, in preferred order
-  const catMap: Record<number, (typeof categories)[0]> = {};
-  for (const c of categories) catMap[c.id] = c;
-
-  const orderedCatIds = [
-    ...CATEGORY_ORDER.filter(id => productsByCategory[id]?.length > 0),
-    ...Object.keys(productsByCategory)
-      .map(Number)
-      .filter(id => !CATEGORY_ORDER.includes(id) && productsByCategory[id]?.length > 0),
-  ];
-
-  // Are we still loading the main content?
-  const isMainLoading = hitsLoading || productsLoading || categoriesLoading;
+  const isMainLoading = hitsLoading || categoriesLoading || productsByCatLoading;
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* SEO: visually hidden H1 for search engines */}
       <h1 className="sr-only">Катта Чегирма — Дешевая бытовая техника в Узбекистане</h1>
       <h2 className="sr-only">Товары со скидкой — телевизоры, стиральные машины, холодильники</h2>
 
-      {/* Promo Banners from admin */}
+      {/* Promo Banners */}
       {banners.length > 0 && (
         <section className="container pt-3">
           <div className="flex flex-col gap-2">
@@ -262,7 +237,7 @@ export default function Home() {
         </section>
       )}
 
-      {/* Mobile horizontal category scroll */}
+      {/* Mobile category scroll */}
       {categories.length > 0 && (
         <div className="md:hidden bg-white border-b border-gray-100 overflow-x-auto scrollbar-hide">
           <div className="flex gap-2 px-3 py-2 w-max">
@@ -282,7 +257,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Desktop horizontal category scroll */}
+      {/* Desktop category scroll */}
       {categories.length > 0 && (
         <div className="hidden md:block bg-white border-b border-gray-100 overflow-x-auto scrollbar-hide">
           <div className="flex gap-1 px-4 py-2 w-max mx-auto">
@@ -332,8 +307,6 @@ export default function Home() {
                 </Link>
               </div>
             </div>
-
-            {/* Horizontal scroll row */}
             <div
               ref={sliderRef}
               className="flex gap-3 overflow-x-auto scrollbar-hide pb-1"
@@ -341,7 +314,6 @@ export default function Home() {
               onMouseEnter={() => { sliderPausedRef.current = true; }}
               onMouseLeave={() => { sliderPausedRef.current = false; }}
             >
-              {/* Double the array for seamless infinite loop */}
               {[...hitProducts, ...hitProducts].map((p, idx) => (
                 <div key={`${p.id}-${idx}`} className="shrink-0" style={{ width: "220px", scrollSnapAlign: "start" }}>
                   <ProductCard product={p} />
@@ -352,7 +324,7 @@ export default function Home() {
         </section>
       )}
 
-      {/* Loading skeletons for category sections */}
+      {/* Loading skeletons */}
       {isMainLoading && (
         <>
           <CategorySectionSkeleton count={5} />
@@ -361,13 +333,17 @@ export default function Home() {
         </>
       )}
 
-      {/* Category sections — one section per category that has products */}
+      {/* Category sections — guaranteed products per category */}
       {!isMainLoading && orderedCatIds.map(catId => {
         const cat = catMap[catId];
-        const prods = productsByCategory[catId] ?? [];
-        if (!cat || prods.length === 0) return null;
-        const shown = prods.slice(0, 5);
-        const hasMoreInCat = prods.length > 5;
+        const prods = productsByCat[catId] ?? [];
+        // Also merge any extra products from infinite scroll for this category
+        const extraProds = (moreProductsByCat[catId] ?? []).filter(
+          p => !prods.some((ep: any) => ep.id === p.id)
+        );
+        const allProds = [...prods, ...extraProds];
+        if (!cat || allProds.length === 0) return null;
+        const shown = allProds.slice(0, PER_CATEGORY);
         return (
           <section key={catId} className="container py-3">
             <div className="flex items-center justify-between mb-3">
@@ -384,28 +360,25 @@ export default function Home() {
               </Link>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
-              {shown.map((p) => <ProductCard key={p.id} product={p} />)}
+              {shown.map((p: any) => <ProductCard key={p.id} product={p} />)}
             </div>
-            {hasMoreInCat && (
-              <div className="mt-3 text-center">
-                <Link
-                  href={`/category/${cat.slug}`}
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
-                  style={{ color: "#cc0000" }}
-                >
-                  Ещё {prods.length - 5} товаров <ArrowRight size={14} />
-                </Link>
-              </div>
-            )}
+            {/* Link to full category */}
+            <div className="mt-3 text-center">
+              <Link
+                href={`/category/${cat.slug}`}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+                style={{ color: "#cc0000" }}
+              >
+                Смотреть все товары категории <ArrowRight size={14} />
+              </Link>
+            </div>
           </section>
         );
       })}
 
-      {/* ── Infinite scroll sentinel & loading indicator ─────────────────── */}
-      {/* Sentinel: IntersectionObserver watches this div to trigger next page load */}
+      {/* Infinite scroll sentinel */}
       <div ref={sentinelRef} className="h-1" aria-hidden="true" />
 
-      {/* Loading spinner while fetching next page */}
       {isFetchingMore && (
         <div className="flex items-center justify-center py-8 gap-2 text-gray-500">
           <Loader2 size={20} className="animate-spin" style={{ color: "#cc0000" }} />
@@ -413,17 +386,13 @@ export default function Home() {
         </div>
       )}
 
-      {/* End of catalog message */}
-      {!hasMore && loadedProducts.length > 0 && !isMainLoading && (
+      {!hasMore && moreProducts.length > 0 && !isMainLoading && (
         <div className="text-center py-6 text-sm text-gray-400 font-medium">
-          Показано все {loadedProducts.length} товаров
+          Все товары загружены
         </div>
       )}
 
-      {/* Recently viewed */}
       <RecentlyViewed />
-
-      {/* Bottom padding for mobile nav */}
       <div className="pb-20 md:pb-8" />
     </div>
   );
@@ -499,5 +468,3 @@ function PromoBanner({ banner }: { banner: BannerData }) {
   }
   return inner;
 }
-
-

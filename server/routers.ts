@@ -41,6 +41,7 @@ import {
   getProductById as getProductByIdDb,
   promoteToAdmin,
   getHitProducts,
+  getProductsByCategories,
   toggleProductHit,
   toggleProductActive,
   trackEvent,
@@ -991,6 +992,21 @@ export const appRouter = router({
         return getSalesProducts(input.limit);
       }),
     // Public: get hit products (bestsellers)
+    // Get products grouped by categories — for homepage sections
+    // Returns a map of { [categoryId]: product[] } with perCategory items each
+    listByCategories: publicProcedure
+      .input(z.object({
+        categoryIds: z.array(z.number()),
+        perCategory: z.number().default(8),
+      }))
+      .query(async ({ input }) => {
+        const cacheKey = `products:byCategories:${input.categoryIds.sort().join(',')}_${input.perCategory}`;
+        const cached = getCached<Record<number, unknown[]>>(cacheKey);
+        if (cached) return cached;
+        const result = await getProductsByCategories(input.categoryIds, input.perCategory);
+        setCached(cacheKey, result, 3 * 60 * 1000); // 3 min cache
+        return result;
+      }),
     getHits: publicProcedure
       .input(z.object({ limit: z.number().optional() }))
       .query(async ({ input }) => {

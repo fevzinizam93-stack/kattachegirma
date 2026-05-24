@@ -200,6 +200,24 @@ export async function getProducts(opts?: { categoryId?: number; search?: string;
   return query;
 }
 
+// Get N products per category for homepage sections (one DB query for all categories)
+export async function getProductsByCategories(categoryIds: number[], perCategory = 8): Promise<Record<number, Awaited<ReturnType<typeof getProducts>>>> {
+  const db = await getDb();
+  if (!db) return {};
+  const allProds = await db.select().from(products)
+    .where(and(
+      eq(products.isActive, true),
+      eq(products.isApproved, true),
+      inArray(products.categoryId, categoryIds),
+    ))
+    .orderBy(desc(products.createdAt));
+  const result: Record<number, typeof allProds> = {};
+  for (const catId of categoryIds) {
+    result[catId] = allProds.filter(p => p.categoryId === catId).slice(0, perCategory);
+  }
+  return result;
+}
+
 export async function getProductBrands(opts?: { categoryId?: number }): Promise<string[]> {
   const db = await getDb();
   if (!db) return [];
