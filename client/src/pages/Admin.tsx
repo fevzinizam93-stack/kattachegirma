@@ -2783,6 +2783,21 @@ export default function Admin() {
 function IndexingPanel() {
   const [indexResults, setIndexResults] = useState<Array<{ url: string; success: boolean; error?: string }>>([]);
   const [singleUrl, setSingleUrl] = useState("");
+  const [yandexSingleUrl, setYandexSingleUrl] = useState("");
+
+  // Yandex IndexNow mutations
+  const yandexAllMut = trpc.indexing.submitAllProductsYandex.useMutation({
+    onSuccess: (data) => toast.success(`Яндекс: отправлено ${data.total} URL ✅`),
+    onError: (err: { message: string }) => toast.error("Яндекс ошибка: " + err.message),
+  });
+  const yandexCatsMut = trpc.indexing.submitAllCategoriesYandex.useMutation({
+    onSuccess: (data) => toast.success(`Яндекс: категории отправлены (${data.total} URL) ✅`),
+    onError: (err: { message: string }) => toast.error("Яндекс ошибка: " + err.message),
+  });
+  const yandexOneMut = trpc.indexing.submitUrlYandex.useMutation({
+    onSuccess: () => toast.success("Яндекс: URL отправлен ✅"),
+    onError: (err: { message: string }) => toast.error("Яндекс ошибка: " + err.message),
+  });
 
   const submitAllMut = trpc.indexing.submitAllProducts.useMutation({
     onSuccess: (data) => {
@@ -2894,15 +2909,69 @@ function IndexingPanel() {
         </div>
       )}
 
-      {/* Quota info */}
+      {/* Quota info Google */}
       <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-800">
-        <p className="font-bold mb-1">⚠️ Важно про лимиты</p>
+        <p className="font-bold mb-1">⚠️ Важно про лимиты Google</p>
         <ul className="list-disc list-inside space-y-1 text-xs">
           <li>Google Indexing API: <strong>200 запросов/день</strong></li>
           <li>Если товаров больше 200 — отправляйте частями (сегодня 200, завтра следующие 200)</li>
           <li>Индексирование обычно происходит в течение <strong>нескольких часов</strong></li>
           <li>После публикации новых товаров нажмите «Отправить все товары»</li>
         </ul>
+      </div>
+
+      {/* ── Yandex IndexNow ── */}
+      <div className="border-t border-gray-200 pt-6">
+        <h2 className="font-black text-lg text-gray-900 mb-1">🟡 Яндекс IndexNow</h2>
+        <p className="text-sm text-gray-500 mb-4">Мгновенно уведомляет Яндекс о новых и изменённых страницах. <strong>Без лимитов</strong> — можно отправлять все товары сразу. Также автоматически срабатывает при одобрении товара.</p>
+
+        {/* Yandex: all products */}
+        <div className="bg-gradient-to-br from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl p-5 mb-4">
+          <h3 className="font-bold text-base text-yellow-900 mb-1">📦 Все товары → Яндекс</h3>
+          <p className="text-xs text-yellow-700 mb-4">Отправить URL всех активных товаров в Яндекс IndexNow. Без лимита — все товары за один раз.</p>
+          <button
+            onClick={() => { if (confirm("Отправить все товары в Яндекс IndexNow?")) yandexAllMut.mutate({ limit: 500 }); }}
+            disabled={yandexAllMut.isPending || yandexCatsMut.isPending || yandexOneMut.isPending}
+            className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
+          >
+            {yandexAllMut.isPending ? <><span className="animate-spin">⏳</span> Отправляю...</> : <>🚀 Отправить все товары в Яндекс</>}
+          </button>
+        </div>
+
+        {/* Yandex: categories */}
+        <div className="bg-gradient-to-br from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl p-5 mb-4">
+          <h3 className="font-bold text-base text-yellow-900 mb-1">📂 Категории → Яндекс</h3>
+          <p className="text-xs text-yellow-700 mb-4">Отправить URL всех категорий и главной страницы в Яндекс.</p>
+          <button
+            onClick={() => { if (confirm("Отправить все категории в Яндекс IndexNow?")) yandexCatsMut.mutate(); }}
+            disabled={yandexAllMut.isPending || yandexCatsMut.isPending || yandexOneMut.isPending}
+            className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
+          >
+            {yandexCatsMut.isPending ? <><span className="animate-spin">⏳</span> Отправляю...</> : <>📤 Отправить категории в Яндекс</>}
+          </button>
+        </div>
+
+        {/* Yandex: single URL */}
+        <div className="bg-white border border-yellow-200 rounded-2xl p-5">
+          <h3 className="font-bold text-base text-gray-900 mb-1">🔗 Один URL → Яндекс</h3>
+          <p className="text-xs text-gray-500 mb-4">Отправить конкретный URL в Яндекс IndexNow.</p>
+          <div className="flex gap-2">
+            <input
+              type="url"
+              value={yandexSingleUrl}
+              onChange={e => setYandexSingleUrl(e.target.value)}
+              placeholder="https://kattachegirma.uz/product/..."
+              className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/30"
+            />
+            <button
+              onClick={() => { if (yandexSingleUrl) yandexOneMut.mutate({ url: yandexSingleUrl }); }}
+              disabled={yandexAllMut.isPending || yandexCatsMut.isPending || yandexOneMut.isPending || !yandexSingleUrl}
+              className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
+            >
+              {yandexOneMut.isPending ? <span className="animate-spin">⏳</span> : <>Отправить</>}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

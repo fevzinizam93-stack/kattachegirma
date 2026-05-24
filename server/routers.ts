@@ -117,6 +117,7 @@ import { eq } from "drizzle-orm";
 import { categories, products as productsTable } from "../drizzle/schema";
 import { storagePut } from "./storage";
 import { submitUrlForIndexing, submitUrlsBatch } from "./googleIndexing";
+import { indexNowProduct, indexNowSubmit } from "./indexNow";
 import { invokeLLM } from "./_core/llm";
 import { SignJWT } from "jose";
 import { ENV } from "./_core/env";
@@ -1259,6 +1260,11 @@ export const appRouter = router({
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         await updateProduct(input.id, { isApproved: true, moderationStatus: "approved" as const });
+        // Notify Yandex IndexNow when product is approved
+        const product = await getProductById(input.id);
+        if (product?.slug) {
+          indexNowProduct(product.slug).catch(e => console.warn("[IndexNow] approveProduct failed:", e));
+        }
         return { success: true };
       }),
 
@@ -2268,7 +2274,7 @@ ${productLines}
       }),
   }),
 
-  // Google Indexing API
+  // Google Indexing API + Yandex IndexNow
   indexing: router({
     // Submit a single URL for indexing
     submitUrl: adminProcedure
@@ -2298,6 +2304,41 @@ ${productLines}
 
         return { total: urls.length, succeeded, failed, results };
       }),
+
+    // Yandex IndexNow: submit a single URL
+    submitUrlYandex: adminProcedure
+      .input(z.object({ url: z.string().url() }))
+      .mutation(async ({ input }) => {
+        await indexNowSubmit([input.url]);
+        return { success: true, url: input.url };
+      }),
+
+    // Yandex IndexNow: submit all product URLs in bulk (no quota limit)
+    submitAllProductsYandex: adminProcedure
+      .input(z.object({ limit: z.number().min(1).max(10000).default(500) }))
+      .mutation(async ({ input }) => {
+        const db = getDb();
+        const allProducts = await db
+          .select({ slug: productsTable.slug })
+          .from(productsTable)
+          .where(eq(productsTable.isActive, true))
+          .limit(input.limit);
+        const urls = allProducts.map((p) => `https://kattachegirma.uz/product/${p.slug}`);
+        await indexNowSubmit(urls);
+        return { total: urls.length, success: true };
+      }),
+
+    // Yandex IndexNow: submit all category + static URLs
+    submitAllCategoriesYandex: adminProcedure.mutation(async () => {
+      const cats = await getAllCategories();
+      const urls = [
+        "https://kattachegirma.uz/",
+        "https://kattachegirma.uz/catalog",
+        ...cats.map((c) => `https://kattachegirma.uz/catalog/${c.slug}`),
+      ];
+      await indexNowSubmit(urls);
+      return { total: urls.length, success: true };
+    }),
 
     // Submit all category URLs
     submitAllCategories: adminProcedure.mutation(async () => {
