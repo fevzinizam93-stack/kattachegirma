@@ -27,6 +27,8 @@ export async function setupVite(app: Express, server: Server) {
     if (prerenderResult) {
       res.setHeader("X-Prerender", "true");
       res.setHeader("Cache-Control", "public, max-age=3600");
+      // Vary: User-Agent tells Google that bots and browsers get different content
+      res.setHeader("Vary", "User-Agent");
       return res.status(200).set({ "Content-Type": "text/html; charset=utf-8" }).end(prerenderResult);
     }
     next();
@@ -94,6 +96,8 @@ export function serveStatic(app: Express) {
     if (prerenderResult) {
       res.setHeader("X-Prerender", "true");
       res.setHeader("Cache-Control", "public, max-age=3600");
+      // Vary: User-Agent tells Google that bots and browsers get different content
+      res.setHeader("Vary", "User-Agent");
       return res.status(200).set({ "Content-Type": "text/html; charset=utf-8" }).end(prerenderResult);
     }
 
