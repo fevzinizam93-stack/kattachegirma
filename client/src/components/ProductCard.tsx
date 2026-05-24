@@ -10,6 +10,7 @@ import { useState } from "react";
 import CompareModal from "@/components/CompareModal";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { trpc } from "@/lib/trpc";
+import { imgUrl } from "@/lib/imgUrl";
 
 interface Product {
   id: number;
@@ -122,7 +123,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <div className="absolute inset-0">
             {product.imageUrl ? (
               <img
-                src={product.imageUrl}
+                src={imgUrl(product.imageUrl, 400, 75)}
                 alt={displayName}
                 className="w-full h-full object-contain p-1.5"
                 loading="lazy"

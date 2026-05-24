@@ -13,6 +13,7 @@ import CompareModal from "@/components/CompareModal";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import QuickBuyModal from "@/components/QuickBuyModal";
 import { trackViewContent, trackAddToCart } from "@/hooks/useFacebookPixel";
+import { imgUrl } from "@/lib/imgUrl";
 
 function VideoReviewDetailButton({ productName, savedVideoId }: { productName: string; savedVideoId?: string | null }) {
   const [open, setOpen] = useState(false);
@@ -711,7 +712,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 </div>
                 {activeUrl ? (
                   <img
-                    src={activeUrl}
+                    src={imgUrl(activeUrl, 1200, 85)}
                     alt={displayName}
                     className="w-full h-full object-contain p-4 transition-transform duration-300 ease-out"
                     style={{
@@ -745,7 +746,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                           : 'border-transparent hover:border-gray-300 bg-gray-50'
                       }`}
                     >
-                      <img src={url} alt={`Фото ${idx + 1}`} className="w-full h-full object-contain p-1" />
+                      <img src={imgUrl(url, 120, 70)} alt={`Фото ${idx + 1}`} className="w-full h-full object-contain p-1" loading="lazy" />
                     </button>
                   ))}
                 </div>

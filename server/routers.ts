@@ -116,6 +116,7 @@ import {
 import { eq } from "drizzle-orm";
 import { categories, products as productsTable } from "../drizzle/schema";
 import { storagePut } from "./storage";
+import { optimizeImage } from "./_core/imageOptimizer";
 import { submitUrlForIndexing, submitUrlsBatch } from "./googleIndexing";
 import { indexNowProduct, indexNowSubmit } from "./indexNow";
 import { invokeLLM } from "./_core/llm";
@@ -509,11 +510,18 @@ export const appRouter = router({
         filename: z.string(),
       }))
       .mutation(async ({ input }) => {
-        const buffer = Buffer.from(input.base64, "base64");
-        const key = `products/${input.productId}/${Date.now()}-${input.filename}`;
-        const { url } = await storagePut(key, buffer, input.mimeType);
+        const rawBuffer = Buffer.from(input.base64, "base64");
+        // Convert to WebP at upload time for faster delivery
+        const optimized = await optimizeImage(rawBuffer, input.filename);
+        const ts = Date.now();
+        const fullKey = `products/${input.productId}/${ts}-${optimized.fullFilename}`;
+        const thumbKey = `products/${input.productId}/${ts}-${optimized.thumbFilename}`;
+        const [{ url }, { url: thumbUrl }] = await Promise.all([
+          storagePut(fullKey, optimized.fullBuffer, optimized.fullMimeType),
+          storagePut(thumbKey, optimized.thumbBuffer, optimized.thumbMimeType),
+        ]);
         await updateProduct(input.productId, { imageUrl: url });
-        return { url };
+        return { url, thumbUrl };
       }),
 
     // Seller: upload image (returns URL only, no product ID needed)
@@ -526,9 +534,12 @@ export const appRouter = router({
       .mutation(async ({ input, ctx }) => {
         const seller = await getSellerByUserId(ctx.user.id);
         if (!seller) throw new TRPCError({ code: "FORBIDDEN", message: "Seller profile not found" });
-        const buffer = Buffer.from(input.base64, "base64");
-        const key = `seller-products/${seller.id}/${Date.now()}-${input.filename}`;
-        const { url } = await storagePut(key, buffer, input.mimeType);
+        const rawBuffer = Buffer.from(input.base64, "base64");
+        // Convert to WebP at upload time for faster delivery
+        const optimized = await optimizeImage(rawBuffer, input.filename);
+        const ts = Date.now();
+        const key = `seller-products/${seller.id}/${ts}-${optimized.fullFilename}`;
+        const { url } = await storagePut(key, optimized.fullBuffer, optimized.fullMimeType);
         return { url };
       }),
 
