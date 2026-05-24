@@ -121,7 +121,16 @@ export default function ProductCard({ product }: ProductCardProps) {
         <div className="relative bg-gray-50" style={{ paddingBottom: "70%" }}>
           <div className="absolute inset-0">
             {product.imageUrl ? (
-              <img src={product.imageUrl} alt={displayName} className="w-full h-full object-contain p-1.5" loading="lazy" decoding="async" />
+              <img
+                src={product.imageUrl}
+                alt={displayName}
+                className="w-full h-full object-contain p-1.5"
+                loading="lazy"
+                decoding="async"
+                width="220"
+                height="154"
+                sizes="(max-width: 640px) 45vw, (max-width: 768px) 30vw, (max-width: 1024px) 22vw, 220px"
+              />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-4xl text-gray-300">📦</div>
             )}

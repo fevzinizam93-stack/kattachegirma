@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { defineConfig, type Plugin, type ViteDevServer } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
+import { compression } from "vite-plugin-compression2";
 
 // =============================================================================
 // Manus Debug Collector - Vite Plugin
@@ -150,7 +151,15 @@ function vitePluginManusDebugCollector(): Plugin {
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
+const plugins = [
+  react(),
+  tailwindcss(),
+  jsxLocPlugin(),
+  vitePluginManusRuntime(),
+  vitePluginManusDebugCollector(),
+  // Gzip + Brotli compression for production builds — reduces JS/CSS transfer size ~70%
+  compression({ algorithms: ["gzip", "brotliCompress"], exclude: [/\.(png|jpg|jpeg|gif|webp|svg|ico|woff2?)$/] }),
+];
 
 export default defineConfig({
   plugins,
@@ -215,6 +224,14 @@ export default defineConfig({
         },
       },
     },
+    // Enable CSS code splitting for better caching
+    cssCodeSplit: true,
+    // Minify with esbuild (default, fast)
+    minify: "esbuild",
+    // Report bundle size warnings for chunks > 500KB
+    chunkSizeWarningLimit: 500,
+    // Target modern browsers for smaller output
+    target: ["es2020", "chrome80", "firefox78", "safari14"],
   },
   server: {
     host: true,

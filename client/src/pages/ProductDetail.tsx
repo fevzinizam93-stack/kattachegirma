@@ -718,6 +718,12 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                       transform: zoomed ? `scale(2.2)` : "scale(1)",
                       transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
                     }}
+                    loading="eager"
+                    decoding="sync"
+                    // @ts-expect-error fetchpriority is valid HTML5 attribute
+                    fetchpriority="high"
+                    width="600"
+                    height="600"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">

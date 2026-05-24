@@ -92,28 +92,40 @@
       ]
     }
     </script>
-    <!-- Facebook Pixel Code -->
-    <script>
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window, document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '1743304776861432');
-    fbq('track', 'PageView');
-    </script>
-    <!-- End Meta Pixel Code -->
-    <!-- DNS prefetch for API and external resources -->
+
+    <!-- === PERFORMANCE OPTIMIZATIONS === -->
+
+    <!-- 1. Preconnect to image CDN (CloudFront) — reduces connection latency for product images -->
+    <link rel="preconnect" href="https://d36hbw14aib5lz.cloudfront.net" crossorigin />
+    <link rel="dns-prefetch" href="//d36hbw14aib5lz.cloudfront.net" />
+
+    <!-- 2. Preconnect to Google Fonts -->
     <link rel="dns-prefetch" href="//fonts.googleapis.com" />
     <link rel="dns-prefetch" href="//fonts.gstatic.com" />
-    <!-- Google Fonts with font-display:swap for faster text rendering -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=optional" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=optional" rel="stylesheet" />
+
+    <!-- 3. Google Fonts — use display=swap for faster text rendering (no invisible text) -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" /></noscript>
+
+    <!-- 4. Facebook Pixel — deferred to not block rendering -->
+    <script>
+    // Defer Facebook Pixel until after page load to avoid blocking LCP
+    window.addEventListener('load', function() {
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', '1743304776861432');
+      fbq('track', 'PageView');
+    });
+    </script>
+    <!-- End Meta Pixel Code -->
   </head>
   <body>
     <!-- Facebook Pixel noscript fallback -->

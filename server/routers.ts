@@ -141,6 +141,37 @@ const sellerProcedure = protectedProcedure.use(async ({ ctx, next }) => {
   return next({ ctx });
 });
 
+// ============================================================
+// Server-side in-memory cache for frequently-accessed public data
+// Reduces DB queries and improves TTFB (Time To First Byte)
+// ============================================================
+const serverCache = new Map<string, { data: unknown; expiresAt: number }>();
+const SERVER_CACHE_TTL = 2 * 60 * 1000; // 2 minutes
+
+function getCached<T>(key: string): T | null {
+  const entry = serverCache.get(key);
+  if (entry && entry.expiresAt > Date.now()) return entry.data as T;
+  return null;
+}
+function setCached(key: string, data: unknown, ttl = SERVER_CACHE_TTL) {
+  serverCache.set(key, { data, expiresAt: Date.now() + ttl });
+  // Prevent unbounded growth
+  if (serverCache.size > 500) {
+    const now = Date.now();
+    Array.from(serverCache.entries()).forEach(([k, v]) => {
+      if (v.expiresAt < now) serverCache.delete(k);
+    });
+  }
+}
+/** Call from admin mutations to invalidate product caches */
+export function invalidateProductCache() {
+  Array.from(serverCache.keys()).forEach(k => {
+    if (k.startsWith('products:') || k.startsWith('hits:') || k.startsWith('categories:')) {
+      serverCache.delete(k);
+    }
+  });
+}
+
 // YouTube API in-memory cache
 const youtubeCache: Record<string, { ts: number; data: Record<string, { viewCount: string; likeCount: string }> }> = {};
 type YTVideoItem = { id: string; title: string; description: string; thumbnail: string; viewCount: string; likeCount: string; publishedAt: string };
@@ -227,7 +258,11 @@ export const appRouter = router({
   // ---- Categories ----
   categories: router({
     list: publicProcedure.query(async () => {
-      return getAllCategories();
+      const cached = getCached<Awaited<ReturnType<typeof getAllCategories>>>('categories:list');
+      if (cached) return cached;
+      const result = await getAllCategories();
+      setCached('categories:list', result, 10 * 60 * 1000); // 10 min cache
+      return result;
     }),
     upsert: adminProcedure
       .input(z.object({ id: z.number().optional(), name: z.string(), slug: z.string(), icon: z.string().optional() }))
@@ -294,6 +329,20 @@ export const appRouter = router({
         offset: z.number().default(0),
       }))
       .query(async ({ input }) => {
+        // Cache simple home-page queries (no filters, first page) for 2 minutes
+        const isSimpleQuery = !input.categoryId && !input.search && !input.featured &&
+          !input.isPremium && !input.minPrice && !input.maxPrice && !input.brands?.length &&
+          !input.minRating && input.offset === 0 && !input.sortBy;
+        if (isSimpleQuery) {
+          const cacheKey = `products:list:${input.limit}`;
+          const cached = getCached<{ items: Awaited<ReturnType<typeof getProducts>>; total: number }>(cacheKey);
+          if (cached) return cached;
+          const items = await getProducts({ ...input, approvedOnly: true });
+          const total = await countProducts({ approvedOnly: true });
+          const result = { items, total };
+          setCached(cacheKey, result);
+          return result;
+        }
         const items = await getProducts({ ...input, approvedOnly: true });
         const total = await countProducts({ categoryId: input.categoryId, search: input.search, approvedOnly: true, isPremium: input.isPremium, minPrice: input.minPrice, maxPrice: input.maxPrice, brands: input.brands, minRating: input.minRating });
         return { items, total };
@@ -934,7 +983,12 @@ export const appRouter = router({
     getHits: publicProcedure
       .input(z.object({ limit: z.number().optional() }))
       .query(async ({ input }) => {
-        return getHitProducts(input.limit, true);
+        const cacheKey = `hits:${input.limit ?? 'all'}`;
+        const cached = getCached<Awaited<ReturnType<typeof getHitProducts>>>(cacheKey);
+        if (cached) return cached;
+        const result = await getHitProducts(input.limit, true);
+        setCached(cacheKey, result, 3 * 60 * 1000); // 3 min cache
+        return result;
       }),
 
     // Admin: toggle isHit flag

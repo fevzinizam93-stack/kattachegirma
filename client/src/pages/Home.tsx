@@ -109,10 +109,10 @@ export default function Home() {
     keywordsUz: "arzon maishiy texnika, kir yuvish mashina sotib olish, muzlatgich arzon, changyutgich Toshkent, konditsioner narxi, televizor chegirma, Katta Chegirma",
   });
 
-  // Hits — primary content, load first
+  // Hits — primary content, load first (limit 20 for fast initial render)
   const { data: hitsData, isLoading: hitsLoading } = trpc.products.getHits.useQuery(
-    { limit: 50 },
-    { staleTime: 3 * 60 * 1000 }
+    { limit: 20 },
+    { staleTime: 5 * 60 * 1000 }
   );
   // Shuffle hits on each page load so different products appear first
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -148,9 +148,9 @@ export default function Home() {
   );
   const banners = activeBanners ?? [];
   const categories = categoriesData ?? [];
-  // All products — used for category sections
+  // All products — used for category sections (limit 60 for fast initial load)
   const { data: allProductsData, isLoading: productsLoading } = trpc.products.list.useQuery(
-    { limit: 200, offset: 0 },
+    { limit: 60, offset: 0 },
     { staleTime: 3 * 60 * 1000 }
   );
   const allProducts = allProductsData?.items ?? [];
