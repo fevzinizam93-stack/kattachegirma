@@ -45,6 +45,7 @@ function setCache(key: string, html: string): void {
 const BOT_PATTERNS = [
   /googlebot/i,
   /google-inspectiontool/i,
+  /google.*inspection/i,    // Google Inspection Tool variants
   /bingbot/i,
   /slurp/i,           // Yahoo
   /duckduckbot/i,
@@ -66,7 +67,25 @@ const BOT_PATTERNS = [
   /sogou/i,
   /ia_archiver/i,
   /archive\.org_bot/i,
+  /chrome-lighthouse/i,  // Lighthouse
+  /headlesschrome/i,     // Headless Chrome crawlers
 ];
+
+// Prerender for ALL requests to product/category pages (not just bots)
+// This ensures Google sees full content and avoids Soft 404 errors
+function shouldPrerender(userAgent: string, path: string): boolean {
+  // Always prerender product and category pages for everyone
+  if (
+    /^\/product\//.test(path) ||
+    /^\/mahsulot\//.test(path) ||
+    /^\/category\//.test(path) ||
+    /^\/kategoriya\//.test(path)
+  ) {
+    return true;
+  }
+  // For other pages, only prerender for bots
+  return BOT_PATTERNS.some(pattern => pattern.test(userAgent));
+}
 
 function isBot(userAgent: string): boolean {
   return BOT_PATTERNS.some(pattern => pattern.test(userAgent));
@@ -609,7 +628,7 @@ export async function seoPrerender(req: Request): Promise<string | null> {
   const ua = req.headers["user-agent"] || "";
 
   // Only intercept for bots
-  if (!isBot(ua)) return null;
+  if (!shouldPrerender(ua, req.path)) return null;
 
   // Use originalUrl (req.path is '/' in wildcard routes like app.use('*', ...))
   const reqPath = (req.originalUrl || req.url || req.path).split("?")[0];
