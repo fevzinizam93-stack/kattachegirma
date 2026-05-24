@@ -18,7 +18,7 @@ const BASE_URL = "https://kattachegirma.uz";
 const SITE_NAME = "Katta Chegirma";
 const LOGO_URL = `${BASE_URL}/logo-512.png?v=4`;
 
-// In-memory cache for prerendered pages (TTL: 30 minutes)
+// In-memory cache for prerendered pages (TTL: 30 minutes) - build v2
 const prerenderCache = new Map<string, { html: string; expires: number }>();
 const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
