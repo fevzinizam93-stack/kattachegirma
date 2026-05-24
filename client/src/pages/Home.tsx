@@ -1,8 +1,8 @@
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ProductCard from "@/components/ProductCard";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
-import { ArrowRight, ChevronLeft, ChevronRight, Flame } from "lucide-react";
-import { useEffect, useMemo, useRef } from "react";
+import { ArrowRight, ChevronLeft, ChevronRight, Flame, Loader2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import RecentlyViewed from "@/components/RecentlyViewed";
@@ -19,6 +19,11 @@ function shuffleArray<T>(arr: T[]): T[] {
 
 // Categories that have products (with their slugs for linking)
 const CATEGORY_ORDER = [120001, 1, 2, 30001, 9, 150001, 8, 13];
+
+// How many products to load per page
+const PAGE_SIZE = 40;
+// Initial load — slightly more for first paint
+const INITIAL_SIZE = 60;
 
 // ---- Skeleton card — точно повторяет размер ProductCard ----
 function ProductCardSkeleton() {
@@ -148,18 +153,79 @@ export default function Home() {
   );
   const banners = activeBanners ?? [];
   const categories = categoriesData ?? [];
-  // All products — used for category sections (limit 60 for fast initial load)
-  const { data: allProductsData, isLoading: productsLoading } = trpc.products.list.useQuery(
-    { limit: 60, offset: 0 },
+
+  // ── Infinite scroll state ──────────────────────────────────────────────────
+  // We accumulate all loaded products in a stable array across pages.
+  // Each page fetch uses offset = loadedCount, limit = PAGE_SIZE.
+  const [loadedProducts, setLoadedProducts] = useState<NonNullable<ReturnType<typeof trpc.products.list.useQuery>["data"]>["items"]>([]);
+  const [currentOffset, setCurrentOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const totalRef = useRef<number | null>(null);
+
+  // Initial page — always fetched
+  const { data: initialData, isLoading: productsLoading } = trpc.products.list.useQuery(
+    { limit: INITIAL_SIZE, offset: 0 },
     { staleTime: 3 * 60 * 1000 }
   );
-  const allProducts = allProductsData?.items ?? [];
+
+  // When initial data arrives, seed loadedProducts
+  useEffect(() => {
+    if (!initialData) return;
+    totalRef.current = initialData.total;
+    setLoadedProducts(initialData.items);
+    setCurrentOffset(initialData.items.length);
+    setHasMore(initialData.items.length < initialData.total);
+  }, [initialData]);
+
+  // tRPC utils for manual fetching of next pages
+  const utils = trpc.useUtils();
+
+  const fetchNextPage = useCallback(async () => {
+    if (isFetchingMore || !hasMore) return;
+    setIsFetchingMore(true);
+    try {
+      const result = await utils.products.list.fetch(
+        { limit: PAGE_SIZE, offset: currentOffset },
+        { staleTime: 3 * 60 * 1000 }
+      );
+      if (result.items.length === 0) {
+        setHasMore(false);
+      } else {
+        setLoadedProducts(prev => [...prev, ...result.items]);
+        setCurrentOffset(prev => prev + result.items.length);
+        setHasMore(currentOffset + result.items.length < result.total);
+      }
+    } catch {
+      // silently ignore — user can scroll again to retry
+    } finally {
+      setIsFetchingMore(false);
+    }
+  }, [isFetchingMore, hasMore, currentOffset, utils]);
+
+  // IntersectionObserver sentinel at the bottom of the page
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isFetchingMore) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: "300px" } // start loading 300px before the bottom
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore, isFetchingMore, fetchNextPage]);
+
   // Shuffle products once per page load — each visitor sees a different order
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const shuffledProducts = useMemo(() => shuffleArray(allProducts), [allProductsData]);
+  // We keep a stable shuffle seed per session so re-renders don't re-shuffle
+  const shuffledProducts = useMemo(() => shuffleArray(loadedProducts), [loadedProducts]);
 
   // Group shuffled products by categoryId
-  const productsByCategory: Record<number, typeof allProducts> = {};
+  const productsByCategory: Record<number, typeof shuffledProducts> = {};
   for (const p of shuffledProducts) {
     if (!productsByCategory[p.categoryId]) productsByCategory[p.categoryId] = [];
     productsByCategory[p.categoryId].push(p);
@@ -199,88 +265,94 @@ export default function Home() {
       {/* Mobile horizontal category scroll */}
       {categories.length > 0 && (
         <div className="md:hidden bg-white border-b border-gray-100 overflow-x-auto scrollbar-hide">
-          <div className="flex gap-2 px-3 py-2.5 w-max">
+          <div className="flex gap-2 px-3 py-2 w-max">
             {categories.map(cat => (
               <button
                 key={cat.id}
                 onClick={() => navigate(`/category/${cat.slug}`)}
-                className="shrink-0 flex flex-col items-center gap-1 px-3 py-2 rounded-xl bg-gray-50 hover:bg-red-50 active:bg-red-100 transition-colors touch-manipulation min-w-[64px]"
+                className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl bg-gray-50 hover:bg-orange-50 transition-colors min-w-[56px]"
               >
-                <span className="text-2xl leading-none">{cat.icon}</span>
-                <span className="text-[10px] font-semibold text-gray-600 text-center leading-tight line-clamp-2 max-w-[60px]">{lang === "uz" && (cat as any).nameUz ? (cat as any).nameUz : cat.name}</span>
+                {cat.icon && <span className="text-xl leading-none">{cat.icon}</span>}
+                <span className="text-[10px] font-semibold text-gray-700 text-center leading-tight line-clamp-2 max-w-[52px]">
+                  {lang === "uz" && (cat as any).nameUz ? (cat as any).nameUz : cat.name}
+                </span>
               </button>
             ))}
           </div>
         </div>
       )}
-      {/* Mobile category skeleton while loading */}
-      {categoriesLoading && (
-        <div className="md:hidden bg-white border-b border-gray-100 overflow-x-auto scrollbar-hide">
-          <div className="flex gap-2 px-3 py-2.5 w-max">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="shrink-0 flex flex-col items-center gap-1 px-3 py-2 rounded-xl bg-gray-100 animate-pulse min-w-[64px]">
-                <div className="w-8 h-8 bg-gray-200 rounded-full" />
-                <div className="w-12 h-2.5 bg-gray-200 rounded" />
-              </div>
+
+      {/* Desktop horizontal category scroll */}
+      {categories.length > 0 && (
+        <div className="hidden md:block bg-white border-b border-gray-100 overflow-x-auto scrollbar-hide">
+          <div className="flex gap-1 px-4 py-2 w-max mx-auto">
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => navigate(`/category/${cat.slug}`)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-50 hover:bg-orange-50 transition-colors whitespace-nowrap"
+              >
+                {cat.icon && <span className="text-base leading-none">{cat.icon}</span>}
+                <span className="text-xs font-semibold text-gray-700">
+                  {lang === "uz" && (cat as any).nameUz ? (cat as any).nameUz : cat.name}
+                </span>
+              </button>
             ))}
           </div>
         </div>
       )}
 
-      {/* Bestsellers / Hits widget — horizontal slider */}
+      {/* Hits slider */}
       {hitsLoading && <HitsSliderSkeleton />}
       {!hitsLoading && hitProducts.length > 0 && (
-        <section className="py-4" style={{ background: "linear-gradient(135deg, #fff7ed 0%, #fff3e0 50%, #fef9f0 100%)", borderTop: "3px solid #ffffff", borderBottom: "3px solid #ffffff" }}>
+        <section
+          className="py-4"
+          style={{ background: "linear-gradient(135deg, #fff7ed 0%, #fff3e0 50%, #fef9f0 100%)", borderTop: "3px solid #ffffff", borderBottom: "3px solid #ffffff" }}
+        >
           <div className="container">
-            {/* Header */}
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center w-9 h-9 rounded-xl" style={{ background: "linear-gradient(135deg, #f97316, #ef4444)" }}>
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center shadow-md">
                   <Flame size={18} className="text-white" />
                 </div>
                 <div>
-                  <h2 className="text-base md:text-xl font-black" style={{ color: "#c2410c" }}>
-                    {t.nav_bestsellers}
-                  </h2>
-                  <p className="text-xs font-medium" style={{ color: "#ea580c" }}>{lang === 'uz' ? "Eng katta chegirmalar" : "Самые горячие скидки"}</p>
+                  <h2 className="text-base md:text-lg font-black text-gray-900 leading-tight">{t.home_hits_title}</h2>
+                  <p className="text-xs text-orange-600 font-medium">{t.home_hits_subtitle}</p>
                 </div>
-                <span className="ml-1 text-xs font-bold px-2 py-0.5 rounded-full animate-pulse" style={{ background: "#f97316", color: "white" }}>{lang === 'uz' ? "CHEGIRMA" : "ГОРЯЧО"}</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 <button onClick={() => scrollSlider("left")} className="hidden md:flex items-center justify-center w-8 h-8 rounded-full border-2 border-orange-300 bg-white hover:bg-orange-50 hover:border-orange-500 transition-colors shadow-sm">
-                  <ChevronLeft size={16} className="text-orange-600" />
+                  <ChevronLeft size={16} className="text-orange-500" />
                 </button>
                 <button onClick={() => scrollSlider("right")} className="hidden md:flex items-center justify-center w-8 h-8 rounded-full border-2 border-orange-300 bg-white hover:bg-orange-50 hover:border-orange-500 transition-colors shadow-sm">
-                  <ChevronRight size={16} className="text-orange-600" />
+                  <ChevronRight size={16} className="text-orange-500" />
                 </button>
-                <Link href="/bestsellers" className="text-sm font-bold flex items-center gap-1 px-3 py-1.5 rounded-full transition-colors" style={{ color: "#c2410c", background: "rgba(249,115,22,0.12)" }}>
-                  {t.home_view_all} <ArrowRight size={13} />
+                <Link href="/bestsellers" className="text-xs font-bold px-3 py-1.5 rounded-full bg-orange-500 hover:bg-orange-600 text-white transition-colors shadow-sm">
+                  {t.home_view_all}
                 </Link>
               </div>
             </div>
+
             {/* Horizontal scroll row */}
-            <div className="relative">
-              <div
-                ref={sliderRef}
-                className="flex gap-3 overflow-x-auto pb-2"
-                style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none" }}
-                onMouseEnter={() => { sliderPausedRef.current = true; }}
-                onMouseLeave={() => { sliderPausedRef.current = false; }}
-                onTouchStart={() => { sliderPausedRef.current = true; }}
-                onTouchEnd={() => { setTimeout(() => { sliderPausedRef.current = false; }, 2000); }}
-              >
-                {[...hitProducts, ...hitProducts].map((p, idx) => (
-                  <div key={`${p.id}-${idx}`} className="shrink-0" style={{ width: "220px", scrollSnapAlign: "start" }}>
-                    <ProductCard product={p} />
-                  </div>
-                ))}
-              </div>
+            <div
+              ref={sliderRef}
+              className="flex gap-3 overflow-x-auto scrollbar-hide pb-1"
+              style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none" }}
+              onMouseEnter={() => { sliderPausedRef.current = true; }}
+              onMouseLeave={() => { sliderPausedRef.current = false; }}
+            >
+              {/* Double the array for seamless infinite loop */}
+              {[...hitProducts, ...hitProducts].map((p, idx) => (
+                <div key={`${p.id}-${idx}`} className="shrink-0" style={{ width: "220px", scrollSnapAlign: "start" }}>
+                  <ProductCard product={p} />
+                </div>
+              ))}
             </div>
           </div>
         </section>
       )}
 
-      {/* Category sections skeleton while loading */}
+      {/* Loading skeletons for category sections */}
       {isMainLoading && (
         <>
           <CategorySectionSkeleton count={5} />
@@ -295,7 +367,7 @@ export default function Home() {
         const prods = productsByCategory[catId] ?? [];
         if (!cat || prods.length === 0) return null;
         const shown = prods.slice(0, 5);
-        const hasMore = prods.length > 5;
+        const hasMoreInCat = prods.length > 5;
         return (
           <section key={catId} className="container py-3">
             <div className="flex items-center justify-between mb-3">
@@ -314,7 +386,7 @@ export default function Home() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
               {shown.map((p) => <ProductCard key={p.id} product={p} />)}
             </div>
-            {hasMore && (
+            {hasMoreInCat && (
               <div className="mt-3 text-center">
                 <Link
                   href={`/category/${cat.slug}`}
@@ -328,6 +400,25 @@ export default function Home() {
           </section>
         );
       })}
+
+      {/* ── Infinite scroll sentinel & loading indicator ─────────────────── */}
+      {/* Sentinel: IntersectionObserver watches this div to trigger next page load */}
+      <div ref={sentinelRef} className="h-1" aria-hidden="true" />
+
+      {/* Loading spinner while fetching next page */}
+      {isFetchingMore && (
+        <div className="flex items-center justify-center py-8 gap-2 text-gray-500">
+          <Loader2 size={20} className="animate-spin" style={{ color: "#cc0000" }} />
+          <span className="text-sm font-medium">Загружаем ещё товары...</span>
+        </div>
+      )}
+
+      {/* End of catalog message */}
+      {!hasMore && loadedProducts.length > 0 && !isMainLoading && (
+        <div className="text-center py-6 text-sm text-gray-400 font-medium">
+          Показано все {loadedProducts.length} товаров
+        </div>
+      )}
 
       {/* Recently viewed */}
       <RecentlyViewed />
@@ -409,5 +500,4 @@ function PromoBanner({ banner }: { banner: BannerData }) {
   return inner;
 }
 
-// Need React for useState/useEffect in PromoBanner
-import React from "react";
+
