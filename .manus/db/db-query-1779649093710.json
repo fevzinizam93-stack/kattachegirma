@@ -1,0 +1,90 @@
+{
+  "query": "SELECT slug, name FROM categories ORDER BY name LIMIT 50;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute SELECT slug, name FROM categories ORDER BY name LIMIT 50;",
+  "rows": [
+    {
+      "slug": "varochnaya-panel",
+      "name": "Варочная поверхность"
+    },
+    {
+      "slug": "suv-isitgichlar",
+      "name": "Водонагреватели"
+    },
+    {
+      "slug": "dud-boron",
+      "name": "Вытяжка"
+    },
+    {
+      "slug": "pechlar",
+      "name": "Газовая плиты"
+    },
+    {
+      "slug": "duxovka",
+      "name": "Духовка"
+    },
+    {
+      "slug": "konder",
+      "name": "Кондиционер"
+    },
+    {
+      "slug": "kuller",
+      "name": "Куллер"
+    },
+    {
+      "slug": "kichik-maishiy-texnika",
+      "name": "мелкая бытовая"
+    },
+    {
+      "slug": "mikrotoqinli-pechlar",
+      "name": "Микроволновка"
+    },
+    {
+      "slug": "morozilka",
+      "name": "Морозилька"
+    },
+    {
+      "slug": "kiyim",
+      "name": "Одежда "
+    },
+    {
+      "slug": "xavo-tozalagich",
+      "name": "Очиститель воздуха"
+    },
+    {
+      "slug": "idish-yuvish-mashinalari",
+      "name": "Посудомоечные машины"
+    },
+    {
+      "slug": "changyutgichlar",
+      "name": "Пылесосы"
+    },
+    {
+      "slug": "kir-yuvish-mashinalari",
+      "name": "Стиральные машины"
+    },
+    {
+      "slug": "televizor",
+      "name": "Телевизоры"
+    },
+    {
+      "slug": "dazmollar",
+      "name": "Утюги"
+    },
+    {
+      "slug": "fotoepilyator",
+      "name": "Фотоэпилятор"
+    },
+    {
+      "slug": "muzlatgich",
+      "name": "Холодилник"
+    },
+    {
+      "slug": "elektr-choynaklar",
+      "name": "Электрочайники"
+    }
+  ],
+  "messages": [],
+  "stdout": "slug\tname\nvarochnaya-panel\tВарочная поверхность\nsuv-isitgichlar\tВодонагреватели\ndud-boron\tВытяжка\npechlar\tГазовая плиты\nduxovka\tДуховка\nkonder\tКондиционер\nkuller\tКуллер\nkichik-maishiy-texnika\tмелкая бытовая\nmikrotoqinli-pechlar\tМикроволновка\nmorozilka\tМорозилька\nkiyim\tОдежда \nxavo-tozalagich\tОчиститель воздуха\nidish-yuvish-mashinalari\tПосудомоечные машины\nchangyutgichlar\tПылесосы\nkir-yuvish-mashinalari\tСтиральные машины\ntelevizor\tТелевизоры\ndazmollar\tУтюги\nfotoepilyator\tФотоэпилятор\nmuzlatgich\tХолодилник\nelektr-choynaklar\tЭлектрочайники\n",
+  "stderr": "",
+  "execution_time_ms": 265
+}

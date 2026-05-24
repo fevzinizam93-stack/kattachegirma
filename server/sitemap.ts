@@ -101,6 +101,34 @@ function buildUzUrl(
   </url>`;
 }
 
+const SITEMAP_URL = "https://kattachegirma.uz/sitemap.xml";
+
+// Debounce: avoid spamming ping engines on bulk updates
+let pingTimer: ReturnType<typeof setTimeout> | null = null;
+
+/**
+ * Notify Google and Bing that the sitemap has been updated.
+ * Debounced to 30 seconds so bulk admin operations only fire one ping.
+ */
+export function pingSitemaps(): void {
+  if (pingTimer) clearTimeout(pingTimer);
+  pingTimer = setTimeout(async () => {
+    pingTimer = null;
+    const engines = [
+      `https://www.google.com/ping?sitemap=${encodeURIComponent(SITEMAP_URL)}`,
+      `https://www.bing.com/ping?sitemap=${encodeURIComponent(SITEMAP_URL)}`,
+    ];
+    for (const url of engines) {
+      try {
+        const res = await fetch(url, { method: "GET", signal: AbortSignal.timeout(10_000) });
+        console.log(`[SitemapPing] ${url} → HTTP ${res.status}`);
+      } catch (err) {
+        console.warn(`[SitemapPing] Failed to ping ${url}:`, err);
+      }
+    }
+  }, 30_000); // 30-second debounce
+}
+
 export function registerSitemapRoute(app: Express) {
   app.get("/sitemap.xml", async (req, res) => {
     try {

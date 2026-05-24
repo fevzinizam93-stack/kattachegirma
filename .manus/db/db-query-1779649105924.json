@@ -1,0 +1,130 @@
+{
+  "query": "SELECT slug, name FROM products LIMIT 30;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute SELECT slug, name FROM products LIMIT 30;",
+  "rows": [
+    {
+      "slug": "franco-cfr252-g",
+      "name": "МОРОЗИЛЬКА FRANCO Cfr252-G"
+    },
+    {
+      "slug": "xingx-sdsc-326sy",
+      "name": "Морозильная камера Xingx SD/SC-326SY"
+    },
+    {
+      "slug": "avangard-av-2003",
+      "name": "пылесос Avangard Av-2003"
+    },
+    {
+      "slug": "lg-f2y1vs5w-9-",
+      "name": "Стиральная машина LG F2Y1VS5W 9 Кг"
+    },
+    {
+      "slug": "7tech-7ac4g12ws3-inverter-12",
+      "name": "Кондиционер 7TECH 7AC4G12WS3 Inverter 12"
+    },
+    {
+      "slug": "aux--c-smart-premium-inverter-crystal-ccre",
+      "name": "Кондиционер AUX Серия C-Smart Premium INVERTER Crystal CCRE"
+    },
+    {
+      "slug": "aux--j-inverter---jlr",
+      "name": "Кондиционер AUX Серия J Inverter с теном JLR"
+    },
+    {
+      "slug": "aux--classic-pro-inverter-car3di",
+      "name": "Кондиционер AUX Серия Classic Pro Inverter CAR3DI"
+    },
+    {
+      "slug": "aux--premium-progressive-inverter-c-pro",
+      "name": "Кондиционер AUX Серия Premium Progressive Inverter C PRO"
+    },
+    {
+      "slug": "aux--q-fresh-series-inverter-fadr----",
+      "name": "Кондиционер AUX Серия Q Fresh series Inverter FADR (с подачей свежего воздуха)"
+    },
+    {
+      "slug": "philips-fc-8632",
+      "name": "Пылесос Philips FC 8632"
+    },
+    {
+      "slug": "philips-fc972801-",
+      "name": "Пылесос PHILIPS FC9728/01 "
+    },
+    {
+      "slug": "philips-xb202201",
+      "name": "Пылесос Philips XB2022/01"
+    },
+    {
+      "slug": "avangard-av-12-",
+      "name": "Кондиционер Avangard AV 12, белый"
+    },
+    {
+      "slug": "aucma-12",
+      "name": "Кондиционер Aucma 12"
+    },
+    {
+      "slug": "franco-frc60-1720b",
+      "name": "Стиралная машинка Franco 6 KG FRC60-1720B"
+    },
+    {
+      "slug": "franco-7-kg",
+      "name": "Стиралная машинка Franco 7 KG"
+    },
+    {
+      "slug": "franco-fr-15",
+      "name": "Очиститель и увлажнитель воздух Franco FR-15"
+    },
+    {
+      "slug": "franco-fr-50e",
+      "name": "Очиститель и увлажнитель воздуха Franco FR-50E"
+    },
+    {
+      "slug": "7tech-7tb4p2tlgs1",
+      "name": "Кулер для воды 7TECH 7TB4P2TLGS1"
+    },
+    {
+      "slug": "4--1--series-platinum-7tb4p2tlgs1",
+      "name": "Чайный бар 4 в 1, графитовый Series PLATINUM  7TB4P2TLGS1"
+    },
+    {
+      "slug": "4--1--series-platinum-7tb4p1tws1",
+      "name": "Чайный бар 4 в 1, белый Series PLATINUM  7TB4P1TWS1"
+    },
+    {
+      "slug": "avangard--10--av-100-mxlb-grey",
+      "name": "Стиральная машинка AVANGARD на 10 кг AV-100 MXLB Grey"
+    },
+    {
+      "slug": "avangard--av-100-hxlb-grey-",
+      "name": "Стиральная машинка AVANGARD на AV-100 HXLB Grey "
+    },
+    {
+      "slug": "hantaji-hdx-606",
+      "name": "Соковжималька HANTAJI HDX 606"
+    },
+    {
+      "slug": "muzbek-2-eshiklik",
+      "name": "Холодильник Muzbek 2 eshiklik"
+    },
+    {
+      "slug": "hisense-fc31dt-grey-",
+      "name": "Морозилька Hisense FC31DT-GREY "
+    },
+    {
+      "slug": "luma-bella--",
+      "name": "luma bella моющий пылесос"
+    },
+    {
+      "slug": "lamo-lm-gs24",
+      "name": "Отпариватель Lamo LM-GS24"
+    },
+    {
+      "slug": "24-matrix-h61--i5-2400--ddr-8-gb--ssd-256-gb---",
+      "name": "Моноблок 24\" MATRIX H61 / i5-2400 / DDR 8 GB / SSD 256 GB  + бонус комбо"
+    }
+  ],
+  "messages": [],
+  "stdout": "slug\tname\nfranco-cfr252-g\tМОРОЗИЛЬКА FRANCO Cfr252-G\nxingx-sdsc-326sy\tМорозильная камера Xingx SD/SC-326SY\navangard-av-2003\tпылесос Avangard Av-2003\nlg-f2y1vs5w-9-\tСтиральная машина LG F2Y1VS5W 9 Кг\n7tech-7ac4g12ws3-inverter-12\tКондиционер 7TECH 7AC4G12WS3 Inverter 12\naux--c-smart-premium-inverter-crystal-ccre\tКондиционер AUX Серия C-Smart Premium INVERTER Crystal CCRE\naux--j-inverter---jlr\tКондиционер AUX Серия J Inverter с теном JLR\naux--classic-pro-inverter-car3di\tКондиционер AUX Серия Classic Pro Inverter CAR3DI\naux--premium-progressive-inverter-c-pro\tКондиционер AUX Серия Premium Progressive Inverter C PRO\naux--q-fresh-series-inverter-fadr----\tКондиционер AUX Серия Q Fresh series Inverter FADR (с подачей свежего воздуха)\nphilips-fc-8632\tПылесос Philips FC 8632\nphilips-fc972801-\tПылесос PHILIPS FC9728/01 \nphilips-xb202201\tПылесос Philips XB2022/01\navangard-av-12-\tКондиционер Avangard AV 12, белый\naucma-12\tКондиционер Aucma 12\nfranco-frc60-1720b\tСтиралная машинка Franco 6 KG FRC60-1720B\nfranco-7-kg\tСтиралная машинка Franco 7 KG\nfranco-fr-15\tОчиститель и увлажнитель воздух Franco FR-15\nfranco-fr-50e\tОчиститель и увлажнитель воздуха Franco FR-50E\n7tech-7tb4p2tlgs1\tКулер для воды 7TECH 7TB4P2TLGS1\n4--1--series-platinum-7tb4p2tlgs1\tЧайный бар 4 в 1, графитовый Series PLATINUM  7TB4P2TLGS1\n4--1--series-platinum-7tb4p1tws1\tЧайный бар 4 в 1, белый Series PLATINUM  7TB4P1TWS1\navangard--10--av-100-mxlb-grey\tСтиральная машинка AVANGARD на 10 кг AV-100 MXLB Grey\navangard--av-100-hxlb-grey-\tСтиральная машинка AVANGARD на AV-100 HXLB Grey \nhantaji-hdx-606\tСоковжималька HANTAJI HDX 606\nmuzbek-2-eshiklik\tХолодильник Muzbek 2 eshiklik\nhisense-fc31dt-grey-\tМорозилька Hisense FC31DT-GREY \nluma-bella--\tluma bella моющий пылесос\nlamo-lm-gs24\tОтпариватель Lamo LM-GS24\n24-matrix-h61--i5-2400--ddr-8-gb--ssd-256-gb---\tМоноблок 24\" MATRIX H61 / i5-2400 / DDR 8 GB / SSD 256 GB  + бонус комбо\n",
+  "stderr": "",
+  "execution_time_ms": 267
+}

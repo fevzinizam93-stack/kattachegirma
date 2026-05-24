@@ -119,6 +119,7 @@ import { categories, products as productsTable } from "../drizzle/schema";
 import { storagePut } from "./storage";
 import { optimizeImage } from "./_core/imageOptimizer";
 import { submitUrlForIndexing, submitUrlsBatch } from "./googleIndexing";
+import { pingSitemaps } from "./sitemap";
 import { indexNowProduct, indexNowSubmit } from "./indexNow";
 import { invokeLLM } from "./_core/llm";
 import { SignJWT } from "jose";
@@ -269,12 +270,15 @@ export const appRouter = router({
     upsert: adminProcedure
       .input(z.object({ id: z.number().optional(), name: z.string(), slug: z.string(), icon: z.string().optional() }))
       .mutation(async ({ input }) => {
-        return upsertCategory(input);
+        const result = await upsertCategory(input);
+        pingSitemaps();
+        return result;
       }),
     delete: adminProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         await deleteCategory(input.id);
+        pingSitemaps();
         return { success: true };
       }),
     // Admin: generate UZ slugs for all categories via LLM
@@ -451,6 +455,7 @@ export const appRouter = router({
           specs: (input.specs ?? {}) as Record<string, string>,
           discountEndsAt: input.discountEndsAt ? new Date(input.discountEndsAt) : undefined,
         } as Parameters<typeof createProduct>[0]);
+        pingSitemaps();
         return { id };
       }),
 
@@ -493,13 +498,14 @@ export const appRouter = router({
         if (data.discountEndsAt) updateData.discountEndsAt = new Date(data.discountEndsAt);
         else if (data.discountEndsAt === '') updateData.discountEndsAt = null;
         await updateProduct(id, updateData as Parameters<typeof updateProduct>[1]);
+        pingSitemaps();
         return { success: true };
       }),
-
     delete: adminProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         await deleteProduct(input.id);
+        pingSitemaps();
         return { success: true };
       }),
 
