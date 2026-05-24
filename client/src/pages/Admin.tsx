@@ -42,7 +42,7 @@ function AllSellersList({ onSelect, activeSellerUserId }: { onSelect: (sellerUse
   );
 }
 
-type Tab = "products" | "categories" | "orders" | "sellers" | "moderation" | "settings" | "banners" | "notifications" | "utm" | "vip" | "messaging" | "quickorders";
+type Tab = "products" | "categories" | "orders" | "sellers" | "moderation" | "settings" | "banners" | "notifications" | "utm" | "vip" | "messaging" | "quickorders" | "indexing";
 
 interface BannerForm {
   id?: number;
@@ -858,6 +858,7 @@ export default function Admin() {
     { key: "settings" as Tab, icon: Settings, label: "Настройки" },
     { key: "messaging" as Tab, icon: MessageSquare, label: `Сообщения${(adminConvs ?? []).reduce((s, c) => s + c.unread, 0) > 0 ? ` (${(adminConvs ?? []).reduce((s, c) => s + c.unread, 0)})` : ""}` },
     { key: "quickorders" as Tab, icon: Zap, label: `Быстрые заявки${(quickOrdersList ?? []).filter(o => o.status === 'new').length > 0 ? ` (${(quickOrdersList ?? []).filter(o => o.status === 'new').length})` : ""}` },
+    { key: "indexing" as Tab, icon: Search, label: "Индексирование" },
   ];
 
   return (
@@ -2769,6 +2770,139 @@ export default function Admin() {
           )}
         </div>
       )}
+      </div>
+
+      {/* ==================== INDEXING TAB ==================== */}
+      {tab === "indexing" && (
+        <IndexingPanel />
+      )}
+    </div>
+  );
+}
+
+function IndexingPanel() {
+  const [indexResults, setIndexResults] = useState<Array<{ url: string; success: boolean; error?: string }>>([]);
+  const [singleUrl, setSingleUrl] = useState("");
+
+  const submitAllMut = trpc.indexing.submitAllProducts.useMutation({
+    onSuccess: (data) => {
+      setIndexResults(data.results);
+      toast.success(`Отправлено: ${data.succeeded} из ${data.total}. Ошибок: ${data.failed}`);
+    },
+    onError: (err) => toast.error("Ошибка: " + err.message),
+  });
+
+  const submitCatsMut = trpc.indexing.submitAllCategories.useMutation({
+    onSuccess: (data) => {
+      setIndexResults(data.results);
+      toast.success(`Категории отправлены: ${data.succeeded} из ${data.total}`);
+    },
+    onError: (err) => toast.error("Ошибка: " + err.message),
+  });
+
+  const submitOneMut = trpc.indexing.submitUrl.useMutation({
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success("URL отправлен на индексирование!");
+      } else {
+        toast.error("Ошибка: " + data.error);
+      }
+      setIndexResults([data]);
+    },
+    onError: (err) => toast.error("Ошибка: " + err.message),
+  });
+
+  const isLoading = submitAllMut.isPending || submitCatsMut.isPending || submitOneMut.isPending;
+
+  return (
+    <div className="max-w-2xl space-y-5">
+      <h2 className="font-black text-lg text-gray-900">🔍 Google Indexing API</h2>
+      <p className="text-sm text-gray-500">Автоматически отправляет URL страниц в Google для быстрой индексации. Лимит: 200 запросов/день.</p>
+
+      {/* Bulk products */}
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-5">
+        <h3 className="font-bold text-base text-blue-900 mb-1">📦 Все товары</h3>
+        <p className="text-xs text-blue-700 mb-4">Отправить URL всех активных товаров в Google. Рекомендуется после массового добавления товаров или исправления slug-ов.</p>
+        <button
+          onClick={() => {
+            if (confirm("Отправить все активные товары на индексирование? (до 200 URL)")) {
+              submitAllMut.mutate({ limit: 200 });
+            }
+          }}
+          disabled={isLoading}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
+        >
+          {submitAllMut.isPending ? <><span className="animate-spin">⏳</span> Отправляю...</> : <>🚀 Отправить все товары</>}
+        </button>
+      </div>
+
+      {/* Bulk categories */}
+      <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-5">
+        <h3 className="font-bold text-base text-green-900 mb-1">📂 Категории и главная</h3>
+        <p className="text-xs text-green-700 mb-4">Отправить URL всех категорий, главной страницы и страницы каталога.</p>
+        <button
+          onClick={() => {
+            if (confirm("Отправить все категории на индексирование?")) {
+              submitCatsMut.mutate();
+            }
+          }}
+          disabled={isLoading}
+          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
+        >
+          {submitCatsMut.isPending ? <><span className="animate-spin">⏳</span> Отправляю...</> : <>📤 Отправить категории</>}
+        </button>
+      </div>
+
+      {/* Single URL */}
+      <div className="bg-white border border-gray-200 rounded-2xl p-5">
+        <h3 className="font-bold text-base text-gray-900 mb-1">🔗 Один URL</h3>
+        <p className="text-xs text-gray-500 mb-4">Отправить конкретный URL страницы на индексирование.</p>
+        <div className="flex gap-2">
+          <input
+            type="url"
+            value={singleUrl}
+            onChange={e => setSingleUrl(e.target.value)}
+            placeholder="https://kattachegirma.uz/product/..."
+            className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+          <button
+            onClick={() => { if (singleUrl) submitOneMut.mutate({ url: singleUrl }); }}
+            disabled={isLoading || !singleUrl}
+            className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
+          >
+            {submitOneMut.isPending ? <span className="animate-spin">⏳</span> : <>Отправить</>}
+          </button>
+        </div>
+      </div>
+
+      {/* Results */}
+      {indexResults.length > 0 && (
+        <div className="bg-white border border-gray-200 rounded-2xl p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-bold text-base text-gray-900">Результаты ({indexResults.filter(r => r.success).length}/{indexResults.length} успешно)</h3>
+            <button onClick={() => setIndexResults([])} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
+          </div>
+          <div className="space-y-1 max-h-80 overflow-y-auto">
+            {indexResults.map((r, i) => (
+              <div key={i} className={`flex items-start gap-2 text-xs px-3 py-1.5 rounded-lg ${r.success ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
+                <span className="shrink-0">{r.success ? "✅" : "❌"}</span>
+                <span className="truncate flex-1">{r.url}</span>
+                {r.error && <span className="text-red-600 shrink-0 max-w-32 truncate">{r.error}</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Quota info */}
+      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-800">
+        <p className="font-bold mb-1">⚠️ Важно про лимиты</p>
+        <ul className="list-disc list-inside space-y-1 text-xs">
+          <li>Google Indexing API: <strong>200 запросов/день</strong></li>
+          <li>Если товаров больше 200 — отправляйте частями (сегодня 200, завтра следующие 200)</li>
+          <li>Индексирование обычно происходит в течение <strong>нескольких часов</strong></li>
+          <li>После публикации новых товаров нажмите «Отправить все товары»</li>
+        </ul>
       </div>
     </div>
   );

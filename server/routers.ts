@@ -116,6 +116,7 @@ import {
 import { eq } from "drizzle-orm";
 import { categories, products as productsTable } from "../drizzle/schema";
 import { storagePut } from "./storage";
+import { submitUrlForIndexing, submitUrlsBatch } from "./googleIndexing";
 import { invokeLLM } from "./_core/llm";
 import { SignJWT } from "jose";
 import { ENV } from "./_core/env";
@@ -2265,6 +2266,54 @@ ${productLines}
           return { videoId: null as string | null, title: null as string | null, thumbnail: null as string | null };
         }
       }),
+  }),
+
+  // Google Indexing API
+  indexing: router({
+    // Submit a single URL for indexing
+    submitUrl: adminProcedure
+      .input(z.object({ url: z.string().url() }))
+      .mutation(async ({ input }) => {
+        return await submitUrlForIndexing(input.url, "URL_UPDATED");
+      }),
+
+    // Submit all product URLs in bulk (up to 200/day quota)
+    submitAllProducts: adminProcedure
+      .input(z.object({ limit: z.number().min(1).max(200).default(200) }))
+      .mutation(async ({ input }) => {
+        const db = getDb();
+        const allProducts = await db
+          .select({ slug: productsTable.slug })
+          .from(productsTable)
+          .where(eq(productsTable.isActive, true))
+          .limit(input.limit);
+
+        const urls = allProducts.map(
+          (p) => `https://kattachegirma.uz/product/${p.slug}`
+        );
+
+        const results = await submitUrlsBatch(urls, "URL_UPDATED", 300);
+        const succeeded = results.filter((r) => r.success).length;
+        const failed = results.filter((r) => !r.success).length;
+
+        return { total: urls.length, succeeded, failed, results };
+      }),
+
+    // Submit all category URLs
+    submitAllCategories: adminProcedure.mutation(async () => {
+      const cats = await getAllCategories();
+      const urls = cats.map(
+        (c) => `https://kattachegirma.uz/catalog/${c.slug}`
+      );
+      urls.push("https://kattachegirma.uz/");
+      urls.push("https://kattachegirma.uz/catalog");
+
+      const results = await submitUrlsBatch(urls, "URL_UPDATED", 300);
+      const succeeded = results.filter((r) => r.success).length;
+      const failed = results.filter((r) => !r.success).length;
+
+      return { total: urls.length, succeeded, failed, results };
+    }),
   }),
 });
 
