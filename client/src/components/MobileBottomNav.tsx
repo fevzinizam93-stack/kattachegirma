@@ -360,18 +360,6 @@ export default function MobileBottomNav() {
               </Link>
             )}
 
-            {/* VIP badge */}
-            {isAuthenticated && user?.role === "vip" && (
-              <div className="flex items-center gap-3 px-3 py-3 rounded-xl" style={{ background: 'linear-gradient(135deg, #f3e8ff, #ede9fe)' }}>
-                <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #7c3aed, #a855f7)' }}>
-                  <Crown size={18} className="text-white" />
-                </div>
-                <div>
-                  <div className="text-sm font-bold" style={{ color: '#7c3aed' }}>VIP участник</div>
-                  <div className="text-xs text-purple-500">Себестоимость товаров видна вам</div>
-                </div>
-              </div>
-            )}
 
             <div className="h-px bg-gray-100 my-1" />
 

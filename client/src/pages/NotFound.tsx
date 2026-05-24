@@ -6,7 +6,7 @@ import { usePageMeta } from "@/hooks/usePageMeta";
 
 export default function NotFound() {
   const [, setLocation] = useLocation();
-  usePageMeta({ title: "404 — Страница не найдена", noindex: true });
+  usePageMeta({ title: "404 — Страница не найдена", description: "Страница не найдена", noindex: true });
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">

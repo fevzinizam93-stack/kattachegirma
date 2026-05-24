@@ -3,7 +3,7 @@ import { useLanguage, getLocalizedPath } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { Bell, ChevronDown, Crown, Heart, LayoutGrid, Search, ShoppingCart, User, X, Youtube } from "lucide-react";
+import { Bell, ChevronDown, Heart, LayoutGrid, Search, ShoppingCart, User, X, Youtube } from "lucide-react";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
@@ -493,13 +493,6 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
               <Link href="/admin" className="text-red-600 text-xs font-bold px-2 py-1 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">Admin</Link>
             )}
 
-            {/* VIP badge */}
-            {isAuthenticated && user?.role === "vip" && (
-              <div className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold" style={{ background: 'linear-gradient(135deg, #7c3aed, #a855f7)', color: '#fff' }}>
-                <Crown size={12} />
-                <span>VIP</span>
-              </div>
-            )}
 
             {/* Currency switcher */}
             <div className="relative" ref={currMenuRef}>

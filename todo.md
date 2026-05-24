@@ -1081,3 +1081,11 @@
 - [x] Request indexing for key pages in Search Console
 - [x] Add structured data: WebSite, Organization on homepage
 - [x] Fix category slugs with spaces in DB (replace spaces with hyphens)
+
+## Удаление VIP цен (критично!)
+- [ ] Убрать VIP цены из отображения на карточках товаров (ProductCard)
+- [ ] Убрать VIP цены со страницы товара (ProductDetail)
+- [ ] Убрать VIP значок/бейдж с карточек товаров
+- [ ] Убрать VIP цены из корзины и оформления заказа
+- [ ] Убрать VIP цены из API/роутера (не передавать vipPrice на фронтенд)
+- [ ] Проверить что обычные пользователи видят только обычную цену
