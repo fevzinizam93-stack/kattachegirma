@@ -455,7 +455,7 @@ export const appRouter = router({
           specs: (input.specs ?? {}) as Record<string, string>,
           discountEndsAt: input.discountEndsAt ? new Date(input.discountEndsAt) : undefined,
         } as Parameters<typeof createProduct>[0]);
-        pingSitemaps();
+        pingSitemaps(`https://kattachegirma.uz/product/${safeSlug}`);
         return { id };
       }),
 
@@ -498,14 +498,26 @@ export const appRouter = router({
         if (data.discountEndsAt) updateData.discountEndsAt = new Date(data.discountEndsAt);
         else if (data.discountEndsAt === '') updateData.discountEndsAt = null;
         await updateProduct(id, updateData as Parameters<typeof updateProduct>[1]);
-        pingSitemaps();
+        // Fetch current slug to build the product URL for Google Indexing API
+        const updatedProduct = await getProductById(id);
+        if (updatedProduct?.slug) {
+          pingSitemaps(`https://kattachegirma.uz/product/${updatedProduct.slug}`);
+        } else {
+          pingSitemaps();
+        }
         return { success: true };
       }),
     delete: adminProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
+        // Fetch slug before deletion so Google can be notified of URL_DELETED
+        const productToDelete = await getProductById(input.id);
         await deleteProduct(input.id);
-        pingSitemaps();
+        if (productToDelete?.slug) {
+          pingSitemaps(`https://kattachegirma.uz/product/${productToDelete.slug}`, true);
+        } else {
+          pingSitemaps();
+        }
         return { success: true };
       }),
 

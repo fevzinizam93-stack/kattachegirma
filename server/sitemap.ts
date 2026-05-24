@@ -105,19 +105,38 @@ const SITEMAP_URL = "https://kattachegirma.uz/sitemap.xml";
 
 // Debounce: avoid spamming ping engines on bulk updates
 let pingTimer: ReturnType<typeof setTimeout> | null = null;
+// Accumulate product URLs to submit to Google Indexing API
+let pendingGoogleUrls: Set<string> = new Set();
+let pendingGoogleDeleted: Set<string> = new Set();
 
 /**
  * Notify search engines that the sitemap has been updated.
- * Uses IndexNow (Yandex + Bing) which replaced the deprecated /ping endpoints.
+ * - Yandex + Bing: IndexNow (sitemap URL)
+ * - Google: Indexing API with specific product/page URLs
  * Debounced to 30 seconds so bulk admin operations only fire one ping.
+ *
+ * @param productUrl  Absolute URL of the updated/created product page (optional)
+ * @param deleted     Pass true when the product is being deleted
  */
-export function pingSitemaps(): void {
+export function pingSitemaps(productUrl?: string, deleted = false): void {
+  // Accumulate URLs for Google Indexing API
+  if (productUrl) {
+    if (deleted) {
+      pendingGoogleDeleted.add(productUrl);
+      pendingGoogleUrls.delete(productUrl);
+    } else {
+      pendingGoogleUrls.add(productUrl);
+      pendingGoogleDeleted.delete(productUrl);
+    }
+  }
+
   if (pingTimer) clearTimeout(pingTimer);
   pingTimer = setTimeout(async () => {
     pingTimer = null;
     const INDEX_NOW_KEY = "c426dc7430f65451d4a4a45d3111fadb";
     const SITE_HOST = "kattachegirma.uz";
-    // IndexNow batch: submit sitemap URL to Yandex and Bing
+
+    // ── 1. IndexNow (Yandex + Bing) ──────────────────────────────────────────
     const indexNowEngines = [
       "https://yandex.com/indexnow",
       "https://www.bing.com/indexnow",
@@ -139,6 +158,36 @@ export function pingSitemaps(): void {
         console.log(`[SitemapPing] IndexNow → ${endpoint} HTTP ${res.status}`);
       } catch (err) {
         console.warn(`[SitemapPing] Failed to ping ${endpoint}:`, err);
+      }
+    }
+
+    // ── 2. Google Indexing API ────────────────────────────────────────────────
+    const urlsToUpdate = Array.from(pendingGoogleUrls);
+    const urlsToDelete = Array.from(pendingGoogleDeleted);
+    pendingGoogleUrls = new Set();
+    pendingGoogleDeleted = new Set();
+
+    if (urlsToUpdate.length > 0 || urlsToDelete.length > 0) {
+      try {
+        const { submitUrlForIndexing } = await import("./googleIndexing");
+        for (const url of urlsToUpdate) {
+          const result = await submitUrlForIndexing(url, "URL_UPDATED");
+          if (result.success) {
+            console.log(`[SitemapPing] Google Indexing → URL_UPDATED ${url} ✓`);
+          } else {
+            console.warn(`[SitemapPing] Google Indexing → URL_UPDATED ${url} ✗ ${result.error}`);
+          }
+        }
+        for (const url of urlsToDelete) {
+          const result = await submitUrlForIndexing(url, "URL_DELETED");
+          if (result.success) {
+            console.log(`[SitemapPing] Google Indexing → URL_DELETED ${url} ✓`);
+          } else {
+            console.warn(`[SitemapPing] Google Indexing → URL_DELETED ${url} ✗ ${result.error}`);
+          }
+        }
+      } catch (err) {
+        console.warn("[SitemapPing] Google Indexing API error:", err);
       }
     }
   }, 30_000); // 30-second debounce
