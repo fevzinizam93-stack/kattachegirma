@@ -102,12 +102,16 @@ function buildUzUrl(
 }
 
 const SITEMAP_URL = "https://kattachegirma.uz/sitemap.xml";
+const SITE_URL = "https://kattachegirma.uz";
 
 // Debounce: avoid spamming ping engines on bulk updates
 let pingTimer: ReturnType<typeof setTimeout> | null = null;
 // Accumulate product URLs to submit to Google Indexing API
 let pendingGoogleUrls: Set<string> = new Set();
 let pendingGoogleDeleted: Set<string> = new Set();
+// Throttle sitemap submission to Google Search Console: max once per hour
+let lastSitemapSubmitTime = 0;
+const SITEMAP_SUBMIT_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
 
 /**
  * Notify search engines that the sitemap has been updated.
@@ -189,6 +193,25 @@ export function pingSitemaps(productUrl?: string, deleted = false): void {
       } catch (err) {
         console.warn("[SitemapPing] Google Indexing API error:", err);
       }
+    }
+    // ── 3. Google Search Console Sitemap Submission ────────────────────────
+    const now = Date.now();
+    if (now - lastSitemapSubmitTime >= SITEMAP_SUBMIT_INTERVAL_MS) {
+      try {
+        const { submitSitemapToSearchConsole } = await import("./googleSearchConsole");
+        const result = await submitSitemapToSearchConsole(SITE_URL, SITEMAP_URL);
+        if (result.success) {
+          lastSitemapSubmitTime = now;
+          console.log(`[SitemapPing] Google Search Console sitemap submitted ✓`);
+        } else {
+          console.warn(`[SitemapPing] Google Search Console sitemap submission failed: ${result.error}`);
+        }
+      } catch (err) {
+        console.warn("[SitemapPing] Google Search Console sitemap error:", err);
+      }
+    } else {
+      const minutesLeft = Math.ceil((SITEMAP_SUBMIT_INTERVAL_MS - (now - lastSitemapSubmitTime)) / 60000);
+      console.log(`[SitemapPing] Google Search Console sitemap skipped (throttled, next in ~${minutesLeft}m)`);
     }
   }, 30_000); // 30-second debounce
 }

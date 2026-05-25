@@ -46,7 +46,7 @@ async function verifySite(siteUrl: string): Promise<{ success: boolean; error?: 
     const client = await auth.getClient();
     const token = await client.getAccessToken();
 
-    const resp = await fetch("https://www.googleapis.com/siteVerification/v1/webResource?verificationMethod=META", {
+    const resp = await fetch("https://www.googleapis.com/siteVerification/v1/webResource?verificationMethod=FILE", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + token.token,
