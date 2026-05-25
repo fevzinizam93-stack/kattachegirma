@@ -1,7 +1,7 @@
 import { trpc } from "@/lib/trpc";
 import { UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchStreamLink, TRPCClientError } from "@trpc/client";
+import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
@@ -48,7 +48,11 @@ queryClient.getMutationCache().subscribe(event => {
 
 const trpcClient = trpc.createClient({
   links: [
-    httpBatchStreamLink({
+    // Using httpBatchLink (not httpBatchStreamLink) so that Set-Cookie headers
+    // can be set by mutations like auth.login. httpBatchStreamLink starts
+    // streaming the response before all procedures complete, which prevents
+    // setting response headers (cookies) after streaming has begun.
+    httpBatchLink({
       url: "/api/trpc",
       transformer: superjson,
       // Prevent HTTP 414 (URL too large): switch to POST when URL exceeds 1800 chars
