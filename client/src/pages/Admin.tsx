@@ -1289,12 +1289,7 @@ export default function Admin() {
                         <input value={form.sellerName} onChange={e => setForm(f => ({ ...f, sellerName: e.target.value }))}
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="Название магазина" />
                       </div>
-                      <div>
-                        <label className="block text-sm font-semibold mb-1 text-purple-700">👑 Себестоимость (USD $) — только для VIP</label>
-                        <input type="number" value={form.costPrice} onChange={e => setForm(f => ({ ...f, costPrice: e.target.value }))}
-                          className="w-full border border-purple-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-purple-50" placeholder="Например: 350 (в долларах)" />
-                        <p className="text-xs text-purple-500 mt-1">VIP-участники увидят эту цену как «Цена для вас»</p>
-                      </div>
+
                       <div className="col-span-2">
                         <label className="block text-sm font-semibold mb-1">Контактный телефон (показывается на странице товара)</label>
                         <ContactPhonePicker
