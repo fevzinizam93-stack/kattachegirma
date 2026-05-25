@@ -2787,30 +2787,34 @@ function IndexingPanel() {
 
   // Yandex IndexNow mutations
   const yandexAllMut = trpc.indexing.submitAllProductsYandex.useMutation({
-    onSuccess: (data) => toast.success(`Яндекс: отправлено ${data.total} URL ✅`),
+    onSuccess: (data) => toast.success(`✅ Яндекс: ${data.total} товаров отправлено`, { description: "Яндекс поставил страницы в очередь на переобход" }),
     onError: (err: { message: string }) => toast.error("Яндекс ошибка: " + err.message),
   });
   const yandexCatsMut = trpc.indexing.submitAllCategoriesYandex.useMutation({
-    onSuccess: (data) => toast.success(`Яндекс: категории отправлены (${data.total} URL) ✅`),
+    onSuccess: (data) => toast.success(`✅ Яндекс: ${data.total} категорий отправлено`, { description: "Яндекс поставил страницы в очередь на переобход" }),
     onError: (err: { message: string }) => toast.error("Яндекс ошибка: " + err.message),
   });
   const yandexOneMut = trpc.indexing.submitUrlYandex.useMutation({
-    onSuccess: () => toast.success("Яндекс: URL отправлен ✅"),
+    onSuccess: () => toast.success("✅ Яндекс: URL отправлен", { description: "Страница поставлена в очередь на переобход" }),
     onError: (err: { message: string }) => toast.error("Яндекс ошибка: " + err.message),
   });
 
   const submitAllMut = trpc.indexing.submitAllProducts.useMutation({
     onSuccess: (data) => {
       setIndexResults(data.results);
-      toast.success(`Отправлено: ${data.succeeded} из ${data.total}. Ошибок: ${data.failed}`);
+      if (data.failed === 0) {
+        toast.success(`✅ Google: все ${data.succeeded} товаров отправлены`, { description: "Страницы появятся в поиске в течение нескольких часов" });
+      } else {
+        toast.warning(`⚠️ Google: ${data.succeeded} из ${data.total} отправлено`, { description: `${data.failed} ошибок — смотрите результаты ниже` });
+      }
     },
-    onError: (err) => toast.error("Ошибка: " + err.message),
+    onError: (err) => toast.error("Ошибка Google Indexing: " + err.message),
   });
 
   const submitCatsMut = trpc.indexing.submitAllCategories.useMutation({
     onSuccess: (data) => {
       setIndexResults(data.results);
-      toast.success(`Категории отправлены: ${data.succeeded} из ${data.total}`);
+      toast.success(`✅ Google: ${data.succeeded} категорий отправлено`, { description: "Страницы появятся в поиске в течение нескольких часов" });
     },
     onError: (err) => toast.error("Ошибка: " + err.message),
   });
@@ -2818,7 +2822,7 @@ function IndexingPanel() {
   const submitOneMut = trpc.indexing.submitUrl.useMutation({
     onSuccess: (data) => {
       if (data.success) {
-        toast.success("URL отправлен на индексирование!");
+        toast.success("✅ Google: URL отправлен на индексирование", { description: "Страница появится в поиске в течение нескольких часов" });
       } else {
         toast.error("Ошибка: " + data.error);
       }
@@ -2891,8 +2895,24 @@ function IndexingPanel() {
               disabled={isLoading}
               className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
             >
-              {submitAllMut.isPending ? <><span className="animate-spin">⏳</span> Отправляю...</> : <>🚀 Отправить все товары</>}
+              {submitAllMut.isPending ? (
+                <>
+                  <svg className="animate-spin h-4 w-4 text-white shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  Отправляю товары...
+                </>
+              ) : <>🚀 Отправить все товары</>}
             </button>
+            {submitAllMut.isPending && (
+              <div className="mt-2 space-y-1">
+                <div className="w-full bg-blue-200 rounded-full h-1.5 overflow-hidden">
+                  <div className="bg-blue-600 h-1.5 rounded-full animate-[pulse_1s_ease-in-out_infinite]" style={{ width: "100%" }} />
+                </div>
+                <p className="text-xs text-blue-600">Отправляем URL в Google Indexing API... Это может занять 10–30 секунд.</p>
+              </div>
+            )}
           </div>
 
           <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
@@ -2903,7 +2923,15 @@ function IndexingPanel() {
               disabled={isLoading}
               className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
             >
-              {submitCatsMut.isPending ? <><span className="animate-spin">⏳</span> Отправляю...</> : <>📤 Отправить категории</>}
+              {submitCatsMut.isPending ? (
+                <>
+                  <svg className="animate-spin h-4 w-4 text-white shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  Отправляю...
+                </>
+              ) : <>📤 Отправить категории</>}
             </button>
           </div>
 
@@ -2923,7 +2951,12 @@ function IndexingPanel() {
                 disabled={isLoading || !singleUrl}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
               >
-                {submitOneMut.isPending ? <span className="animate-spin">⏳</span> : "Отправить"}
+                {submitOneMut.isPending ? (
+                  <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                ) : "Отправить"}
               </button>
             </div>
           </div>
@@ -2947,8 +2980,24 @@ function IndexingPanel() {
               disabled={yandexAllMut.isPending || yandexCatsMut.isPending || yandexOneMut.isPending}
               className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
             >
-              {yandexAllMut.isPending ? <><span className="animate-spin">⏳</span> Отправляю...</> : <>🚀 Отправить все товары</>}
+              {yandexAllMut.isPending ? (
+                <>
+                  <svg className="animate-spin h-4 w-4 text-white shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  Отправляю товары...
+                </>
+              ) : <>🚀 Отправить все товары</>}
             </button>
+            {yandexAllMut.isPending && (
+              <div className="mt-2 space-y-1">
+                <div className="w-full bg-yellow-200 rounded-full h-1.5 overflow-hidden">
+                  <div className="bg-yellow-500 h-1.5 rounded-full animate-[pulse_1s_ease-in-out_infinite]" style={{ width: "100%" }} />
+                </div>
+                <p className="text-xs text-yellow-700">Отправляем URL в Яндекс IndexNow...</p>
+              </div>
+            )}
           </div>
 
           <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4">
@@ -2959,7 +3008,15 @@ function IndexingPanel() {
               disabled={yandexAllMut.isPending || yandexCatsMut.isPending || yandexOneMut.isPending}
               className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
             >
-              {yandexCatsMut.isPending ? <><span className="animate-spin">⏳</span> Отправляю...</> : <>📤 Отправить категории</>}
+              {yandexCatsMut.isPending ? (
+                <>
+                  <svg className="animate-spin h-4 w-4 text-white shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  Отправляю...
+                </>
+              ) : <>📤 Отправить категории</>}
             </button>
           </div>
 
@@ -2979,7 +3036,12 @@ function IndexingPanel() {
                 disabled={yandexAllMut.isPending || yandexCatsMut.isPending || yandexOneMut.isPending || !yandexSingleUrl}
                 className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
               >
-                {yandexOneMut.isPending ? <span className="animate-spin">⏳</span> : "Отправить"}
+                {yandexOneMut.isPending ? (
+                  <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                ) : "Отправить"}
               </button>
             </div>
           </div>
