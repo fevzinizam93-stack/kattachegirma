@@ -499,12 +499,12 @@ export default function Admin() {
   }, [storeSettingsRaw, settingsLoaded]);
 
   const createProduct = trpc.products.create.useMutation({
-    onSuccess: () => { toast.success("Товар добавлен!"); utils.products.list.invalidate(); setShowForm(false); setForm(emptyForm); descUzManualRef.current = false; nameUzManualRef.current = false; },
-    onError: (e) => toast.error("Ошибка: " + e.message),
+    onSuccess: () => { toast.success("Товар добавлен!"); utils.products.list.invalidate(); utils.products.adminList.invalidate(); setShowForm(false); setForm(emptyForm); descUzManualRef.current = false; nameUzManualRef.current = false; },
+    onError: (e) => toast.error("Ошибка добавления: " + e.message),
   });
   const updateProduct = trpc.products.update.useMutation({
-    onSuccess: () => { toast.success("Товар обновлён!"); utils.products.list.invalidate(); setShowForm(false); setForm(emptyForm); setEditId(null); descUzManualRef.current = false; nameUzManualRef.current = false; },
-    onError: (e) => toast.error("Ошибка: " + e.message),
+    onSuccess: () => { toast.success("Товар обновлён!"); utils.products.list.invalidate(); utils.products.adminList.invalidate(); setShowForm(false); setForm(emptyForm); setEditId(null); descUzManualRef.current = false; nameUzManualRef.current = false; },
+    onError: (e) => toast.error("Ошибка обновления: " + e.message),
   });
   const deleteProduct = trpc.products.delete.useMutation({
     onSuccess: () => { toast.success("Товар удалён!"); utils.products.list.invalidate(); },
@@ -839,8 +839,20 @@ export default function Admin() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name || !form.price || !form.categoryId) {
-      toast.error("Название, цена и категория обязательны");
+    // Validate required fields with specific error messages
+    if (!form.name.trim()) {
+      toast.error("Введите название товара");
+      return;
+    }
+    // Validate category
+    if (!form.categoryId || form.categoryId === 0) {
+      toast.error("Выберите категорию товара из списка ниже");
+      return;
+    }
+    // Accept either price (UZS) or priceUsd (USD) as valid price input
+    const finalPrice = form.price || (form.priceUsd ? String(Math.round(Number(form.priceUsd) * exchangeRate)) : "");
+    if (!finalPrice || finalPrice === "0") {
+      toast.error("Введите цену товара (в поле USD)");
       return;
     }
     // Transliterate Cyrillic and generate safe slug; fallback to timestamp if result is empty
@@ -849,10 +861,12 @@ export default function Admin() {
     const rawSlug = translit(form.name).replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-").replace(/^-|-$/g, "");
     const slug = form.slug || rawSlug || `product-${Date.now()}`;
     const stockCountNum = form.stockCount !== "" ? parseInt(form.stockCount) : undefined;
+    // Use finalPrice (computed from USD if needed)
+    const formWithPrice = { ...form, price: finalPrice };
     if (editId) {
-      updateProduct.mutate({ id: editId, ...form, slug, stockCount: stockCountNum });
+      updateProduct.mutate({ id: editId, ...formWithPrice, slug, stockCount: stockCountNum });
     } else {
-      createProduct.mutate({ ...form, slug, stockCount: stockCountNum });
+      createProduct.mutate({ ...formWithPrice, slug, stockCount: stockCountNum });
     }
   };
 
