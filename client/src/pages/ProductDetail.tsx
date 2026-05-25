@@ -393,13 +393,13 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
       : []
   );
 
-  // SEO: Schema.org Product JSON-LD
+  // SEO: Schema.org Product JSON-LD (with aggregateRating when reviews exist)
   useEffect(() => {
     if (!product) return;
     const name = product.name;
     const price = parseFloat(product.price);
     const inStock = !product.stock || product.stock > 0;
-    const schema = {
+    const schema: Record<string, unknown> = {
       "@context": "https://schema.org",
       "@type": "Product",
       "name": name,
@@ -418,6 +418,17 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
         "url": `https://kattachegirma.uz/product/${product.slug}`
       }
     };
+    // Add aggregateRating only when there are approved reviews
+    // Google requires ratingValue and reviewCount to show stars in search results
+    if (reviewSummary && reviewSummary.count > 0 && reviewSummary.avgRating > 0) {
+      schema["aggregateRating"] = {
+        "@type": "AggregateRating",
+        "ratingValue": reviewSummary.avgRating,
+        "reviewCount": reviewSummary.count,
+        "bestRating": 5,
+        "worstRating": 1
+      };
+    }
     const script = document.createElement("script");
     script.type = "application/ld+json";
     script.id = "product-schema";
@@ -425,7 +436,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
     document.getElementById("product-schema")?.remove();
     document.head.appendChild(script);
     return () => { document.getElementById("product-schema")?.remove(); };
-  }, [product]);
+  }, [product, reviewSummary]);
 
   // Auto-translate description when lang=uz and no descriptionUz exists
   useEffect(() => {

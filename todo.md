@@ -1112,3 +1112,8 @@
 - [x] Добавить DB helper getIndexingLogs / saveIndexingLog в server/db.ts
 - [x] Добавить tRPC процедуры indexing.getLogs и обновить все мутации для сохранения записей
 - [x] Обновить IndexingPanel UI — секция "История отправок" с таблицей (дата, поисковик, тип, кол-во URL, статус)
+
+## Schema.org aggregateRating (v157)
+- [ ] Добавить JSON-LD Product + aggregateRating на страницы товаров (ProductDetail)
+- [ ] Включить: name, description, image, brand, offers (price, currency, availability), aggregateRating (ratingValue, reviewCount)
+- [ ] Проверить через Google Rich Results Test
