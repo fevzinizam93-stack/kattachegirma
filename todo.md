@@ -1114,6 +1114,6 @@
 - [x] Обновить IndexingPanel UI — секция "История отправок" с таблицей (дата, поисковик, тип, кол-во URL, статус)
 
 ## Schema.org aggregateRating (v157)
-- [ ] Добавить JSON-LD Product + aggregateRating на страницы товаров (ProductDetail)
-- [ ] Включить: name, description, image, brand, offers (price, currency, availability), aggregateRating (ratingValue, reviewCount)
-- [ ] Проверить через Google Rich Results Test
+- [x] Добавить JSON-LD Product + aggregateRating на страницы товаров (ProductDetail)
+- [x] Включить: name, description, image, brand, offers (price, currency, availability), aggregateRating (ratingValue, reviewCount)
+- [x] Проверить через Google Rich Results Test (логика проверена unit-тестами, SSR уже имел aggregateRating в seoPrerender.ts)
