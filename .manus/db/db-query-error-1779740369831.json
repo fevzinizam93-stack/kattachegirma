@@ -1,0 +1,8 @@
+{
+  "query": "ALTER TABLE products ADD COLUMN isFeatured tinyint(1) DEFAULT 0 AFTER isNew;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute ALTER TABLE products ADD COLUMN isFeatured tinyint(1) DEFAULT 0 AFTER isNew;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1060 (42S21) at line 1: Duplicate column name 'isFeatured'"
+  ]
+}

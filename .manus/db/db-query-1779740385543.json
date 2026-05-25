@@ -1,0 +1,130 @@
+{
+  "query": "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'products' AND TABLE_SCHEMA = DATABASE() ORDER BY ORDINAL_POSITION;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'products' AND TABLE_SCHEMA = DATABASE() ORDER BY ORDINAL_POSITION;",
+  "rows": [
+    {
+      "COLUMN_NAME": "id"
+    },
+    {
+      "COLUMN_NAME": "name"
+    },
+    {
+      "COLUMN_NAME": "slug"
+    },
+    {
+      "COLUMN_NAME": "description"
+    },
+    {
+      "COLUMN_NAME": "categoryId"
+    },
+    {
+      "COLUMN_NAME": "brand"
+    },
+    {
+      "COLUMN_NAME": "price"
+    },
+    {
+      "COLUMN_NAME": "originalPrice"
+    },
+    {
+      "COLUMN_NAME": "discount"
+    },
+    {
+      "COLUMN_NAME": "imageUrl"
+    },
+    {
+      "COLUMN_NAME": "images"
+    },
+    {
+      "COLUMN_NAME": "stock"
+    },
+    {
+      "COLUMN_NAME": "isNew"
+    },
+    {
+      "COLUMN_NAME": "isFeatured"
+    },
+    {
+      "COLUMN_NAME": "specs"
+    },
+    {
+      "COLUMN_NAME": "createdAt"
+    },
+    {
+      "COLUMN_NAME": "updatedAt"
+    },
+    {
+      "COLUMN_NAME": "sellerId"
+    },
+    {
+      "COLUMN_NAME": "sellerPhone"
+    },
+    {
+      "COLUMN_NAME": "sellerTelegram"
+    },
+    {
+      "COLUMN_NAME": "sellerName"
+    },
+    {
+      "COLUMN_NAME": "isApproved"
+    },
+    {
+      "COLUMN_NAME": "nameUz"
+    },
+    {
+      "COLUMN_NAME": "descriptionUz"
+    },
+    {
+      "COLUMN_NAME": "isHit"
+    },
+    {
+      "COLUMN_NAME": "hitOrder"
+    },
+    {
+      "COLUMN_NAME": "viewCount"
+    },
+    {
+      "COLUMN_NAME": "moderationStatus"
+    },
+    {
+      "COLUMN_NAME": "isPremium"
+    },
+    {
+      "COLUMN_NAME": "isActive"
+    },
+    {
+      "COLUMN_NAME": "costPrice"
+    },
+    {
+      "COLUMN_NAME": "stockCount"
+    },
+    {
+      "COLUMN_NAME": "discountEndsAt"
+    },
+    {
+      "COLUMN_NAME": "contactPhone"
+    },
+    {
+      "COLUMN_NAME": "videoId"
+    },
+    {
+      "COLUMN_NAME": "clickCount"
+    },
+    {
+      "COLUMN_NAME": "salesCount"
+    },
+    {
+      "COLUMN_NAME": "hitScore"
+    },
+    {
+      "COLUMN_NAME": "isHitManual"
+    },
+    {
+      "COLUMN_NAME": "slugUz"
+    }
+  ],
+  "messages": [],
+  "stdout": "COLUMN_NAME\nid\nname\nslug\ndescription\ncategoryId\nbrand\nprice\noriginalPrice\ndiscount\nimageUrl\nimages\nstock\nisNew\nisFeatured\nspecs\ncreatedAt\nupdatedAt\nsellerId\nsellerPhone\nsellerTelegram\nsellerName\nisApproved\nnameUz\ndescriptionUz\nisHit\nhitOrder\nviewCount\nmoderationStatus\nisPremium\nisActive\ncostPrice\nstockCount\ndiscountEndsAt\ncontactPhone\nvideoId\nclickCount\nsalesCount\nhitScore\nisHitManual\nslugUz\n",
+  "stderr": "",
+  "execution_time_ms": 268
+}

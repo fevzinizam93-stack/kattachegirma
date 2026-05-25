@@ -1,0 +1,9 @@
+{
+  "query": "DELETE FROM products WHERE name IN ('Test Product Debug', 'Test', 'Тест холодильник Samsung Dev', 'Тест холодильник Samsung Fix2', 'Холодильник Samsung RT38K5400S9') AND sellerId IS NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute DELETE FROM products WHERE name IN ('Test Product Debug', 'Test', 'Тест холодильник Samsung Dev', 'Тест холодильник Samsung Fix2', 'Холодильник Samsung RT38K5400S9') AND sellerId IS NULL;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 289
+}

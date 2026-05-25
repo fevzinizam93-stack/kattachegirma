@@ -327,7 +327,7 @@ export const appRouter = router({
         isPremium: z.boolean().optional(),
         minPrice: z.number().optional(),
         maxPrice: z.number().optional(),
-        sortBy: z.enum(['newest', 'price_asc', 'price_desc', 'discount', 'rating', 'reviews']).optional(),
+        sortBy: z.enum(['newest', 'price_asc', 'price_desc', 'discount', 'rating', 'reviews'] as const).optional(),
         brands: z.array(z.string()).optional(),
         minRating: z.number().min(1).max(5).optional(),
         limit: z.number().default(20),
@@ -428,13 +428,10 @@ export const appRouter = router({
         sellerPhone: z.string().optional(),
         sellerTelegram: z.string().optional(),
         sellerName: z.string().optional(),
-        sellerId: z.number().optional(),
-        isApproved: z.boolean().default(true),
-        costPrice: z.string().optional(),
-        stockCount: z.number().optional(),
+        stockCount: z.number().nullable().optional(),
         discountEndsAt: z.string().optional(),
-        contactPhone: z.string().max(64).optional(),
-        videoId: z.string().max(32).optional(),
+        contactPhone: z.string().optional(),
+        videoId: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
         // Normalize slug server-side: transliterate Cyrillic, strip emojis/special chars
@@ -449,12 +446,27 @@ export const appRouter = router({
           safeSlug = `${baseSlug}-${suffix++}`;
           if (suffix > 100) { safeSlug = `${baseSlug}-${Date.now()}`; break; }
         }
+        // Strip virtual fields that don't exist in DB schema
+        const { priceUsd: _priceUsd, originalPriceUsd: _origPriceUsd, ...dbInput } = input;
+        // Convert empty string decimal fields to undefined (MySQL rejects empty strings for decimal columns)
+        const toDecimal = (v: string | undefined) => (v && v.trim() !== '' ? v : undefined);
         const id = await createProduct({
-          ...input,
+          ...dbInput,
           slug: safeSlug,
+          price: toDecimal(input.price) as string,
+          originalPrice: toDecimal(input.originalPrice),
+          costPrice: toDecimal((input as any).costPrice),
           images: input.images ?? [],
           specs: (input.specs ?? {}) as Record<string, string>,
           discountEndsAt: input.discountEndsAt ? new Date(input.discountEndsAt) : undefined,
+          stockCount: input.stockCount ?? undefined,
+          // Convert empty strings to undefined for optional text fields
+          imageUrl: input.imageUrl || undefined,
+          sellerPhone: input.sellerPhone || undefined,
+          sellerTelegram: input.sellerTelegram || undefined,
+          sellerName: input.sellerName || undefined,
+          contactPhone: input.contactPhone || undefined,
+          videoId: input.videoId || undefined,
         } as Parameters<typeof createProduct>[0]);
         pingSitemaps(`https://kattachegirma.uz/product/${safeSlug}`);
         return { id };
@@ -490,7 +502,7 @@ export const appRouter = router({
         sellerId: z.number().optional(),
         isApproved: z.boolean().optional(),
         costPrice: z.string().optional(),
-        stockCount: z.number().optional(),
+        stockCount: z.number().nullable().optional(),
         discountEndsAt: z.string().optional(),
         contactPhone: z.string().max(64).optional(),
         videoId: z.string().max(32).optional().nullable(),

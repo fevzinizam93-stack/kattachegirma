@@ -1,0 +1,70 @@
+{
+  "query": "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'products' ORDER BY ORDINAL_POSITION LIMIT 20 OFFSET 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'products' ORDER BY ORDINAL_POSITION LIMIT 20 OFFSET 20;",
+  "rows": [
+    {
+      "COLUMN_NAME": "sellerName"
+    },
+    {
+      "COLUMN_NAME": "isApproved"
+    },
+    {
+      "COLUMN_NAME": "nameUz"
+    },
+    {
+      "COLUMN_NAME": "descriptionUz"
+    },
+    {
+      "COLUMN_NAME": "isHit"
+    },
+    {
+      "COLUMN_NAME": "hitOrder"
+    },
+    {
+      "COLUMN_NAME": "viewCount"
+    },
+    {
+      "COLUMN_NAME": "moderationStatus"
+    },
+    {
+      "COLUMN_NAME": "isPremium"
+    },
+    {
+      "COLUMN_NAME": "isActive"
+    },
+    {
+      "COLUMN_NAME": "costPrice"
+    },
+    {
+      "COLUMN_NAME": "stockCount"
+    },
+    {
+      "COLUMN_NAME": "discountEndsAt"
+    },
+    {
+      "COLUMN_NAME": "contactPhone"
+    },
+    {
+      "COLUMN_NAME": "videoId"
+    },
+    {
+      "COLUMN_NAME": "clickCount"
+    },
+    {
+      "COLUMN_NAME": "salesCount"
+    },
+    {
+      "COLUMN_NAME": "hitScore"
+    },
+    {
+      "COLUMN_NAME": "isHitManual"
+    },
+    {
+      "COLUMN_NAME": "slugUz"
+    }
+  ],
+  "messages": [],
+  "stdout": "COLUMN_NAME\nsellerName\nisApproved\nnameUz\ndescriptionUz\nisHit\nhitOrder\nviewCount\nmoderationStatus\nisPremium\nisActive\ncostPrice\nstockCount\ndiscountEndsAt\ncontactPhone\nvideoId\nclickCount\nsalesCount\nhitScore\nisHitManual\nslugUz\n",
+  "stderr": "",
+  "execution_time_ms": 259
+}
