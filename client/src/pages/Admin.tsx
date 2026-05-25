@@ -2837,6 +2837,24 @@ function IndexingPanel() {
     onError: (err) => toast.error("Ошибка: " + err.message),
   });
 
+  const submitSitemapMut = trpc.indexing.submitSitemap.useMutation({
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success("✅ Sitemap отправлен в Google Search Console", { description: "Google начнёт обход sitemap.xml в течение нескольких часов" });
+      } else {
+        toast.error("Ошибка отправки sitemap: " + data.error);
+      }
+      utils.indexing.getLogs.invalidate();
+      utils.indexing.getSitemapStatus.invalidate();
+    },
+    onError: (err) => toast.error("Ошибка Search Console: " + err.message),
+  });
+
+  const sitemapStatusQuery = trpc.indexing.getSitemapStatus.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+
   const isLoading = submitAllMut.isPending || submitCatsMut.isPending || submitOneMut.isPending;
 
   return (
@@ -2939,6 +2957,53 @@ function IndexingPanel() {
                 </>
               ) : <>📤 Отправить категории</>}
             </button>
+          </div>
+
+          {/* Search Console Sitemap */}
+          <div className="bg-green-50 border border-green-200 rounded-2xl p-4">
+            <p className="font-semibold text-sm text-green-900 mb-1">🗺️ Sitemap в Search Console</p>
+            <p className="text-xs text-green-700 mb-2">Отправить sitemap.xml напрямую в Google Search Console — надёжный способ без лимита 200 URL/день.</p>
+
+            {/* Sitemap status */}
+            {sitemapStatusQuery.data && sitemapStatusQuery.data.success && (
+              <div className="bg-white rounded-xl p-2.5 border border-green-100 mb-3 text-xs space-y-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-green-600 font-bold">✓ Sitemap зарегистрирован</span>
+                  {sitemapStatusQuery.data.isPending && <span className="text-amber-600">(обрабатывается)</span>}
+                </div>
+                {sitemapStatusQuery.data.urlCount !== undefined && (
+                  <p className="text-gray-600">URL в sitemap: <strong>{sitemapStatusQuery.data.urlCount}</strong></p>
+                )}
+                {sitemapStatusQuery.data.lastDownloaded && (
+                  <p className="text-gray-500">Последнее скачивание: {new Date(sitemapStatusQuery.data.lastDownloaded).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}</p>
+                )}
+                {(sitemapStatusQuery.data.errors ?? 0) > 0 && (
+                  <p className="text-red-600">Ошибок: {sitemapStatusQuery.data.errors}</p>
+                )}
+              </div>
+            )}
+            {sitemapStatusQuery.data && !sitemapStatusQuery.data.success && (
+              <div className="bg-amber-50 rounded-xl p-2.5 border border-amber-100 mb-3 text-xs">
+                <p className="text-amber-700">⚠️ Sitemap ещё не зарегистрирован в Search Console или нет доступа. Нажмите кнопку ниже чтобы отправить.</p>
+              </div>
+            )}
+
+            <button
+              onClick={() => { if (confirm("Отправить sitemap.xml в Google Search Console?")) submitSitemapMut.mutate(); }}
+              disabled={isLoading || submitSitemapMut.isPending}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
+            >
+              {submitSitemapMut.isPending ? (
+                <>
+                  <svg className="animate-spin h-4 w-4 text-white shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  Отправляю...
+                </>
+              ) : <>🗺️ Отправить sitemap.xml</>}
+            </button>
+            <p className="text-xs text-green-600 mt-2">URL: https://kattachegirma.uz/sitemap.xml</p>
           </div>
 
           <div className="bg-white border border-blue-200 rounded-2xl p-4">
@@ -3132,7 +3197,8 @@ function IndexingPanel() {
                       {log.type === 'products' ? '📦 Товары' :
                        log.type === 'categories' ? '📂 Категории' :
                        log.type === 'single_url' ? '🔗 Один URL' :
-                       log.type === 'auto' ? '⚡ Авто' : log.type}
+                       log.type === 'auto' ? '⚡ Авто' :
+                       log.type === 'sitemap' ? '🗺️ Sitemap' : log.type}
                       {log.note && <span className="block text-gray-400 truncate max-w-32" title={log.note}>{log.note}</span>}
                     </td>
                     <td className="px-4 py-3 text-right text-gray-700 font-mono text-xs">{log.urlCount}</td>

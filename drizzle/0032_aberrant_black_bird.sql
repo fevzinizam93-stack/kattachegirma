@@ -1,0 +1,1 @@
+ALTER TABLE `indexing_log` MODIFY COLUMN `type` enum('products','categories','single_url','auto','sitemap') NOT NULL;

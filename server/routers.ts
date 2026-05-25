@@ -121,6 +121,7 @@ import { categories, products as productsTable } from "../drizzle/schema";
 import { storagePut } from "./storage";
 import { optimizeImage } from "./_core/imageOptimizer";
 import { submitUrlForIndexing, submitUrlsBatch } from "./googleIndexing";
+import { submitSitemapToSearchConsole, getSitemapStatus, listSitemaps } from "./googleSearchConsole";
 import { pingSitemaps } from "./sitemap";
 import { indexNowProduct, indexNowSubmit } from "./indexNow";
 import { invokeLLM } from "./_core/llm";
@@ -2510,6 +2511,50 @@ ${productLines}
       });
       return { total: urls.length, succeeded, failed, results };
     }),
+
+    // ── Google Search Console: Sitemap submission ─────────────────────────────
+    submitSitemap: adminProcedure
+      .input(z.object({
+        siteUrl: z.string().url().default("https://kattachegirma.uz/"),
+        sitemapUrl: z.string().url().default("https://kattachegirma.uz/sitemap.xml"),
+      }).optional())
+      .mutation(async ({ input }) => {
+        const siteUrl = input?.siteUrl ?? "https://kattachegirma.uz/";
+        const sitemapUrl = input?.sitemapUrl ?? "https://kattachegirma.uz/sitemap.xml";
+        const result = await submitSitemapToSearchConsole(siteUrl, sitemapUrl);
+        await saveIndexingLog({
+          engine: "google",
+          type: "sitemap",
+          urlCount: 1,
+          succeeded: result.success ? 1 : 0,
+          failed: result.success ? 0 : 1,
+          status: result.success ? "success" : "error",
+          note: sitemapUrl,
+        });
+        return result;
+      }),
+
+    // Get sitemap status from Google Search Console
+    getSitemapStatus: adminProcedure
+      .input(z.object({
+        siteUrl: z.string().url().default("https://kattachegirma.uz/"),
+        sitemapUrl: z.string().url().default("https://kattachegirma.uz/sitemap.xml"),
+      }).optional())
+      .query(async ({ input }) => {
+        const siteUrl = input?.siteUrl ?? "https://kattachegirma.uz/";
+        const sitemapUrl = input?.sitemapUrl ?? "https://kattachegirma.uz/sitemap.xml";
+        return await getSitemapStatus(siteUrl, sitemapUrl);
+      }),
+
+    // List all sitemaps in Google Search Console
+    listSitemaps: adminProcedure
+      .input(z.object({
+        siteUrl: z.string().url().default("https://kattachegirma.uz/"),
+      }).optional())
+      .query(async ({ input }) => {
+        const siteUrl = input?.siteUrl ?? "https://kattachegirma.uz/";
+        return await listSitemaps(siteUrl);
+      }),
   }),
 });
 

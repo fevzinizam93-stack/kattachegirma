@@ -325,7 +325,7 @@ export type YoutubeCache = typeof youtubeCache.$inferSelect;
 export const indexingLog = mysqlTable("indexing_log", {
   id: int("id").autoincrement().primaryKey(),
   engine: mysqlEnum("engine", ["google", "yandex"]).notNull(),        // google | yandex
-  type: mysqlEnum("type", ["products", "categories", "single_url", "auto"]).notNull(), // what was submitted
+  type: mysqlEnum("type", ["products", "categories", "single_url", "auto", "sitemap"]).notNull(), // what was submitted
   urlCount: int("urlCount").default(0).notNull(),                     // number of URLs submitted
   succeeded: int("succeeded").default(0).notNull(),
   failed: int("failed").default(0).notNull(),
