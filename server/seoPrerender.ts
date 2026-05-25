@@ -196,7 +196,7 @@ async function prerenderProduct(slug: string, isUz: boolean): Promise<string | n
   // Build title: avoid duplicating brand if it's already in product name
   const nameHasBrand = brand && name.toLowerCase().includes(brand.toLowerCase());
   const titleBrand = (brand && !nameHasBrand) ? ` ${brand}` : "";
-  const title = `${displayName}${titleBrand} — купить в Ташкенте${discount ? ` со скидкой ${discount}%` : ""} | ${SITE_NAME}`;
+  const title = `${displayName}${titleBrand} — купить в Ташкенте${discount ? ` со скидкой ${discount}%` : ""} | ${SITE_NAME} (kattachegirma)`;
 
   const description = `${displayName}${brand && !nameHasBrand ? ` ${brand}` : ""}. Цена: ${price} сум${originalPrice ? ` (было ${originalPrice} сум)` : ""}. ${catName}. Купить в Ташкенте с доставкой по Узбекистану.${desc ? " " + desc.slice(0, 100) : ""}`;
 
@@ -386,7 +386,7 @@ async function prerenderCategory(slug: string, isUz: boolean): Promise<string | 
   const catSlug = category.slug;
   const catSlugUz = (category as any).slugUz;
 
-  const title = `${catName} — купить в Ташкенте со скидкой | ${SITE_NAME}`;
+  const title = `${catName} — купить в Ташкенте со скидкой | ${SITE_NAME} (kattachegirma)`;
   const description = `${catName}: ${categoryProducts.length}+ товаров со скидкой. ${categoryProducts.slice(0, 5).map(p => p.name).join(", ")}. Доставка по Узбекистану, рассрочка.`;
 
   const canonical = `${BASE_URL}/category/${catSlug}`;
