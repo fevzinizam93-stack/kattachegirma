@@ -1133,21 +1133,21 @@
 - [x] Admin chunk splitting в vite.config.ts manualChunks (уже было реализовано)
 
 ## Безопасность (v52)
-- [ ] Rate limiting: express-rate-limit на /api/trpc, /api/upload, /api/trpc/auth
-- [ ] Helmet: security headers
-- [ ] IndexNow ключ перенести в env переменную INDEX_NOW_KEY
-- [ ] Валидация файлов через file-type (реальное содержимое, не только mimetype)
-- [ ] JSON limit: уменьшить с 50mb до 1mb
+- [x] Rate limiting: express-rate-limit на /api/trpc, /api/upload, /api/trpc/auth
+- [x] Helmet: security headers
+- [x] IndexNow ключ перенести в env переменную INDEX_NOW_KEY
+- [x] Валидация файлов через file-type (реальное содержимое, не только mimetype)
+- [x] JSON limit: уменьшить с 50mb до 1mb
 
 ## UX улучшения (v52)
-- [ ] Валидация телефона в Checkout.tsx (regex для Узбекистана)
-- [ ] Автопересчёт скидки в Admin.tsx при изменении price/originalPrice
-- [ ] Предупреждение об остатке товара в ProductDetail.tsx (stockCount 1-5)
+- [x] Валидация телефона в Checkout.tsx (regex для Узбекистана)
+- [x] Автоперсчёт скидки в Admin.tsx при изменении price/originalPrice
+- [x] Предупреждение об остатке товара в ProductDetail.tsx (stockCount 1-5) (уже было)
 
 ## Функциональность (v52)
-- [ ] Страница отслеживания заказа /order-tracking (по номеру телефона)
-- [ ] Google Analytics 4 (VITE_GA4_ID) + события view_item и purchase
+- [x] Страница отслеживания заказа /order (по ID заказа)
+- [x] Google Analytics 4 G-G9XX9QKJXL + SPA page_view трекинг
 
 ## Рефакторинг (v52)
-- [ ] Разбить Admin.tsx на компоненты: AdminProducts, AdminOrders, AdminCategories, AdminSettings, AdminBanners
-- [ ] Разбить server/routers.ts на модули: products.ts, orders.ts, categories.ts, sellers.ts, users.ts, reviews.ts
+- [ ] Разбить Admin.tsx на компоненты (отложено — высокий риск сломать 3155 строк)
+- [ ] Разбить server/routers.ts на модули (отложено — высокий риск сломать 2549 строк)
