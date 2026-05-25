@@ -3,8 +3,17 @@ import multer from "multer";
 import { storagePut } from "./storage";
 import { sdk } from "./_core/sdk";
 import { COOKIE_NAME } from "../shared/const";
+import { fileTypeFromBuffer } from "file-type";
 
 const router = Router();
+
+const ALLOWED_IMAGE_MIMES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "image/avif",
+]);
 
 // Use memory storage - files go to buffer, then S3
 const upload = multer({
@@ -38,9 +47,15 @@ router.post("/api/upload/image", upload.single("image"), async (req, res) => {
 
     if (!req.file) { res.status(400).json({ error: "No file provided" }); return; }
 
-    const ext = req.file.originalname.split(".").pop() ?? "jpg";
-    const key = `products/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const { url } = await storagePut(key, req.file.buffer, req.file.mimetype);
+    // Validate real file content (not just mimetype header — prevents disguised executables)
+    const detected = await fileTypeFromBuffer(req.file.buffer);
+    if (!detected || !ALLOWED_IMAGE_MIMES.has(detected.mime)) {
+      res.status(400).json({ error: "Invalid file type. Only images (JPEG, PNG, WebP, GIF) are allowed." });
+      return;
+    }
+
+    const key = `products/${Date.now()}-${Math.random().toString(36).slice(2)}.${detected.ext}`;
+    const { url } = await storagePut(key, req.file.buffer, detected.mime);
     res.json({ url });
   } catch (err: any) {
     console.error("[Upload] Error:", err);
@@ -59,9 +74,14 @@ router.post("/api/upload/images", upload.array("images", 10), async (req, res) =
 
     const urls: string[] = [];
     for (const file of files) {
-      const ext = file.originalname.split(".").pop() ?? "jpg";
-      const key = `products/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { url } = await storagePut(key, file.buffer, file.mimetype);
+      // Validate real file content
+      const detected = await fileTypeFromBuffer(file.buffer);
+      if (!detected || !ALLOWED_IMAGE_MIMES.has(detected.mime)) {
+        res.status(400).json({ error: `File "${file.originalname}" is not a valid image.` });
+        return;
+      }
+      const key = `products/${Date.now()}-${Math.random().toString(36).slice(2)}.${detected.ext}`;
+      const { url } = await storagePut(key, file.buffer, detected.mime);
       urls.push(url);
     }
     res.json({ urls });

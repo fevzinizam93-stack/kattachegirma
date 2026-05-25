@@ -1191,6 +1191,26 @@ export const appRouter = router({
         return { items: order.items };
       }),
 
+    // Public: get order by ID (for tracking page)
+    getById: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+        const { orders } = await import("../drizzle/schema");
+        const rows = await db.select().from(orders).where(eq(orders.id, input.id)).limit(1);
+        if (!rows.length) throw new TRPCError({ code: "NOT_FOUND", message: "Order not found" });
+        const o = rows[0];
+        return {
+          id: o.id,
+          status: o.status,
+          totalAmount: o.totalAmount,
+          items: o.items,
+          createdAt: o.createdAt,
+          updatedAt: o.updatedAt,
+        };
+      }),
+
     updateStatus: adminProcedure
       .input(z.object({
         id: z.number(),

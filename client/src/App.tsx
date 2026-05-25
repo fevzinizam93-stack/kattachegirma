@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, lazy, Suspense } from "react";
 import { useUTMTracker } from "./hooks/useUTMTracker";
+import { useGA4 } from "./hooks/useGA4";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Route, Switch, useLocation } from "wouter";
@@ -35,6 +36,7 @@ const Favorites = lazy(() => import("./pages/Favorites"));
 const SellerMessages = lazy(() => import("./pages/SellerMessages"));
 const AuthModal = lazy(() => import("./components/AuthModal"));
 const Videos = lazy(() => import("./pages/Videos"));
+const OrderTracking = lazy(() => import("./pages/OrderTracking"));
 
 // Lightweight spinner shown while a page chunk is loading
 function PageLoader() {
@@ -62,6 +64,7 @@ export function useAuthModal() {
 
 function Router() {
   const [location] = useLocation();
+  useGA4();
 
   // Parse search query from URL
   const searchParams = new URLSearchParams(location.includes("?") ? location.split("?")[1] : "");
@@ -107,6 +110,10 @@ function Router() {
       <Route path="/login" component={LoginPage} />
       <Route path="/sales" component={Sales} />
       <Route path="/videos" component={Videos} />
+      <Route path="/order/:id">
+        {(params) => <OrderTracking orderId={parseInt(params.id)} />}
+      </Route>
+      <Route path="/order">{() => <OrderTracking />}</Route>
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

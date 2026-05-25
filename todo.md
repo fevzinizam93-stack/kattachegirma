@@ -1131,3 +1131,23 @@
 - [x] drop console/debugger в vite.config.ts для production
 - [x] In-memory кэш на 5 минут для categories.list и products.getHits (уже было реализовано)
 - [x] Admin chunk splitting в vite.config.ts manualChunks (уже было реализовано)
+
+## Безопасность (v52)
+- [ ] Rate limiting: express-rate-limit на /api/trpc, /api/upload, /api/trpc/auth
+- [ ] Helmet: security headers
+- [ ] IndexNow ключ перенести в env переменную INDEX_NOW_KEY
+- [ ] Валидация файлов через file-type (реальное содержимое, не только mimetype)
+- [ ] JSON limit: уменьшить с 50mb до 1mb
+
+## UX улучшения (v52)
+- [ ] Валидация телефона в Checkout.tsx (regex для Узбекистана)
+- [ ] Автопересчёт скидки в Admin.tsx при изменении price/originalPrice
+- [ ] Предупреждение об остатке товара в ProductDetail.tsx (stockCount 1-5)
+
+## Функциональность (v52)
+- [ ] Страница отслеживания заказа /order-tracking (по номеру телефона)
+- [ ] Google Analytics 4 (VITE_GA4_ID) + события view_item и purchase
+
+## Рефакторинг (v52)
+- [ ] Разбить Admin.tsx на компоненты: AdminProducts, AdminOrders, AdminCategories, AdminSettings, AdminBanners
+- [ ] Разбить server/routers.ts на модули: products.ts, orders.ts, categories.ts, sellers.ts, users.ts, reviews.ts

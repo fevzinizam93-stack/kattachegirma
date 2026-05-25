@@ -56,8 +56,9 @@ export default function Checkout() {
     const errs: Record<string, string> = {};
     if (!form.customerName.trim() || form.customerName.trim().length < 2)
       errs.customerName = "Имя должно содержать минимум 2 символа";
-    if (!form.customerPhone.trim() || form.customerPhone.trim().length < 7)
-      errs.customerPhone = "Неверный номер телефона";
+    const phoneRegex = /(\+998|998|0)[0-9]{9}$/;
+    if (!phoneRegex.test(form.customerPhone.trim().replace(/[\s\-()]/g, "")))
+      errs.customerPhone = "Введите номер телефона Узбекистана (+998 XX XXX XX XX)";
     if (!form.deliveryAddress.trim() || form.deliveryAddress.trim().length < 5)
       errs.deliveryAddress = "Адрес должен содержать минимум 5 символов";
     setErrors(errs);
@@ -99,11 +100,20 @@ export default function Checkout() {
           <h2 className="text-2xl font-black mb-2">{t.checkout_success}</h2>
           <p className="text-muted-foreground mb-2">{t.profile_order_number}<strong>#{orderId}</strong></p>
           <p className="text-sm text-muted-foreground mb-6">{t.checkout_success_desc}</p>
-          <Link href="/">
-            <button className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors">
-              {t.checkout_back_home}
-            </button>
-          </Link>
+          <div className="space-y-3">
+            {orderId && (
+              <Link href={`/order/${orderId}`}>
+                <button className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors">
+                  📦 Отследить заказ #{orderId}
+                </button>
+              </Link>
+            )}
+            <Link href="/">
+              <button className="w-full border border-border py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors text-gray-700">
+                {t.checkout_back_home}
+              </button>
+            </Link>
+          </div>
         </div>
       </div>
     );

@@ -1,6 +1,8 @@
 import "dotenv/config";
 import compression from "compression";
 import express from "express";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
@@ -70,12 +72,26 @@ async function startServer() {
     next();
   });
 
+  // Trust reverse proxy (Cloud Run / Nginx) — needed for rate limiting and real IP detection
+  app.set("trust proxy", 1);
+
+  // Security headers (helmet) — protects against XSS, clickjacking, etc.
+  app.use(helmet({ contentSecurityPolicy: false }));
+
+  // Rate limiting — protect against spam and brute-force attacks
+  const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200, standardHeaders: true, legacyHeaders: false });
+  const uploadLimiter = rateLimit({ windowMs: 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false });
+  const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false });
+  app.use("/api/trpc", apiLimiter);
+  app.use("/api/upload", uploadLimiter);
+  app.use("/api/oauth", authLimiter);
+
   // Enable gzip compression for all responses (reduces transfer size ~70%)
   app.use(compression({ level: 6, threshold: 1024 }));
 
-  // Configure body parser with larger size limit for file uploads
-  app.use(express.json({ limit: "50mb" }));
-  app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  // Configure body parser — 1mb is sufficient for JSON API requests
+  app.use(express.json({ limit: "1mb" }));
+  app.use(express.urlencoded({ limit: "1mb", extended: true }));
   registerStorageProxy(app);
   registerImageProxy(app);
   registerOAuthRoutes(app);

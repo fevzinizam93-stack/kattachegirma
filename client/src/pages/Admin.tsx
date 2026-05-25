@@ -1220,6 +1220,13 @@ export default function Admin() {
                         <label className="block text-sm font-semibold mb-1">Скидка (%)</label>
                         <input type="number" value={form.discount} onChange={e => setForm(f => ({ ...f, discount: parseInt(e.target.value) || 0 }))}
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="20" min={0} max={99} />
+                        {form.originalPriceUsd && form.priceUsd && Number(form.originalPriceUsd) > Number(form.priceUsd) && (
+                          <p className="text-xs text-green-600 mt-1 font-medium">
+                            Авто: {Math.round((1 - Number(form.priceUsd) / Number(form.originalPriceUsd)) * 100)}% →
+                            <button type="button" className="ml-1 underline" onClick={() => setForm(f => ({ ...f, discount: Math.round((1 - Number(f.priceUsd) / Number(f.originalPriceUsd)) * 100) }))}
+                            >применить</button>
+                          </p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-semibold mb-1">Количество на складе</label>

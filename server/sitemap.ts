@@ -136,7 +136,7 @@ export function pingSitemaps(productUrl?: string, deleted = false): void {
   if (pingTimer) clearTimeout(pingTimer);
   pingTimer = setTimeout(async () => {
     pingTimer = null;
-    const INDEX_NOW_KEY = "c426dc7430f65451d4a4a45d3111fadb";
+    const INDEX_NOW_KEY = process.env.INDEX_NOW_KEY || "c426dc7430f65451d4a4a45d3111fadb";
     const SITE_HOST = "kattachegirma.uz";
 
     // ── 1. IndexNow (Yandex + Bing) ──────────────────────────────────────────
