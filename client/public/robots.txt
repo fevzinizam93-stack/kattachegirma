@@ -1,4 +1,5 @@
 # robots.txt — kattachegirma.uz
+Sitemap: https://kattachegirma.uz/sitemap.xml
 
 User-agent: *
 Allow: /
@@ -9,7 +10,6 @@ Allow: /kategoriya/
 Allow: /catalog
 Allow: /bestsellers
 Allow: /sales
-Allow: /premium
 Allow: /videos
 Allow: /sellers
 Allow: /about
@@ -36,7 +36,6 @@ Allow: /kategoriya/
 Allow: /catalog
 Allow: /bestsellers
 Allow: /sales
-Allow: /premium
 Allow: /videos
 Allow: /sellers
 Allow: /about
@@ -62,7 +61,6 @@ Allow: /kategoriya/
 Allow: /catalog
 Allow: /bestsellers
 Allow: /sales
-Allow: /premium
 Allow: /videos
 Allow: /sellers
 Allow: /about
@@ -81,5 +79,4 @@ Disallow: /login
 Disallow: /404
 Clean-param: utm_source&utm_medium&utm_campaign&utm_content&utm_term&ref&fbclid&gclid
 
-Sitemap: https://kattachegirma.uz/sitemap.xml
 Host: kattachegirma.uz

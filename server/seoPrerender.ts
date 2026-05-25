@@ -71,19 +71,8 @@ const BOT_PATTERNS = [
   /headlesschrome/i,     // Headless Chrome crawlers
 ];
 
-// Prerender for ALL requests to product/category pages (not just bots)
-// This ensures Google sees full content and avoids Soft 404 errors
-function shouldPrerender(userAgent: string, path: string): boolean {
-  // Always prerender product and category pages for everyone
-  if (
-    /^\/product\//.test(path) ||
-    /^\/mahsulot\//.test(path) ||
-    /^\/category\//.test(path) ||
-    /^\/kategoriya\//.test(path)
-  ) {
-    return true;
-  }
-  // For other pages, only prerender for bots
+// Prerender only for bots — regular users get the React SPA directly (faster)
+function shouldPrerender(userAgent: string, _path: string): boolean {
   return BOT_PATTERNS.some(pattern => pattern.test(userAgent));
 }
 

@@ -1117,3 +1117,17 @@
 - [x] Добавить JSON-LD Product + aggregateRating на страницы товаров (ProductDetail)
 - [x] Включить: name, description, image, brand, offers (price, currency, availability), aggregateRating (ratingValue, reviewCount)
 - [x] Проверить через Google Rich Results Test (логика проверена unit-тестами, SSR уже имел aggregateRating в seoPrerender.ts)
+
+## SEO Исправления (v50)
+- [x] robots.txt — добавить Sitemap: в начало, убрать /premium
+- [x] sitemap.ts — добавить фильтр isActive=true для товаров
+- [x] seoPrerender.ts — рендерить только для ботов (не для всех пользователей)
+
+## Оптимизация производительности (v51)
+- [ ] DB индексы: CREATE INDEX idx_products_active, idx_products_category, idx_products_hit
+- [ ] WebP изображения: lazy loading + fetchpriority="high" на главное фото
+- [ ] Объединить API запросы главной страницы в один endpoint homepage.getData
+- [ ] staleTime: 5 * 60 * 1000 для редко меняющихся данных в React Query
+- [ ] drop console/debugger в vite.config.ts для production
+- [ ] In-memory кэш на 5 минут для categories.list и products.getHits
+- [ ] Admin chunk splitting в vite.config.ts manualChunks

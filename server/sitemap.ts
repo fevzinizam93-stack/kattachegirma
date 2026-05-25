@@ -1,7 +1,7 @@
 import { Express } from "express";
 import { getDb } from "./db";
 import { products, categories } from "../drizzle/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 const BASE_URL = "https://kattachegirma.uz";
 
@@ -11,7 +11,6 @@ const STATIC_PAGES = [
   { loc: "/catalog", priority: "0.9", changefreq: "daily" },
   { loc: "/bestsellers", priority: "0.8", changefreq: "daily" },
   { loc: "/sales", priority: "0.8", changefreq: "daily" },
-  { loc: "/premium", priority: "0.7", changefreq: "weekly" },
   { loc: "/videos", priority: "0.7", changefreq: "weekly" },
   { loc: "/sellers", priority: "0.6", changefreq: "weekly" },
   { loc: "/about", priority: "0.5", changefreq: "monthly" },
@@ -235,7 +234,7 @@ export function registerSitemapRoute(app: Express) {
             name: products.name,
           })
           .from(products)
-          .where(eq(products.isApproved, true));
+          .where(and(eq(products.isApproved, true), eq(products.isActive, true)));
 
         productEntries = allProducts.flatMap((p) => {
           const lastmod = formatDate(new Date(p.updatedAt));
