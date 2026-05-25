@@ -90,6 +90,9 @@ async function startServer() {
     createExpressMiddleware({
       router: appRouter,
       createContext,
+      // Allow POST for query procedures so httpBatchStreamLink can use POST
+      // when URL would exceed limits (prevents HTTP 414 on long batch requests)
+      allowMethodOverride: true,
     })
   );
   // development mode uses Vite, production mode uses static files
