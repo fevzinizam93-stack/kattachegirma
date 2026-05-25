@@ -331,10 +331,11 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
   // SEO: dynamic meta tags via usePageMeta
   const productTitle = product
     ? (() => {
-        const brand = product.brand ? `${product.brand} ` : "";
-        const category = categories.find(c => c.id === product.categoryId);
-        const catName = category?.name ? ` — ${category.name}` : "";
-        return `${brand}${product.name}${catName} | Катта Чегирма`;
+        const brand = product.brand || "";
+        const nameHasBrand = brand && product.name.toLowerCase().includes(brand.toLowerCase());
+        const titleBrand = (brand && !nameHasBrand) ? ` ${brand}` : "";
+        const discount = product.discount || 0;
+        return `${product.name}${titleBrand} — купить в Ташкенте${discount ? ` со скидкой ${discount}%` : ""} | Катта Чегирма`;
       })()
     : "Катта Чегирма — Магазин бытовой техники";
 
@@ -353,14 +354,20 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
       })()
     : "Катта Чегирма — самая дешёвая бытовая техника в Узбекистане. Пылесосы, стиральные машины, холодильники, телевизоры, кондиционеры.";
 
-  // UZ keywords: use nameUz if available, otherwise transliterate product name
+  // Keywords: exact model number + product name + brand + category — helps rank for model number searches
   const productKeywordsUz = product
     ? (() => {
         const nameUz = (product as any).nameUz as string | null;
         const brand = product.brand ?? "";
         const catUz = categories.find(c => c.id === product.categoryId)?.name ?? "";
         const uzName = nameUz || product.name;
-        return `${uzName} sotib olish, ${uzName} narxi, ${brand} ${catUz} arzon, ${uzName} Toshkent`
+        // Extract model numbers from product name (e.g. "FRCTBC-1170", "TN-22TC", "RS210")
+        const modelMatch = product.name.match(/[A-Z0-9][A-Z0-9\-]{2,}[A-Z0-9]/g);
+        const modelNumbers = modelMatch ? Array.from(new Set(modelMatch)).join(" ") : "";
+        const modelKeywords = modelNumbers
+          ? `${modelNumbers} купить, ${modelNumbers} цена, ${modelNumbers} Ташкент, ${modelNumbers} Узбекистан, `
+          : "";
+        return `${modelKeywords}${uzName} sotib olish, ${uzName} narxi, ${brand} ${catUz} arzon, ${uzName} Toshkent`
           .replace(/\s+/g, " ").trim();
       })()
     : undefined;

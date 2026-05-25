@@ -108,6 +108,7 @@ function formatPrice(price: string | number): string {
 function buildHtmlPage(options: {
   title: string;
   description: string;
+  keywords?: string;
   canonical: string;
   ogImage?: string;
   hreflangRu?: string;
@@ -115,7 +116,7 @@ function buildHtmlPage(options: {
   jsonLd: object[];
   bodyContent: string;
 }): string {
-  const { title, description, canonical, ogImage, hreflangRu, hreflangUz, jsonLd, bodyContent } = options;
+  const { title, description, keywords, canonical, ogImage, hreflangRu, hreflangUz, jsonLd, bodyContent } = options;
   const ogImg = ogImage || LOGO_URL;
   const hrefRu = hreflangRu || canonical;
   const hrefUz = hreflangUz || canonical;
@@ -127,6 +128,7 @@ function buildHtmlPage(options: {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}" />
+  ${keywords ? `<meta name="keywords" content="${escapeHtml(keywords)}" />` : ''}
   <link rel="canonical" href="${canonical}" />
   <link rel="alternate" hreflang="ru" href="${hrefRu}" />
   <link rel="alternate" hreflang="uz" href="${hrefUz}" />
@@ -198,8 +200,30 @@ async function prerenderProduct(slug: string, isUz: boolean): Promise<string | n
   const imageUrl = rawImageUrl.startsWith("http") ? rawImageUrl : `${BASE_URL}${rawImageUrl}`;
   const discount = product.discount || 0;
 
-  const title = `${displayName}${brand ? ` ${brand}` : ""} — купить${discount ? ` со скидкой ${discount}%` : ""} | ${SITE_NAME}`;
-  const description = `${displayName}${brand ? ` ${brand}` : ""}. Цена: ${price} сум${originalPrice ? ` (было ${originalPrice} сум)` : ""}. ${catName}. Доставка по Ташкенту и Узбекистану. ${desc.slice(0, 120)}`;
+  // Extract model number from product name (e.g. "TN-22TC", "FRCTBC-1170", "RS210", "NF326BF")
+  const modelMatch = name.match(/[A-Z0-9][A-Z0-9\-]{2,}[A-Z0-9]/g);
+  const modelNumbers = modelMatch ? Array.from(new Set(modelMatch)).join(" ") : "";
+
+  // Build title: avoid duplicating brand if it's already in product name
+  const nameHasBrand = brand && name.toLowerCase().includes(brand.toLowerCase());
+  const titleBrand = (brand && !nameHasBrand) ? ` ${brand}` : "";
+  const title = `${displayName}${titleBrand} — купить в Ташкенте${discount ? ` со скидкой ${discount}%` : ""} | ${SITE_NAME}`;
+
+  const description = `${displayName}${brand && !nameHasBrand ? ` ${brand}` : ""}. Цена: ${price} сум${originalPrice ? ` (было ${originalPrice} сум)` : ""}. ${catName}. Купить в Ташкенте с доставкой по Узбекистану.${desc ? " " + desc.slice(0, 100) : ""}`;
+
+  // Keywords: exact model + product name + brand + category — helps rank for model number searches
+  const keywords = [
+    name,
+    modelNumbers ? `${modelNumbers} купить` : "",
+    modelNumbers ? `${modelNumbers} цена` : "",
+    modelNumbers ? `${modelNumbers} Ташкент` : "",
+    modelNumbers ? `${modelNumbers} Узбекистан` : "",
+    brand ? `${brand} ${catName}` : "",
+    `${catName} купить Ташкент`,
+    `${catName} купить Узбекистан`,
+    `katta chegirma`,
+    `arzon ${catName.toLowerCase()}`,
+  ].filter(Boolean).join(", ");
 
   const ruSlug = product.slug;
   const uzSlug = (product as any).slugUz;
@@ -224,7 +248,7 @@ async function prerenderProduct(slug: string, isUz: boolean): Promise<string | n
     ],
     "brand": brand ? { "@type": "Brand", "name": brand } : undefined,
     "sku": `KC-${product.id}`,
-    "mpn": `KC-${product.id}`,
+    "mpn": modelNumbers || `KC-${product.id}`,
     "itemCondition": "https://schema.org/NewCondition",
     "offers": {
       "@type": "Offer",
@@ -330,6 +354,7 @@ async function prerenderProduct(slug: string, isUz: boolean): Promise<string | n
   return buildHtmlPage({
     title,
     description,
+    keywords,
     canonical,
     ogImage: imageUrl,
     hreflangRu,
