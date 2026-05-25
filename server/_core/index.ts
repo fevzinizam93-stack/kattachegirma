@@ -133,6 +133,42 @@ async function startServer() {
       autoRegisterTelegramWebhook(webhookUrl).catch(console.error);
     }
   });
+
+  // Автоматически отправлять новые товары в Google раз при каждом запуске сервера (только в production)
+  if (process.env.NODE_ENV !== "development") {
+    setTimeout(async () => {
+      try {
+        const { submitUrlsBatch } = await import("../googleIndexing");
+        const { getDb } = await import("../db");
+        const { products: productsTable } = await import("../../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+
+        const db = await getDb();
+        if (!db) return;
+
+        const allProducts = await db
+          .select({ slug: productsTable.slug })
+          .from(productsTable)
+          .where(and(eq(productsTable.isActive, true), eq(productsTable.isApproved, true)))
+          .limit(200); // лимит Google API: 200 в день
+
+        const urls = allProducts
+          .filter((p) => p.slug)
+          .map((p) => `https://kattachegirma.uz/product/${p.slug}`);
+
+        if (urls.length === 0) {
+          console.log("[AutoIndex] No approved products to index");
+          return;
+        }
+
+        console.log(`[AutoIndex] Sending ${urls.length} URLs to Google...`);
+        await submitUrlsBatch(urls, "URL_UPDATED", 500);
+        console.log(`[AutoIndex] Done`);
+      } catch (err) {
+        console.error("[AutoIndex] Error:", err);
+      }
+    }, 2 * 60 * 1000); // запустить через 2 минуты после старта сервера
+  }
 }
 
 startServer().catch(console.error);

@@ -81,9 +81,9 @@ export default function QuickBuyModal({
       return;
     }
     createOrder.mutate({
-      productId,
+      productId: productId ?? 0,
       productName,
-      productPrice,
+      productPrice: productPrice ?? "0",
       customerName: name.trim(),
       customerPhone: phoneStripped,
     });
