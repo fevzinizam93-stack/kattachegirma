@@ -2830,63 +2830,159 @@ function IndexingPanel() {
   const isLoading = submitAllMut.isPending || submitCatsMut.isPending || submitOneMut.isPending;
 
   return (
-    <div className="max-w-2xl space-y-5">
-      <h2 className="font-black text-lg text-gray-900">🔍 Google Indexing API</h2>
-      <p className="text-sm text-gray-500">Автоматически отправляет URL страниц в Google для быстрой индексации. Лимит: 200 запросов/день.</p>
+    <div className="w-full max-w-4xl mx-auto space-y-6 px-2">
 
-      {/* Bulk products */}
-      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-5">
-        <h3 className="font-bold text-base text-blue-900 mb-1">📦 Все товары</h3>
-        <p className="text-xs text-blue-700 mb-4">Отправить URL всех активных товаров в Google. Рекомендуется после массового добавления товаров или исправления slug-ов.</p>
-        <button
-          onClick={() => {
-            if (confirm("Отправить все активные товары на индексирование? (до 200 URL)")) {
-              submitAllMut.mutate({ limit: 200 });
-            }
-          }}
-          disabled={isLoading}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
-        >
-          {submitAllMut.isPending ? <><span className="animate-spin">⏳</span> Отправляю...</> : <>🚀 Отправить все товары</>}
-        </button>
+      {/* ── Header ── */}
+      <div className="text-center">
+        <h2 className="font-black text-2xl text-gray-900 mb-2">🔍 Индексирование в поисковиках</h2>
+        <p className="text-sm text-gray-500 max-w-xl mx-auto">
+          Ускоряет появление страниц сайта в Google и Яндексе. При добавлении/изменении товара через админку — всё происходит <strong>автоматически</strong>. Этот раздел нужен только для массовых или ручных операций.
+        </p>
       </div>
 
-      {/* Bulk categories */}
-      <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-5">
-        <h3 className="font-bold text-base text-green-900 mb-1">📂 Категории и главная</h3>
-        <p className="text-xs text-green-700 mb-4">Отправить URL всех категорий, главной страницы и страницы каталога.</p>
-        <button
-          onClick={() => {
-            if (confirm("Отправить все категории на индексирование?")) {
-              submitCatsMut.mutate();
-            }
-          }}
-          disabled={isLoading}
-          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
-        >
-          {submitCatsMut.isPending ? <><span className="animate-spin">⏳</span> Отправляю...</> : <>📤 Отправить категории</>}
-        </button>
+      {/* ── Автоматика — статус ── */}
+      <div className="bg-green-50 border border-green-200 rounded-2xl p-4 flex items-start gap-3">
+        <span className="text-2xl mt-0.5">✅</span>
+        <div>
+          <p className="font-bold text-green-900 text-sm">Автоматическое индексирование включено</p>
+          <p className="text-xs text-green-700 mt-1">
+            При каждом <strong>добавлении, изменении или удалении товара</strong> через админку — сервер автоматически уведомляет Google (Indexing API) и Яндекс (IndexNow) в течение 30 секунд. Вручную ничего делать не нужно.
+          </p>
+        </div>
       </div>
 
-      {/* Single URL */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-5">
-        <h3 className="font-bold text-base text-gray-900 mb-1">🔗 Один URL</h3>
-        <p className="text-xs text-gray-500 mb-4">Отправить конкретный URL страницы на индексирование.</p>
-        <div className="flex gap-2">
-          <input
-            type="url"
-            value={singleUrl}
-            onChange={e => setSingleUrl(e.target.value)}
-            placeholder="https://kattachegirma.uz/product/..."
-            className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-          />
-          <button
-            onClick={() => { if (singleUrl) submitOneMut.mutate({ url: singleUrl }); }}
-            disabled={isLoading || !singleUrl}
-            className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
-          >
-            {submitOneMut.isPending ? <span className="animate-spin">⏳</span> : <>Отправить</>}
-          </button>
+      {/* ── Когда использовать этот раздел ── */}
+      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
+        <p className="font-bold text-amber-900 text-sm mb-3">📋 Когда нужно нажимать кнопки ниже?</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="bg-white rounded-xl p-3 border border-amber-100">
+            <p className="font-semibold text-xs text-amber-800 mb-1">🆕 Первый запуск сайта</p>
+            <p className="text-xs text-gray-600">Нажмите «Отправить все товары» один раз — Google сразу узнает обо всех 155+ товарах.</p>
+          </div>
+          <div className="bg-white rounded-xl p-3 border border-amber-100">
+            <p className="font-semibold text-xs text-amber-800 mb-1">📥 Массовый импорт</p>
+            <p className="text-xs text-gray-600">Добавили 20+ товаров через CSV или скрипт (не через форму)? Нажмите «Отправить все товары».</p>
+          </div>
+          <div className="bg-white rounded-xl p-3 border border-amber-100">
+            <p className="font-semibold text-xs text-amber-800 mb-1">🔗 Изменились URL</p>
+            <p className="text-xs text-gray-600">Поменяли slug-и товаров? Переотправьте все URL чтобы Google обновил ссылки в поиске.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Google + Yandex side by side ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+        {/* Google */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 border-b border-gray-200 pb-2">
+            <span className="text-xl">🔵</span>
+            <div>
+              <h3 className="font-black text-base text-gray-900">Google Indexing API</h3>
+              <p className="text-xs text-gray-500">Лимит: <strong>200 запросов/день</strong> · Скорость: несколько часов</p>
+            </div>
+          </div>
+
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+            <p className="font-semibold text-sm text-blue-900 mb-1">📦 Все товары</p>
+            <p className="text-xs text-blue-700 mb-3">Отправить URL всех активных товаров. Используйте при первом запуске или после массового импорта.</p>
+            <button
+              onClick={() => { if (confirm("Отправить все активные товары на индексирование? (до 200 URL)")) submitAllMut.mutate({ limit: 200 }); }}
+              disabled={isLoading}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
+            >
+              {submitAllMut.isPending ? <><span className="animate-spin">⏳</span> Отправляю...</> : <>🚀 Отправить все товары</>}
+            </button>
+          </div>
+
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+            <p className="font-semibold text-sm text-blue-900 mb-1">📂 Категории и главная</p>
+            <p className="text-xs text-blue-700 mb-3">Отправить URL категорий, главной и каталога. Используйте после добавления новой категории.</p>
+            <button
+              onClick={() => { if (confirm("Отправить все категории на индексирование?")) submitCatsMut.mutate(); }}
+              disabled={isLoading}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
+            >
+              {submitCatsMut.isPending ? <><span className="animate-spin">⏳</span> Отправляю...</> : <>📤 Отправить категории</>}
+            </button>
+          </div>
+
+          <div className="bg-white border border-blue-200 rounded-2xl p-4">
+            <p className="font-semibold text-sm text-gray-900 mb-1">🔗 Один URL</p>
+            <p className="text-xs text-gray-500 mb-3">Товар не появляется в Google несколько дней? Отправьте его URL вручную.</p>
+            <div className="flex gap-2">
+              <input
+                type="url"
+                value={singleUrl}
+                onChange={e => setSingleUrl(e.target.value)}
+                placeholder="https://kattachegirma.uz/product/..."
+                className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/30"
+              />
+              <button
+                onClick={() => { if (singleUrl) submitOneMut.mutate({ url: singleUrl }); }}
+                disabled={isLoading || !singleUrl}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
+              >
+                {submitOneMut.isPending ? <span className="animate-spin">⏳</span> : "Отправить"}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Yandex */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 border-b border-gray-200 pb-2">
+            <span className="text-xl">🟡</span>
+            <div>
+              <h3 className="font-black text-base text-gray-900">Яндекс IndexNow</h3>
+              <p className="text-xs text-gray-500"><strong>Без лимитов</strong> · Скорость: минуты</p>
+            </div>
+          </div>
+
+          <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4">
+            <p className="font-semibold text-sm text-yellow-900 mb-1">📦 Все товары</p>
+            <p className="text-xs text-yellow-700 mb-3">Отправить URL всех активных товаров в Яндекс. Без лимита — все товары за один раз.</p>
+            <button
+              onClick={() => { if (confirm("Отправить все товары в Яндекс IndexNow?")) yandexAllMut.mutate({ limit: 500 }); }}
+              disabled={yandexAllMut.isPending || yandexCatsMut.isPending || yandexOneMut.isPending}
+              className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
+            >
+              {yandexAllMut.isPending ? <><span className="animate-spin">⏳</span> Отправляю...</> : <>🚀 Отправить все товары</>}
+            </button>
+          </div>
+
+          <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4">
+            <p className="font-semibold text-sm text-yellow-900 mb-1">📂 Категории и главная</p>
+            <p className="text-xs text-yellow-700 mb-3">Отправить URL всех категорий и главной страницы в Яндекс.</p>
+            <button
+              onClick={() => { if (confirm("Отправить все категории в Яндекс IndexNow?")) yandexCatsMut.mutate(); }}
+              disabled={yandexAllMut.isPending || yandexCatsMut.isPending || yandexOneMut.isPending}
+              className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
+            >
+              {yandexCatsMut.isPending ? <><span className="animate-spin">⏳</span> Отправляю...</> : <>📤 Отправить категории</>}
+            </button>
+          </div>
+
+          <div className="bg-white border border-yellow-200 rounded-2xl p-4">
+            <p className="font-semibold text-sm text-gray-900 mb-1">🔗 Один URL</p>
+            <p className="text-xs text-gray-500 mb-3">Отправить конкретный URL в Яндекс IndexNow.</p>
+            <div className="flex gap-2">
+              <input
+                type="url"
+                value={yandexSingleUrl}
+                onChange={e => setYandexSingleUrl(e.target.value)}
+                placeholder="https://kattachegirma.uz/product/..."
+                className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/30"
+              />
+              <button
+                onClick={() => { if (yandexSingleUrl) yandexOneMut.mutate({ url: yandexSingleUrl }); }}
+                disabled={yandexAllMut.isPending || yandexCatsMut.isPending || yandexOneMut.isPending || !yandexSingleUrl}
+                className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
+              >
+                {yandexOneMut.isPending ? <span className="animate-spin">⏳</span> : "Отправить"}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -2897,81 +2993,21 @@ function IndexingPanel() {
             <h3 className="font-bold text-base text-gray-900">Результаты ({indexResults.filter(r => r.success).length}/{indexResults.length} успешно)</h3>
             <button onClick={() => setIndexResults([])} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
           </div>
-          <div className="space-y-1 max-h-80 overflow-y-auto">
+          <div className="space-y-1 max-h-60 overflow-y-auto">
             {indexResults.map((r, i) => (
               <div key={i} className={`flex items-start gap-2 text-xs px-3 py-1.5 rounded-lg ${r.success ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
                 <span className="shrink-0">{r.success ? "✅" : "❌"}</span>
                 <span className="truncate flex-1">{r.url}</span>
-                {r.error && <span className="text-red-600 shrink-0 max-w-32 truncate">{r.error}</span>}
+                {r.error && <span className="text-red-600 shrink-0 max-w-40 truncate">{r.error}</span>}
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Quota info Google */}
-      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-800">
-        <p className="font-bold mb-1">⚠️ Важно про лимиты Google</p>
-        <ul className="list-disc list-inside space-y-1 text-xs">
-          <li>Google Indexing API: <strong>200 запросов/день</strong></li>
-          <li>Если товаров больше 200 — отправляйте частями (сегодня 200, завтра следующие 200)</li>
-          <li>Индексирование обычно происходит в течение <strong>нескольких часов</strong></li>
-          <li>После публикации новых товаров нажмите «Отправить все товары»</li>
-        </ul>
-      </div>
-
-      {/* ── Yandex IndexNow ── */}
-      <div className="border-t border-gray-200 pt-6">
-        <h2 className="font-black text-lg text-gray-900 mb-1">🟡 Яндекс IndexNow</h2>
-        <p className="text-sm text-gray-500 mb-4">Мгновенно уведомляет Яндекс о новых и изменённых страницах. <strong>Без лимитов</strong> — можно отправлять все товары сразу. Также автоматически срабатывает при одобрении товара.</p>
-
-        {/* Yandex: all products */}
-        <div className="bg-gradient-to-br from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl p-5 mb-4">
-          <h3 className="font-bold text-base text-yellow-900 mb-1">📦 Все товары → Яндекс</h3>
-          <p className="text-xs text-yellow-700 mb-4">Отправить URL всех активных товаров в Яндекс IndexNow. Без лимита — все товары за один раз.</p>
-          <button
-            onClick={() => { if (confirm("Отправить все товары в Яндекс IndexNow?")) yandexAllMut.mutate({ limit: 500 }); }}
-            disabled={yandexAllMut.isPending || yandexCatsMut.isPending || yandexOneMut.isPending}
-            className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
-          >
-            {yandexAllMut.isPending ? <><span className="animate-spin">⏳</span> Отправляю...</> : <>🚀 Отправить все товары в Яндекс</>}
-          </button>
-        </div>
-
-        {/* Yandex: categories */}
-        <div className="bg-gradient-to-br from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl p-5 mb-4">
-          <h3 className="font-bold text-base text-yellow-900 mb-1">📂 Категории → Яндекс</h3>
-          <p className="text-xs text-yellow-700 mb-4">Отправить URL всех категорий и главной страницы в Яндекс.</p>
-          <button
-            onClick={() => { if (confirm("Отправить все категории в Яндекс IndexNow?")) yandexCatsMut.mutate(); }}
-            disabled={yandexAllMut.isPending || yandexCatsMut.isPending || yandexOneMut.isPending}
-            className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
-          >
-            {yandexCatsMut.isPending ? <><span className="animate-spin">⏳</span> Отправляю...</> : <>📤 Отправить категории в Яндекс</>}
-          </button>
-        </div>
-
-        {/* Yandex: single URL */}
-        <div className="bg-white border border-yellow-200 rounded-2xl p-5">
-          <h3 className="font-bold text-base text-gray-900 mb-1">🔗 Один URL → Яндекс</h3>
-          <p className="text-xs text-gray-500 mb-4">Отправить конкретный URL в Яндекс IndexNow.</p>
-          <div className="flex gap-2">
-            <input
-              type="url"
-              value={yandexSingleUrl}
-              onChange={e => setYandexSingleUrl(e.target.value)}
-              placeholder="https://kattachegirma.uz/product/..."
-              className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/30"
-            />
-            <button
-              onClick={() => { if (yandexSingleUrl) yandexOneMut.mutate({ url: yandexSingleUrl }); }}
-              disabled={yandexAllMut.isPending || yandexCatsMut.isPending || yandexOneMut.isPending || !yandexSingleUrl}
-              className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
-            >
-              {yandexOneMut.isPending ? <span className="animate-spin">⏳</span> : <>Отправить</>}
-            </button>
-          </div>
-        </div>
+      {/* Quota note */}
+      <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 text-xs text-gray-500 text-center">
+        Google Indexing API: лимит <strong>200 запросов/день</strong> · Если товаров больше 200 — отправляйте частями (сегодня 200, завтра следующие 200) · Индексирование обычно занимает <strong>несколько часов</strong>
       </div>
     </div>
   );
