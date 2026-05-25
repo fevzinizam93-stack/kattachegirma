@@ -3,7 +3,7 @@ import { useLanguage, getLocalizedPath } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Home, Grid3X3, Flame, Heart, ShoppingCart, Menu, Store, Crown, LogIn, ShieldCheck, Users, ChevronRight, LayoutGrid, Bell, Youtube } from "lucide-react";
+import { Home, Grid3X3, Flame, Heart, ShoppingCart, Menu, Store, LogIn, ShieldCheck, Users, ChevronRight, LayoutGrid, Bell, Youtube } from "lucide-react";
 import { useWishlist } from "@/hooks/useWishlist";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
@@ -297,17 +297,6 @@ export default function MobileBottomNav() {
               </div>
             </Link>
 
-            {/* Premium */}
-            <Link href="/premium" onClick={() => setMenuOpen(false)}
-              className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-yellow-50 active:bg-yellow-100 transition-colors">
-              <div className="w-9 h-9 rounded-full bg-yellow-100 flex items-center justify-center shrink-0">
-                <Crown size={18} className="text-yellow-600" />
-              </div>
-              <div>
-                <div className="text-sm font-bold text-gray-900">Premium</div>
-                <div className="text-xs text-gray-500">Оригинальная техника</div>
-              </div>
-            </Link>
 
             {/* Продавцы */}
             <Link href="/sellers" onClick={() => setMenuOpen(false)}

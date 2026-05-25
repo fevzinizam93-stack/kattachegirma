@@ -194,19 +194,6 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
             <div className="font-black text-gray-900 tracking-tight whitespace-nowrap" style={{ fontSize: "15px" }}>Katta Chegirma!!!</div>
           </Link>
 
-          {/* Premium section button */}
-          <Link
-            href="/premium"
-            style={{ fontSize: "10px" }}
-            className={`shrink-0 font-bold px-3 py-2 rounded-full border transition-all whitespace-nowrap flex items-center gap-1 ${
-              location === "/premium"
-                ? "bg-gradient-to-r from-[#d4af37] to-[#f0d060] text-black border-[#d4af37] shadow-[0_0_14px_rgba(212,175,55,0.5)]"
-                : "bg-gradient-to-r from-[#d4af37]/90 to-[#f0d060]/90 text-black border-[#d4af37] hover:from-[#d4af37] hover:to-[#f0d060] hover:shadow-[0_0_12px_rgba(212,175,55,0.4)]"
-            }`}
-          >
-            <span>◈</span>
-            <span>{t.nav_premium}</span>
-          </Link>
 
           {/* Videos link */}
           <Link

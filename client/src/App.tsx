@@ -29,7 +29,6 @@ const SellerDashboard = lazy(() => import("./pages/SellerDashboard"));
 const SellerStorefront = lazy(() => import("./pages/SellerStorefront"));
 const SellersList = lazy(() => import("./pages/SellersList"));
 const Profile = lazy(() => import("./pages/Profile"));
-const PremiumCatalog = lazy(() => import("./pages/PremiumCatalog"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const Sales = lazy(() => import("./pages/Sales"));
 const Favorites = lazy(() => import("./pages/Favorites"));
@@ -104,7 +103,6 @@ function Router() {
       <Route path="/seller/:id">
         {() => <SellerStorefront />}
       </Route>
-      <Route path="/premium" component={PremiumCatalog} />
       <Route path="/profile" component={Profile} />
       <Route path="/login" component={LoginPage} />
       <Route path="/sales" component={Sales} />
