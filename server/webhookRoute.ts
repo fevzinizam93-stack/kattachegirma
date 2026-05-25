@@ -31,6 +31,7 @@ router.post("/api/telegram/webhook", async (req, res) => {
 
   // Handle callback_query (inline button press)
   if (update?.callback_query) {
+    // Early return after handling callback_query to avoid double response
     const cbq = update.callback_query;
     const callbackQueryId: string = cbq.id;
     const data: string = cbq.data ?? "";
@@ -241,6 +242,9 @@ router.post("/api/telegram/webhook", async (req, res) => {
       console.error("[TG Webhook] Error handling callback_query:", e);
       await answerCallbackQuery(callbackQueryId, "⚠️ Ошибка сервера");
     }
+    // Respond to Telegram immediately after callback_query handling
+    if (!res.headersSent) res.json({ ok: true });
+    return;
   }
 
   // Handle /stats command
@@ -298,7 +302,7 @@ router.post("/api/telegram/webhook", async (req, res) => {
   }
 
   // Always respond 200 to Telegram
-  res.json({ ok: true });
+  if (!res.headersSent) res.json({ ok: true });
 });
 
 export function registerTelegramWebhook(app: import("express").Express) {
