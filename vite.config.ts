@@ -163,6 +163,10 @@ const plugins = [
 
 export default defineConfig({
   plugins,
+  // Drop console.log and debugger in production builds
+  esbuild: {
+    drop: process.env.NODE_ENV === "production" ? ["console", "debugger"] : [],
+  },
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),

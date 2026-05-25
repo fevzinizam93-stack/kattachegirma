@@ -1,0 +1,9 @@
+{
+  "query": "\n-- Index for filtering active/approved products (most common query)\nCREATE INDEX IF NOT EXISTS idx_products_active ON products(isApproved, isActive);\n\n-- Index for category filtering\nCREATE INDEX IF NOT EXISTS idx_products_category ON products(categoryId);\n\n-- Index for hit products sorted by hitOrder\nCREATE INDEX IF NOT EXISTS idx_products_hit ON products(isHit, hitOrder);\n\n-- Index for slug lookups (product detail page)\nCREATE INDEX IF NOT EXISTS idx_products_slug ON products(slug);\n\n-- Index for search by name/brand\nCREATE INDEX IF NOT EXISTS idx_products_brand ON products(brand);\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3qoidv3y2UAwFYa.059d504460e8 --database YYAoWxTvDsxnrHQtNTJgbZ --execute \n-- Index for filtering active/approved products (most common query)\nCREATE INDEX IF NOT EXISTS idx_products_active ON products(isApproved, isActive);\n\n-- Index for category filtering\nCREATE INDEX IF NOT EXISTS idx_products_category ON products(categoryId);\n\n-- Index for hit products sorted by hitOrder\nCREATE INDEX IF NOT EXISTS idx_products_hit ON products(isHit, hitOrder);\n\n-- Index for slug lookups (product detail page)\nCREATE INDEX IF NOT EXISTS idx_products_slug ON products(slug);\n\n-- Index for search by name/brand\nCREATE INDEX IF NOT EXISTS idx_products_brand ON products(brand);\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1731
+}

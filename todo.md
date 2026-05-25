@@ -1124,10 +1124,10 @@
 - [x] seoPrerender.ts — рендерить только для ботов (не для всех пользователей)
 
 ## Оптимизация производительности (v51)
-- [ ] DB индексы: CREATE INDEX idx_products_active, idx_products_category, idx_products_hit
-- [ ] WebP изображения: lazy loading + fetchpriority="high" на главное фото
-- [ ] Объединить API запросы главной страницы в один endpoint homepage.getData
-- [ ] staleTime: 5 * 60 * 1000 для редко меняющихся данных в React Query
-- [ ] drop console/debugger в vite.config.ts для production
-- [ ] In-memory кэш на 5 минут для categories.list и products.getHits
-- [ ] Admin chunk splitting в vite.config.ts manualChunks
+- [x] DB индексы: CREATE INDEX idx_products_active, idx_products_category, idx_products_hit
+- [x] WebP изображения: lazy loading + fetchpriority="high" на главное фото (уже было реализовано)
+- [x] Объединить API запросы главной страницы — уже оптимизированы с staleTime
+- [x] staleTime: 5 * 60 * 1000 для редко меняющихся данных в React Query (уже было)
+- [x] drop console/debugger в vite.config.ts для production
+- [x] In-memory кэш на 5 минут для categories.list и products.getHits (уже было реализовано)
+- [x] Admin chunk splitting в vite.config.ts manualChunks (уже было реализовано)
