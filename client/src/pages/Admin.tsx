@@ -3194,12 +3194,12 @@ function IndexingPanel() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-gray-700 text-xs">
-                      {log.type === 'products' ? '📦 Товары' :
+                      <>{log.type === 'products' ? '📦 Товары' :
                        log.type === 'categories' ? '📂 Категории' :
                        log.type === 'single_url' ? '🔗 Один URL' :
                        log.type === 'auto' ? '⚡ Авто' :
                        log.type === 'sitemap' ? '🗺️ Sitemap' : log.type}
-                      {log.note && <span className="block text-gray-400 truncate max-w-32" title={log.note}>{log.note}</span>}
+                      {log.note && <span className="block text-gray-400 truncate max-w-32" title={log.note}>{log.note}</span>}</>
                     </td>
                     <td className="px-4 py-3 text-right text-gray-700 font-mono text-xs">{log.urlCount}</td>
                     <td className="px-4 py-3 text-right text-green-700 font-mono text-xs font-semibold">{log.succeeded}</td>

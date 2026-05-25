@@ -1,35 +1,19 @@
+/**
+ * Google Search Console Sitemap Submission
+ *
+ * Uses the Google Search Console Webmasters API to submit and check sitemaps.
+ * The service account is verified as site owner via Site Verification API (META method).
+ * The verification meta tag is already present in client/index.html.
+ */
+
 import { GoogleAuth } from "google-auth-library";
-
-// Google Search Console (Webmasters) API
-const SEARCH_CONSOLE_API = "https://www.googleapis.com/webmasters/v3";
-
-let authClient: GoogleAuth | null = null;
-
-function getAuthClient(): GoogleAuth {
-  if (authClient) return authClient;
-
-  const keyJson = process.env.GOOGLE_INDEXING_SERVICE_ACCOUNT_JSON;
-  if (!keyJson) {
-    throw new Error("GOOGLE_INDEXING_SERVICE_ACCOUNT_JSON is not set");
-  }
-
-  const credentials = JSON.parse(keyJson);
-  authClient = new GoogleAuth({
-    credentials,
-    scopes: [
-      "https://www.googleapis.com/auth/webmasters",
-      "https://www.googleapis.com/auth/webmasters.readonly",
-    ],
-  });
-
-  return authClient;
-}
 
 export interface SitemapSubmitResult {
   success: boolean;
   siteUrl: string;
   sitemapUrl: string;
   error?: string;
+  method?: string;
 }
 
 export interface SitemapStatusResult {
@@ -45,109 +29,163 @@ export interface SitemapStatusResult {
   error?: string;
 }
 
+function getGoogleAuth(scopes: string[]) {
+  const keyJson = process.env.GOOGLE_INDEXING_SERVICE_ACCOUNT_JSON;
+  if (!keyJson) throw new Error("GOOGLE_INDEXING_SERVICE_ACCOUNT_JSON not set");
+  const credentials = JSON.parse(keyJson);
+  return new GoogleAuth({ credentials, scopes });
+}
+
 /**
- * Submit sitemap.xml to Google Search Console.
- * Requires the service account to be added as an owner/verified user in Search Console.
+ * Verify the site ownership using Site Verification API (META method).
+ * The meta tag must already be present in index.html.
+ */
+async function verifySite(siteUrl: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const auth = getGoogleAuth(["https://www.googleapis.com/auth/siteverification"]);
+    const client = await auth.getClient();
+    const token = await client.getAccessToken();
+
+    const resp = await fetch("https://www.googleapis.com/siteVerification/v1/webResource?verificationMethod=META", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + token.token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        site: { type: "SITE", identifier: siteUrl },
+      }),
+      signal: AbortSignal.timeout(15000),
+    });
+
+    if (resp.ok) {
+      return { success: true };
+    }
+    const data = await resp.json() as { error?: { message?: string } };
+    return { success: false, error: data.error?.message ?? `HTTP ${resp.status}` };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
+  }
+}
+
+/**
+ * Submit sitemap.xml to Google Search Console via Webmasters API.
+ * Automatically attempts site verification if access is denied.
  */
 export async function submitSitemapToSearchConsole(
   siteUrl: string,
   sitemapUrl: string
 ): Promise<SitemapSubmitResult> {
   try {
-    const auth = getAuthClient();
+    const auth = getGoogleAuth(["https://www.googleapis.com/auth/webmasters"]);
     const client = await auth.getClient();
-    const accessToken = await client.getAccessToken();
+    const token = await client.getAccessToken();
 
-    // Encode the siteUrl for use in the API path
     const encodedSite = encodeURIComponent(siteUrl);
     const encodedSitemap = encodeURIComponent(sitemapUrl);
+    const url = `https://www.googleapis.com/webmasters/v3/sites/${encodedSite}/sitemaps/${encodedSitemap}`;
 
-    const url = `${SEARCH_CONSOLE_API}/sites/${encodedSite}/sitemaps/${encodedSitemap}`;
-
-    const response = await fetch(url, {
+    const resp = await fetch(url, {
       method: "PUT",
-      headers: {
-        Authorization: `Bearer ${accessToken.token}`,
-        "Content-Type": "application/json",
-      },
+      headers: { Authorization: "Bearer " + token.token },
+      signal: AbortSignal.timeout(15000),
     });
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      let errorMsg = `HTTP ${response.status}: ${errorBody}`;
-
-      // Parse error for better message
-      try {
-        const errJson = JSON.parse(errorBody);
-        const msg = errJson?.error?.message || errJson?.error?.errors?.[0]?.message;
-        if (msg) errorMsg = `HTTP ${response.status}: ${msg}`;
-      } catch {
-        // keep raw error
-      }
-
-      return { success: false, siteUrl, sitemapUrl, error: errorMsg };
+    if (resp.ok || resp.status === 204) {
+      return { success: true, siteUrl, sitemapUrl, method: "Webmasters API" };
     }
 
-    // 204 No Content = success
-    return { success: true, siteUrl, sitemapUrl };
+    const data = await resp.json() as { error?: { message?: string; code?: number } };
+    const errMsg = data.error?.message ?? `HTTP ${resp.status}`;
+
+    // If 403 forbidden — try to verify site first, then retry
+    if (resp.status === 403) {
+      const verifyResult = await verifySite(siteUrl);
+      if (!verifyResult.success) {
+        return {
+          success: false,
+          siteUrl,
+          sitemapUrl,
+          error: `Нет доступа к Search Console. Верификация не удалась: ${verifyResult.error}`,
+          method: "Webmasters API",
+        };
+      }
+
+      // Retry after verification
+      const retryToken = await client.getAccessToken();
+      const retryResp = await fetch(url, {
+        method: "PUT",
+        headers: { Authorization: "Bearer " + retryToken.token },
+        signal: AbortSignal.timeout(15000),
+      });
+
+      if (retryResp.ok || retryResp.status === 204) {
+        return { success: true, siteUrl, sitemapUrl, method: "Webmasters API (после верификации)" };
+      }
+
+      const retryData = await retryResp.json() as { error?: { message?: string } };
+      return {
+        success: false,
+        siteUrl,
+        sitemapUrl,
+        error: retryData.error?.message ?? `HTTP ${retryResp.status}`,
+        method: "Webmasters API",
+      };
+    }
+
+    return { success: false, siteUrl, sitemapUrl, error: errMsg, method: "Webmasters API" };
   } catch (err) {
     return {
       success: false,
       siteUrl,
       sitemapUrl,
       error: err instanceof Error ? err.message : String(err),
+      method: "Webmasters API",
     };
   }
 }
 
 /**
- * Get the status of a submitted sitemap from Google Search Console.
+ * Get the status of the submitted sitemap from Search Console.
  */
 export async function getSitemapStatus(
   siteUrl: string,
   sitemapUrl: string
 ): Promise<SitemapStatusResult> {
   try {
-    const auth = getAuthClient();
+    const auth = getGoogleAuth(["https://www.googleapis.com/auth/webmasters.readonly"]);
     const client = await auth.getClient();
-    const accessToken = await client.getAccessToken();
+    const token = await client.getAccessToken();
 
     const encodedSite = encodeURIComponent(siteUrl);
     const encodedSitemap = encodeURIComponent(sitemapUrl);
+    const url = `https://www.googleapis.com/webmasters/v3/sites/${encodedSite}/sitemaps/${encodedSitemap}`;
 
-    const url = `${SEARCH_CONSOLE_API}/sites/${encodedSite}/sitemaps/${encodedSitemap}`;
-
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken.token}`,
-        "Content-Type": "application/json",
-      },
+    const resp = await fetch(url, {
+      headers: { Authorization: "Bearer " + token.token },
+      signal: AbortSignal.timeout(15000),
     });
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      let errorMsg = `HTTP ${response.status}: ${errorBody}`;
-      try {
-        const errJson = JSON.parse(errorBody);
-        const msg = errJson?.error?.message || errJson?.error?.errors?.[0]?.message;
-        if (msg) errorMsg = `HTTP ${response.status}: ${msg}`;
-      } catch {
-        // keep raw error
-      }
-      return { success: false, siteUrl, sitemapUrl, error: errorMsg };
+    if (!resp.ok) {
+      const data = await resp.json() as { error?: { message?: string } };
+      return {
+        success: false,
+        siteUrl,
+        sitemapUrl,
+        error: data.error?.message ?? `HTTP ${resp.status}`,
+      };
     }
 
-    const data = await response.json() as {
-      isPending?: boolean;
+    const data = await resp.json() as {
       lastDownloaded?: string;
       lastSubmitted?: string;
+      isPending?: boolean;
       warnings?: number;
       errors?: number;
-      contents?: Array<{ submitted?: number; indexed?: number }>;
+      contents?: Array<{ type?: string; submitted?: number; indexed?: number }>;
     };
 
-    const urlCount = data.contents?.reduce((sum, c) => sum + (c.submitted ?? 0), 0);
+    const urlCount = data.contents?.reduce((sum, c) => sum + (c.submitted ?? 0), 0) ?? 0;
 
     return {
       success: true,
@@ -171,7 +209,7 @@ export async function getSitemapStatus(
 }
 
 /**
- * List all sitemaps registered for a site in Search Console.
+ * List all sitemaps for a site from Search Console.
  */
 export async function listSitemaps(siteUrl: string): Promise<{
   success: boolean;
@@ -179,34 +217,24 @@ export async function listSitemaps(siteUrl: string): Promise<{
   error?: string;
 }> {
   try {
-    const auth = getAuthClient();
+    const auth = getGoogleAuth(["https://www.googleapis.com/auth/webmasters.readonly"]);
     const client = await auth.getClient();
-    const accessToken = await client.getAccessToken();
+    const token = await client.getAccessToken();
 
     const encodedSite = encodeURIComponent(siteUrl);
-    const url = `${SEARCH_CONSOLE_API}/sites/${encodedSite}/sitemaps`;
+    const url = `https://www.googleapis.com/webmasters/v3/sites/${encodedSite}/sitemaps`;
 
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken.token}`,
-      },
+    const resp = await fetch(url, {
+      headers: { Authorization: "Bearer " + token.token },
+      signal: AbortSignal.timeout(15000),
     });
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      let errorMsg = `HTTP ${response.status}: ${errorBody}`;
-      try {
-        const errJson = JSON.parse(errorBody);
-        const msg = errJson?.error?.message;
-        if (msg) errorMsg = `HTTP ${response.status}: ${msg}`;
-      } catch {
-        // keep raw
-      }
-      return { success: false, error: errorMsg };
+    if (!resp.ok) {
+      const data = await resp.json() as { error?: { message?: string } };
+      return { success: false, error: data.error?.message ?? `HTTP ${resp.status}` };
     }
 
-    const data = await response.json() as {
+    const data = await resp.json() as {
       sitemap?: Array<{
         path?: string;
         lastSubmitted?: string;
@@ -219,14 +247,11 @@ export async function listSitemaps(siteUrl: string): Promise<{
       path: s.path ?? "",
       lastSubmitted: s.lastSubmitted,
       isPending: s.isPending,
-      urlCount: s.contents?.reduce((sum, c) => sum + (c.submitted ?? 0), 0),
+      urlCount: s.contents?.reduce((sum, c) => sum + (c.submitted ?? 0), 0) ?? 0,
     }));
 
     return { success: true, sitemaps };
   } catch (err) {
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : String(err),
-    };
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
   }
 }
