@@ -1105,3 +1105,10 @@
 - [x] Файл ключа IndexNow c426dc7430f65451d4a4a45d3111fadb.txt существует в client/public/ и доступен на продакшне
 - [x] Checkpoint b100caec создан, ожидает публикации (нужно нажать Publish в UI)
 - NOTE: IndexNow POST запросы возвращают HTTP 000 из sandbox-среды (ограничение сети), но будут работать на продакшне (Cloud Run имеет исходящий доступ в интернет)
+
+## История индексирования (v156)
+- [x] Добавить таблицу indexing_log в drizzle/schema.ts
+- [x] Применить миграцию через webdev_execute_sql
+- [x] Добавить DB helper getIndexingLogs / saveIndexingLog в server/db.ts
+- [x] Добавить tRPC процедуры indexing.getLogs и обновить все мутации для сохранения записей
+- [x] Обновить IndexingPanel UI — секция "История отправок" с таблицей (дата, поисковик, тип, кол-во URL, статус)

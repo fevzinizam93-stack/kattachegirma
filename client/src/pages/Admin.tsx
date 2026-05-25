@@ -2785,17 +2785,20 @@ function IndexingPanel() {
   const [singleUrl, setSingleUrl] = useState("");
   const [yandexSingleUrl, setYandexSingleUrl] = useState("");
 
+  const utils = trpc.useUtils();
+  const logsQuery = trpc.indexing.getLogs.useQuery({ limit: 30 }, { refetchOnWindowFocus: false });
+
   // Yandex IndexNow mutations
   const yandexAllMut = trpc.indexing.submitAllProductsYandex.useMutation({
-    onSuccess: (data) => toast.success(`✅ Яндекс: ${data.total} товаров отправлено`, { description: "Яндекс поставил страницы в очередь на переобход" }),
+    onSuccess: (data) => { toast.success(`✅ Яндекс: ${data.total} товаров отправлено`, { description: "Яндекс поставил страницы в очередь на переобход" }); utils.indexing.getLogs.invalidate(); },
     onError: (err: { message: string }) => toast.error("Яндекс ошибка: " + err.message),
   });
   const yandexCatsMut = trpc.indexing.submitAllCategoriesYandex.useMutation({
-    onSuccess: (data) => toast.success(`✅ Яндекс: ${data.total} категорий отправлено`, { description: "Яндекс поставил страницы в очередь на переобход" }),
+    onSuccess: (data) => { toast.success(`✅ Яндекс: ${data.total} категорий отправлено`, { description: "Яндекс поставил страницы в очередь на переобход" }); utils.indexing.getLogs.invalidate(); },
     onError: (err: { message: string }) => toast.error("Яндекс ошибка: " + err.message),
   });
   const yandexOneMut = trpc.indexing.submitUrlYandex.useMutation({
-    onSuccess: () => toast.success("✅ Яндекс: URL отправлен", { description: "Страница поставлена в очередь на переобход" }),
+    onSuccess: () => { toast.success("✅ Яндекс: URL отправлен", { description: "Страница поставлена в очередь на переобход" }); utils.indexing.getLogs.invalidate(); },
     onError: (err: { message: string }) => toast.error("Яндекс ошибка: " + err.message),
   });
 
@@ -2807,6 +2810,7 @@ function IndexingPanel() {
       } else {
         toast.warning(`⚠️ Google: ${data.succeeded} из ${data.total} отправлено`, { description: `${data.failed} ошибок — смотрите результаты ниже` });
       }
+      utils.indexing.getLogs.invalidate();
     },
     onError: (err) => toast.error("Ошибка Google Indexing: " + err.message),
   });
@@ -2815,6 +2819,7 @@ function IndexingPanel() {
     onSuccess: (data) => {
       setIndexResults(data.results);
       toast.success(`✅ Google: ${data.succeeded} категорий отправлено`, { description: "Страницы появятся в поиске в течение нескольких часов" });
+      utils.indexing.getLogs.invalidate();
     },
     onError: (err) => toast.error("Ошибка: " + err.message),
   });
@@ -2827,6 +2832,7 @@ function IndexingPanel() {
         toast.error("Ошибка: " + data.error);
       }
       setIndexResults([data]);
+      utils.indexing.getLogs.invalidate();
     },
     onError: (err) => toast.error("Ошибка: " + err.message),
   });
@@ -3070,6 +3076,87 @@ function IndexingPanel() {
       {/* Quota note */}
       <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 text-xs text-gray-500 text-center">
         Google Indexing API: лимит <strong>200 запросов/день</strong> · Если товаров больше 200 — отправляйте частями (сегодня 200, завтра следующие 200) · Индексирование обычно занимает <strong>несколько часов</strong>
+      </div>
+
+      {/* ── История отправок ── */}
+      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <div>
+            <h3 className="font-bold text-base text-gray-900">📜 История отправок</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Последние 30 операций индексирования</p>
+          </div>
+          <button
+            onClick={() => utils.indexing.getLogs.invalidate()}
+            className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            <svg className={`h-3.5 w-3.5 ${logsQuery.isFetching ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            Обновить
+          </button>
+        </div>
+
+        {logsQuery.isLoading ? (
+          <div className="flex items-center justify-center py-10 text-gray-400 text-sm">Загрузка истории...</div>
+        ) : !logsQuery.data || logsQuery.data.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-10 text-gray-400">
+            <span className="text-3xl mb-2">📭</span>
+            <p className="text-sm">История пуста — нажмите любую кнопку выше чтобы начать</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 font-semibold">Дата и время</th>
+                  <th className="text-left px-4 py-3 font-semibold">Поисковик</th>
+                  <th className="text-left px-4 py-3 font-semibold">Тип</th>
+                  <th className="text-right px-4 py-3 font-semibold">URL</th>
+                  <th className="text-right px-4 py-3 font-semibold">Успешно</th>
+                  <th className="text-right px-4 py-3 font-semibold">Ошибок</th>
+                  <th className="text-center px-4 py-3 font-semibold">Статус</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {logsQuery.data.map((log) => (
+                  <tr key={log.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap text-xs">
+                      {new Date(log.createdAt).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${
+                        log.engine === 'google' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {log.engine === 'google' ? '🔵 Google' : '🟡 Яндекс'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-gray-700 text-xs">
+                      {log.type === 'products' ? '📦 Товары' :
+                       log.type === 'categories' ? '📂 Категории' :
+                       log.type === 'single_url' ? '🔗 Один URL' :
+                       log.type === 'auto' ? '⚡ Авто' : log.type}
+                      {log.note && <span className="block text-gray-400 truncate max-w-32" title={log.note}>{log.note}</span>}
+                    </td>
+                    <td className="px-4 py-3 text-right text-gray-700 font-mono text-xs">{log.urlCount}</td>
+                    <td className="px-4 py-3 text-right text-green-700 font-mono text-xs font-semibold">{log.succeeded}</td>
+                    <td className="px-4 py-3 text-right font-mono text-xs font-semibold">
+                      <span className={log.failed > 0 ? 'text-red-600' : 'text-gray-300'}>{log.failed}</span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${
+                        log.status === 'success' ? 'bg-green-100 text-green-700' :
+                        log.status === 'partial' ? 'bg-amber-100 text-amber-700' :
+                        'bg-red-100 text-red-700'
+                      }`}>
+                        {log.status === 'success' ? '✅ Успешно' :
+                         log.status === 'partial' ? '⚠️ Частично' :
+                         '❌ Ошибка'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

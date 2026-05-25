@@ -319,3 +319,20 @@ export const youtubeCache = mysqlTable("youtube_cache", {
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 export type YoutubeCache = typeof youtubeCache.$inferSelect;
+
+
+// Indexing log — history of all manual/auto indexing submissions
+export const indexingLog = mysqlTable("indexing_log", {
+  id: int("id").autoincrement().primaryKey(),
+  engine: mysqlEnum("engine", ["google", "yandex"]).notNull(),        // google | yandex
+  type: mysqlEnum("type", ["products", "categories", "single_url", "auto"]).notNull(), // what was submitted
+  urlCount: int("urlCount").default(0).notNull(),                     // number of URLs submitted
+  succeeded: int("succeeded").default(0).notNull(),
+  failed: int("failed").default(0).notNull(),
+  status: mysqlEnum("status", ["success", "partial", "error"]).notNull(),
+  note: varchar("note", { length: 512 }),                             // e.g. specific URL or error message
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type IndexingLog = typeof indexingLog.$inferSelect;
+export type InsertIndexingLog = typeof indexingLog.$inferInsert;

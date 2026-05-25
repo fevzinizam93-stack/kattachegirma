@@ -113,6 +113,8 @@ import {
   saveHitSettings,
   getProductsNeedingTranslation,
   getDb,
+  saveIndexingLog,
+  getIndexingLogs,
 } from "./db";
 import { eq } from "drizzle-orm";
 import { categories, products as productsTable } from "../drizzle/schema";
@@ -2375,11 +2377,28 @@ ${productLines}
 
   // Google Indexing API + Yandex IndexNow
   indexing: router({
+    // Get indexing history log
+    getLogs: adminProcedure
+      .input(z.object({ limit: z.number().min(1).max(100).default(50) }).optional())
+      .query(async ({ input }) => {
+        return await getIndexingLogs(input?.limit ?? 50);
+      }),
+
     // Submit a single URL for indexing
     submitUrl: adminProcedure
       .input(z.object({ url: z.string().url() }))
       .mutation(async ({ input }) => {
-        return await submitUrlForIndexing(input.url, "URL_UPDATED");
+        const result = await submitUrlForIndexing(input.url, "URL_UPDATED");
+        await saveIndexingLog({
+          engine: "google",
+          type: "single_url",
+          urlCount: 1,
+          succeeded: result.success ? 1 : 0,
+          failed: result.success ? 0 : 1,
+          status: result.success ? "success" : "error",
+          note: input.url,
+        });
+        return result;
       }),
 
     // Submit all product URLs in bulk (up to 200/day quota)
@@ -2396,11 +2415,17 @@ ${productLines}
         const urls = allProducts.map(
           (p: { slug: string }) => `https://kattachegirma.uz/product/${p.slug}`
         );
-
         const results = await submitUrlsBatch(urls, "URL_UPDATED", 300);
         const succeeded = results.filter((r) => r.success).length;
         const failed = results.filter((r) => !r.success).length;
-
+        await saveIndexingLog({
+          engine: "google",
+          type: "products",
+          urlCount: urls.length,
+          succeeded,
+          failed,
+          status: failed === 0 ? "success" : succeeded > 0 ? "partial" : "error",
+        });
         return { total: urls.length, succeeded, failed, results };
       }),
 
@@ -2409,6 +2434,15 @@ ${productLines}
       .input(z.object({ url: z.string().url() }))
       .mutation(async ({ input }) => {
         await indexNowSubmit([input.url]);
+        await saveIndexingLog({
+          engine: "yandex",
+          type: "single_url",
+          urlCount: 1,
+          succeeded: 1,
+          failed: 0,
+          status: "success",
+          note: input.url,
+        });
         return { success: true, url: input.url };
       }),
 
@@ -2424,6 +2458,14 @@ ${productLines}
           .limit(input.limit);
         const urls = allProducts.map((p: { slug: string }) => `https://kattachegirma.uz/product/${p.slug}`);
         await indexNowSubmit(urls);
+        await saveIndexingLog({
+          engine: "yandex",
+          type: "products",
+          urlCount: urls.length,
+          succeeded: urls.length,
+          failed: 0,
+          status: "success",
+        });
         return { total: urls.length, success: true };
       }),
 
@@ -2436,6 +2478,14 @@ ${productLines}
         ...cats.map((c) => `https://kattachegirma.uz/catalog/${c.slug}`),
       ];
       await indexNowSubmit(urls);
+      await saveIndexingLog({
+        engine: "yandex",
+        type: "categories",
+        urlCount: urls.length,
+        succeeded: urls.length,
+        failed: 0,
+        status: "success",
+      });
       return { total: urls.length, success: true };
     }),
 
@@ -2447,11 +2497,17 @@ ${productLines}
       );
       urls.push("https://kattachegirma.uz/");
       urls.push("https://kattachegirma.uz/catalog");
-
       const results = await submitUrlsBatch(urls, "URL_UPDATED", 300);
       const succeeded = results.filter((r) => r.success).length;
       const failed = results.filter((r) => !r.success).length;
-
+      await saveIndexingLog({
+        engine: "google",
+        type: "categories",
+        urlCount: urls.length,
+        succeeded,
+        failed,
+        status: failed === 0 ? "success" : succeeded > 0 ? "partial" : "error",
+      });
       return { total: urls.length, succeeded, failed, results };
     }),
   }),

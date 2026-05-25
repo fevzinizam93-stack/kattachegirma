@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, gte, ilike, inArray, like, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool } from "mysql2";
-import { analyticsEvents, banners, Banner, InsertBanner, brands, Brand, InsertBrand, categories, conversations, Conversation, InsertConversation, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, messages, Message, InsertMessage, notifications, InsertNotification, orders, products, reviews, InsertReview, sellers, sellerContacts, SellerContact, InsertSellerContact, sellerReviews, InsertSellerReview, storeSettings, telegramRecipients, TelegramRecipient, users, User, utmVisits, UtmVisit, quickOrders, QuickOrder, youtubeCache } from "../drizzle/schema";
+import { analyticsEvents, banners, Banner, InsertBanner, brands, Brand, InsertBrand, categories, conversations, Conversation, InsertConversation, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, messages, Message, InsertMessage, notifications, InsertNotification, orders, products, reviews, InsertReview, sellers, sellerContacts, SellerContact, InsertSellerContact, sellerReviews, InsertSellerReview, storeSettings, telegramRecipients, TelegramRecipient, users, User, utmVisits, UtmVisit, quickOrders, QuickOrder, youtubeCache, indexingLog, IndexingLog, InsertIndexingLog } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import bcrypt from "bcryptjs";
 
@@ -1373,3 +1373,20 @@ export async function setYoutubeCache(cacheKey: string, data: string): Promise<v
 }
 
 export const _hitFunctionsLoaded = true;
+
+// ── Indexing Log helpers ──────────────────────────────────────────────────
+export async function saveIndexingLog(entry: InsertIndexingLog): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  try {
+    await db.insert(indexingLog).values(entry);
+  } catch (err) {
+    console.warn('[IndexingLog] Failed to save entry:', err);
+  }
+}
+
+export async function getIndexingLogs(limit = 50): Promise<IndexingLog[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(indexingLog).orderBy(desc(indexingLog.createdAt)).limit(limit);
+}
