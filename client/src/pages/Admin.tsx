@@ -839,6 +839,8 @@ export default function Admin() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // DEBUG: show form state
+    toast.info(`catId=${form.categoryId} price="${form.price}" priceUsd="${form.priceUsd}"`, { duration: 5000 });
     // Validate required fields with specific error messages
     if (!form.name.trim()) {
       toast.error("Введите название товара");
