@@ -1496,7 +1496,7 @@ export const appRouter = router({
     // Public: track any event (fire-and-forget)
     track: publicProcedure
       .input(z.object({
-        eventType: z.enum(["page_view", "product_view", "add_to_cart", "order_placed", "search"]),
+        eventType: z.enum(["page_view", "product_view", "add_to_cart", "order_placed", "search", "add_to_favorites", "remove_from_favorites", "product_click", "time_on_site"]),
         productId: z.number().optional(),
         productName: z.string().optional(),
         page: z.string().optional(),

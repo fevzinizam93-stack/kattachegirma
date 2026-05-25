@@ -12,13 +12,24 @@ function getSessionId(): string {
   return sid;
 }
 
+export type AnalyticsEventType =
+  | "page_view"
+  | "product_view"
+  | "add_to_cart"
+  | "order_placed"
+  | "search"
+  | "add_to_favorites"
+  | "remove_from_favorites"
+  | "product_click"
+  | "time_on_site";
+
 export function useAnalytics() {
   const trackMutation = trpc.analytics.track.useMutation();
   const sessionId = useRef(getSessionId());
 
   const track = useCallback(
     (
-      eventType: "page_view" | "product_view" | "add_to_cart" | "order_placed" | "search",
+      eventType: AnalyticsEventType,
       extra?: {
         productId?: number;
         productName?: string;
@@ -48,6 +59,25 @@ export function usePageView(page?: string) {
   const { track } = useAnalytics();
   useEffect(() => {
     track("page_view", { page: page ?? window.location.pathname });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
+}
+
+// Hook to track time spent on a page (fires on unmount)
+export function useTimeOnPage(page?: string) {
+  const { track } = useAnalytics();
+  const startTime = useRef(Date.now());
+  useEffect(() => {
+    startTime.current = Date.now();
+    return () => {
+      const seconds = Math.round((Date.now() - startTime.current) / 1000);
+      if (seconds >= 5) {
+        track("time_on_site", {
+          page: page ?? window.location.pathname,
+          meta: { seconds },
+        });
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 }

@@ -260,6 +260,9 @@ export default function Admin() {
   // Track if user manually edited the UZ description — if so, don't auto-overwrite
   const descUzManualRef = useRef(false);
   const nameUzManualRef = useRef(false);
+  // Track if user manually changed category/brand — if so, don't auto-overwrite
+  const categoryManualRef = useRef(false);
+  const brandManualRef = useRef(false);
   const autoTranslateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoTranslateNameTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [exchangeRate, setExchangeRate] = useState<number>(12700); // UZS per 1 USD
@@ -303,6 +306,8 @@ export default function Admin() {
 
   const { data: categoriesData } = trpc.categories.list.useQuery();
   const categories = categoriesData ?? [];
+  const { data: brandsData } = trpc.brands.list.useQuery(undefined, { retry: false, refetchOnWindowFocus: false });
+  const brandsList = (brandsData ?? []) as Array<{ id: number; name: string }>;
 
   const { data: productsData, isLoading: productsLoading } = trpc.products.adminList.useQuery({ limit: 500, offset: 0 });
   const products = productsData?.items ?? [];
@@ -646,10 +651,54 @@ export default function Admin() {
     setIsAutoTranslatingDesc(false);
     setForm(f => ({ ...f, descriptionUz: value }));
   }, []);
+  // Category keyword map for auto-detection
+  const CATEGORY_KEYWORDS: { keywords: string[]; id: number }[] = [
+    { keywords: ['холодильник', 'холодилник', 'muzlatgich', 'sovutgich', 'rulls', 'hisense', 'immer nf', 'immer rd'], id: 210002 },
+    { keywords: ['стиральн', 'kir yuvish', 'стирал'], id: 2 },
+    { keywords: ['кондиционер', 'konditsioner', 'сплит', 'split', 'aero inverter', 'pure 12', 'trend ,turbo', 'wings 12'], id: 210001 },
+    { keywords: ['пылесос', 'changyutkich'], id: 1 },
+    { keywords: ['телевизор', 'televizor', 'tv ', 'smart tv'], id: 150001 },
+    { keywords: ['микроволновк', 'mikroto'], id: 7 },
+    { keywords: ['морозилк', 'muzlatk', 'морозильн', 'franco мороз', 'franco морозилк'], id: 30001 },
+    { keywords: ['посудомоечн', 'idish yuvish'], id: 6 },
+    { keywords: ['водонагреватель', 'suv isitgich', 'бойлер', 'boiler'], id: 10 },
+    { keywords: ['духовк', 'pech', 'духов'], id: 90001 },
+    { keywords: ['варочн', 'варочная', 'plita'], id: 180001 },
+    { keywords: ['газов плит', 'газовая плит'], id: 8 },
+    { keywords: ['вытяжк', 'hood', 'вытяж'], id: 330001 },
+    { keywords: ['кулер', 'куллер', 'dispenser', 'water cooler', 'для воды', 'frctbc', 'techon tn'], id: 270001 },
+    { keywords: ['очиститель воздух', 'havo tozalagich', 'увлажнитель', 'air purif'], id: 300001 },
+    { keywords: ['утюг', 'dazmol'], id: 13 },
+    { keywords: ['чайник', 'elektr choynak', 'электрочайник'], id: 12 },
+    { keywords: ['фотоэпилятор', 'эпилятор', 'epilyator'], id: 390001 },
+    { keywords: ['одежд', 'kiyim', 'платье', 'куртк', 'пальто'], id: 360001 },
+    { keywords: ['мелк', 'блендер', 'миксер', 'тостер', 'фритюр', 'мультиварк'], id: 240001 },
+  ];
+
   // Auto-translate name RU→UZ with 1.5s debounce
   const handleNameRuChange = useCallback((value: string) => {
     setForm(f => ({ ...f, name: value }));
     if (autoTranslateNameTimerRef.current) clearTimeout(autoTranslateNameTimerRef.current);
+    // Auto-detect category from product name
+    if (!categoryManualRef.current && value.trim().length > 3) {
+      const lowerName = value.toLowerCase();
+      for (const cat of CATEGORY_KEYWORDS) {
+        if (cat.keywords.some(kw => lowerName.includes(kw))) {
+          setForm(f => ({ ...f, categoryId: cat.id }));
+          break;
+        }
+      }
+    }
+    // Auto-detect brand from product name using loaded brands list
+    if (!brandManualRef.current && value.trim().length > 2) {
+      const lowerName = value.toLowerCase();
+      // Sort by name length desc so longer/more specific brands match first
+      const sorted = [...brandsList].sort((a, b) => b.name.length - a.name.length);
+      const matched = sorted.find(b => lowerName.includes(b.name.toLowerCase()));
+      if (matched) {
+        setForm(f => ({ ...f, brand: matched.name }));
+      }
+    }
     if (nameUzManualRef.current) return;
     if (!value.trim()) return;
     autoTranslateNameTimerRef.current = setTimeout(() => {
@@ -657,7 +706,7 @@ export default function Admin() {
       translateSourceRef.current = 'autoName';
       translateProduct.mutate({ name: value });
     }, 1500);
-  }, [translateProduct]);
+  }, [translateProduct, brandsList, CATEGORY_KEYWORDS]);
   // When user manually types in UZ name — mark as manual, stop auto-translate
   const handleNameUzChange = useCallback((value: string) => {
     nameUzManualRef.current = true;
@@ -950,7 +999,7 @@ export default function Admin() {
                     {scanLoading ? "Сканирую..." : "Скан видео"}
                   </button>
                   <button
-                    onClick={() => { setShowForm(true); setForm(emptyForm); setEditId(null); descUzManualRef.current = false; nameUzManualRef.current = false; if (autoTranslateTimerRef.current) clearTimeout(autoTranslateTimerRef.current); if (autoTranslateNameTimerRef.current) clearTimeout(autoTranslateNameTimerRef.current); }}
+                    onClick={() => { setShowForm(true); setForm(emptyForm); setEditId(null); descUzManualRef.current = false; nameUzManualRef.current = false; categoryManualRef.current = false; brandManualRef.current = false; if (autoTranslateTimerRef.current) clearTimeout(autoTranslateTimerRef.current); if (autoTranslateNameTimerRef.current) clearTimeout(autoTranslateNameTimerRef.current); }}
                     className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
                   >
                     <Plus size={16} /> Добавить
@@ -1107,7 +1156,7 @@ export default function Admin() {
                       </div>
                       <div>
                         <label className="block text-sm font-semibold mb-1">Категория *</label>
-                        <select value={form.categoryId} onChange={e => setForm(f => ({ ...f, categoryId: parseInt(e.target.value) }))}
+                        <select value={form.categoryId} onChange={e => { categoryManualRef.current = true; setForm(f => ({ ...f, categoryId: parseInt(e.target.value) })); }}
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
                           <option value={0}>Выберите...</option>
                           {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -1117,7 +1166,7 @@ export default function Admin() {
                         <label className="block text-sm font-semibold mb-1">Бренд</label>
                         <BrandPicker
                           value={form.brand}
-                          onChange={(v) => setForm(f => ({ ...f, brand: v }))}
+                          onChange={(v) => { brandManualRef.current = true; setForm(f => ({ ...f, brand: v })); }}
                           placeholder="SAMSUNG, LG..."
                         />
                       </div>

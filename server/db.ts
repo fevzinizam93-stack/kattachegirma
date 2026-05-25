@@ -589,7 +589,7 @@ export async function getAnalyticsStats(days = 30) {
     .where(gte(analyticsEvents.createdAt, since))
     .groupBy(analyticsEvents.eventType);
 
-  // Top viewed products
+  // Top viewed products (by product_view events)
   const topProducts = await db
     .select({ productId: analyticsEvents.productId, productName: analyticsEvents.productName, views: count() })
     .from(analyticsEvents)
@@ -598,7 +598,43 @@ export async function getAnalyticsStats(days = 30) {
     .orderBy(desc(count()))
     .limit(10);
 
-  // Daily page views — use raw SQL alias to avoid MySQL GROUP BY issue with table-qualified column
+  // Top clicked products (by product_click events)
+  const topClickedProducts = await db
+    .select({ productId: analyticsEvents.productId, productName: analyticsEvents.productName, clicks: count() })
+    .from(analyticsEvents)
+    .where(and(eq(analyticsEvents.eventType, "product_click"), gte(analyticsEvents.createdAt, since)))
+    .groupBy(analyticsEvents.productId, analyticsEvents.productName)
+    .orderBy(desc(count()))
+    .limit(10);
+
+  // Top added to cart products
+  const topCartProducts = await db
+    .select({ productId: analyticsEvents.productId, productName: analyticsEvents.productName, cartAdds: count() })
+    .from(analyticsEvents)
+    .where(and(eq(analyticsEvents.eventType, "add_to_cart"), gte(analyticsEvents.createdAt, since)))
+    .groupBy(analyticsEvents.productId, analyticsEvents.productName)
+    .orderBy(desc(count()))
+    .limit(10);
+
+  // Top favorited products (from analytics events)
+  const topFavoritedProducts = await db
+    .select({ productId: analyticsEvents.productId, productName: analyticsEvents.productName, favs: count() })
+    .from(analyticsEvents)
+    .where(and(eq(analyticsEvents.eventType, "add_to_favorites"), gte(analyticsEvents.createdAt, since)))
+    .groupBy(analyticsEvents.productId, analyticsEvents.productName)
+    .orderBy(desc(count()))
+    .limit(10);
+
+  // Search queries
+  const searchQueries = await db
+    .select({ query: sql<string>`JSON_UNQUOTE(JSON_EXTRACT(meta, '$.query'))`, total: count() })
+    .from(analyticsEvents)
+    .where(and(eq(analyticsEvents.eventType, "search"), gte(analyticsEvents.createdAt, since)))
+    .groupBy(sql`JSON_UNQUOTE(JSON_EXTRACT(meta, '$.query'))`)
+    .orderBy(desc(count()))
+    .limit(20);
+
+  // Daily page views
   const dailyViews = await db
     .select({
       date: sql<string>`DATE(createdAt)`,
@@ -609,20 +645,168 @@ export async function getAnalyticsStats(days = 30) {
     .groupBy(sql`DATE(createdAt)`)
     .orderBy(sql`DATE(createdAt)`);
 
-  // Funnel: views → add_to_cart → orders
+  // Unique sessions per day
+  const dailySessions = await db
+    .select({
+      date: sql<string>`DATE(createdAt)`,
+      sessions: sql<number>`COUNT(DISTINCT sessionId)`,
+    })
+    .from(analyticsEvents)
+    .where(and(eq(analyticsEvents.eventType, "page_view"), gte(analyticsEvents.createdAt, since)))
+    .groupBy(sql`DATE(createdAt)`)
+    .orderBy(sql`DATE(createdAt)`);
+
+  // Total unique sessions
+  const uniqueSessionsResult = await db
+    .select({ sessions: sql<number>`COUNT(DISTINCT sessionId)` })
+    .from(analyticsEvents)
+    .where(gte(analyticsEvents.createdAt, since));
+  const uniqueSessions = Number(uniqueSessionsResult[0]?.sessions ?? 0);
+
+  // Unique users
+  const uniqueUsersResult = await db
+    .select({ users: sql<number>`COUNT(DISTINCT userId)` })
+    .from(analyticsEvents)
+    .where(and(gte(analyticsEvents.createdAt, since), sql`userId IS NOT NULL`));
+  const uniqueUsers = Number(uniqueUsersResult[0]?.users ?? 0);
+
+  // Top pages visited
+  const topPages = await db
+    .select({ page: analyticsEvents.page, views: count() })
+    .from(analyticsEvents)
+    .where(and(eq(analyticsEvents.eventType, "page_view"), gte(analyticsEvents.createdAt, since)))
+    .groupBy(analyticsEvents.page)
+    .orderBy(desc(count()))
+    .limit(15);
+
+  // Orders stats from orders table
+  const ordersStats = await db
+    .select({
+      status: orders.status,
+      total: count(),
+      revenue: sql<number>`SUM(totalAmount)`,
+    })
+    .from(orders)
+    .where(gte(orders.createdAt, since))
+    .groupBy(orders.status);
+
+  // Daily orders
+  const dailyOrders = await db
+    .select({
+      date: sql<string>`DATE(createdAt)`,
+      ordersCount: count(),
+      revenue: sql<number>`SUM(totalAmount)`,
+    })
+    .from(orders)
+    .where(gte(orders.createdAt, since))
+    .groupBy(sql`DATE(createdAt)`)
+    .orderBy(sql`DATE(createdAt)`);
+
+  // Top ordered products (from orders.items JSON)
+  const recentOrders = await db
+    .select({ items: orders.items, createdAt: orders.createdAt })
+    .from(orders)
+    .where(gte(orders.createdAt, since))
+    .orderBy(desc(orders.createdAt))
+    .limit(200);
+  const productOrderMap: Record<string, { name: string; count: number; revenue: number }> = {};
+  for (const order of recentOrders) {
+    for (const item of (order.items ?? [])) {
+      const key = String(item.productId);
+      if (!productOrderMap[key]) productOrderMap[key] = { name: item.name, count: 0, revenue: 0 };
+      productOrderMap[key].count += item.quantity ?? 1;
+      productOrderMap[key].revenue += (item.price ?? 0) * (item.quantity ?? 1);
+    }
+  }
+  const topOrderedProducts = Object.entries(productOrderMap)
+    .map(([productId, v]) => ({ productId: Number(productId), productName: v.name, orders: v.count, revenue: Math.round(v.revenue) }))
+    .sort((a, b) => b.orders - a.orders)
+    .slice(0, 10);
+
+  // Favorites count from favorites table
+  const favoritesCountResult = await db
+    .select({ total: count() })
+    .from(favorites)
+    .where(gte(favorites.createdAt, since));
+  const favoritesCount = Number(favoritesCountResult[0]?.total ?? 0);
+
+  // Ratings summary from reviews
+  const ratingsResult = await db
+    .select({
+      rating: reviews.rating,
+      total: count(),
+    })
+    .from(reviews)
+    .where(and(eq(reviews.status, "approved"), gte(reviews.createdAt, since)))
+    .groupBy(reviews.rating);
+  const totalReviews = ratingsResult.reduce((s, r) => s + Number(r.total), 0);
+  const avgRating = totalReviews > 0
+    ? ratingsResult.reduce((s, r) => s + r.rating * Number(r.total), 0) / totalReviews
+    : 0;
+
+  // Top rated products
+  const topRatedProducts = await db
+    .select({
+      productId: reviews.productId,
+      avgRating: sql<number>`ROUND(AVG(rating), 1)`,
+      reviewCount: count(),
+    })
+    .from(reviews)
+    .where(eq(reviews.status, "approved"))
+    .groupBy(reviews.productId)
+    .having(sql`COUNT(*) >= 1`)
+    .orderBy(desc(sql`AVG(rating)`), desc(count()))
+    .limit(10);
+
+  // Funnel: views -> add_to_cart -> orders
   const funnelCounts = eventCounts.reduce((acc, row) => {
     acc[row.eventType] = Number(row.total);
     return acc;
   }, {} as Record<string, number>);
 
+  // UTM stats
+  const utmStats = await getUtmStats(days);
+
+  // Repeat orders per user
+  const repeatOrdersResult = await db
+    .select({
+      userId: orders.userId,
+      orderCount: count(),
+    })
+    .from(orders)
+    .where(sql`userId IS NOT NULL`)
+    .groupBy(orders.userId)
+    .having(sql`COUNT(*) > 1`);
+  const repeatOrderUsers = repeatOrdersResult.length;
+
   return {
     eventCounts,
     topProducts,
+    topClickedProducts,
+    topCartProducts,
+    topFavoritedProducts,
+    topOrderedProducts,
+    topRatedProducts,
+    topPages,
+    searchQueries: searchQueries.filter(q => q.query && q.query !== 'null'),
     dailyViews,
+    dailySessions,
+    uniqueSessions,
+    uniqueUsers,
+    favoritesCount,
+    ratingsDistribution: ratingsResult,
+    avgRating: Math.round(avgRating * 10) / 10,
+    totalReviews,
+    ordersStats,
+    dailyOrders,
+    repeatOrderUsers,
+    utmStats,
     funnel: {
       pageViews: funnelCounts["page_view"] ?? 0,
       productViews: funnelCounts["product_view"] ?? 0,
+      productClicks: funnelCounts["product_click"] ?? 0,
       addToCart: funnelCounts["add_to_cart"] ?? 0,
+      addToFavorites: funnelCounts["add_to_favorites"] ?? 0,
       orders: funnelCounts["order_placed"] ?? 0,
     },
   };

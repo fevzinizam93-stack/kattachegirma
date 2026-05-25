@@ -8,6 +8,7 @@ import { usePageMeta } from "@/hooks/usePageMeta";
 import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
 import RecentlyViewed from "@/components/RecentlyViewed";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 const LIMIT = 12;
 
@@ -173,12 +174,14 @@ export default function Catalog() {
     return () => document.removeEventListener('click', handler);
   }, [showSortDropdown]);
 
+  const { track } = useAnalytics();
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setSearch(searchInput);
     setAllProducts([]);
     setPage(0);
     syncToUrl({ category: selectedCategory, q: searchInput, minPrice, maxPrice, sortBy, brands: selectedBrands });
+    if (searchInput.trim()) track("search", { meta: { query: searchInput.trim() } });
   };
   const handleCategoryChange = (id: number | undefined) => {
     setSelectedCategory(id);

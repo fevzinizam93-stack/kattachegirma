@@ -4,6 +4,8 @@ import { trpc } from "@/lib/trpc";
 import { Search } from "lucide-react";
 import { Link } from "wouter";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useAnalytics, useTimeOnPage } from "@/hooks/useAnalytics";
+import { useEffect } from "react";
 
 interface SearchResultsProps {
   query: string;
@@ -11,6 +13,12 @@ interface SearchResultsProps {
 
 export default function SearchResults({ query }: SearchResultsProps) {
   const { lang, t } = useLanguage();
+  const { track } = useAnalytics();
+  useTimeOnPage(`/search?q=${encodeURIComponent(query)}`);
+  useEffect(() => {
+    if (query.trim()) track("search", { meta: { query: query.trim() } });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query]);
 
   usePageMeta({
     title: query ? `Поиск: ${query} — Катта Чегирма` : "Поиск товаров — Катта Чегирма",

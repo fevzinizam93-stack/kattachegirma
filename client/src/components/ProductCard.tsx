@@ -10,6 +10,7 @@ import CompareModal from "@/components/CompareModal";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { trpc } from "@/lib/trpc";
 import { imgUrl } from "@/lib/imgUrl";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 interface Product {
   id: number;
@@ -66,6 +67,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const [compareOpen, setCompareOpen] = useState(false);
   const { toggle: toggleWishlist, has: inWishlist } = useWishlist();
   const isWishlisted = inWishlist(product.id);
+  const { track } = useAnalytics();
 
   // Track product click for auto-hit scoring (fire-and-forget, using fetch)
   const trackClick = { mutate: (data: { productId: number }) => {
@@ -88,6 +90,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       imageUrl: product.imageUrl ?? undefined,
       slug: product.slug,
     });
+    track("add_to_cart", { productId: product.id, productName: displayName });
     toast.success(t.card_added_to_cart, {
       description: displayName,
       duration: 2000,
@@ -107,7 +110,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <>
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden h-full flex flex-col">
-    <Link href={`/product/${product.slug}`} onClick={() => trackClick.mutate({ productId: product.id })} className="flex flex-col flex-1 cursor-pointer active:scale-[0.98] transition-transform touch-manipulation">
+    <Link href={`/product/${product.slug}`} onClick={() => { trackClick.mutate({ productId: product.id }); track("product_click", { productId: product.id, productName: displayName }); }} className="flex flex-col flex-1 cursor-pointer active:scale-[0.98] transition-transform touch-manipulation">
       <div className="flex flex-col flex-1">
         <div className="relative bg-gray-50" style={{ paddingBottom: "70%" }}>
           <div className="absolute inset-0">
@@ -139,7 +142,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
           {/* Wishlist button */}
           <button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleWishlist(product.id); }}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); const wasWishlisted = isWishlisted; toggleWishlist(product.id); track(wasWishlisted ? "remove_from_favorites" : "add_to_favorites", { productId: product.id, productName: displayName }); }}
             title={isWishlisted ? "Убрать из избранного" : "В избранное"}
             className={`absolute top-1.5 right-1.5 w-6 h-6 rounded-full flex items-center justify-center transition-all shadow-sm z-10 ${isWishlisted ? "bg-red-500 text-white border-red-500" : "bg-white/90 border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-300 hover:bg-red-50"}`}
           >
