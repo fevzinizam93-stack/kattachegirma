@@ -1,25 +1,27 @@
-import { GoogleAuth } from "google-auth-library";
+import { OAuth2Client } from "google-auth-library";
 
 const INDEXING_API_URL =
   "https://indexing.googleapis.com/v3/urlNotifications:publish";
 
-let authClient: GoogleAuth | null = null;
+let oauth2Client: OAuth2Client | null = null;
 
-function getAuthClient(): GoogleAuth {
-  if (authClient) return authClient;
+function getAuthClient(): OAuth2Client {
+  if (oauth2Client) return oauth2Client;
 
-  const keyJson = process.env.GOOGLE_INDEXING_SERVICE_ACCOUNT_JSON;
-  if (!keyJson) {
-    throw new Error("GOOGLE_INDEXING_SERVICE_ACCOUNT_JSON is not set");
+  const refreshToken = process.env.GOOGLE_OAUTH_REFRESH_TOKEN;
+  const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
+
+  if (!refreshToken || !clientId || !clientSecret) {
+    throw new Error(
+      "Google OAuth credentials not set. Required: GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, GOOGLE_OAUTH_REFRESH_TOKEN"
+    );
   }
 
-  const credentials = JSON.parse(keyJson);
-  authClient = new GoogleAuth({
-    credentials,
-    scopes: ["https://www.googleapis.com/auth/indexing"],
-  });
+  oauth2Client = new OAuth2Client(clientId, clientSecret);
+  oauth2Client.setCredentials({ refresh_token: refreshToken });
 
-  return authClient;
+  return oauth2Client;
 }
 
 export type IndexingType = "URL_UPDATED" | "URL_DELETED";
@@ -36,14 +38,18 @@ export async function submitUrlForIndexing(
   type: IndexingType = "URL_UPDATED"
 ): Promise<IndexingResult> {
   try {
-    const auth = getAuthClient();
-    const client = await auth.getClient();
-    const accessToken = await client.getAccessToken();
+    const client = getAuthClient();
+    const tokenResponse = await client.getAccessToken();
+    const accessToken = tokenResponse.token;
+
+    if (!accessToken) {
+      return { url, success: false, error: "Failed to obtain access token" };
+    }
 
     const response = await fetch(INDEXING_API_URL, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${accessToken.token}`,
+        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ url, type }),
@@ -58,7 +64,9 @@ export async function submitUrlForIndexing(
       };
     }
 
-    const data = (await response.json()) as { urlNotificationMetadata?: { latestUpdate?: { notifyTime?: string } } };
+    const data = (await response.json()) as {
+      urlNotificationMetadata?: { latestUpdate?: { notifyTime?: string } };
+    };
     return {
       url,
       success: true,

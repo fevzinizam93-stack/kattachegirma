@@ -1158,3 +1158,10 @@
 - [x] ProductCard.tsx использует thumbUrl если есть, иначе imgUrl proxy
 - [x] index.html: добавлены dns-prefetch для googletagmanager и kattachegirma.uz
 - [x] sitemap.ts: переработан на sitemap-index с разбивкой по 500 URL (/sitemap-main.xml + /sitemap-products-N.xml)
+
+## Google OAuth2 для Indexing API (v54)
+- [x] server/googleIndexing.ts переписан на OAuth2Client (вместо service account GoogleAuth)
+- [x] Добавлены секреты: GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, GOOGLE_OAUTH_REFRESH_TOKEN
+- [x] Vitest тест подтвердил: credentials работают, access token получается успешно
+- [x] google-auth-library ^10.6.2 уже установлена в package.json
+- NOTE: Старая переменная GOOGLE_INDEXING_SERVICE_ACCOUNT_JSON оставлена (не удалена)
