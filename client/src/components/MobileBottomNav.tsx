@@ -3,7 +3,7 @@ import { useLanguage, getLocalizedPath } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Home, Grid3X3, Flame, Heart, ShoppingCart, Menu, Store, LogIn, ShieldCheck, Users, ChevronRight, LayoutGrid, Bell, Youtube } from "lucide-react";
+import { Home, Grid3X3, Flame, Heart, ShoppingCart, Menu, Store, LogIn, ShieldCheck, Users, ChevronRight, LayoutGrid, Bell, Youtube, X } from "lucide-react";
 import { useWishlist } from "@/hooks/useWishlist";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
@@ -61,15 +61,15 @@ export default function MobileBottomNav() {
             <span>{t.nav_home}</span>
           </Link>
 
-          {/* Каталог */}
-          <Link
-            href="/catalog"
+          {/* Каталог — открывает модалку категорий */}
+          <button
+            onClick={() => setCatalogOpen(true)}
             aria-label="Каталог"
-            className={`flex flex-col items-center justify-center flex-1 gap-0.5 text-[10px] font-medium transition-colors ${isActive("/catalog") || isActive("/category") ? activeClass : inactiveClass}`}
+            className={`flex flex-col items-center justify-center flex-1 gap-0.5 text-[11px] font-semibold transition-colors ${isActive("/catalog") || isActive("/category") ? activeClass : inactiveClass}`}
           >
             <Grid3X3 size={22} strokeWidth={isActive("/catalog") || isActive("/category") ? 2.5 : 1.8} />
             <span>{t.nav_catalog}</span>
-          </Link>
+          </button>
 
           {/* Видео */}
           <Link
@@ -249,47 +249,21 @@ export default function MobileBottomNav() {
 
             <div className="h-px bg-gray-100 my-1" />
 
-            {/* Каталог — раскрывающийся список категорий */}
-            <button
-              onClick={() => setCatalogOpen((v) => !v)}
-              className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-red-50 active:bg-red-100 transition-colors"
+            {/* Каталог — простая ссылка на страницу каталога */}
+            <Link
+              href="/catalog"
+              onClick={() => setMenuOpen(false)}
+              className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-red-50 active:bg-red-100 transition-colors"
             >
               <div className="w-9 h-9 rounded-full bg-red-100 flex items-center justify-center shrink-0">
                 <LayoutGrid size={18} className="text-red-600" />
               </div>
-              <div className="flex-1 text-left">
+              <div>
                 <div className="text-sm font-bold text-gray-900">Каталог</div>
                 <div className="text-xs text-gray-500">Все категории товаров</div>
               </div>
-              <ChevronRight size={16} className={`text-gray-400 transition-transform duration-200 ${catalogOpen ? "rotate-90" : ""}`} />
-            </button>
-
-            {/* Categories list — expanded */}
-            {catalogOpen && (
-              <div className="ml-4 pl-3 border-l-2 border-red-100 space-y-0.5">
-                {categories.map((cat) => (
-                  <Link
-                    key={cat.id}
-                    href={`/category/${cat.slug}`}
-                    onClick={() => { setMenuOpen(false); setCatalogOpen(false); }}
-                    className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${
-                      location === `/category/${cat.slug}` ? "bg-red-50 text-red-700" : "text-gray-700 hover:bg-gray-50 hover:text-red-600"
-                    }`}
-                  >
-                    {cat.icon && <span className="text-base leading-none shrink-0">{cat.icon}</span>}
-                    <span>{cat.name}</span>
-                  </Link>
-                ))}
-                <Link
-                  href="/catalog"
-                  onClick={() => { setMenuOpen(false); setCatalogOpen(false); }}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-semibold text-red-600 hover:bg-red-50 transition-colors"
-                >
-                  <span>→</span>
-                  <span>Все товары</span>
-                </Link>
-              </div>
-            )}
+              <ChevronRight size={16} className="text-gray-400 ml-auto" />
+            </Link>
 
             {/* Видеообзоры */}
             <Link href="/videos" onClick={() => setMenuOpen(false)}
@@ -424,6 +398,87 @@ export default function MobileBottomNav() {
           <div className="h-4" />
         </SheetContent>
       </Sheet>
+
+      {/* Модальное окно каталога — мобильный */}
+      {catalogOpen && (
+        <div className="fixed inset-0 z-50 flex flex-col">
+          {/* Затемнение */}
+          <div
+            className="flex-1 bg-black/50"
+            onClick={() => setCatalogOpen(false)}
+          />
+
+          {/* Само окно — выезжает снизу */}
+          <div
+            className="bg-white rounded-t-3xl overflow-hidden"
+            style={{
+              maxHeight: "85vh",
+              animation: "slideUp 0.25s ease-out"
+            }}
+          >
+            {/* Ручка */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 bg-gray-300 rounded-full" />
+            </div>
+
+            {/* Шапка */}
+            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <Grid3X3 size={18} className="text-red-600" />
+                <h2 className="text-base font-black text-gray-900">Каталог</h2>
+                <span className="text-xs text-gray-400">({categories.length} категорий)</span>
+              </div>
+              <button
+                onClick={() => setCatalogOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Сетка категорий — скроллится */}
+            <div className="overflow-y-auto" style={{ maxHeight: "calc(85vh - 140px)" }}>
+              <div className="grid grid-cols-3 gap-2 p-4">
+                {categories.map((cat) => (
+                  <Link
+                    key={cat.id}
+                    href={`/category/${cat.slug}`}
+                    onClick={() => setCatalogOpen(false)}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all active:scale-95 ${
+                      location === `/category/${cat.slug}`
+                        ? "bg-red-50 border-2 border-red-200"
+                        : "bg-gray-50 border-2 border-transparent"
+                    }`}
+                  >
+                    {/* Иконка в кружке */}
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl ${
+                      location === `/category/${cat.slug}` ? "bg-red-100" : "bg-white"
+                    }`}>
+                      {cat.icon ? cat.icon : "📦"}
+                    </div>
+                    <span className={`text-[11px] font-semibold text-center leading-tight line-clamp-2 ${
+                      location === `/category/${cat.slug}` ? "text-red-700" : "text-gray-700"
+                    }`}>
+                      {lang === "uz" && (cat as any).nameUz ? (cat as any).nameUz : cat.name}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Футер — кнопка весь каталог */}
+            <div className="px-4 py-3 border-t border-gray-100 bg-white">
+              <Link
+                href="/catalog"
+                onClick={() => setCatalogOpen(false)}
+                className="flex items-center justify-center gap-2 w-full h-12 rounded-2xl bg-red-600 text-white font-bold text-sm"
+              >
+                Весь каталог →
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

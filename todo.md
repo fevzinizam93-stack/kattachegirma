@@ -1248,3 +1248,11 @@
 - [x] Admin.tsx: бейджи в таблице товаров показывают hitScore и (ручной)/(Npts)
 - [x] Admin.tsx: товары с hitScore > 20 но не в хитах показывают «📈 Npts»
 - [x] AdminSettingsTab.tsx: блок настроек авто-хитов улучшен — алгоритм, toggle, слайдер порога, 2 кнопки
+
+## Категории — навигация v63
+- [x] Home.tsx: убраны дублирующиеся блоки «Mobile category scroll» и «Desktop category scroll»
+- [x] Navbar.tsx: popup каталога заменён на мегаменю 4 колонки (680px, иконки в кружках, затемнение фона)
+- [x] MobileBottomNav.tsx: кнопка «Каталог» в нижней навигации открывает модальное окно снизу
+- [x] MobileBottomNav.tsx: модальное окно — сетка 3×N с иконками, плавная анимация slideUp
+- [x] MobileBottomNav.tsx: раскрывающийся список категорий в боковом меню заменён простой ссылкой
+- [x] index.css: добавлена анимация @keyframes slideUp

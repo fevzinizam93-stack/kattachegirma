@@ -232,46 +232,6 @@ export default function Home() {
         </section>
       )}
 
-      {/* Mobile category scroll */}
-      {categories.length > 0 && (
-        <div className="md:hidden bg-white border-b border-gray-100 overflow-x-auto scrollbar-hide">
-          <div className="flex gap-2 px-3 py-2 w-max">
-            {categories.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => navigate(`/category/${cat.slug}`)}
-                className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl bg-gray-50 hover:bg-orange-50 transition-colors min-w-[56px]"
-              >
-                {cat.icon && <span className="text-xl leading-none">{cat.icon}</span>}
-                <span className="text-[10px] font-semibold text-gray-700 text-center leading-tight line-clamp-2 max-w-[52px]">
-                  {lang === "uz" && (cat as any).nameUz ? (cat as any).nameUz : cat.name}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Desktop category scroll */}
-      {categories.length > 0 && (
-        <div className="hidden md:block bg-white border-b border-gray-100 overflow-x-auto scrollbar-hide">
-          <div className="flex gap-1 px-4 py-2 w-max mx-auto">
-            {categories.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => navigate(`/category/${cat.slug}`)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-50 hover:bg-orange-50 transition-colors whitespace-nowrap"
-              >
-                {cat.icon && <span className="text-base leading-none">{cat.icon}</span>}
-                <span className="text-xs font-semibold text-gray-700">
-                  {lang === "uz" && (cat as any).nameUz ? (cat as any).nameUz : cat.name}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Hits slider */}
       {hitsLoading && <HitsSliderSkeleton />}
       {!hitsLoading && hitProducts.length > 0 && (

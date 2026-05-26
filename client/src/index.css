@@ -262,3 +262,8 @@
     transform: translateY(0) scale(1);
   }
 }
+/* Mobile catalog modal animation */
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}

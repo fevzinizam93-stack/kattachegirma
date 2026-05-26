@@ -234,41 +234,74 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
 
             {/* Catalog categories dropdown */}
             {showCatalogModal && (
-              <div
-                className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 overflow-hidden"
-                style={{ width: "540px", animation: "catalogSlideDown 0.18s ease-out" }}
-              >
-                <div className="px-4 pt-3 pb-2 border-b border-gray-100 flex items-center justify-between">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Все категории</p>
-                  <button onClick={() => setShowCatalogModal(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
-                    <X size={14} />
-                  </button>
-                </div>
-                <div className="grid grid-cols-3 gap-0 p-2">
-                  {catalogCategories.map((cat) => (
-                    <Link
-                      key={cat.id}
-                      href={`/category/${cat.slug}`}
+              <>
+                {/* Затемнение фона */}
+                <div
+                  className="fixed inset-0 bg-black/20 backdrop-blur-[2px] z-40"
+                  onClick={() => setShowCatalogModal(false)}
+                />
+
+                {/* Мегаменю */}
+                <div
+                  className="absolute top-full left-0 mt-2 bg-white rounded-2xl shadow-2xl z-50 overflow-hidden border border-gray-100"
+                  style={{ width: "680px", animation: "catalogSlideDown 0.2s ease-out" }}
+                >
+                  {/* Шапка */}
+                  <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 bg-gray-50">
+                    <div className="flex items-center gap-2">
+                      <LayoutGrid size={16} className="text-red-600" />
+                      <p className="text-sm font-black text-gray-800">Все категории</p>
+                      <span className="text-xs text-gray-400 font-normal">({catalogCategories.length})</span>
+                    </div>
+                    <button
                       onClick={() => setShowCatalogModal(false)}
-                      className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-red-50 hover:text-red-700 transition-colors text-[12px] font-medium ${
-                        location === `/category/${cat.slug}` ? "bg-red-50 text-red-700" : "text-gray-700"
-                      }`}
+                      className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors text-gray-400 hover:text-gray-600"
                     >
-                      {cat.icon && <span className="text-lg leading-none shrink-0">{cat.icon}</span>}
-                      <span className="leading-tight line-clamp-2">{lang === "uz" && (cat as any).nameUz ? (cat as any).nameUz : cat.name}</span>
+                      <X size={14} />
+                    </button>
+                  </div>
+
+                  {/* Сетка категорий */}
+                  <div className="grid grid-cols-4 gap-1 p-3">
+                    {catalogCategories.map((cat) => (
+                      <Link
+                        key={cat.id}
+                        href={`/category/${cat.slug}`}
+                        onClick={() => setShowCatalogModal(false)}
+                        className={`flex flex-col items-center gap-2 px-3 py-3 rounded-xl transition-all text-center group cursor-pointer ${
+                          location === `/category/${cat.slug}`
+                            ? "bg-red-50 text-red-700"
+                            : "hover:bg-red-50 hover:text-red-700 text-gray-700"
+                        }`}
+                      >
+                        {/* Иконка в кружке */}
+                        <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-2xl transition-colors ${
+                          location === `/category/${cat.slug}`
+                            ? "bg-red-100"
+                            : "bg-gray-100 group-hover:bg-red-100"
+                        }`}>
+                          {cat.icon ? cat.icon : "📦"}
+                        </div>
+                        <span className="text-xs font-semibold leading-tight line-clamp-2">
+                          {lang === "uz" && (cat as any).nameUz ? (cat as any).nameUz : cat.name}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+
+                  {/* Футер */}
+                  <div className="border-t border-gray-100 px-5 py-3 bg-gray-50 flex items-center justify-between">
+                    <p className="text-xs text-gray-500">Нажмите на категорию для просмотра товаров</p>
+                    <Link
+                      href="/catalog"
+                      onClick={() => setShowCatalogModal(false)}
+                      className="flex items-center gap-1.5 text-sm font-bold text-red-600 hover:text-red-700 transition-colors"
+                    >
+                      Весь каталог →
                     </Link>
-                  ))}
+                  </div>
                 </div>
-                <div className="border-t border-gray-100 px-4 py-2.5">
-                  <Link
-                    href="/catalog"
-                    onClick={() => setShowCatalogModal(false)}
-                    className="flex items-center justify-center gap-2 text-sm font-semibold text-red-600 hover:text-red-700 transition-colors py-1"
-                  >
-                    Смотреть все товары →
-                  </Link>
-                </div>
-              </div>
+              </>
             )}
           </div>
 
