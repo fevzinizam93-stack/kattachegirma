@@ -1149,7 +1149,7 @@
 - [x] Google Analytics 4 G-G9XX9QKJXL + SPA page_view трекинг
 
 ## Рефакторинг (v52)
-- [ ] Разбить Admin.tsx на компоненты (отложено — высокий риск сломать 3155 строк)
+- [x] Разбить Admin.tsx на компоненты (3155 → 2278 строк, 8 компонентов в client/src/components/admin/)
 - [x] Разбить server/routers.ts на модули (выполнено в checkpoint 047a704f — 20 модулей в server/routers/*.ts)
 
 ## Оптимизация скорости и индексации (v53)
@@ -1201,3 +1201,19 @@
 ## Багфиксы v58
 - [x] Баг 1: OrderSuccessModal.tsx — кнопка "Отследить заказ" исправлена: href={`/order/${orderNumber}`}
 - [x] Баг 2: orders.ts — добавлен customerName: input.customerName в notifyNewOrder; TELEGRAM_BOT_TOKEN и TELEGRAM_ADMIN_CHAT_ID проверены — оба заданы
+
+## PageSpeed v59 — мелкий текст, контрастность, CLS, esbuild
+- [ ] ProductCard.tsx: заменить text-[9px]/text-[10px] → text-xs (9 вхождений)
+- [ ] ProductCard.tsx: заменить text-gray-400 → text-gray-600 (контрастность)
+- [ ] Home.tsx: добавить min-h-[120px] на контейнер баннеров (CLS fix)
+- [ ] Home.tsx: добавить minHeight: 100px на PromoBanner (CLS fix)
+- [ ] vite.config.ts: добавить esbuild.drop console/debugger, legalComments: "none"
+
+## Рефакторинг Admin.tsx (v59)
+- [x] Создан AdminOrdersTab.tsx
+- [x] Создан AdminSellersTab.tsx
+- [x] Создан AdminQuickOrdersTab.tsx
+- [x] Создан AdminModerationTab.tsx
+- [x] Создан AdminBannersTab.tsx
+- [x] Создан AdminNotificationsTab.tsx
+- [x] Обновлён Admin.tsx — заменены вкладки на импорты компонентов (3155 → 2278 строк)
