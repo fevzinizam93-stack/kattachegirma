@@ -947,66 +947,60 @@ export default function Admin() {
         {tab === "products" && (
           <div>
             <div className="flex flex-col gap-3 mb-4">
+              {/* Строка 1: заголовок + кнопка Добавить */}
               <div className="flex justify-between items-center">
                 <h2 className="font-black text-lg text-gray-900">
                   Товары ({adminSearch.trim() ? `${filteredProducts.length} / ${products.length}` : products.length})
                 </h2>
-                <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex flex-wrap gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => { if (!genUzSlugsLoading && window.confirm('Сгенерировать UZ URL slug-и для всех товаров без slugUz? Это займёт несколько минут.')) genProdUzSlugsMut.mutate(); }}
-                      disabled={genUzSlugsLoading}
-                      title="Сгенерировать узбекские URL slug-и для товаров"
-                      className="flex items-center gap-1 border border-emerald-200 text-emerald-700 bg-emerald-50 px-2 py-1.5 rounded-lg font-semibold text-xs hover:bg-emerald-100 transition-colors disabled:opacity-50"
-                    >
-                      {genUzSlugsLoading ? <div className="w-3 h-3 border-2 border-emerald-300 border-t-emerald-600 rounded-full animate-spin" /> : <span>🔗</span>}
-                      <span>{genUzSlugsLoading ? "Генерирую..." : "UZ slug"}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!bulkTranslating && window.confirm('Перевести все товары без узбекского названия/описания? Это может занять несколько минут.'))
-                          bulkTranslateMut.mutate();
-                      }}
-                      disabled={bulkTranslating}
-                      title="Перевести все товары без узбекского названия/описания RU→UZ"
-                      className="flex items-center gap-1 border border-blue-200 text-blue-700 bg-blue-50 px-2 py-1.5 rounded-lg font-semibold text-xs hover:bg-blue-100 transition-colors disabled:opacity-50"
-                    >
-                      {bulkTranslating ? <div className="w-3 h-3 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" /> : <span>🌐</span>}
-                      <span>{bulkTranslating ? "Перевод..." : "RU→UZ"}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!bulkGenDescLoading && window.confirm('Сгенерировать SEO-описания для всех товаров без описания? Это может занять несколько минут.'))
-                          bulkGenDescMut.mutate();
-                      }}
-                      disabled={bulkGenDescLoading}
-                      title="Сгенерировать SEO-описания для товаров без описания"
-                      className="flex items-center gap-1 border border-purple-200 text-purple-700 bg-purple-50 px-2 py-1.5 rounded-lg font-semibold text-xs hover:bg-purple-100 transition-colors disabled:opacity-50"
-                    >
-                      {bulkGenDescLoading ? <div className="w-3 h-3 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin" /> : <span>🤖</span>}
-                      <span>{bulkGenDescLoading ? "Генерирую..." : "ИИ опис"}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => autoScanMut.mutate({ overwrite: false })}
-                      disabled={scanLoading}
-                      title="Автоматически найти видеообзоры для товаров без видео"
-                      className="flex items-center gap-1 border border-red-200 text-red-600 bg-red-50 px-2 py-1.5 rounded-lg font-semibold text-xs hover:bg-red-100 transition-colors disabled:opacity-50"
-                    >
-                      {scanLoading ? <div className="w-3 h-3 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" /> : <RefreshCw size={12} />}
-                      <span>{scanLoading ? "Скан..." : "Скан"}</span>
-                    </button>
-                  </div>
-                  <button
-                    onClick={() => { setShowForm(true); setForm(emptyForm); setEditId(null); descUzManualRef.current = false; nameUzManualRef.current = false; categoryManualRef.current = false; brandManualRef.current = false; if (autoTranslateTimerRef.current) clearTimeout(autoTranslateTimerRef.current); if (autoTranslateNameTimerRef.current) clearTimeout(autoTranslateNameTimerRef.current); }}
-                    className="flex items-center gap-1.5 bg-primary text-white px-3 py-1.5 rounded-lg font-semibold text-sm hover:bg-primary/90 transition-colors whitespace-nowrap"
-                  >
-                    <Plus size={14} /> Добавить
-                  </button>
-                </div>
+                <button
+                  onClick={() => { setShowForm(true); setForm(emptyForm); setEditId(null); descUzManualRef.current = false; nameUzManualRef.current = false; categoryManualRef.current = false; brandManualRef.current = false; if (autoTranslateTimerRef.current) clearTimeout(autoTranslateTimerRef.current); if (autoTranslateNameTimerRef.current) clearTimeout(autoTranslateNameTimerRef.current); }}
+                  className="flex items-center gap-1.5 bg-primary text-white px-4 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
+                >
+                  <Plus size={16} /> Добавить
+                </button>
+              </div>
+              {/* Строка 2: вспомогательные кнопки с горизонтальным скроллом */}
+              <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+                <button
+                  type="button"
+                  onClick={() => { if (!genUzSlugsLoading && window.confirm('Сгенерировать UZ URL slug-и для всех товаров без slugUz? Это займёт несколько минут.')) genProdUzSlugsMut.mutate(); }}
+                  disabled={genUzSlugsLoading}
+                  title="Сгенерировать узбекские URL slug-и для товаров"
+                  className="flex items-center gap-1 border border-emerald-200 text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg font-semibold text-xs hover:bg-emerald-100 transition-colors disabled:opacity-50 whitespace-nowrap shrink-0"
+                >
+                  {genUzSlugsLoading ? <div className="w-3 h-3 border-2 border-emerald-300 border-t-emerald-600 rounded-full animate-spin" /> : <span>🔗</span>}
+                  {genUzSlugsLoading ? "Генерирую..." : "UZ slug"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { if (!bulkTranslating && window.confirm('Перевести все товары без узбекского названия/описания? Это может занять несколько минут.')) bulkTranslateMut.mutate(); }}
+                  disabled={bulkTranslating}
+                  title="Перевести все товары без узбекского названия/описания RU→UZ"
+                  className="flex items-center gap-1 border border-blue-200 text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg font-semibold text-xs hover:bg-blue-100 transition-colors disabled:opacity-50 whitespace-nowrap shrink-0"
+                >
+                  {bulkTranslating ? <div className="w-3 h-3 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" /> : <span>🌐</span>}
+                  {bulkTranslating ? "Переводится..." : "Перевести"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { if (!bulkGenDescLoading && window.confirm('Сгенерировать SEO-описания для всех товаров без описания? Это может занять несколько минут.')) bulkGenDescMut.mutate(); }}
+                  disabled={bulkGenDescLoading}
+                  title="Сгенерировать SEO-описания для товаров без описания"
+                  className="flex items-center gap-1 border border-purple-200 text-purple-700 bg-purple-50 px-3 py-1.5 rounded-lg font-semibold text-xs hover:bg-purple-100 transition-colors disabled:opacity-50 whitespace-nowrap shrink-0"
+                >
+                  {bulkGenDescLoading ? <div className="w-3 h-3 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin" /> : <span>🤖</span>}
+                  {bulkGenDescLoading ? "Генерирую..." : "ИИ описания"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => autoScanMut.mutate({ overwrite: false })}
+                  disabled={scanLoading}
+                  title="Автоматически найти видеообзоры для товаров без видео"
+                  className="flex items-center gap-1 border border-red-200 text-red-600 bg-red-50 px-3 py-1.5 rounded-lg font-semibold text-xs hover:bg-red-100 transition-colors disabled:opacity-50 whitespace-nowrap shrink-0"
+                >
+                  {scanLoading ? <div className="w-3 h-3 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" /> : <RefreshCw size={12} />}
+                  {scanLoading ? "Сканирую..." : "Скан видео"}
+                </button>
               </div>
               {scanProgress && (
                 <div className="flex items-center gap-2 text-sm bg-green-50 border border-green-200 rounded-xl px-4 py-2">
