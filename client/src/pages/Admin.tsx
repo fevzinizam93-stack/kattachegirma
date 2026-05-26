@@ -921,7 +921,7 @@ export default function Admin() {
 
       <div className="container py-6">
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap">
+        <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide pb-1">
           {tabConfig.map(({ key, icon: Icon, label }) => (
             <button
               key={key}
@@ -961,7 +961,7 @@ export default function Admin() {
                       className="flex items-center gap-1 border border-emerald-200 text-emerald-700 bg-emerald-50 px-2 py-1.5 rounded-lg font-semibold text-xs hover:bg-emerald-100 transition-colors disabled:opacity-50"
                     >
                       {genUzSlugsLoading ? <div className="w-3 h-3 border-2 border-emerald-300 border-t-emerald-600 rounded-full animate-spin" /> : <span>🔗</span>}
-                      <span className="hidden sm:inline">{genUzSlugsLoading ? "Генерирую..." : "UZ slug-и"}</span>
+                      <span>{genUzSlugsLoading ? "Генерирую..." : "UZ slug"}</span>
                     </button>
                     <button
                       type="button"
@@ -974,7 +974,7 @@ export default function Admin() {
                       className="flex items-center gap-1 border border-blue-200 text-blue-700 bg-blue-50 px-2 py-1.5 rounded-lg font-semibold text-xs hover:bg-blue-100 transition-colors disabled:opacity-50"
                     >
                       {bulkTranslating ? <div className="w-3 h-3 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" /> : <span>🌐</span>}
-                      <span className="hidden sm:inline">{bulkTranslating ? "Переводится..." : "Перевести"}</span>
+                      <span>{bulkTranslating ? "Перевод..." : "RU→UZ"}</span>
                     </button>
                     <button
                       type="button"
@@ -987,7 +987,7 @@ export default function Admin() {
                       className="flex items-center gap-1 border border-purple-200 text-purple-700 bg-purple-50 px-2 py-1.5 rounded-lg font-semibold text-xs hover:bg-purple-100 transition-colors disabled:opacity-50"
                     >
                       {bulkGenDescLoading ? <div className="w-3 h-3 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin" /> : <span>🤖</span>}
-                      <span className="hidden sm:inline">{bulkGenDescLoading ? "Генерирую..." : "ИИ описания"}</span>
+                      <span>{bulkGenDescLoading ? "Генерирую..." : "ИИ опис"}</span>
                     </button>
                     <button
                       type="button"
@@ -997,7 +997,7 @@ export default function Admin() {
                       className="flex items-center gap-1 border border-red-200 text-red-600 bg-red-50 px-2 py-1.5 rounded-lg font-semibold text-xs hover:bg-red-100 transition-colors disabled:opacity-50"
                     >
                       {scanLoading ? <div className="w-3 h-3 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" /> : <RefreshCw size={12} />}
-                      <span className="hidden sm:inline">{scanLoading ? "Сканирую..." : "Скан"}</span>
+                      <span>{scanLoading ? "Скан..." : "Скан"}</span>
                     </button>
                   </div>
                   <button
