@@ -1323,3 +1323,10 @@
 - [x] Проблема 5: py-2.5 на полях (уже было)
 - [x] Проблема 6: iOS label стиль (text-[11px] uppercase tracking-wide)
 - [x] Проблема 7: px-4 sm:px-5 py-4 на form + safe-area-inset-bottom на кнопках
+
+## Исправление ошибки сохранения товара v72
+- [x] Admin.tsx handleSubmit: деструктуризация priceUsd/originalPriceUsd перед мутацией
+- [x] products.ts update: { id, priceUsd: _pu, originalPriceUsd: _opu, ...data }
+- [x] products.ts create: уже было исправлено ранее (строка 172)
+- [x] products.ts sellerCreate: деструктуризация перед createProduct
+- [x] products.ts sellerUpdate: деструктуризация перед updateProduct

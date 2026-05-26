@@ -852,8 +852,9 @@ export default function Admin() {
     const rawSlug = translit(form.name).replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-").replace(/^-|-$/g, "");
     const slug = form.slug || rawSlug || `product-${Date.now()}`;
     const stockCountNum = form.stockCount !== "" ? parseInt(form.stockCount) : undefined;
-    // Use finalPrice (computed from USD if needed)
-    const formWithPrice = { ...form, price: finalPrice };
+    // Strip UI-only fields that don't exist in the DB
+    const { priceUsd, originalPriceUsd, ...formClean } = form;
+    const formWithPrice = { ...formClean, price: finalPrice };
     if (editId) {
       updateProduct.mutate({ id: editId, ...formWithPrice, slug, stockCount: stockCountNum });
     } else {

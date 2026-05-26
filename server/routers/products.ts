@@ -230,7 +230,7 @@ export const productsRouter = router({
       videoId: z.string().max(32).optional().nullable(),
     }))
     .mutation(async ({ input }) => {
-      const { id, ...data } = input;
+      const { id, priceUsd: _pu, originalPriceUsd: _opu, ...data } = input;
       const updateData: Record<string, unknown> = { ...data, specs: data.specs as Record<string, string> | undefined };
       if (data.discountEndsAt) updateData.discountEndsAt = new Date(data.discountEndsAt);
       else if (data.discountEndsAt === '') updateData.discountEndsAt = null;
@@ -331,11 +331,12 @@ export const productsRouter = router({
       const translit2 = (s: string) => s.toLowerCase().split("").map(c => cyrMap2[c] ?? c).join("");
       const rawSlug2 = translit2(input.slug).replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-").replace(/^-|-$/g, "");
       const safeSlug2 = rawSlug2 || `product-${Date.now()}`;
+      const { priceUsd: _pu2, originalPriceUsd: _opu2, ...cleanInput } = input;
       const id = await createProduct({
-        ...input,
+        ...cleanInput,
         slug: safeSlug2,
-        images: input.images ?? [],
-        specs: (input.specs ?? {}) as Record<string, string>,
+        images: cleanInput.images ?? [],
+        specs: (cleanInput.specs ?? {}) as Record<string, string>,
         sellerId: seller.id,
         sellerName: seller.name,
         sellerPhone: seller.phone ?? undefined,
@@ -381,7 +382,7 @@ export const productsRouter = router({
     .mutation(async ({ input, ctx }) => {
       const seller = await getSellerByUserId(ctx.user.id);
       if (!seller) throw new TRPCError({ code: "FORBIDDEN", message: "Seller profile not found" });
-      const { id, ...data } = input;
+      const { id, priceUsd: _pu3, originalPriceUsd: _opu3, ...data } = input;
       const product = await getProductByIdDb(id);
       if (!product || product.sellerId !== seller.id) throw new TRPCError({ code: "FORBIDDEN", message: "Not your product" });
       await updateProduct(id, { ...data, moderationStatus: "pending" as const, isApproved: false });
