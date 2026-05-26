@@ -43,7 +43,9 @@ export const ordersRouter = router({
           price: String(item.price),
         })),
         total: input.totalAmount,
-      }).catch(e => console.error("[Telegram] notify failed:", e));
+      })
+        .then(() => console.log(`[Orders] ✅ Telegram уведомление о заказе #${id} отправлено`))
+        .catch(e => console.error(`[Orders] ❌ Telegram уведомление НЕ отправлено:`, e));
       return { id };
     }),
 

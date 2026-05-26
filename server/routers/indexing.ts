@@ -187,4 +187,21 @@ export const indexingRouter = router({
     .query(async ({ input }) => {
       return getIndexingLogs(input.limit);
     }),
+
+  // Test Telegram notification
+  testTelegram: adminProcedure.mutation(async () => {
+    const { broadcastTelegramMessage } = await import("../telegram");
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+    if (!token) return { success: false, error: "TELEGRAM_BOT_TOKEN not set" };
+    if (!chatId) return { success: false, error: "TELEGRAM_ADMIN_CHAT_ID not set" };
+    try {
+      await broadcastTelegramMessage(
+        `🧪 <b>Telegram test</b>\n\nkattachegirma.uz saytidan test xabari\n⏰ ${new Date().toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" })}`
+      );
+      return { success: true, chatId, tokenPrefix: token.slice(0, 10) };
+    } catch (e: unknown) {
+      return { success: false, error: String(e) };
+    }
+  }),
 });

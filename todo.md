@@ -1217,3 +1217,12 @@
 - [x] Создан AdminBannersTab.tsx
 - [x] Создан AdminNotificationsTab.tsx
 - [x] Обновлён Admin.tsx — заменены вкладки на импорты компонентов (3155 → 2278 строк)
+
+## Telegram уведомления — исправление (v60)
+- [x] Найдена причина: кнопка "📞 Позвонить" использовала `url: "tel:..."` — Telegram отклоняет такие URL
+- [x] Исправлено: кнопка заменена на `callback_data: "call_customer:{id}"`
+- [x] Добавлено подробное логирование в broadcastTelegramMessage
+- [x] Добавлено логирование в orders.ts (✅/❌ после отправки)
+- [x] Добавлена процедура testTelegram в indexing router
+- [x] Добавлена кнопка "Отправить тест" в AdminNotificationsTab.tsx
+- [x] Тест: notifyNewOrder → 3 получателя, все true ✅

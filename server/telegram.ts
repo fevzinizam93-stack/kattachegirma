@@ -95,17 +95,22 @@ export async function broadcastTelegramMessage(
 ): Promise<void> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) {
-    console.warn("[Telegram] TELEGRAM_BOT_TOKEN not set — skipping broadcast");
+    console.error("[Telegram] ❌ TELEGRAM_BOT_TOKEN не задан!");
     return;
   }
+
+  const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+  console.log(`[Telegram] Отправляю сообщение. Chat ID: ${adminChatId}, Token: ${token.slice(0, 10)}...`);
 
   const sentTo = new Set<string>();
 
   // 1. Always send to the main admin chat_id from env
-  const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
   if (adminChatId) {
-    await sendTelegramMessageToChat(adminChatId, text, extra);
+    const result = await sendTelegramMessageToChat(adminChatId, text, extra);
+    console.log(`[Telegram] Результат отправки в ${adminChatId}: ${result}`);
     sentTo.add(adminChatId);
+  } else {
+    console.error("[Telegram] ❌ TELEGRAM_ADMIN_CHAT_ID не задан!");
   }
 
   // 2. Send to all active recipients from DB (skip duplicates)
@@ -113,7 +118,8 @@ export async function broadcastTelegramMessage(
     const recipients = await getActiveTelegramRecipients();
     for (const r of recipients) {
       if (!sentTo.has(r.chatId)) {
-        await sendTelegramMessageToChat(r.chatId, text, extra);
+        const result = await sendTelegramMessageToChat(r.chatId, text, extra);
+        console.log(`[Telegram] Результат отправки в ${r.chatId}: ${result}`);
         sentTo.add(r.chatId);
       }
     }
@@ -336,7 +342,7 @@ export async function notifyNewOrder(order: {
         { text: "✅ Buyurtmani olaman", callback_data: `take_order:${order.id}` },
       ],
       [
-        { text: "📞 Qo'ng'iroq qilish", url: `tel:${order.phone}` },
+        { text: "📞 Qo'ng'iroq qilish", callback_data: `call_customer:${order.id}` },
         { text: "❌ Rad etish", callback_data: `reject_order:${order.id}` },
       ],
     ],
