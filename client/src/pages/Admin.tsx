@@ -1089,20 +1089,33 @@ export default function Admin() {
 
             {/* Product Form Modal */}
             {showForm && (
-              <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                  <div className="flex items-center justify-between p-5 border-b border-gray-200">
-                    <h3 className="font-black text-lg">{editId ? "Редактировать товар" : "Новый товар"}</h3>
-                    <button onClick={() => { setShowForm(false); setForm(emptyForm); setEditId(null); }} className="hover:text-red-500">
-                      <X size={20} />
+              <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center">
+                <div className="bg-white w-full sm:max-w-2xl sm:mx-4 sm:rounded-2xl rounded-t-3xl flex flex-col" style={{ maxHeight: "92vh" }}>
+                  {/* Шапка — фиксирована */}
+                  <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
+                    <div>
+                      <h3 className="font-black text-base text-gray-900">
+                        {editId ? "✏️ Редактировать товар" : "➕ Новый товар"}
+                      </h3>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {editId ? "Измените нужные поля и сохраните" : "Заполните основные поля — остальное необязательно"}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => { setShowForm(false); setForm(emptyForm); setEditId(null); }}
+                      className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors"
+                    >
+                      <X size={16} />
                     </button>
                   </div>
-                  <form onSubmit={handleSubmit} className="p-5 space-y-4">
+                  {/* Содержимое — скроллится */}
+                  <div className="overflow-y-auto flex-1 px-5 py-4">
+                  <form id="product-form" onSubmit={handleSubmit} className="space-y-5">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-semibold mb-1">Название (русский) *</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Название (русский) *</label>
                         <input value={form.name} onChange={e => handleNameRuChange(e.target.value)}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="Название на русском" />
+                          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-colors" placeholder="Название на русском" />
                         {isAutoTranslatingName && (
                           <p className="text-xs text-blue-500 mt-1 flex items-center gap-1">
                             <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" /></svg>
@@ -1155,7 +1168,7 @@ export default function Admin() {
                         </p>
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold mb-1">Категория *</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Категория *</label>
                         <select value={form.categoryId} onChange={e => { categoryManualRef.current = true; setForm(f => ({ ...f, categoryId: parseInt(e.target.value) })); }}
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
                           <option value={0}>Выберите...</option>
@@ -1163,7 +1176,7 @@ export default function Admin() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold mb-1">Бренд</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Бренд</label>
                         <BrandPicker
                           value={form.brand}
                           onChange={(v) => { brandManualRef.current = true; setForm(f => ({ ...f, brand: v })); }}
@@ -1188,7 +1201,7 @@ export default function Admin() {
                       </div>
                       {/* Price USD → UZS */}
                       <div>
-                        <label className="block text-sm font-semibold mb-1">💵 Цена (USD) *</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">💵 Цена (USD) *</label>
                         <input
                           type="number"
                           value={form.priceUsd}
@@ -1197,7 +1210,7 @@ export default function Admin() {
                             const uzs = usd ? String(Math.round(Number(usd) * exchangeRate)) : "";
                             setForm(f => ({ ...f, priceUsd: usd, price: uzs }));
                           }}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-colors"
                           placeholder="e.g. 150"
                           min={0}
                         />
@@ -1207,7 +1220,7 @@ export default function Admin() {
                       </div>
                       {/* Original price USD → UZS */}
                       <div>
-                        <label className="block text-sm font-semibold mb-1">💵 Старая цена (USD)</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">💵 Старая цена (USD)</label>
                         <input
                           type="number"
                           value={form.originalPriceUsd}
@@ -1216,7 +1229,7 @@ export default function Admin() {
                             const uzs = usd ? String(Math.round(Number(usd) * exchangeRate)) : "";
                             setForm(f => ({ ...f, originalPriceUsd: usd, originalPrice: uzs }));
                           }}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-colors"
                           placeholder="e.g. 200"
                           min={0}
                         />
@@ -1225,9 +1238,9 @@ export default function Admin() {
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold mb-1">Скидка (%)</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Скидка (%)</label>
                         <input type="number" value={form.discount} onChange={e => setForm(f => ({ ...f, discount: parseInt(e.target.value) || 0 }))}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="20" min={0} max={99} />
+                          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-colors" placeholder="20" min={0} max={99} />
                         {form.originalPriceUsd && form.priceUsd && Number(form.originalPriceUsd) > Number(form.priceUsd) && (
                           <p className="text-xs text-green-600 mt-1 font-medium">
                             Авто: {Math.round((1 - Number(form.priceUsd) / Number(form.originalPriceUsd)) * 100)}% →
@@ -1237,12 +1250,12 @@ export default function Admin() {
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold mb-1">Количество на складе</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Количество на складе</label>
                         <input type="number" value={form.stock} onChange={e => setForm(f => ({ ...f, stock: parseInt(e.target.value) || 0 }))}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="10" min={0} />
+                          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-colors" placeholder="10" min={0} />
                       </div>
                       <div className="col-span-2">
-                        <label className="block text-sm font-semibold mb-1">Фотографии товара ({form.images.length}/10)</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Фотографии товара ({form.images.length}/10)</label>
                         {/* Image gallery */}
                         {form.images.length > 0 && (
                           <div className="flex flex-wrap gap-2 mb-3">
@@ -1341,13 +1354,13 @@ export default function Admin() {
                         <p className="text-sm font-bold text-gray-700 mb-3">Данные продавца</p>
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold mb-1">Имя продавца</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Имя продавца</label>
                         <input value={form.sellerName} onChange={e => setForm(f => ({ ...f, sellerName: e.target.value }))}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="Название магазина" />
+                          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-colors" placeholder="Название магазина" />
                       </div>
 
                       <div className="col-span-2">
-                        <label className="block text-sm font-semibold mb-1">Контактный телефон (показывается на странице товара)</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Контактный телефон (показывается на странице товара)</label>
                         <ContactPhonePicker
                           value={form.contactPhone}
                           onChange={(phone) => setForm(f => ({ ...f, contactPhone: phone, sellerPhone: phone, sellerTelegram: phone }))}
@@ -1356,65 +1369,90 @@ export default function Admin() {
                         />
                         <p className="text-xs text-gray-400 mt-1">Нажмите на книжку справа, чтобы выбрать из сохранённых номеров или сохранить новый</p>
                       </div>
-                      <div className="col-span-2 grid grid-cols-2 gap-3">
-                        <label className="flex items-center gap-3 text-sm cursor-pointer bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 hover:bg-gray-100 transition-colors select-none">
-                          <input type="checkbox" checked={form.isNew} onChange={e => setForm(f => ({ ...f, isNew: e.target.checked }))} className="w-4 h-4 rounded flex-shrink-0" />
-                          <span className="font-medium">🆕 Новинка</span>
-                        </label>
-                        <label className="flex items-center gap-3 text-sm cursor-pointer bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 hover:bg-gray-100 transition-colors select-none">
-                          <input type="checkbox" checked={form.isFeatured} onChange={e => setForm(f => ({ ...f, isFeatured: e.target.checked }))} className="w-4 h-4 rounded flex-shrink-0" />
-                          <span className="font-medium">⭐ Рекомендуемый</span>
-                        </label>
-                        <div className="border border-orange-200 rounded-xl p-3 bg-orange-50">
-                          <div className="flex items-center gap-2 mb-1">
-                            <input
-                              type="checkbox"
-                              id="isHit"
-                              checked={form.isHit}
-                              onChange={e => setForm(f => ({ ...f, isHit: e.target.checked }))}
-                              className="w-4 h-4 rounded accent-orange-500"
-                            />
-                            <label htmlFor="isHit" className="text-sm font-bold text-orange-800 cursor-pointer">
-                              🔥 Добавить в Хиты продаж вручную
-                            </label>
-                          </div>
-                          <p className="text-xs text-orange-600">
+                      {/* Метки товара — компактные toggle */}
+                      <div className="col-span-2">
+                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Метки</p>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setForm(f => ({ ...f, isNew: !f.isNew }))}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
+                              form.isNew
+                                ? "bg-green-500 text-white border-green-500"
+                                : "bg-white text-gray-600 border-gray-200 hover:border-green-400"
+                            }`}
+                          >
+                            🆕 Новинка
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setForm(f => ({ ...f, isFeatured: !f.isFeatured }))}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
+                              form.isFeatured
+                                ? "bg-blue-500 text-white border-blue-500"
+                                : "bg-white text-gray-600 border-gray-200 hover:border-blue-400"
+                            }`}
+                          >
+                            ⭐ Рекомендуемый
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setForm(f => ({ ...f, isHit: !f.isHit }))}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
+                              form.isHit
+                                ? "bg-orange-500 text-white border-orange-500"
+                                : "bg-white text-gray-600 border-gray-200 hover:border-orange-400"
+                            }`}
+                          >
+                            🔥 Хит продаж
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setForm(f => ({ ...f, isPremium: !f.isPremium }))}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
+                              form.isPremium
+                                ? "text-white border-yellow-600"
+                                : "bg-white text-gray-600 border-gray-200 hover:border-yellow-500"
+                            }`}
+                            style={form.isPremium ? { background: "#b8860b" } : {}}
+                          >
+                            ◈ Оригинал
+                          </button>
+                        </div>
+                        {form.isHit && (
+                          <p className="text-xs text-orange-600 mt-2 bg-orange-50 px-3 py-1.5 rounded-lg">
                             ⚠️ Ручное добавление — товар останется в хитах даже с низким рейтингом
                           </p>
-                        </div>
-                        <label className="flex items-center gap-3 text-sm cursor-pointer bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-3 hover:bg-yellow-100 transition-colors select-none">
-                          <input type="checkbox" checked={form.isPremium} onChange={e => setForm(f => ({ ...f, isPremium: e.target.checked }))} className="w-4 h-4 rounded flex-shrink-0" style={{ accentColor: '#d4af37' }} />
-                          <span className="font-semibold" style={{ color: '#b8860b' }}>◈ Оригинал техника</span>
-                        </label>
+                        )}
                       </div>
                       {form.isHit && (
                         <div className="col-span-2">
-                          <label className="block text-sm font-semibold mb-1 text-orange-700">🔥 Порядок отображения в хитах (1 = первый)</label>
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Порядок в хитах</label>
                           <input
                             type="number"
                             value={form.hitOrder}
                             onChange={e => setForm(f => ({ ...f, hitOrder: parseInt(e.target.value) || 0 }))}
-                            className="w-full border border-orange-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 bg-orange-50"
+                            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-colors"
                             placeholder="0"
                             min={0}
                           />
                           <p className="text-xs text-gray-400 mt-1">Товары с меньшим номером отображаются раньше</p>
                         </div>
                       )}
-                      {/* Stock count + Discount timer */}
+                      {/* Склад + Таймер — нейтральный стиль */}
                       <div className="col-span-2 grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-sm font-semibold mb-1 text-red-700">📦 Осталось на складе (шт.)</label>
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Остаток на складе</label>
                           <input type="number" value={form.stockCount} onChange={e => setForm(f => ({ ...f, stockCount: e.target.value }))}
-                            className="w-full border border-red-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 bg-red-50"
-                            placeholder="Например: 5" min={0} />
-                          <p className="text-xs text-red-400 mt-1">Если ≤ 5 — покупатель увидит «Осталось X шт.»</p>
+                            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-colors"
+                            placeholder="Например: 10" min={0} />
+                          <p className="text-xs text-gray-400 mt-1">≤ 5 шт → покупатель увидит предупреждение</p>
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold mb-1 text-red-700">⏰ Скидка действует до</label>
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Скидка до</label>
                           <input type="datetime-local" value={form.discountEndsAt} onChange={e => setForm(f => ({ ...f, discountEndsAt: e.target.value }))}
-                            className="w-full border border-red-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 bg-red-50" />
-                          <p className="text-xs text-red-400 mt-1">Таймер обратного отсчёта на странице товара</p>
+                            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-colors" />
+                          <p className="text-xs text-gray-400 mt-1">Таймер на странице товара</p>
                         </div>
                       </div>
                     </div>
@@ -1426,17 +1464,30 @@ export default function Admin() {
                       onChange={videoId => setForm(f => ({ ...f, videoId }))}
                     />
 
-                    <div className="flex gap-3 pt-2">
-                      <button type="submit" disabled={createProduct.isPending || updateProduct.isPending}
-                        className="flex-1 bg-primary text-white py-2.5 rounded-xl font-bold hover:bg-primary/90 transition-colors disabled:opacity-50">
-                        {editId ? "Сохранить" : "Добавить"}
-                      </button>
-                      <button type="button" onClick={() => { setShowForm(false); setForm(emptyForm); setEditId(null); }}
-                        className="px-6 border border-gray-200 py-2.5 rounded-xl font-medium hover:bg-gray-50 transition-colors">
-                        Отмена
-                      </button>
-                    </div>
                   </form>
+                  </div>
+                  {/* Кнопки — фиксированы внизу */}
+                  <div className="flex gap-3 px-5 py-4 border-t border-gray-100 bg-white shrink-0 rounded-b-2xl">
+                    <button
+                      type="submit"
+                      form="product-form"
+                      disabled={createProduct.isPending || updateProduct.isPending}
+                      className="flex-1 h-12 bg-primary hover:bg-primary/90 text-white rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary/30 transition-all disabled:opacity-50"
+                    >
+                      {(createProduct.isPending || updateProduct.isPending) ? (
+                        <><svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" /></svg> Сохраняю...</>
+                      ) : (
+                        <>{editId ? "💾 Сохранить изменения" : "✅ Добавить товар"}</>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setShowForm(false); setForm(emptyForm); setEditId(null); }}
+                      className="h-12 px-5 rounded-xl border-2 border-gray-200 text-gray-600 font-bold text-sm hover:bg-gray-50 transition-colors"
+                    >
+                      Отмена
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -1683,7 +1734,7 @@ export default function Admin() {
                   </div>
                   <div className="p-5 space-y-4">
                     <div>
-                      <label className="block text-sm font-semibold mb-1">Название *</label>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Название *</label>
                       <input
                         value={catForm.name}
                         onChange={e => {
@@ -1691,25 +1742,25 @@ export default function Admin() {
                           const slug = name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\u0400-\u04ff-]/g, "").replace(/[\u0400-\u04ff]/g, c => c.charCodeAt(0).toString(36));
                           setCatForm(f => ({ ...f, name, slug: f.slug || slug }));
                         }}
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-colors"
                         placeholder="Например: Холодильники"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold mb-1">Slug (URL)</label>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Slug (URL)</label>
                       <input
                         value={catForm.slug}
                         onChange={e => setCatForm(f => ({ ...f, slug: e.target.value }))}
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-colors"
                         placeholder="holodilniki"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold mb-1">Иконка (эмодзи)</label>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Иконка (эмодзи)</label>
                       <input
                         value={catForm.icon}
                         onChange={e => setCatForm(f => ({ ...f, icon: e.target.value }))}
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-colors"
                         placeholder="❄️"
                       />
                     </div>

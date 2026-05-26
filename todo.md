@@ -1286,3 +1286,10 @@
 - [x] MobileBottomNav.tsx: grid-cols-3 → список строк в стиле iOS (без иконок, стрелка →)
 - [x] Navbar.tsx: grid-cols-4 → grid-cols-2, ширина 680px → 480px, чистые строки со стрелкой
 - [x] TELEGRAM_CHANNEL_ID: нормализация числового ID (добавляем -100 префикс)
+
+## Admin модальное окно v67
+- [x] Проблема 1: фиксированная обёртка + backdrop-blur
+- [x] Проблема 2: шапка shrink-0 + содержимое flex-1 overflow-y-auto + кнопки shrink-0 внизу
+- [x] Проблема 3: чекбоксы → компактные pill toggle-кнопки
+- [x] Проблема 4: поля склад/таймер — убрать красные фоны
+- [x] Общий стиль: rounded-lg→rounded-xl, py-2→py-2.5, label iOS-стиль
