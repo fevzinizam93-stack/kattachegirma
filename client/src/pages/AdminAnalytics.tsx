@@ -233,7 +233,7 @@ export default function AdminAnalytics() {
           <StatCard icon={<MousePointerClick size={20} />} label="Клики по товарам" value={funnel.productClicks} color="#6a1b9a" />
           <StatCard icon={<ShoppingCart size={20} />} label="Добавлено в корзину" value={funnel.addToCart} color="#e65100" />
           <StatCard icon={<Heart size={20} />} label="В избранное" value={funnel.addToFavorites} color="#c62828" />
-          <StatCard icon={<Package size={20} />} label="Заказов" value={totalOrders} sub={`${fmt(Math.round(totalRevenue))} $`} color="#2e7d32" />
+          <StatCard icon={<Package size={20} />} label="Заказов" value={totalOrders} sub={`${fmt(Math.round(totalRevenue))} сум`} color="#2e7d32" />
         </div>
 
         {/* ── 2. Traffic Chart ─────────────────────────────────────────── */}
@@ -337,8 +337,8 @@ export default function AdminAnalytics() {
                 <p className="text-xl font-black text-gray-800">{fmt(totalOrders)}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-500">Выручка</p>
-                <p className="text-xl font-black text-green-700">{fmt(Math.round(totalRevenue))} $</p>
+                <p className="text-xs text-gray-500">Продажи (сум)</p>
+                <p className="text-xl font-black text-green-700">{fmt(Math.round(totalRevenue))} сум</p>
               </div>
             </div>
           </div>
