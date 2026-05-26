@@ -504,6 +504,10 @@ export default function Admin() {
     },
     onError: (e) => toast.error("Ошибка: " + e.message),
   });
+  const publishToTg = trpc.products.publishToTelegram.useMutation({
+    onSuccess: () => toast.success("✅ Товар опубликован в Telegram канале!"),
+    onError: (e) => toast.error("❌ Ошибка: " + e.message),
+  });
   const updateOrderStatus = trpc.orders.updateStatus.useMutation({
     onSuccess: () => { toast.success("Статус обновлён!"); utils.orders.list.invalidate(); },
   });
@@ -1507,6 +1511,15 @@ export default function Admin() {
                           {(p as any).isActive ? "✓ В наличии" : "⛔ Скрыт"}
                         </button>
                         <button
+                          onClick={() => publishToTg.mutate({ id: p.id })}
+                          disabled={publishToTg.isPending}
+                          className="h-9 px-2 flex items-center gap-1 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold hover:bg-blue-100 transition-colors disabled:opacity-50"
+                          title="Опубликовать в Telegram"
+                        >
+                          <Send size={13} />
+                          TG
+                        </button>
+                        <button
                           onClick={() => handleEdit(p)}
                           className="h-9 w-9 flex items-center justify-center bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors"
                         >
@@ -1601,6 +1614,14 @@ export default function Admin() {
                                   }`}
                                 >
                                   {(p as any).isActive ? "✓ В наличии" : "⛔ Нет"}
+                                </button>
+                                <button
+                                  onClick={() => publishToTg.mutate({ id: p.id })}
+                                  disabled={publishToTg.isPending}
+                                  className="p-1.5 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors disabled:opacity-50"
+                                  title="Опубликовать в Telegram"
+                                >
+                                  <Send size={15} />
                                 </button>
                                 <button onClick={() => handleEdit(p)} className="p-1.5 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors">
                                   <Edit size={15} />

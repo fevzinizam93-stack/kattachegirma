@@ -393,3 +393,88 @@ export async function notifyCustomer(
     console.error("[Telegram] notifyCustomer error:", e);
   }
 }
+
+// ─── Publish product to Telegram channel ───────────────────────────────────
+export async function publishProductToChannel(product: {
+  id: number;
+  name: string;
+  slug: string;
+  price: string;
+  originalPrice?: string | null;
+  discount?: number | null;
+  imageUrl?: string | null;
+  brand?: string | null;
+}): Promise<{ success: boolean; error?: string }> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const channelId = process.env.TELEGRAM_CHANNEL_ID; // e.g. @kattachegirmauz
+
+  if (!token || !channelId) {
+    return { success: false, error: "TELEGRAM_BOT_TOKEN or TELEGRAM_CHANNEL_ID not set" };
+  }
+
+  const price = Math.round(Number(product.price)).toLocaleString("ru-RU");
+  const usdPrice = Math.round(Number(product.price) / 12800);
+  const hasDiscount = product.discount && product.discount > 0;
+  const originalPrice = product.originalPrice
+    ? Math.round(Number(product.originalPrice)).toLocaleString("ru-RU")
+    : null;
+
+  const url = `https://kattachegirma.uz/product/${product.slug}?utm_source=telegram&utm_medium=channel&utm_campaign=products`;
+
+  const captionLines = [
+    hasDiscount ? `🔥 -${product.discount}% CHEGIRMA!` : `🛍 YANGI MAHSULOT`,
+    ``,
+    `📦 *${product.name}*`,
+    product.brand ? `🏷 Brand: ${product.brand}` : null,
+    ``,
+    hasDiscount && originalPrice ? `~~${originalPrice} so'm~~` : null,
+    `💰 *${price} so'm* ($${usdPrice})`,
+    ``,
+    `✅ Mavjud — hoziroq buyurtma bering!`,
+    ``,
+    `👇 *Onlayn buyurtma:*`,
+    url,
+  ].filter(Boolean).join("\n");
+
+  const inlineKeyboard = {
+    inline_keyboard: [[
+      { text: "🛒 Buyurtma berish", url },
+      { text: "📋 Katalog", url: "https://kattachegirma.uz/catalog?utm_source=telegram&utm_medium=channel" },
+    ]],
+  };
+
+  try {
+    if (product.imageUrl) {
+      const res = await fetch(`${TELEGRAM_API}/bot${token}/sendPhoto`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: channelId,
+          photo: product.imageUrl,
+          caption: captionLines,
+          parse_mode: "Markdown",
+          reply_markup: inlineKeyboard,
+        }),
+      });
+      if (res.ok) return { success: true };
+      const err = await res.text();
+      return { success: false, error: err };
+    }
+
+    const res = await fetch(`${TELEGRAM_API}/bot${token}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: channelId,
+        text: captionLines,
+        parse_mode: "Markdown",
+        reply_markup: inlineKeyboard,
+      }),
+    });
+    if (res.ok) return { success: true };
+    const err = await res.text();
+    return { success: false, error: err };
+  } catch (e: any) {
+    return { success: false, error: e?.message ?? "Unknown error" };
+  }
+}

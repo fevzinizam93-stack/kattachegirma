@@ -1256,3 +1256,14 @@
 - [x] MobileBottomNav.tsx: модальное окно — сетка 3×N с иконками, плавная анимация slideUp
 - [x] MobileBottomNav.tsx: раскрывающийся список категорий в боковом меню заменён простой ссылкой
 - [x] index.css: добавлена анимация @keyframes slideUp
+
+## Соцсети v64 — интеграция
+- [x] telegram.ts: функция publishProductToChannel (фото + caption + кнопки)
+- [x] products.ts: процедура publishToTelegram (adminProcedure)
+- [x] Admin.tsx: кнопка TG в мобильных карточках и десктоп таблице
+- [x] AdminUTMTab.tsx: готовые UTM-ссылки для 6 платформ с кнопкой «Копировать»
+- [x] SocialProofBlock.tsx: компонент «Мы в соцсетях» (6 карточек)
+- [x] Home.tsx: добавить SocialProofBlock перед Footer
+- [x] Footer.tsx: добавить иконки соцсетей
+- [x] ProductDetail.tsx: красивое меню «Поделиться» (Telegram, WhatsApp, Instagram, Скопировать)
+- [ ] TELEGRAM_CHANNEL_ID: добавить секрет (ожидает ввода)

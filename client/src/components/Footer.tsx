@@ -18,6 +18,26 @@ export default function Footer() {
               <img src="/manus-storage/kc_logo_d6421d0d.png" alt="Katta Chegirma" className="h-14 w-auto object-contain" style={{ filter: 'invert(1)' }} />
             </div>
             <p className="text-sm text-red-100">{t.footer_tagline}</p>
+            <div className="flex items-center gap-2 mt-4 flex-wrap">
+              {[
+                { icon: "📸", url: "https://instagram.com/katta.chegirma", label: "Instagram" },
+                { icon: "✈️", url: "https://t.me/kattachegirmauz", label: "Telegram" },
+                { icon: "🎵", url: "https://tiktok.com/@katta.chegirma", label: "TikTok" },
+                { icon: "▶️", url: "https://youtube.com/@katta.chegirma", label: "YouTube" },
+                { icon: "👥", url: "https://facebook.com/Katta.chegirma", label: "Facebook" },
+              ].map(s => (
+                <a
+                  key={s.label}
+                  href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-lg transition-colors"
+                  aria-label={s.label}
+                >
+                  {s.icon}
+                </a>
+              ))}
+            </div>
           </div>
 
           <div>

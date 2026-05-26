@@ -38,7 +38,7 @@ import { optimizeImage } from "../_core/imageOptimizer";
 import { pingSitemaps } from "../sitemap";
 import { invokeLLM } from "../_core/llm";
 import { ENV } from "../_core/env";
-import { notifyNewProduct } from "../telegram";
+import { notifyNewProduct, publishProductToChannel } from "../telegram";
 
 export const productsRouter = router({
   list: publicProcedure
@@ -861,5 +861,28 @@ export const productsRouter = router({
         } catch { skipped++; }
       }
       return { updated, skipped };
+    }),
+
+  // ─── Publish product to Telegram channel ──────────────────────────────────
+  publishToTelegram: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const rows = await db.select().from(productsTable).where(eq(productsTable.id, input.id)).limit(1);
+      if (!rows.length) throw new TRPCError({ code: "NOT_FOUND" });
+      const product = rows[0];
+      const result = await publishProductToChannel({
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        price: product.price,
+        originalPrice: product.originalPrice,
+        discount: product.discount,
+        imageUrl: product.imageUrl,
+        brand: product.brand,
+      });
+      if (!result.success) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: result.error });
+      return { success: true };
     }),
 });
