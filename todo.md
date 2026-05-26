@@ -1226,3 +1226,11 @@
 - [x] Добавлена процедура testTelegram в indexing router
 - [x] Добавлена кнопка "Отправить тест" в AdminNotificationsTab.tsx
 - [x] Тест: notifyNewOrder → 3 получателя, все true ✅
+
+## Улучшения ProductDetail + Sales (v60)
+- [x] ProductDetail.tsx: закреплённые кнопки покупки снизу экрана на мобильном
+- [x] ProductDetail.tsx: pb-24 md:pb-0 на главном контейнере
+- [x] ProductDetail.tsx: улучшенное уведомление об остатке (2 уровня: 1-3 шт красный, 4-10 оранжевый)
+- [x] Sales.tsx: фильтр по скидке (Все / От 10% / От 20% / От 30% / От 50%)
+- [x] Sales.tsx: сортировка (по скидке / дешевле / дороже / заканчиваются)
+- [x] Sales.tsx: pb-20 на главном контейнере

@@ -662,7 +662,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
     <>
     {/* Hidden element for language switcher to read product slug mapping */}
     <div data-product-slug-map={JSON.stringify({ slug: product.slug, slugUz: (product as any)?.slugUz || null })} className="hidden" />
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-24 md:pb-0">
       {/* Breadcrumb */}
       <div className="bg-white border-b border-gray-200">
         <div className="container py-1.5">
@@ -823,13 +823,33 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                   </div>
                 </div>
               )}
-              {/* Stock warning */}
-              {(() => { const sc = (product as any)?.stockCount; return sc != null && sc > 0 && sc <= 5 ? (
-                <div className="flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-xl px-3 py-2">
-                  <span className="text-orange-500 animate-pulse">🔥</span>
-                  <span className="text-orange-700 text-xs font-bold">Осталось всего <span className="text-orange-600 font-black">{sc} шт.</span> — успейте купить!</span>
-                </div>
-              ) : null; })()}
+              {/* Stock warning — enhanced */}
+              {(() => {
+                const sc = (product as any)?.stockCount;
+                if (sc == null || sc <= 0) return null;
+                if (sc <= 3) {
+                  return (
+                    <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2.5 animate-pulse">
+                      <span className="text-red-500 text-base">🚨</span>
+                      <div>
+                        <p className="text-red-700 text-sm font-black">Последние {sc} шт.!</p>
+                        <p className="text-red-500 text-xs">Товар заканчивается — не упустите</p>
+                      </div>
+                    </div>
+                  );
+                }
+                if (sc <= 10) {
+                  return (
+                    <div className="flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-xl px-3 py-2">
+                      <span className="text-orange-500 animate-pulse">🔥</span>
+                      <span className="text-orange-700 text-sm font-bold">
+                        Осталось всего <span className="font-black">{sc} шт.</span> — успейте купить!
+                      </span>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
 
               {/* ── Action block ── */}
               <div className="space-y-2">
@@ -1172,6 +1192,33 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
       productName={displayName}
       productPrice={product.price ? String(Number(product.price).toLocaleString('ru-RU')) : undefined}
     />
+    {/* Закреплённые кнопки покупки — только мобильный */}
+    {(product.stock ?? 0) > 0 && (
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}>
+        <div className="flex gap-3 items-center">
+          <div className="shrink-0">
+            <p className="text-lg font-black text-primary leading-none">{formatPrice(Number(product.price))}</p>
+            {hasDiscount && product.originalPrice && (
+              <p className="text-xs text-gray-400 line-through leading-none mt-0.5">{formatPrice(Number(product.originalPrice))}</p>
+            )}
+          </div>
+          <button
+            onClick={handleAddToCart}
+            className="flex-1 h-12 rounded-2xl bg-primary text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary/30 active:scale-[0.98] transition-all"
+          >
+            <ShoppingCart size={18} />
+            {hasDiscount ? "Успей по скидке!" : "В корзину"}
+          </button>
+          <button
+            onClick={() => setQuickBuyOpen(true)}
+            className="h-12 px-4 rounded-2xl border-2 border-primary text-primary font-black text-sm flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all"
+          >
+            <Zap size={16} />
+            1 клик
+          </button>
+        </div>
+      </div>
+    )}
     </>
   );
 }

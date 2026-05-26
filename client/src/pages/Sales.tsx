@@ -102,6 +102,8 @@ export default function Sales() {
   });
 
   const { data: products, isLoading } = trpc.products.getSales.useQuery({});
+  const [minDiscount, setMinDiscount] = useState(0);
+  const [sortBy, setSortBy] = useState("discount");
 
   const handleAddToCart = useCallback((product: any) => {
     addItem({
@@ -123,8 +125,21 @@ export default function Sales() {
     return Math.round(((orig - curr) / orig) * 100);
   };
 
+  const filteredProducts = products?.filter((p: any) => getDiscount(p) >= minDiscount) ?? [];
+  const sortedProducts = [...filteredProducts].sort((a: any, b: any) => {
+    if (sortBy === "discount") return getDiscount(b) - getDiscount(a);
+    if (sortBy === "price_asc") return Number(a.price) - Number(b.price);
+    if (sortBy === "price_desc") return Number(b.price) - Number(a.price);
+    if (sortBy === "ending") {
+      const aEnd = a.discountEndsAt ? new Date(a.discountEndsAt).getTime() : Infinity;
+      const bEnd = b.discountEndsAt ? new Date(b.discountEndsAt).getTime() : Infinity;
+      return aEnd - bEnd;
+    }
+    return 0;
+  });
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-20">
       {/* Hero banner */}
       <div className="bg-gradient-to-br from-red-600 via-red-500 to-orange-500 text-white">
         <div className="container py-8 text-center">
@@ -167,6 +182,50 @@ export default function Sales() {
         </div>
       )}
 
+      {/* Фильтр по размеру скидки */}
+      {products && products.length > 0 && (
+        <div className="bg-white border-b border-gray-100">
+          <div className="container py-2 flex gap-2 overflow-x-auto scrollbar-hide">
+            {[
+              { label: "Все", min: 0 },
+              { label: "От 10%", min: 10 },
+              { label: "От 20%", min: 20 },
+              { label: "От 30%", min: 30 },
+              { label: "От 50%", min: 50 },
+            ].map(filter => (
+              <button
+                key={filter.min}
+                onClick={() => setMinDiscount(filter.min)}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${
+                  minDiscount === filter.min
+                    ? "bg-red-600 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Сортировка */}
+      {products && products.length > 0 && (
+        <div className="container pt-3 flex items-center justify-between">
+          <p className="text-sm text-gray-500">{sortedProducts.length} товаров</p>
+          <select
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value)}
+            className="text-sm border border-gray-200 rounded-xl px-3 py-1.5 focus:outline-none focus:border-primary bg-white"
+          >
+            <option value="discount">По скидке</option>
+            <option value="price_asc">Сначала дешевле</option>
+            <option value="price_desc">Сначала дороже</option>
+            <option value="ending">Заканчиваются скоро</option>
+          </select>
+        </div>
+      )}
+
       {/* Products grid */}
       <div className="container py-4">
         {isLoading ? (
@@ -179,9 +238,9 @@ export default function Sales() {
               </div>
             ))}
           </div>
-        ) : products && products.length > 0 ? (
+        ) : sortedProducts.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {products.map((product: any) => {
+            {sortedProducts.map((product: any) => {
               const discount = getDiscount(product);
               const endsAt = product.discountEndsAt ? new Date(product.discountEndsAt) : null;
               return (
