@@ -76,7 +76,7 @@ export default function OrderSuccessModal({
             Продолжить покупки
           </button>
           <Link
-            href="/order-tracking"
+            href={`/order/${orderNumber}`}
             className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-xl transition-colors"
           >
             Отследить заказ

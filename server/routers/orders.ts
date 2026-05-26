@@ -35,6 +35,7 @@ export const ordersRouter = router({
       notifyNewOrder({
         id,
         phone: input.customerPhone,
+        customerName: input.customerName,
         address: input.deliveryAddress,
         items: input.items.map(item => ({
           productName: item.name,

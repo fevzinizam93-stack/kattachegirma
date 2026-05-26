@@ -1199,5 +1199,5 @@
 - [x] MobileBottomNav.tsx: aria-label на кнопки навигации
 
 ## Багфиксы v58
-- [ ] Баг 1: OrderSuccessModal.tsx — кнопка "Отследить заказ" ведёт на /order-tracking (несуществующий маршрут) → исправить на /order/${orderNumber}
-- [ ] Баг 2: orders.ts — notifyNewOrder не передаёт customerName → добавить поле
+- [x] Баг 1: OrderSuccessModal.tsx — кнопка "Отследить заказ" исправлена: href={`/order/${orderNumber}`}
+- [x] Баг 2: orders.ts — добавлен customerName: input.customerName в notifyNewOrder; TELEGRAM_BOT_TOKEN и TELEGRAM_ADMIN_CHAT_ID проверены — оба заданы
