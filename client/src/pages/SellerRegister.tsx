@@ -16,9 +16,9 @@ import { usePageMeta } from "@/hooks/usePageMeta";
 
 export default function SellerRegister() {
   usePageMeta({
-    title: "Регистрация продавца | Катта Чегирма",
-    description: "Станьте продавцом на Катта Чегирма",
-    noindex: true,
+    title: "Стать продавцом на Katta Chegirma | Продавайте бытовую технику",
+    description: "Зарегистрируйтесь как продавец на Katta Chegirma — 930 тысяч покупателей, бесплатная регистрация, быстрая модерация товаров.",
+    canonicalPath: "/seller",
   });
   const { user, loading } = useAuth();
   const { openLogin } = useAuthModal();
@@ -80,10 +80,10 @@ export default function SellerRegister() {
   }
 
   const stats = [
-    { value: "1 000 000+", label: "подписчиков в Instagram", icon: Instagram, color: "from-pink-500 to-purple-600" },
-    { value: "200 000+", label: "подписчиков в Telegram", icon: MessageCircle, color: "from-blue-400 to-blue-600" },
-    { value: "400 000+", label: "зрителей YouTube & Facebook", icon: Youtube, color: "from-red-500 to-red-700" },
-    { value: "0 сум", label: "комиссии за регистрацию", icon: BadgeCheck, color: "from-green-500 to-emerald-600" },
+    { value: "930 000+", label: "подписчиков в Instagram", icon: Instagram, color: "from-pink-500 to-purple-600" },
+    { value: "164+", label: "товаров уже продаётся", icon: BadgeCheck, color: "from-orange-500 to-orange-600" },
+    { value: "15 млн", label: "просмотров на YouTube", icon: Youtube, color: "from-red-500 to-red-700" },
+    { value: "0 сум", label: "регистрация бесплатна", icon: BadgeCheck, color: "from-green-500 to-emerald-600" },
   ];
 
   const benefits = [
@@ -283,10 +283,31 @@ export default function SellerRegister() {
         {/* ===== REGISTER FORM ===== */}
         <div id="register-form" className="max-w-lg mx-auto scroll-mt-8">
           {step === "pending" || (sellerQuery.data && !sellerQuery.data.isApproved) ? (
-            <div className="bg-white rounded-2xl shadow-sm p-8 text-center border border-gray-100">
-              <div className="text-5xl mb-4">⏳</div>
-              <h2 className="text-xl font-black text-gray-900 mb-2">{t.seller_pending_title}</h2>
-              <p className="text-gray-500 text-sm">{t.seller_pending_desc}</p>
+            <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-100">
+              {/* Show rejection reason if exists */}
+              {sellerQuery.data && !sellerQuery.data.isApproved && (sellerQuery.data as any).rejectionReason ? (
+                <div>
+                  <div className="text-5xl mb-4 text-center">❌</div>
+                  <h2 className="text-xl font-black text-red-800 mb-2 text-center">Заявка отклонена</h2>
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+                    <p className="text-sm font-bold text-red-800 mb-1">Причина отклонения:</p>
+                    <p className="text-sm text-red-700">{(sellerQuery.data as any).rejectionReason}</p>
+                  </div>
+                  <p className="text-gray-500 text-sm text-center mb-4">Исправьте указанные проблемы и подайте заявку повторно</p>
+                  <button
+                    onClick={() => setStep("form")}
+                    className="w-full h-11 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-colors"
+                  >
+                    Подать заявку повторно →
+                  </button>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <div className="text-5xl mb-4">⏳</div>
+                  <h2 className="text-xl font-black text-gray-900 mb-2">{t.seller_pending_title}</h2>
+                  <p className="text-gray-500 text-sm">{t.seller_pending_desc}</p>
+                </div>
+              )}
             </div>
           ) : !user ? (
             <div className="bg-white rounded-2xl shadow-sm p-8 text-center border border-gray-100">

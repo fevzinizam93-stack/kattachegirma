@@ -246,6 +246,13 @@
       "when": 1779789628517,
       "tag": "0034_abnormal_slyde",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "5",
+      "when": 1779804880935,
+      "tag": "0035_tough_charles_xavier",
+      "breakpoints": true
     }
   ]
 }

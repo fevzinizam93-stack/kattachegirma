@@ -488,7 +488,13 @@ export async function updateSeller(id: number, data: Partial<InsertSeller>) {
 export async function approveSeller(id: number) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
-  await db.update(sellers).set({ isApproved: true }).where(eq(sellers.id, id));
+  await db.update(sellers).set({ isApproved: true, rejectionReason: null }).where(eq(sellers.id, id));
+}
+
+export async function rejectSeller(id: number, reason: string) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(sellers).set({ isApproved: false, rejectionReason: reason }).where(eq(sellers.id, id));
 }
 
 export async function getSellerProducts(sellerId: number) {

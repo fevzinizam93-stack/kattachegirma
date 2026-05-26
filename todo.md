@@ -1267,3 +1267,17 @@
 - [x] Footer.tsx: добавить иконки соцсетей
 - [x] ProductDetail.tsx: красивое меню «Поделиться» (Telegram, WhatsApp, Instagram, Скопировать)
 - [ ] TELEGRAM_CHANNEL_ID: добавить секрет (ожидает ввода)
+
+## Система продавцов v65
+- [ ] schema.ts: rejectionReason поле в sellers
+- [ ] Миграция: drizzle-kit generate + применить SQL
+- [ ] telegram.ts: notifySellerRejected функция
+- [ ] sellers.ts: reject процедура с reason + уведомление
+- [ ] sellers.ts: myStats endpoint
+- [ ] AdminSellersTab.tsx: модалка причины отклонения
+- [ ] SellerRegister.tsx: показывать причину отклонения + кнопка повторной подачи
+- [ ] SellerRegister.tsx: убрать noindex, улучшить SEO meta
+- [ ] SellerRegister.tsx: блок статистики (930k, 164+, 15млн, 0 сум)
+- [ ] SellerRegister.tsx: блок "Как это работает" 4 шага
+- [ ] SellerDashboard.tsx: блок статистики (4 карточки)
+- [ ] SellerDashboard.tsx: онбординг для нового продавца (0 товаров)

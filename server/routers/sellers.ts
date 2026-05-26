@@ -8,6 +8,7 @@ import {
   createSeller,
   updateSeller,
   approveSeller,
+  rejectSeller,
   setSellerBlocked,
   getSellerProducts,
   promoteToAdmin,
@@ -23,7 +24,7 @@ import {
   updateProduct,
   getProductById,
 } from "../db";
-import { notifyNewSeller, notifySellerApproved } from "../telegram";
+import { notifyNewSeller, notifySellerApproved, notifySellerRejected } from "../telegram";
 import { indexNowProduct } from "../indexNow";
 
 export const sellersRouter = router({
@@ -80,6 +81,24 @@ export const sellersRouter = router({
           if (seller) {
             notifySellerApproved({ name: seller.name, telegram: seller.telegram }).catch(
               e => console.error("[Telegram] notifySellerApproved failed:", e)
+            );
+          }
+        })
+        .catch(() => {});
+      return { success: true };
+    }),
+
+  // Admin: reject seller
+  rejectSeller: adminProcedure
+    .input(z.object({ id: z.number(), reason: z.string().min(1).max(512) }))
+    .mutation(async ({ input }) => {
+      await rejectSeller(input.id, input.reason);
+      // Notify the seller via Telegram (non-blocking)
+      getSellerById(input.id)
+        .then(seller => {
+          if (seller) {
+            notifySellerRejected({ name: seller.name, telegram: seller.telegram, reason: input.reason }).catch(
+              e => console.error("[Telegram] notifySellerRejected failed:", e)
             );
           }
         })
@@ -219,4 +238,26 @@ export const sellersRouter = router({
       await hideSellerReview(input.id);
       return { success: true };
     }),
+
+  // Seller: get own sales statistics
+  myStats: protectedProcedure.query(async ({ ctx }) => {
+    const seller = await getSellerByUserId(ctx.user.id);
+    if (!seller) throw new TRPCError({ code: "NOT_FOUND", message: "Seller not found" });
+    const myProducts = await getSellerProducts(seller.id);
+    const activeProducts = myProducts.filter(p => p.isActive && p.isApproved);
+    const totalViews = activeProducts.reduce((s, p) => s + (p.viewCount ?? 0), 0);
+    const totalSales = activeProducts.reduce((s, p) => s + (p.salesCount ?? 0), 0);
+    const totalRevenue = activeProducts.reduce((s, p) => s + (p.salesCount ?? 0) * Number(p.price ?? 0), 0);
+    const topProducts = [...activeProducts]
+      .sort((a, b) => (b.salesCount ?? 0) - (a.salesCount ?? 0))
+      .slice(0, 5)
+      .map(p => ({ id: p.id, name: p.name, salesCount: p.salesCount ?? 0, viewCount: p.viewCount ?? 0, price: p.price }));
+    return {
+      totalProducts: activeProducts.length,
+      totalViews,
+      totalSales,
+      totalRevenue: Math.round(totalRevenue),
+      topProducts,
+    };
+  }),
 });

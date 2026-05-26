@@ -62,6 +62,7 @@ export const sellers = mysqlTable("sellers", {
   description: text("description"),
   isApproved: boolean("isApproved").default(false),
   isBlocked: boolean("isBlocked").default(false),
+  rejectionReason: varchar("rejectionReason", { length: 512 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

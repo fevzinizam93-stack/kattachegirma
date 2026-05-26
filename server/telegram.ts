@@ -236,6 +236,36 @@ export async function notifySellerApproved(seller: {
 }
 
 /**
+ * Notify seller that their application was rejected with a reason.
+ */
+export async function notifySellerRejected(seller: {
+  name: string;
+  telegram?: string | null;
+  reason: string;
+}): Promise<void> {
+  if (!seller.telegram) return;
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return;
+  const chatId = seller.telegram.trim().replace(/^@/, "");
+  if (!chatId) return;
+  const message = [
+    `❌ <b>Katta Chegirma — Ariza rad etildi</b>`,
+    ``,
+    `Assalomu alaykum, <b>${seller.name}</b>!`,
+    ``,
+    `Afsuski, sizning so'rovingiz rad etildi.`,
+    ``,
+    `📋 <b>Sabab:</b> ${seller.reason}`,
+    ``,
+    `Agar savollaringiz bo'lsa, admin bilan bog'laning yoki qayta ariza bering:`,
+    `🌐 <a href="https://kattachegirma.uz/seller">kattachegirma.uz/seller</a>`,
+    ``,
+    `⏰ ${new Date().toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" })}`,
+  ].join("\n");
+  await sendTelegramMessageToChat(`@${chatId}`, message);
+}
+
+/**
  * Notify admins about a new product added by a seller.
  * Includes inline buttons to approve or reject the product.
  */

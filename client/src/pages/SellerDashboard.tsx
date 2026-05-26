@@ -226,6 +226,10 @@ export default function SellerDashboard() {
   const myProductsQuery = trpc.products.sellerList.useQuery(undefined, {
     enabled: !!(user && sellerQuery.data?.isApproved),
   });
+  const myStatsQuery = trpc.sellers.myStats.useQuery(undefined, {
+    enabled: !!(user && sellerQuery.data?.isApproved),
+    refetchOnWindowFocus: false,
+  });
 
   const utils = trpc.useUtils();
 
@@ -461,7 +465,48 @@ export default function SellerDashboard() {
       </div>
 
       <div className="container py-6">
+        {/* Onboarding for new sellers with 0 products */}
+        {products.length === 0 && !myProductsQuery.isLoading && (
+          <div className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-2xl p-6 mb-6">
+            <h2 className="font-black text-xl mb-1">🎉 Добро пожаловать в Katta Chegirma!</h2>
+            <p className="text-sm text-gray-600 mb-4">Вы одобрены как продавец. Выполните шаги чтобы начать продавать:</p>
+            <div className="space-y-2.5">
+              {[
+                { step: 1, done: true, title: "Регистрация продавца", desc: "Заявка одобрена ✅" },
+                { step: 2, done: false, title: "Добавьте первый товар", desc: "Нажмите «+ Добавить товар» и заполните информацию" },
+                { step: 3, done: false, title: "Дождитесь модерации", desc: "Ваш товар проверит администратор в течение 24 часов" },
+                { step: 4, done: false, title: "Получайте заказы!", desc: "Уведомления о заказах придут в Telegram" },
+              ].map(item => (
+                <div key={item.step} className={`flex items-start gap-3 p-3 rounded-xl ${item.done ? "bg-green-50" : "bg-white"}`}>
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-black shrink-0 ${item.done ? "bg-green-500 text-white" : "bg-gray-200 text-gray-600"}`}>
+                    {item.done ? "✓" : item.step}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-sm">{item.title}</p>
+                    <p className="text-xs text-gray-500">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+          {[
+            { label: "Товаров", value: products.length, icon: "📦", color: "bg-blue-50 text-blue-700" },
+            { label: "Просмотров", value: (myStatsQuery.data?.totalViews ?? 0).toLocaleString(), icon: "👁", color: "bg-purple-50 text-purple-700" },
+            { label: "Продаж", value: myStatsQuery.data?.totalSales ?? 0, icon: "🛒", color: "bg-green-50 text-green-700" },
+            { label: "Выручка", value: myStatsQuery.data ? Math.round((myStatsQuery.data.totalRevenue ?? 0) / 1000000) + " млн" : "—", icon: "💰", color: "bg-yellow-50 text-yellow-700" },
+          ].map(stat => (
+            <div key={stat.label} className={`${stat.color} rounded-2xl p-4`}>
+              <p className="text-2xl mb-1">{stat.icon}</p>
+              <p className="font-black text-lg leading-none">{stat.value}</p>
+              <p className="text-xs font-semibold mt-1 opacity-70">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+        {/* Moderation status row */}
         <div className="grid grid-cols-3 gap-4 mb-6">
           {[
             { label: "Всего", value: products.length, color: "text-gray-900" },
