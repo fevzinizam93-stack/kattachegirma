@@ -1151,3 +1151,10 @@
 ## Рефакторинг (v52)
 - [ ] Разбить Admin.tsx на компоненты (отложено — высокий риск сломать 3155 строк)
 - [ ] Разбить server/routers.ts на модули (отложено — высокий риск сломать 2549 строк)
+
+## Оптимизация скорости и индексации (v53)
+- [x] thumbUrl: добавлена колонка в schema.ts + миграция применена
+- [x] uploadImage сохраняет thumbUrl в БД
+- [x] ProductCard.tsx использует thumbUrl если есть, иначе imgUrl proxy
+- [x] index.html: добавлены dns-prefetch для googletagmanager и kattachegirma.uz
+- [x] sitemap.ts: переработан на sitemap-index с разбивкой по 500 URL (/sitemap-main.xml + /sitemap-products-N.xml)

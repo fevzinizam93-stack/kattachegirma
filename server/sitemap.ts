@@ -4,6 +4,7 @@ import { products, categories } from "../drizzle/schema";
 import { eq, and } from "drizzle-orm";
 
 const BASE_URL = "https://kattachegirma.uz";
+const CHUNK_SIZE = 500; // Max URLs per sitemap file
 
 // Static pages (exclude private/transactional pages: /cart, /checkout, /profile, /admin)
 const STATIC_PAGES = [
@@ -98,6 +99,19 @@ function buildUzUrl(
     <xhtml:link rel="alternate" hreflang="uz" href="${uzUrl}"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="${ruUrl}"/>
   </url>`;
+}
+
+/** Build a full urlset XML string from an array of <url> entries */
+function buildUrlset(entries: string[]): string {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+${entries.join("\n")}
+</urlset>`;
 }
 
 const SITEMAP_URL = "https://kattachegirma.uz/sitemap.xml";
@@ -216,41 +230,64 @@ export function pingSitemaps(productUrl?: string, deleted = false): void {
 }
 
 export function registerSitemapRoute(app: Express) {
+  // ── Main sitemap index (/sitemap.xml) ─────────────────────────────────────
   app.get("/sitemap.xml", async (req, res) => {
     try {
       const db = await getDb();
+      const today = formatDate(new Date());
 
-      let productEntries: string[] = [];
-      let categoryEntries: string[] = [];
-
+      // Count approved active products to determine how many product chunks we need
+      let productChunkCount = 1;
       if (db) {
-        // Fetch all approved products (including slugUz, imageUrl, name for image sitemap)
         const allProducts = await db
-          .select({
-            slug: products.slug,
-            slugUz: (products as any).slugUz,
-            updatedAt: products.updatedAt,
-            imageUrl: products.imageUrl,
-            name: products.name,
-          })
+          .select({ slug: products.slug, slugUz: (products as any).slugUz })
           .from(products)
           .where(and(eq(products.isApproved, true), eq(products.isActive, true)));
+        // Each product can produce up to 2 entries (ru + uz), so we chunk by product count
+        productChunkCount = Math.max(1, Math.ceil(allProducts.length / CHUNK_SIZE));
+      }
 
-        productEntries = allProducts.flatMap((p) => {
-          const lastmod = formatDate(new Date(p.updatedAt));
-          const ruLoc = `/product/${escapeXml(p.slug)}`;
-          const uzLoc = p.slugUz ? `/mahsulot/${escapeXml(p.slugUz)}` : null;
-          const imgUrl = p.imageUrl || undefined;
-          const imgName = p.name || undefined;
-          const entries = [buildUrl(ruLoc, uzLoc, lastmod, "weekly", "0.7", imgUrl, imgName)];
-          // Also add a separate entry for the UZ URL so Google indexes it
-          if (uzLoc) {
-            entries.push(buildUzUrl(ruLoc, uzLoc, lastmod, "weekly", "0.7", imgUrl, imgName));
-          }
-          return entries;
-        });
+      // Build sitemap index entries
+      const sitemapEntries: string[] = [
+        `  <sitemap>
+    <loc>${BASE_URL}/sitemap-main.xml</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>`,
+      ];
 
-        // Fetch all categories (including slugUz)
+      for (let i = 1; i <= productChunkCount; i++) {
+        sitemapEntries.push(`  <sitemap>
+    <loc>${BASE_URL}/sitemap-products-${i}.xml</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>`);
+      }
+
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${sitemapEntries.join("\n")}
+</sitemapindex>`;
+
+      res.setHeader("Content-Type", "application/xml; charset=utf-8");
+      res.setHeader("Cache-Control", "public, max-age=3600");
+      res.status(200).send(xml);
+    } catch (err) {
+      console.error("[Sitemap] Error generating sitemap index:", err);
+      res.status(500).send("Error generating sitemap");
+    }
+  });
+
+  // ── Static + category sitemap (/sitemap-main.xml) ─────────────────────────
+  app.get("/sitemap-main.xml", async (req, res) => {
+    try {
+      const db = await getDb();
+      const today = formatDate(new Date());
+
+      const staticEntries = STATIC_PAGES.map((page) =>
+        buildUrl(page.loc, null, today, page.changefreq, page.priority)
+      );
+
+      let categoryEntries: string[] = [];
+      if (db) {
         const allCategories = await db
           .select({ slug: categories.slug, slugUz: (categories as any).slugUz, createdAt: categories.createdAt, name: categories.name })
           .from(categories);
@@ -260,7 +297,6 @@ export function registerSitemapRoute(app: Express) {
           const ruLoc = `/category/${escapeXml(c.slug)}`;
           const uzLoc = c.slugUz ? `/kategoriya/${escapeXml(c.slugUz)}` : null;
           const entries = [buildUrl(ruLoc, uzLoc, lastmod, "weekly", "0.8")];
-          // Also add a separate entry for the UZ URL
           if (uzLoc) {
             entries.push(buildUzUrl(ruLoc, uzLoc, lastmod, "weekly", "0.8"));
           }
@@ -268,28 +304,69 @@ export function registerSitemapRoute(app: Express) {
         });
       }
 
-      const today = formatDate(new Date());
-      const staticEntries = STATIC_PAGES.map((page) =>
-        buildUrl(page.loc, null, today, page.changefreq, page.priority)
-      );
+      res.setHeader("Content-Type", "application/xml; charset=utf-8");
+      res.setHeader("Cache-Control", "public, max-age=3600");
+      res.status(200).send(buildUrlset([...staticEntries, ...categoryEntries]));
+    } catch (err) {
+      console.error("[Sitemap] Error generating main sitemap:", err);
+      res.status(500).send("Error generating sitemap");
+    }
+  });
 
-      const allEntries = [...staticEntries, ...categoryEntries, ...productEntries];
+  // ── Product chunk sitemaps (/sitemap-products-N.xml) ──────────────────────
+  app.get("/sitemap-products-:chunk.xml", async (req, res) => {
+    try {
+      const chunk = parseInt(req.params.chunk, 10);
+      if (isNaN(chunk) || chunk < 1) {
+        res.status(404).send("Not found");
+        return;
+      }
 
-      const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
-${allEntries.join("\n")}
-</urlset>`;
+      const db = await getDb();
+      if (!db) {
+        res.status(503).send("Database unavailable");
+        return;
+      }
+
+      const allProducts = await db
+        .select({
+          slug: products.slug,
+          slugUz: (products as any).slugUz,
+          updatedAt: products.updatedAt,
+          imageUrl: products.imageUrl,
+          name: products.name,
+        })
+        .from(products)
+        .where(and(eq(products.isApproved, true), eq(products.isActive, true)));
+
+      // Slice products for this chunk (1-based)
+      const start = (chunk - 1) * CHUNK_SIZE;
+      const end = start + CHUNK_SIZE;
+      const chunkProducts = allProducts.slice(start, end);
+
+      if (chunkProducts.length === 0) {
+        res.status(404).send("Not found");
+        return;
+      }
+
+      const productEntries = chunkProducts.flatMap((p) => {
+        const lastmod = formatDate(new Date(p.updatedAt));
+        const ruLoc = `/product/${escapeXml(p.slug)}`;
+        const uzLoc = p.slugUz ? `/mahsulot/${escapeXml(p.slugUz)}` : null;
+        const imgUrl = p.imageUrl || undefined;
+        const imgName = p.name || undefined;
+        const entries = [buildUrl(ruLoc, uzLoc, lastmod, "weekly", "0.7", imgUrl, imgName)];
+        if (uzLoc) {
+          entries.push(buildUzUrl(ruLoc, uzLoc, lastmod, "weekly", "0.7", imgUrl, imgName));
+        }
+        return entries;
+      });
 
       res.setHeader("Content-Type", "application/xml; charset=utf-8");
-      res.setHeader("Cache-Control", "public, max-age=3600"); // cache 1 hour
-      res.status(200).send(xml);
+      res.setHeader("Cache-Control", "public, max-age=3600");
+      res.status(200).send(buildUrlset(productEntries));
     } catch (err) {
-      console.error("[Sitemap] Error generating sitemap:", err);
+      console.error("[Sitemap] Error generating product sitemap chunk:", err);
       res.status(500).send("Error generating sitemap");
     }
   });

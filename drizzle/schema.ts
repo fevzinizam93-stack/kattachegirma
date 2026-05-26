@@ -82,6 +82,7 @@ export const products = mysqlTable("products", {
   originalPrice: decimal("originalPrice", { precision: 12, scale: 2 }),
   discount: int("discount").default(0),
   imageUrl: text("imageUrl"),
+  thumbUrl: varchar("thumbUrl", { length: 512 }),
   images: json("images").$type<string[]>().default([]),
   stock: int("stock").default(0),
   isNew: boolean("isNew").default(false),

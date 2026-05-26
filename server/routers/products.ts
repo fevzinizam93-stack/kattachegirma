@@ -272,7 +272,7 @@ export const productsRouter = router({
         storagePut(fullKey, optimized.fullBuffer, optimized.fullMimeType),
         storagePut(thumbKey, optimized.thumbBuffer, optimized.thumbMimeType),
       ]);
-      await updateProduct(input.productId, { imageUrl: url });
+      await updateProduct(input.productId, { imageUrl: url, thumbUrl });
       return { url, thumbUrl };
     }),
 

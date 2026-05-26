@@ -22,6 +22,7 @@ interface Product {
   originalPrice?: string | null;
   discount?: number | null;
   imageUrl?: string | null;
+  thumbUrl?: string | null;
   isNew?: boolean | null;
   isFeatured?: boolean | null;
   isHit?: boolean | null;
@@ -116,7 +117,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <div className="absolute inset-0">
             {product.imageUrl ? (
               <img
-                src={imgUrl(product.imageUrl, 400, 75)}
+                src={product.thumbUrl ? imgUrl(product.thumbUrl) : imgUrl(product.imageUrl, 400, 75)}
                 alt={displayName}
                 className="w-full h-full object-contain p-1.5"
                 loading="lazy"

@@ -1,0 +1,1 @@
+ALTER TABLE `products` ADD `thumbUrl` varchar(512);
