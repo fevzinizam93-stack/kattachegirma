@@ -77,7 +77,7 @@ function CategorySectionSkeleton({ count = 5 }: { count?: number }) {
         </div>
         <div className="h-5 w-16 bg-gray-100 rounded animate-pulse" />
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 sm:gap-3">
         {Array.from({ length: count }).map((_, i) => (
           <ProductCardSkeleton key={i} />
         ))}
@@ -261,17 +261,24 @@ export default function Home() {
                 </Link>
               </div>
             </div>
+            {/* Desktop: horizontal scroll with fixed-width equal cards, 5 visible */}
             <div
               ref={sliderRef}
-              className="flex gap-3 overflow-x-auto scrollbar-hide pb-1"
+              className="hidden md:flex gap-3 overflow-x-auto scrollbar-hide pb-1"
               style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none" }}
               onMouseEnter={() => { sliderPausedRef.current = true; }}
               onMouseLeave={() => { sliderPausedRef.current = false; }}
             >
               {[...hitProducts, ...hitProducts].map((p, idx) => (
-                <div key={`${p.id}-${idx}`} className="shrink-0" style={{ width: "220px", scrollSnapAlign: "start" }}>
+                <div key={`${p.id}-${idx}`} className="shrink-0" style={{ width: "calc((100% - 48px) / 5)", minWidth: "180px", scrollSnapAlign: "start" }}>
                   <ProductCard product={p} />
                 </div>
+              ))}
+            </div>
+            {/* Mobile: 2-column grid, show first 4 items */}
+            <div className="grid grid-cols-2 gap-2 md:hidden">
+              {hitProducts.slice(0, 4).map((p) => (
+                <ProductCard key={p.id} product={p} />
               ))}
             </div>
           </div>
@@ -313,7 +320,7 @@ export default function Home() {
                 {t.home_view_all} <ArrowRight size={14} />
               </Link>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 sm:gap-3">
               {shown.map((p: any) => <ProductCard key={p.id} product={p} />)}
             </div>
             {/* Link to full category */}

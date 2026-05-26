@@ -148,8 +148,8 @@ export default function ProductCard({ product }: ProductCardProps) {
           </button>
         </div>
 
-        {/* Card body */}
-        <div className="p-3 flex flex-col flex-1 gap-1.5">
+        {/* Card body — fixed height so all cards in a row align */}
+        <div className="p-3 flex flex-col gap-1.5" style={{ minHeight: '120px' }}>
           {/* Brand */}
           {product.brand && (
             <p className="text-xs text-gray-500 font-medium uppercase tracking-wide truncate">{product.brand}</p>
