@@ -99,11 +99,18 @@ export default function Home() {
     keywordsUz: "arzon maishiy texnika, kir yuvish mashina sotib olish, muzlatgich arzon, changyutgich Toshkent, konditsioner narxi, televizor chegirma, Katta Chegirma",
   });
 
-  // Hits — load first
-  const { data: hitsData, isLoading: hitsLoading } = trpc.products.getHits.useQuery(
-    { limit: 20 },
-    { staleTime: 5 * 60 * 1000 }
+  // Optimized: single request for all home page data
+  const { data: homePageData, isLoading: homePageLoading } = trpc.products.getHomePage.useQuery(
+    undefined,
+    { staleTime: 3 * 60 * 1000 }
   );
+  const hitsData = homePageData?.hits;
+  const hitsLoading = homePageLoading;
+  const categoriesData = homePageData?.categories;
+  const categoriesLoading = homePageLoading;
+  const banners = homePageData?.banners ?? [];
+  const categories = categoriesData ?? [];
+
   const hitProducts = useMemo(() => shuffleArray(hitsData ?? []), [hitsData]);
   const sliderRef = useRef<HTMLDivElement>(null);
   const sliderPausedRef = useRef(false);
@@ -121,18 +128,6 @@ export default function Home() {
     }, 2500);
     return () => clearInterval(interval);
   }, []);
-
-  // Categories
-  const { data: categoriesData, isLoading: categoriesLoading } = trpc.categories.list.useQuery(
-    undefined,
-    { staleTime: 10 * 60 * 1000 }
-  );
-  const { data: activeBanners } = trpc.banners.listActive.useQuery(
-    undefined,
-    { staleTime: 5 * 60 * 1000 }
-  );
-  const banners = activeBanners ?? [];
-  const categories = categoriesData ?? [];
 
   // Build stable list of category IDs once categories are loaded
   const categoryIds = useMemo(

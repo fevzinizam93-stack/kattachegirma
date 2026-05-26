@@ -65,7 +65,7 @@ export default function Videos() {
     if (data?.videos && data.videos.length > 0) {
       setAllVideos(prev => {
         const existingIds = new Set(prev.map(v => v.id));
-        const newOnes = data.videos.filter(v => !existingIds.has(v.id));
+        const newOnes = data.videos.filter((v: { id: string }) => !existingIds.has(v.id));
         return [...prev, ...newOnes];
       });
       setNextPageToken(data.nextPageToken ?? undefined);

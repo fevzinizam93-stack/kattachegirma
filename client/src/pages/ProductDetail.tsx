@@ -249,18 +249,20 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
   const { t, lang } = useLanguage();
   const { formatPrice } = useCurrency();
 
-  const { data: product, isLoading } = trpc.products.bySlug.useQuery({ slug }, {
-    staleTime: 2 * 60 * 1000, // 2 min — avoid refetch on back-navigation
-  });
-  const { data: reviewSummary } = trpc.reviews.summary.useQuery(
-    { productId: product?.id ?? 0 },
-    { enabled: !!product?.id, staleTime: 5 * 60 * 1000 }
+  // Optimized: single request for all product page data
+  const { data: productPageData, isLoading } = trpc.products.getProductPage.useQuery(
+    { slug },
+    { staleTime: 2 * 60 * 1000 }
   );
-  const { data: categoriesData } = trpc.categories.list.useQuery(undefined, {
-    staleTime: 10 * 60 * 1000, // 10 min — categories rarely change
-  });
-  const categories = categoriesData ?? [];
-  const category = categories.find(c => c.id === product?.categoryId);
+  const product = productPageData?.product ?? null;
+  const reviewSummary = productPageData?.reviewSummary ?? null;
+  const preloadedReviews = productPageData?.reviews ?? null;
+  const preloadedSimilar = productPageData?.similar ?? null;
+  // Derive category from product (no extra query needed)
+  // We keep a minimal category object; slug comes from product's categorySlug if available
+  const category = product ? { id: product.categoryId, name: (product as any).categoryName as string ?? '', slug: (product as any).categorySlug as string ?? '' } : null;
+  // For SEO helpers that need categories array, build a minimal array
+  const categories: Array<{ id: number; name: string; slug: string }> = category ? [category] : [];
 
   const [liveViewCount, setLiveViewCount] = useState<number | null>(null);
   // Simulated "watching now" — seeded by product id for consistency
@@ -671,7 +673,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
             {category && (
               <>
                 <ChevronRight size={10} />
-                <Link href={`/category/${category.slug}`} className="hover:text-primary transition-colors">{category.name}</Link>
+                <Link href={category.slug ? `/category/${category.slug}` : '/catalog'} className="hover:text-primary transition-colors">{category.name}</Link>
               </>
             )}
             <ChevronRight size={10} />
@@ -1130,7 +1132,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
         </div>
 
         {/* ===== REVIEWS SECTION ===== */}
-        <ReviewsSection productId={product.id} />
+        <ReviewsSection productId={product.id} preloadedReviews={preloadedReviews} preloadedSummary={reviewSummary} />
 
         {/* ===== THIRD-PARTY SELLER NOTICE ===== */}
         {product.sellerId && (
@@ -1151,7 +1153,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
           </div>
         )}
       {/* Similar products */}
-      <SimilarProducts categoryId={product.categoryId} excludeId={product.id} />
+      <SimilarProducts categoryId={product.categoryId} excludeId={product.id} preloadedItems={preloadedSimilar} />
 
       </div>
     </div>
@@ -1198,18 +1200,23 @@ function StarRating({ value, onChange }: { value: number; onChange?: (v: number)
   );
 }
 
-function ReviewsSection({ productId }: { productId: number }) {
+function ReviewsSection({ productId, preloadedReviews, preloadedSummary }: { productId: number; preloadedReviews?: any[] | null; preloadedSummary?: any | null }) {
   const { t } = useLanguage();
   const [authorName, setAuthorName] = useState("");
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  const { data: reviewsList = [] } = trpc.reviews.listByProduct.useQuery({ productId }, {
-    staleTime: 5 * 60 * 1000, // 5 min — reviews don't change often
+  // Use preloaded data if available, otherwise fetch separately
+  const { data: reviewsList = preloadedReviews ?? [] } = trpc.reviews.listByProduct.useQuery({ productId }, {
+    staleTime: 5 * 60 * 1000,
+    enabled: preloadedReviews === null || preloadedReviews === undefined,
+    initialData: preloadedReviews ?? undefined,
   });
   const { data: summary } = trpc.reviews.summary.useQuery({ productId }, {
     staleTime: 5 * 60 * 1000,
+    enabled: preloadedSummary === null || preloadedSummary === undefined,
+    initialData: preloadedSummary ?? undefined,
   });
   const submitMutation = trpc.reviews.submit.useMutation({
     onSuccess: () => {
@@ -1353,9 +1360,11 @@ function ReviewsSection({ productId }: { productId: number }) {
   );
 }
 
-function SimilarProducts({ categoryId, excludeId }: { categoryId: number; excludeId: number }) {
+function SimilarProducts({ categoryId, excludeId, preloadedItems }: { categoryId: number; excludeId: number; preloadedItems?: any[] | null }) {
   const { data: items } = trpc.products.similar.useQuery({ categoryId, excludeId, limit: 8 }, {
     staleTime: 5 * 60 * 1000,
+    enabled: preloadedItems === null || preloadedItems === undefined,
+    initialData: preloadedItems ?? undefined,
   });
   if (!items || items.length === 0) return null;
   return (

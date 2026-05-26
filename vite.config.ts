@@ -6,6 +6,7 @@ import path from "node:path";
 import { defineConfig, type Plugin, type ViteDevServer } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 import { compression } from "vite-plugin-compression2";
+import { VitePWA } from "vite-plugin-pwa";
 
 // =============================================================================
 // Manus Debug Collector - Vite Plugin
@@ -159,6 +160,48 @@ const plugins = [
   vitePluginManusDebugCollector(),
   // Gzip + Brotli compression for production builds — reduces JS/CSS transfer size ~70%
   compression({ algorithms: ["gzip", "brotliCompress"], exclude: [/\.(png|jpg|jpeg|gif|webp|svg|ico|woff2?)$/] }),
+  // Service Worker — caches JS/CSS/HTML locally for fast repeat visits (especially mobile)
+  VitePWA({
+    registerType: 'autoUpdate',
+    injectRegister: 'auto',
+    workbox: {
+      globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+      // Don't cache large media files
+      maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3MB max
+      runtimeCaching: [
+        {
+          urlPattern: /^\/api\/trpc\//,
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'api-cache',
+            expiration: { maxEntries: 100, maxAgeSeconds: 300 }, // 5 min
+            networkTimeoutSeconds: 10,
+          },
+        },
+        {
+          urlPattern: /\/manus-storage\//,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'image-cache',
+            expiration: { maxEntries: 500, maxAgeSeconds: 60 * 60 * 24 * 30 }, // 30 days
+          },
+        },
+      ],
+    },
+    manifest: {
+      name: 'Katta Chegirma',
+      short_name: 'KattaChegirma',
+      description: 'Самая дешёвая бытовая техника в Узбекистане',
+      theme_color: '#e53e3e',
+      background_color: '#ffffff',
+      display: 'standalone',
+      start_url: '/',
+      icons: [
+        { src: '/logo-192.png', sizes: '192x192', type: 'image/png' },
+        { src: '/logo-512.png', sizes: '512x512', type: 'image/png' },
+      ],
+    },
+  }),
 ];
 
 export default defineConfig({

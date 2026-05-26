@@ -26,6 +26,10 @@ import {
   getSalesProducts,
   getProductBrands,
   getSellerProducts,
+  getAllCategories,
+  getActiveBanners,
+  getApprovedReviewsByProduct,
+  getReviewCountsByProduct,
 } from "../db";
 import { eq } from "drizzle-orm";
 import { products as productsTable } from "../../drizzle/schema";
@@ -796,8 +800,45 @@ export const productsRouter = router({
       return { success: true };
     }),
 
+  // Optimized: single request for home page data (hits + categories + banners)
+  getHomePage: publicProcedure.query(async () => {
+    const cacheKey = 'homepage:data';
+    const cached = getCached<{
+      hits: Awaited<ReturnType<typeof getHitProducts>>;
+      categories: Awaited<ReturnType<typeof getAllCategories>>;
+      banners: Awaited<ReturnType<typeof getActiveBanners>>;
+    }>(cacheKey);
+    if (cached) return cached;
+
+    const [hits, categories, banners] = await Promise.all([
+      getHitProducts(20, true),
+      getAllCategories(),
+      getActiveBanners(),
+    ]);
+
+    const result = { hits, categories, banners };
+    setCached(cacheKey, result, 3 * 60 * 1000); // 3 minutes
+    return result;
+  }),
+
+  // Optimized: single request for product detail page
+  getProductPage: publicProcedure
+    .input(z.object({ slug: z.string() }))
+    .query(async ({ input }) => {
+      const product = await getProductBySlug(input.slug);
+      if (!product) return null;
+
+      const [reviews, similar, reviewSummary] = await Promise.all([
+        getApprovedReviewsByProduct(product.id),
+        getSimilarProducts(product.categoryId ?? 0, product.id, 8),
+        getReviewCountsByProduct(product.id),
+      ]);
+
+      return { product, reviews, similar, reviewSummary };
+    }),
+
   autoScanVideoReviews: adminProcedure
-    .input(z.object({ overwrite: z.boolean().default(false) }))
+  .input(z.object({ overwrite: z.boolean().default(false) }))
     .mutation(async ({ input }) => {
       const apiKey = ENV.youtubeApiKey;
       if (!apiKey) return { updated: 0, skipped: 0 };

@@ -1150,7 +1150,7 @@
 
 ## Рефакторинг (v52)
 - [ ] Разбить Admin.tsx на компоненты (отложено — высокий риск сломать 3155 строк)
-- [ ] Разбить server/routers.ts на модули (отложено — высокий риск сломать 2549 строк)
+- [x] Разбить server/routers.ts на модули (выполнено в checkpoint 047a704f — 20 модулей в server/routers/*.ts)
 
 ## Оптимизация скорости и индексации (v53)
 - [x] thumbUrl: добавлена колонка в schema.ts + миграция применена
@@ -1165,3 +1165,10 @@
 - [x] Vitest тест подтвердил: credentials работают, access token получается успешно
 - [x] google-auth-library ^10.6.2 уже установлена в package.json
 - NOTE: Старая переменная GOOGLE_INDEXING_SERVICE_ACCOUNT_JSON оставлена (не удалена)
+
+## Оптимизация скорости (v55)
+- [x] Backend: getHomePage endpoint (hits + categories + banners в одном запросе, кэш 3 мин)
+- [x] Frontend: Home.tsx — заменить 3-4 отдельных запроса на trpc.products.getHomePage
+- [x] Backend: getProductPage endpoint (product + reviews + similar + reviewSummary в одном запросе)
+- [x] Frontend: ProductDetail.tsx — заменить 4+ отдельных запроса на trpc.products.getProductPage
+- [x] PWA: установить vite-plugin-pwa, настроить Service Worker (autoUpdate, NetworkFirst для API)
