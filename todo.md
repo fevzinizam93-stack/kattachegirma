@@ -1314,3 +1314,12 @@
 - [x] Admin.tsx: tablet 4×4 ızgara (ikon + metin)
 - [x] Admin.tsx: masaüstü 2×7 ızgara (ikon + metin)
 - [x] Aktif sekme: kırmızı arka plan + gölge
+
+## Admin форма мобильная адаптация v70
+- [x] Проблема 1: modal снизу на мобильном (items-end sm:items-center, rounded-t-3xl)
+- [x] Проблема 2: фиксированная шапка + скроллируемое содержимое + фиксированные кнопки
+- [x] Проблема 3: grid-cols-1 sm:grid-cols-2 вместо grid-cols-2
+- [x] Проблема 4: col-span-1 sm:col-span-2 вместо col-span-2
+- [x] Проблема 5: py-2.5 на полях (уже было)
+- [x] Проблема 6: iOS label стиль (text-[11px] uppercase tracking-wide)
+- [x] Проблема 7: px-4 sm:px-5 py-4 на form + safe-area-inset-bottom на кнопках

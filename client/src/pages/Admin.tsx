@@ -1181,9 +1181,9 @@ export default function Admin() {
                     </button>
                   </div>
                   {/* Содержимое — скроллится */}
-                  <div className="overflow-y-auto flex-1 px-5 py-4">
-                  <form id="product-form" onSubmit={handleSubmit} className="space-y-5">
-                    <div className="grid grid-cols-2 gap-4">
+                  <div className="overflow-y-auto flex-1 overscroll-contain">
+                  <form id="product-form" onSubmit={handleSubmit} className="px-4 sm:px-5 py-4 space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <div>
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Название (русский) *</label>
                         <input value={form.name} onChange={e => handleNameRuChange(e.target.value)}
@@ -1212,7 +1212,7 @@ export default function Admin() {
                           className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 ${nameUzManualRef.current ? 'border-orange-300 focus:ring-orange-300' : 'border-gray-200 focus:ring-primary/30'}`} placeholder={nameUzManualRef.current ? "Введено вручную (авто-перевод отключён)" : "Заполнится автоматически при вводе русского названия..."} />
                       </div>
                       {/* Auto-translate button */}
-                      <div className="col-span-2">
+                      <div className="col-span-1 sm:col-span-2">
                         <button
                           type="button"
                           onClick={handleTranslate}
@@ -1256,7 +1256,7 @@ export default function Admin() {
                         />
                       </div>
                       {/* Exchange rate row */}
-                      <div className="col-span-2">
+                      <div className="col-span-1 sm:col-span-2">
                         <div className="flex flex-wrap items-center gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
                           <span className="text-sm font-semibold text-blue-800">💱 Курс доллара:</span>
                           <input
@@ -1326,7 +1326,7 @@ export default function Admin() {
                         <input type="number" value={form.stock} onChange={e => setForm(f => ({ ...f, stock: parseInt(e.target.value) || 0 }))}
                           className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-colors" placeholder="10" min={0} />
                       </div>
-                      <div className="col-span-2">
+                      <div className="col-span-1 sm:col-span-2">
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Фотографии товара ({form.images.length}/10)</label>
                         {/* Image gallery */}
                         {form.images.length > 0 && (
@@ -1387,7 +1387,7 @@ export default function Admin() {
                           <p className="text-xs text-gray-400 mt-1">Нажмите на фото чтобы сделать его главным · Обведение — главное фото</p>
                         )}
                       </div>
-                      <div className="col-span-2">
+                      <div className="col-span-1 sm:col-span-2">
                         <div className="flex items-center justify-between mb-1">
                           <label className="block text-sm font-semibold">Описание (русский)</label>
                           {editId && (
@@ -1411,7 +1411,7 @@ export default function Admin() {
                           </p>
                         )}
                       </div>
-                      <div className="col-span-2">
+                      <div className="col-span-1 sm:col-span-2">
                         <div className="flex items-center justify-between mb-1">
                           <label className="block text-sm font-semibold">Описание (узбекский, необязательно)</label>
                           {descUzManualRef.current && (
@@ -1422,7 +1422,7 @@ export default function Admin() {
                           rows={3} className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 resize-none ${descUzManualRef.current ? 'border-orange-300 focus:ring-orange-300' : 'border-gray-200 focus:ring-primary/30'}`} placeholder={descUzManualRef.current ? "Введено вручную (авто-перевод отключён)" : "Заполнится автоматически при вводе русского описания..."} />
                       </div>
                       {/* Seller info */}
-                      <div className="col-span-2 border-t border-gray-100 pt-3">
+                      <div className="col-span-1 sm:col-span-2 border-t border-gray-100 pt-3">
                         <p className="text-sm font-bold text-gray-700 mb-3">Данные продавца</p>
                       </div>
                       <div>
@@ -1431,7 +1431,7 @@ export default function Admin() {
                           className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-colors" placeholder="Название магазина" />
                       </div>
 
-                      <div className="col-span-2">
+                      <div className="col-span-1 sm:col-span-2">
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Контактный телефон (показывается на странице товара)</label>
                         <ContactPhonePicker
                           value={form.contactPhone}
@@ -1442,7 +1442,7 @@ export default function Admin() {
                         <p className="text-xs text-gray-400 mt-1">Нажмите на книжку справа, чтобы выбрать из сохранённых номеров или сохранить новый</p>
                       </div>
                       {/* Метки товара — компактные toggle */}
-                      <div className="col-span-2">
+                      <div className="col-span-1 sm:col-span-2">
                         <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Метки</p>
                         <div className="flex flex-wrap gap-2">
                           <button
@@ -1498,7 +1498,7 @@ export default function Admin() {
                         )}
                       </div>
                       {form.isHit && (
-                        <div className="col-span-2">
+                        <div className="col-span-1 sm:col-span-2">
                           <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Порядок в хитах</label>
                           <input
                             type="number"
@@ -1512,7 +1512,7 @@ export default function Admin() {
                         </div>
                       )}
                       {/* Склад + Таймер — нейтральный стиль */}
-                      <div className="col-span-2 grid grid-cols-2 gap-3">
+                      <div className="col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                           <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Остаток на складе</label>
                           <input type="number" value={form.stockCount} onChange={e => setForm(f => ({ ...f, stockCount: e.target.value }))}
@@ -1539,7 +1539,7 @@ export default function Admin() {
                   </form>
                   </div>
                   {/* Кнопки — фиксированы внизу */}
-                  <div className="flex gap-3 px-5 py-4 border-t border-gray-100 bg-white shrink-0 rounded-b-2xl">
+                  <div className="flex gap-3 px-4 sm:px-5 py-3 sm:py-4 border-t border-gray-100 bg-white shrink-0 sm:rounded-b-2xl" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}>
                     <button
                       type="submit"
                       form="product-form"
