@@ -132,26 +132,26 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
           <div className="absolute top-1.5 left-1.5 flex flex-col gap-1">
             {hasDiscount && (
-              <span className="text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-none" style={{ backgroundColor: "#2e7d32" }}>-{discountPercent}%</span>
+              <span className="text-white text-xs font-bold px-1.5 py-0.5 rounded-md leading-none" style={{ backgroundColor: "#2e7d32" }}>-{discountPercent}%</span>
             )}
             {product.isNew && (
-              <span className="text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-none" style={{ backgroundColor: "#388e3c" }}>{t.card_new}</span>
+              <span className="text-white text-xs font-bold px-1.5 py-0.5 rounded-md leading-none" style={{ backgroundColor: "#388e3c" }}>{t.card_new}</span>
             )}
             {product.isHit && (
-              <span className="text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-none flex items-center gap-0.5" style={{ backgroundColor: "#e65100" }}>🔥 {t.card_hit}</span>
+              <span className="text-white text-xs font-bold px-1.5 py-0.5 rounded-md leading-none flex items-center gap-0.5" style={{ backgroundColor: "#e65100" }}>🔥 {t.card_hit}</span>
             )}
           </div>
           {/* Wishlist button */}
           <button
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); const wasWishlisted = isWishlisted; toggleWishlist(product.id); track(wasWishlisted ? "remove_from_favorites" : "add_to_favorites", { productId: product.id, productName: displayName }); }}
             title={isWishlisted ? "Убрать из избранного" : "В избранное"}
-            className={`absolute top-1.5 right-1.5 w-6 h-6 rounded-full flex items-center justify-center transition-all shadow-sm z-10 ${isWishlisted ? "bg-red-500 text-white border-red-500" : "bg-white/90 border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-300 hover:bg-red-50"}`}
+            className={`absolute top-1.5 right-1.5 w-6 h-6 rounded-full flex items-center justify-center transition-all shadow-sm z-10 ${isWishlisted ? "bg-red-500 text-white border-red-500" : "bg-white/90 border border-gray-200 text-gray-600 hover:text-red-500 hover:border-red-300 hover:bg-red-50"}`}
           >
             <Heart size={11} className={isWishlisted ? "fill-white" : ""} />
           </button>
           {product.isPremium && (
             <div className="absolute top-8 right-1.5">
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-none flex items-center gap-0.5" style={{ background: 'linear-gradient(135deg, #1a1a2e, #2d2d4e)', color: '#d4af37', border: '1px solid #d4af37' }}>◈ {t.card_original}</span>
+              <span className="text-xs font-bold px-1.5 py-0.5 rounded-md leading-none flex items-center gap-0.5" style={{ background: 'linear-gradient(135deg, #1a1a2e, #2d2d4e)', color: '#d4af37', border: '1px solid #d4af37' }}>◈ {t.card_original}</span>
             </div>
           )}
 
@@ -161,7 +161,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               <TooltipTrigger asChild>
                 <button
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCompareOpen(true); }}
-                  className="absolute bottom-1.5 left-1.5 w-6 h-6 rounded-full bg-white/90 border border-gray-200 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all shadow-sm z-10"
+                  className="absolute bottom-1.5 left-1.5 w-6 h-6 rounded-full bg-white/90 border border-gray-200 flex items-center justify-center text-gray-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all shadow-sm z-10"
                 >
                   <ArrowLeftRight size={10} />
                 </button>
@@ -174,11 +174,11 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
 
         <div className="p-2 flex flex-col flex-1">
-          {product.brand && <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-0.5 truncate">{product.brand}</p>}
+          {product.brand && <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide mb-0.5 truncate">{product.brand}</p>}
           {(product.reviewCount ?? 0) > 0 && (
             <div className="flex items-center gap-0.5 mb-0.5">
-              <span className="text-[10px] text-yellow-500">{'★'.repeat(Math.round(product.avgRating ?? 0))}{'☆'.repeat(5 - Math.round(product.avgRating ?? 0))}</span>
-              <span className="text-[9px] text-gray-400">({product.reviewCount})</span>
+              <span className="text-xs text-yellow-500">{'★'.repeat(Math.round(product.avgRating ?? 0))}{'☆'.repeat(5 - Math.round(product.avgRating ?? 0))}</span>
+              <span className="text-xs text-gray-600">({product.reviewCount})</span>
             </div>
           )}
           <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 flex-1 mb-1.5 leading-snug">{displayName}</h3>
@@ -186,8 +186,8 @@ export default function ProductCard({ product }: ProductCardProps) {
             {hasDiscount && product.originalPrice ? (
               <>
                 <div className="flex items-center justify-between gap-1 mb-0.5">
-                  <span className="text-[10px] text-gray-400 line-through leading-tight">{formatPrice(product.originalPrice!)}</span>
-                  <span className="text-[9px] font-bold text-white px-1 py-0.5 rounded shrink-0" style={{ backgroundColor: "#2e7d32" }}>-{discountPercent}%</span>
+                  <span className="text-xs text-gray-600 line-through leading-tight">{formatPrice(product.originalPrice!)}</span>
+                  <span className="text-xs font-bold text-white px-1 py-0.5 rounded shrink-0" style={{ backgroundColor: "#2e7d32" }}>-{discountPercent}%</span>
                 </div>
                 <div className="text-sm font-black leading-tight" style={{ color: "#cc0000" }}>{formatPrice(product.price)}</div>
               </>

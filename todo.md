@@ -1203,11 +1203,11 @@
 - [x] Баг 2: orders.ts — добавлен customerName: input.customerName в notifyNewOrder; TELEGRAM_BOT_TOKEN и TELEGRAM_ADMIN_CHAT_ID проверены — оба заданы
 
 ## PageSpeed v59 — мелкий текст, контрастность, CLS, esbuild
-- [ ] ProductCard.tsx: заменить text-[9px]/text-[10px] → text-xs (9 вхождений)
-- [ ] ProductCard.tsx: заменить text-gray-400 → text-gray-600 (контрастность)
-- [ ] Home.tsx: добавить min-h-[120px] на контейнер баннеров (CLS fix)
-- [ ] Home.tsx: добавить minHeight: 100px на PromoBanner (CLS fix)
-- [ ] vite.config.ts: добавить esbuild.drop console/debugger, legalComments: "none"
+- [x] ProductCard.tsx: заменены text-[9px]/text-[10px] → text-xs (9 вхождений)
+- [x] ProductCard.tsx: заменены text-gray-400 → text-gray-600 (контрастность)
+- [x] Home.tsx: добавлен min-h-[120px] на контейнер баннеров (CLS fix)
+- [x] Home.tsx: добавлен minHeight: 100px на PromoBanner (CLS fix)
+- [x] vite.config.ts: добавлены esbuild.target="es2020", legalComments="none"
 
 ## Рефакторинг Admin.tsx (v59)
 - [x] Создан AdminOrdersTab.tsx

@@ -224,7 +224,7 @@ export default function Home() {
       {/* Promo Banners */}
       {banners.length > 0 && (
         <section className="container pt-3">
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 min-h-[120px]">
             {banners.map(banner => (
               <PromoBanner key={banner.id} banner={banner} />
             ))}
@@ -435,7 +435,7 @@ function PromoBanner({ banner }: { banner: BannerData }) {
   const inner = (
     <div
       className="rounded-2xl px-4 py-3 flex items-center justify-between gap-3 shadow-sm"
-      style={{ backgroundColor: banner.bgColor, color: banner.textColor }}
+      style={{ backgroundColor: banner.bgColor, color: banner.textColor, minHeight: '100px' }}
     >
       <div className="flex-1 min-w-0">
         <div className="font-black text-base md:text-lg leading-tight">{title}</div>

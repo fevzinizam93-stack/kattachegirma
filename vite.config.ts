@@ -209,6 +209,8 @@ export default defineConfig({
   // Drop console.log and debugger in production builds
   esbuild: {
     drop: process.env.NODE_ENV === "production" ? ["console", "debugger"] : [],
+    target: "es2020",
+    legalComments: "none",
   },
   resolve: {
     alias: {
