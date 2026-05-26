@@ -1183,3 +1183,21 @@
 - [x] server/telegram.ts: registerWebhook() — уже есть autoRegisterTelegramWebhook() в _core/index.ts
 - [x] server/webhookRoute.ts: take_order/reject_order обработчик callback_query
 - [x] db.ts: добавить getOrderById, updateOrderStatusWithManager, getUserByPhone
+
+## PageSpeed оптимизация v57 (43→70+)
+- [x] App.tsx: все страницы через lazy() (Admin, SellerDashboard, Videos, PremiumCatalog, AdminAnalytics, AdminReviews, SellerPanel, SellerMessages, ComponentShowcase)
+- [x] vite.config.ts: manualChunks для page-admin, page-seller, page-videos
+- [x] ProductCard.tsx: width/height/decoding уже есть (CLS fix уже был реализован)
+- [x] Navbar.tsx: добавлен width/height/fetchPriority на логотип
+- [x] OptimizedImage.tsx: width/height props уже есть
+- [x] index.html: preload логотипа в <head>
+- [x] index.html: убран Google Fonts (системный шрифт в index.css)
+- [x] index.html: GTM скрипт перенесён в конец <body>
+- [x] index.css: системный шрифт вместо Inter
+- [x] server/_core/vite.ts: Cache-Control заголовки уже были настроены (1y immutable)
+- [x] Navbar.tsx: aria-label на кнопки поиска/корзины/избранного
+- [x] MobileBottomNav.tsx: aria-label на кнопки навигации
+
+## Багфиксы v58
+- [ ] Баг 1: OrderSuccessModal.tsx — кнопка "Отследить заказ" ведёт на /order-tracking (несуществующий маршрут) → исправить на /order/${orderNumber}
+- [ ] Баг 2: orders.ts — notifyNewOrder не передаёт customerName → добавить поле

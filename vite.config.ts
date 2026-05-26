@@ -257,6 +257,14 @@ export default defineConfig({
           "vendor-charts": ["recharts"],
           // Command palette
           "vendor-cmdk": ["cmdk"],
+          // Page-specific chunks — heavy pages split out to avoid loading on home page
+          "page-admin": ["./client/src/pages/Admin.tsx"],
+          "page-seller": [
+            "./client/src/pages/SellerDashboard.tsx",
+            "./client/src/pages/SellerPanel.tsx",
+            "./client/src/pages/SellerMessages.tsx",
+          ],
+          "page-videos": ["./client/src/pages/Videos.tsx"],
           // Additional Radix UI components
           "vendor-radix2": [
             "@radix-ui/react-accordion",

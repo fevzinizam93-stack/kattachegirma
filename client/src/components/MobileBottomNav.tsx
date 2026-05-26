@@ -54,6 +54,7 @@ export default function MobileBottomNav() {
           {/* Главная */}
           <Link
             href="/"
+            aria-label="Главная"
             className={`flex flex-col items-center justify-center flex-1 gap-0.5 text-[10px] font-medium transition-colors ${isActive("/") ? activeClass : inactiveClass}`}
           >
             <Home size={22} strokeWidth={isActive("/") ? 2.5 : 1.8} />
@@ -63,6 +64,7 @@ export default function MobileBottomNav() {
           {/* Каталог */}
           <Link
             href="/catalog"
+            aria-label="Каталог"
             className={`flex flex-col items-center justify-center flex-1 gap-0.5 text-[10px] font-medium transition-colors ${isActive("/catalog") || isActive("/category") ? activeClass : inactiveClass}`}
           >
             <Grid3X3 size={22} strokeWidth={isActive("/catalog") || isActive("/category") ? 2.5 : 1.8} />
@@ -72,6 +74,7 @@ export default function MobileBottomNav() {
           {/* Видео */}
           <Link
             href="/videos"
+            aria-label="Видеообзоры"
             className={`flex flex-col items-center justify-center flex-1 gap-0.5 text-[10px] font-medium transition-colors ${isActive("/videos") ? activeClass : inactiveClass}`}
           >
             <Youtube size={22} strokeWidth={isActive("/videos") ? 2.5 : 1.8} />
@@ -81,6 +84,7 @@ export default function MobileBottomNav() {
           {/* Избранное */}
           <Link
             href="/favorites"
+            aria-label="Избранное"
             className={`flex flex-col items-center justify-center flex-1 gap-0.5 text-[10px] font-medium transition-colors ${isActive("/favorites") ? activeClass : inactiveClass}`}
           >
             <div className="relative">
@@ -96,6 +100,7 @@ export default function MobileBottomNav() {
           {/* Корзина */}
           <Link
             href="/cart"
+            aria-label="Корзина"
             className={`flex flex-col items-center justify-center flex-1 gap-0.5 text-[10px] font-medium transition-colors ${isActive("/cart") || isActive("/checkout") ? activeClass : inactiveClass}`}
           >
             <div className="relative">
@@ -112,6 +117,7 @@ export default function MobileBottomNav() {
           {/* Меню */}
           <button
             onClick={() => setMenuOpen(true)}
+            aria-label="Меню"
             className={`flex flex-col items-center justify-center flex-1 gap-0.5 text-[10px] font-medium transition-colors ${menuOpen ? activeClass : inactiveClass}`}
           >
             <div className="relative">

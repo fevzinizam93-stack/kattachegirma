@@ -1,15 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Reduce font-swap layout shift: match Inter metrics with Arial fallback */
-@font-face {
-  font-family: 'Inter-Fallback';
-  src: local('Arial'), local('Helvetica Neue'), local('system-ui');
-  ascent-override: 90.2%;
-  descent-override: 22.48%;
-  line-gap-override: 0%;
-  size-adjust: 107.4%;
-}
+/* System font stack — no external font loading, zero render-blocking */
+/* Inter removed: using OS native fonts for instant rendering */
 
 @custom-variant dark (&:is(.dark *));
 
@@ -130,7 +123,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', 'Inter-Fallback', system-ui, -apple-system, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),

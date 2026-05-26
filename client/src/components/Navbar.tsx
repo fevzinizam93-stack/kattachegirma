@@ -190,7 +190,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
         <div className="container flex items-center gap-4" style={{ height: "60px" }}>
           {/* Logo */}
           <Link href="/" className="shrink-0 flex items-center gap-2 min-w-fit">
-            <img src="/manus-storage/kc_logo_d6421d0d.png" alt="Katta Chegirma" className="object-contain shrink-0" style={{ height: "40px", width: "auto" }} />
+            <img src="/manus-storage/kc_logo_d6421d0d.png" alt="Katta Chegirma" className="object-contain shrink-0" style={{ height: "40px", width: "auto" }} width={120} height={40} fetchPriority="high" decoding="sync" />
             <div className="font-black text-gray-900 tracking-tight whitespace-nowrap" style={{ fontSize: "15px" }}>Katta Chegirma!!!</div>
           </Link>
 
@@ -307,11 +307,11 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                 autoComplete="off"
               />
               {searchQuery && (
-                <button type="button" onClick={() => { setSearchQuery(""); setShowDropdown(false); }} className="text-gray-400 hover:text-gray-600 px-2 outline-none">
-                  <X size={14} />
-                </button>
+              <button type="button" aria-label="Очистить поиск" onClick={() => { setSearchQuery(""); setShowDropdown(false); }} className="text-gray-400 hover:text-gray-600 px-2 outline-none">
+                <X size={14} />
+              </button>
               )}
-              <button type="submit" className="bg-red-600 hover:bg-red-700 text-white px-5 self-stretch flex items-center justify-center text-sm font-medium transition-colors shrink-0">
+              <button type="submit" aria-label="Найти" className="bg-red-600 hover:bg-red-700 text-white px-5 self-stretch flex items-center justify-center text-sm font-medium transition-colors shrink-0">
                 <Search size={15} />
               </button>
             </form>
@@ -367,6 +367,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
               <div className="relative" ref={notifDropdownRef}>
                 <button
                   onClick={() => setShowNotifDropdown((v) => !v)}
+                  aria-label="Уведомления"
                   className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors relative"
                 >
                   <div className="relative">
@@ -442,7 +443,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
             )}
 
             {/* Wishlist */}
-            <Link href="/favorites" className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors relative">
+            <Link href="/favorites" aria-label="Избранное" className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors relative">
               <div className="relative">
                 <Heart size={20} className="text-gray-700" />
                 {wishlistCount > 0 && (
@@ -452,7 +453,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
               <span className="text-[10px] text-gray-600 whitespace-nowrap">Избранное</span>
             </Link>
             {/* Cart */}
-            <Link href="/cart" className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors relative">
+            <Link href="/cart" aria-label="Корзина" className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors relative">
               <div className="relative">
                 <ShoppingCart size={20} className="text-gray-700" />
                 {totalItems > 0 && (
@@ -469,7 +470,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                 <span className="text-[10px] text-gray-600 max-w-[60px] truncate">{user?.name?.split(" ")[0]}</span>
               </Link>
             ) : (
-              <button onClick={() => onOpenAuth?.(location)} className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200">
+              <button onClick={() => onOpenAuth?.(location)} aria-label="Войти" className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200">
                 <User size={18} className="text-gray-700" />
                 <span className="text-[10px] text-gray-600 whitespace-nowrap">{t.nav_login}</span>
               </button>
@@ -537,7 +538,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
         {/* Top row: logo + name only */}
         <div className="flex items-center px-3 pt-2 pb-1">
           <Link href="/" className="flex items-center gap-2 min-w-0">
-            <img src="/manus-storage/kc_logo_d6421d0d.png" alt="Katta Chegirma" className="h-10 w-auto object-contain shrink-0" />
+            <img src="/manus-storage/kc_logo_d6421d0d.png" alt="Katta Chegirma" className="h-10 w-auto object-contain shrink-0" width={120} height={40} fetchPriority="high" decoding="sync" />
             <div className="font-black text-base text-gray-900 tracking-tight">Katta Chegirma!!!</div>
           </Link>
         </div>
