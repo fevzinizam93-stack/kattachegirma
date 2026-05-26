@@ -1172,3 +1172,14 @@
 - [x] Backend: getProductPage endpoint (product + reviews + similar + reviewSummary в одном запросе)
 - [x] Frontend: ProductDetail.tsx — заменить 4+ отдельных запроса на trpc.products.getProductPage
 - [x] PWA: установить vite-plugin-pwa, настроить Service Worker (autoUpdate, NetworkFirst для API)
+
+## Система заказов v56: красивое окно + Telegram кнопки
+- [x] Schema: добавить telegramId/telegramUsername в users, managerId/managerName/takenAt в orders
+- [x] Миграция SQL применена через webdev_execute_sql
+- [x] OrderSuccessModal.tsx создан
+- [x] Checkout.tsx обновлён — показывает OrderSuccessModal после заказа
+- [x] server/telegram.ts: сообщение о заказе с inline кнопками (✅ Беру / 📞 Позвонить / ❌ Отклонить)
+- [x] server/telegram.ts: notifyCustomer() — уведомление клиенту по telegramId
+- [x] server/telegram.ts: registerWebhook() — уже есть autoRegisterTelegramWebhook() в _core/index.ts
+- [x] server/webhookRoute.ts: take_order/reject_order обработчик callback_query
+- [x] db.ts: добавить getOrderById, updateOrderStatusWithManager, getUserByPhone

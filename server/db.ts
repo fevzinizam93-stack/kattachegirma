@@ -375,6 +375,35 @@ export async function updateOrderStatus(id: number, status: "pending" | "confirm
   await db.update(orders).set({ status }).where(eq(orders.id, id));
 }
 
+export async function getOrderById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
+  return rows[0] ?? null;
+}
+
+export async function updateOrderStatusWithManager(
+  id: number,
+  status: "pending" | "confirmed" | "delivered" | "cancelled",
+  managerId?: string,
+  managerName?: string
+) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const updateData: Record<string, unknown> = { status };
+  if (managerId) updateData.managerId = managerId;
+  if (managerName) updateData.managerName = managerName;
+  if (managerId || managerName) updateData.takenAt = new Date();
+  await db.update(orders).set(updateData as any).where(eq(orders.id, id));
+}
+
+export async function getUserByPhone(phone: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(users).where(eq(users.phone, phone)).limit(1);
+  return rows[0] ?? null;
+}
+
 // ---- Favorites ----
 export async function getFavoritesByUserId(userId: number) {
   const db = await getDb();

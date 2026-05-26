@@ -5,8 +5,8 @@
  */
 
 import { Router } from "express";
-import { approveSeller, setSellerBlocked, getSellerById, getProductById, updateProduct, setReviewStatus, getAllReviews, getAllOrders, getAllSellers, getPendingProducts } from "./db";
-import { answerCallbackQuery, editMessageText, sendTelegramMessageToChat } from "./telegram";
+import { approveSeller, setSellerBlocked, getSellerById, getProductById, updateProduct, setReviewStatus, getAllReviews, getAllOrders, getAllSellers, getPendingProducts, getOrderById, updateOrderStatusWithManager } from "./db";
+import { answerCallbackQuery, editMessageText, sendTelegramMessageToChat, notifyCustomer } from "./telegram";
 
 const router = Router();
 
@@ -232,6 +232,64 @@ router.post("/api/telegram/webhook", async (req, res) => {
 
         if (chatId && messageId) {
           await editMessageText(chatId, messageId, hiddenReviewText);
+        }
+
+      } else if (data.startsWith("take_order:")) {
+        const orderId = parseInt(data.split(":")[1], 10);
+        if (isNaN(orderId)) throw new Error("Invalid order id");
+
+        const order = await getOrderById(orderId);
+        if (!order) {
+          await answerCallbackQuery(callbackQueryId, "❌ Buyurtma topilmadi");
+          res.json({ ok: true });
+          return;
+        }
+        if (order.managerId) {
+          await answerCallbackQuery(callbackQueryId, `⚠️ Buyurtma allaqachon ${order.managerName ?? 'boshqa menejer'} tomonidan olingan`);
+          res.json({ ok: true });
+          return;
+        }
+
+        const managerId = String(cbq.from?.id ?? "");
+        const managerName = [cbq.from?.first_name, cbq.from?.last_name].filter(Boolean).join(" ") || adminName;
+
+        await updateOrderStatusWithManager(orderId, "confirmed", managerId, managerName);
+        await answerCallbackQuery(callbackQueryId, `✅ Buyurtma #${orderId} siz tomonidan qabul qilindi!`);
+
+        // Edit the message to show who took the order and remove buttons
+        const originalText = cbq.message?.text ?? "";
+        const updatedText = [
+          originalText,
+          ``,
+          `✅ <b>Buyurtmani oldi:</b> ${managerName}`,
+          `⏰ ${new Date().toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" })}`,
+        ].join("\n");
+
+        if (chatId && messageId) {
+          await editMessageText(chatId, messageId, updatedText);
+        }
+
+        // Notify the customer in Telegram if they have a telegramId
+        if (order.customerPhone) {
+          notifyCustomer(order.customerPhone, orderId, managerName).catch(console.error);
+        }
+
+      } else if (data.startsWith("reject_order:")) {
+        const orderId = parseInt(data.split(":")[1], 10);
+        if (isNaN(orderId)) throw new Error("Invalid order id");
+
+        await updateOrderStatusWithManager(orderId, "cancelled");
+        await answerCallbackQuery(callbackQueryId, `❌ Buyurtma #${orderId} rad etildi`);
+
+        if (chatId && messageId) {
+          const originalText = cbq.message?.text ?? "";
+          const cancelledText = [
+            originalText,
+            ``,
+            `❌ <b>Rad etildi</b> — ${adminName}`,
+            `⏰ ${new Date().toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" })}`,
+          ].join("\n");
+          await editMessageText(chatId, messageId, cancelledText);
         }
 
       } else {

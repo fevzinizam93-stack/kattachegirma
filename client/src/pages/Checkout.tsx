@@ -4,7 +4,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { CheckCircle, LogIn, MapPin, Phone, User } from "lucide-react";
+import { LogIn, MapPin, Phone, User } from "lucide-react";
+import OrderSuccessModal from "@/components/OrderSuccessModal";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -14,8 +15,7 @@ export default function Checkout() {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
   const { isAuthenticated, user } = useAuth();
-  const [success, setSuccess] = useState(false);
-  const [orderId, setOrderId] = useState<number | null>(null);
+  const [successOrder, setSuccessOrder] = useState<{ id: number; name: string } | null>(null);
 
   const [form, setForm] = useState({
     customerName: "",
@@ -43,8 +43,7 @@ export default function Checkout() {
         total: totalAmount,
         items: items.map(i => ({ id: i.productId, name: i.name, price: i.price, quantity: i.quantity })),
       });
-      setOrderId(data.id);
-      setSuccess(true);
+      setSuccessOrder({ id: data.id, name: form.customerName });
       clearCart();
     },
     onError: (err) => {
@@ -81,7 +80,7 @@ export default function Checkout() {
     });
   };
 
-  if (items.length === 0 && !success) {
+  if (items.length === 0 && !successOrder) {
     return (
       <div className="container py-20 text-center">
         <h2 className="text-xl font-bold mb-4">{t.cart_empty}</h2>
@@ -92,34 +91,17 @@ export default function Checkout() {
     );
   }
 
-  if (success) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white rounded-2xl border border-border p-10 text-center max-w-md w-full mx-4">
-          <CheckCircle size={64} className="mx-auto text-green-500 mb-4" />
-          <h2 className="text-2xl font-black mb-2">{t.checkout_success}</h2>
-          <p className="text-muted-foreground mb-2">{t.profile_order_number}<strong>#{orderId}</strong></p>
-          <p className="text-sm text-muted-foreground mb-6">{t.checkout_success_desc}</p>
-          <div className="space-y-3">
-            {orderId && (
-              <Link href={`/order/${orderId}`}>
-                <button className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors">
-                  📦 Отследить заказ #{orderId}
-                </button>
-              </Link>
-            )}
-            <Link href="/">
-              <button className="w-full border border-border py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors text-gray-700">
-                {t.checkout_back_home}
-              </button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
+    <>
+    {successOrder && (
+      <OrderSuccessModal
+        orderNumber={successOrder.id}
+        customerName={successOrder.name}
+        onClose={() => { setSuccessOrder(null); window.location.href = '/'; }}
+      />
+    )}
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b border-border">
         <div className="container py-4">
@@ -255,5 +237,6 @@ export default function Checkout() {
         </div>
       </div>
     </div>
+    </>
   );
 }

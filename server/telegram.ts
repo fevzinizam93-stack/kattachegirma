@@ -308,14 +308,16 @@ export async function notifyNewOrder(order: {
   address: string;
   items: Array<{ productName: string; quantity: number; price: string }>;
   total: string;
+  customerName?: string;
 }): Promise<void> {
   const itemLines = order.items
     .map((item, i) => `  ${i + 1}. <b>${item.productName}</b> × ${item.quantity} — ${Number(item.price).toLocaleString("ru-RU")} so'm`)
     .join("\n");
 
   const message = [
-    `🛒 <b>Yangi buyurtma #${order.id}!</b>`,
+    `🛒 <b>YANGI BUYURTMA #${order.id}</b>`,
     ``,
+    order.customerName ? `👤 <b>Mijoz:</b> ${order.customerName}` : null,
     `📞 <b>Telefon:</b> ${order.phone}`,
     `📍 <b>Manzil:</b> ${order.address}`,
     ``,
@@ -325,7 +327,63 @@ export async function notifyNewOrder(order: {
     `💰 <b>Jami:</b> ${Number(order.total).toLocaleString("ru-RU")} so'm`,
     ``,
     `⏰ ${new Date().toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" })}`,
+  ].filter(Boolean).join("\n");
+
+  // Inline keyboard for managers
+  const keyboard = {
+    inline_keyboard: [
+      [
+        { text: "✅ Buyurtmani olaman", callback_data: `take_order:${order.id}` },
+      ],
+      [
+        { text: "📞 Qo'ng'iroq qilish", url: `tel:${order.phone}` },
+        { text: "❌ Rad etish", callback_data: `reject_order:${order.id}` },
+      ],
+    ],
+  };
+
+  await broadcastTelegramMessage(message, { reply_markup: keyboard });
+}
+
+/**
+ * Notify customer in Telegram when a manager takes their order
+ */
+export async function notifyCustomer(
+  phone: string,
+  orderId: number,
+  managerName: string
+): Promise<void> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return;
+
+  // Lazy import to avoid circular deps
+  const { getUserByPhone } = await import("./db");
+  const user = await getUserByPhone(phone);
+  if (!(user as any)?.telegramId) return;
+
+  const message = [
+    `🎉 <b>Buyurtmangiz qabul qilindi!</b>`,
+    ``,
+    `📦 <b>#${orderId}</b> raqamli buyurtmangizni menejerimiz qabul qildi.`,
+    ``,
+    `👨‍💼 <b>${managerName}</b> tez orada siz bilan bog'lanadi.`,
+    ``,
+    `⏰ 30 daqiqa ichida qo'ng'iroqni kuting.`,
+    ``,
+    `<b>Katta Chegirma</b>ga ishonganingiz uchun rahmat! 🛒`,
   ].join("\n");
 
-  await broadcastTelegramMessage(message);
+  try {
+    await fetch(`${TELEGRAM_API}/bot${token}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: (user as any).telegramId,
+        text: message,
+        parse_mode: "HTML",
+      }),
+    });
+  } catch (e) {
+    console.error("[Telegram] notifyCustomer error:", e);
+  }
 }

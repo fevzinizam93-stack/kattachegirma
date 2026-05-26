@@ -20,6 +20,7 @@ export const users = mysqlTable("users", {
   role: mysqlEnum("role", ["user", "admin", "seller", "vip"]).default("user").notNull(),
   phone: varchar("phone", { length: 32 }),
   telegramId: varchar("telegramId", { length: 64 }),
+  telegramUsername: varchar("telegramUsername", { length: 128 }),
   vipExpiresAt: timestamp("vipExpiresAt"),
   vipEnabled: boolean("vipEnabled").default(false).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -125,6 +126,9 @@ export const orders = mysqlTable("orders", {
   items: json("items").$type<Array<{ productId: number; name: string; price: number; quantity: number; imageUrl?: string }>>().notNull(),
   totalAmount: decimal("totalAmount", { precision: 12, scale: 2 }).notNull(),
   status: mysqlEnum("status", ["pending", "confirmed", "delivered", "cancelled"]).default("pending").notNull(),
+  managerId: varchar("managerId", { length: 32 }),
+  managerName: varchar("managerName", { length: 128 }),
+  takenAt: timestamp("takenAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
