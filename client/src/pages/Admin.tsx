@@ -959,14 +959,14 @@ export default function Admin() {
                   <Plus size={16} /> Добавить
                 </button>
               </div>
-              {/* Строка 2: вспомогательные кнопки с горизонтальным скроллом */}
-              <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+              {/* Строка 2: вспомогательные кнопки — 2×2 на мобильном, в ряд на десктопе */}
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
                 <button
                   type="button"
                   onClick={() => { if (!genUzSlugsLoading && window.confirm('Сгенерировать UZ URL slug-и для всех товаров без slugUz? Это займёт несколько минут.')) genProdUzSlugsMut.mutate(); }}
                   disabled={genUzSlugsLoading}
                   title="Сгенерировать узбекские URL slug-и для товаров"
-                  className="flex items-center gap-1 border border-emerald-200 text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg font-semibold text-xs hover:bg-emerald-100 transition-colors disabled:opacity-50 whitespace-nowrap shrink-0"
+                  className="flex items-center justify-center gap-1 border border-emerald-200 text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl font-semibold text-xs hover:bg-emerald-100 transition-colors disabled:opacity-50"
                 >
                   {genUzSlugsLoading ? <div className="w-3 h-3 border-2 border-emerald-300 border-t-emerald-600 rounded-full animate-spin" /> : <span>🔗</span>}
                   {genUzSlugsLoading ? "Генерирую..." : "UZ slug"}
@@ -976,7 +976,7 @@ export default function Admin() {
                   onClick={() => { if (!bulkTranslating && window.confirm('Перевести все товары без узбекского названия/описания? Это может занять несколько минут.')) bulkTranslateMut.mutate(); }}
                   disabled={bulkTranslating}
                   title="Перевести все товары без узбекского названия/описания RU→UZ"
-                  className="flex items-center gap-1 border border-blue-200 text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg font-semibold text-xs hover:bg-blue-100 transition-colors disabled:opacity-50 whitespace-nowrap shrink-0"
+                  className="flex items-center justify-center gap-1 border border-blue-200 text-blue-700 bg-blue-50 px-3 py-2 rounded-xl font-semibold text-xs hover:bg-blue-100 transition-colors disabled:opacity-50"
                 >
                   {bulkTranslating ? <div className="w-3 h-3 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" /> : <span>🌐</span>}
                   {bulkTranslating ? "Переводится..." : "Перевести"}
@@ -986,7 +986,7 @@ export default function Admin() {
                   onClick={() => { if (!bulkGenDescLoading && window.confirm('Сгенерировать SEO-описания для всех товаров без описания? Это может занять несколько минут.')) bulkGenDescMut.mutate(); }}
                   disabled={bulkGenDescLoading}
                   title="Сгенерировать SEO-описания для товаров без описания"
-                  className="flex items-center gap-1 border border-purple-200 text-purple-700 bg-purple-50 px-3 py-1.5 rounded-lg font-semibold text-xs hover:bg-purple-100 transition-colors disabled:opacity-50 whitespace-nowrap shrink-0"
+                  className="flex items-center justify-center gap-1 border border-purple-200 text-purple-700 bg-purple-50 px-3 py-2 rounded-xl font-semibold text-xs hover:bg-purple-100 transition-colors disabled:opacity-50"
                 >
                   {bulkGenDescLoading ? <div className="w-3 h-3 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin" /> : <span>🤖</span>}
                   {bulkGenDescLoading ? "Генерирую..." : "ИИ описания"}
@@ -996,7 +996,7 @@ export default function Admin() {
                   onClick={() => autoScanMut.mutate({ overwrite: false })}
                   disabled={scanLoading}
                   title="Автоматически найти видеообзоры для товаров без видео"
-                  className="flex items-center gap-1 border border-red-200 text-red-600 bg-red-50 px-3 py-1.5 rounded-lg font-semibold text-xs hover:bg-red-100 transition-colors disabled:opacity-50 whitespace-nowrap shrink-0"
+                  className="flex items-center justify-center gap-1 border border-red-200 text-red-600 bg-red-50 px-3 py-2 rounded-xl font-semibold text-xs hover:bg-red-100 transition-colors disabled:opacity-50"
                 >
                   {scanLoading ? <div className="w-3 h-3 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" /> : <RefreshCw size={12} />}
                   {scanLoading ? "Сканирую..." : "Скан видео"}
@@ -1426,86 +1426,157 @@ export default function Admin() {
 
             {/* Products table */}
             {productsLoading ? (
-       <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">Загрузка...</div>
+              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">Загрузка...</div>
             ) : (
-              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead className="bg-gray-50 border-b border-gray-200">
-                      <tr>
-                        <th className="text-left px-4 py-3 font-semibold">Товар</th>
-                        <th className="text-left px-4 py-3 font-semibold">Цена</th>
-                        <th className="text-left px-4 py-3 font-semibold">Склад</th>
-                        <th className="text-left px-4 py-3 font-semibold">Статус</th>
-                        <th className="text-right px-4 py-3 font-semibold">Действия</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredProducts.map(p => (
-                        <tr key={p.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 shrink-0">
-                                {p.imageUrl ? <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-lg">📦</div>}
-                              </div>
-                              <div>
-                                <p className="font-semibold line-clamp-1">{p.name}</p>
-                                <p className="text-xs text-gray-400">{p.brand}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <p className="font-bold text-primary">{formatPrice(p.price)}</p>
-                            <p className="text-xs text-gray-500 font-medium">${Math.round(parseFloat(p.price) / exchangeRate)}</p>
-                            {p.discount ? <p className="text-xs text-gray-400">-{p.discount}%</p> : null}
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className={`text-xs font-medium px-2 py-1 rounded-full ${(p.stock ?? 0) > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+              <div>
+                {/* МОБИЛЬНЫЙ ВИД — карточки (md:hidden) */}
+                <div className="md:hidden space-y-2">
+                  {filteredProducts.map(p => (
+                    <div key={p.id} className="bg-white rounded-xl border border-gray-200 p-3">
+                      <div className="flex gap-3">
+                        <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+                          {p.imageUrl
+                            ? <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                            : <div className="w-full h-full flex items-center justify-center text-2xl">📦</div>
+                          }
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-sm text-gray-900 line-clamp-2 leading-tight">{p.name}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">{p.brand}</p>
+                          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                            <span className="font-black text-sm text-primary">{formatPrice(p.price)}</span>
+                            <span className="text-xs text-gray-400">${Math.round(parseFloat(p.price) / exchangeRate)}</span>
+                            {p.discount ? <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-bold">-{p.discount}%</span> : null}
+                            <span className={`ml-auto text-xs font-bold px-2 py-0.5 rounded-full ${(p.stock ?? 0) > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                               {p.stock ?? 0} шт
                             </span>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex gap-1 flex-wrap">
-                              {(p as any).isActive === false && <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">⛔ Нет в наличии</span>}
-                              {(p as any).isApproved === false && <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">На проверке</span>}
-                              {p.isFeatured && <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">Рекомендуем</span>}
-                              {p.isNew && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Новинка</span>}
-                              {(p as any).isHit && <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">🔥 Hit</span>}
-                              {(p as any).isPremium && <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{ background: '#1a1a2e', color: '#d4af37' }}>◈ Original</span>}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center justify-end gap-2">
-                              {(p as any).isApproved === false && (
-                                <button onClick={() => approveProduct.mutate({ id: p.id })}
-                                  className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-lg hover:bg-green-200 transition-colors font-semibold">
-Одобрить
-                                  </button>
-                              )}
-                              <button
-                                onClick={() => toggleActive.mutate({ id: p.id, isActive: !(p as any).isActive })}
-                                title={(p as any).isActive ? "Скрыть с сайта (нет в наличии)" : "Показать на сайте"}
-                                className={`text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${
-                                  (p as any).isActive
-                                    ? "bg-green-100 text-green-700 hover:bg-red-100 hover:text-red-600"
-                                    : "bg-red-100 text-red-600 hover:bg-green-100 hover:text-green-700"
-                                }`}
-                              >
-                                {(p as any).isActive ? "✓ В наличии" : "⛔ Нет"}
-                              </button>
-                              <button onClick={() => handleEdit(p)} className="p-1.5 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors">
-                                <Edit size={15} />
-                              </button>
-                              <button onClick={() => { if (confirm("Удалить этот товар?")) deleteProduct.mutate({ id: p.id }); }}
-                                className="p-1.5 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors">
-                                <Trash2 size={15} />
-                              </button>
-                            </div>
-                          </td>
+                          </div>
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            {(p as any).isActive === false && <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-bold">⛔ Скрыт</span>}
+                            {(p as any).isApproved === false && <span className="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded-full">На проверке</span>}
+                            {(p as any).isHit && <span className="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full">🔥 Hit</span>}
+                            {p.isNew && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">Новинка</span>}
+                            {p.isFeatured && <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">⭐ Топ</span>}
+                            {(p as any).isPremium && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: '#1a1a2e', color: '#d4af37' }}>◈ Original</span>}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100">
+                        {(p as any).isApproved === false && (
+                          <button
+                            onClick={() => approveProduct.mutate({ id: p.id })}
+                            className="flex-1 h-9 bg-green-100 text-green-700 rounded-xl text-xs font-bold hover:bg-green-200 transition-colors"
+                          >
+                            ✓ Одобрить
+                          </button>
+                        )}
+                        <button
+                          onClick={() => toggleActive.mutate({ id: p.id, isActive: !(p as any).isActive })}
+                          className={`flex-1 h-9 rounded-xl text-xs font-bold transition-colors ${
+                            (p as any).isActive
+                              ? "bg-green-100 text-green-700 hover:bg-red-100 hover:text-red-600"
+                              : "bg-red-100 text-red-600 hover:bg-green-100 hover:text-green-700"
+                          }`}
+                        >
+                          {(p as any).isActive ? "✓ В наличии" : "⛔ Скрыт"}
+                        </button>
+                        <button
+                          onClick={() => handleEdit(p)}
+                          className="h-9 w-9 flex items-center justify-center bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors"
+                        >
+                          <Edit size={15} />
+                        </button>
+                        <button
+                          onClick={() => { if (confirm("Удалить этот товар?")) deleteProduct.mutate({ id: p.id }); }}
+                          className="h-9 w-9 flex items-center justify-center bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-colors"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* ДЕСКТОП ВИД — таблица (hidden md:block) */}
+                <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="text-left px-4 py-3 font-semibold">Товар</th>
+                          <th className="text-left px-4 py-3 font-semibold">Цена</th>
+                          <th className="text-left px-4 py-3 font-semibold">Склад</th>
+                          <th className="text-left px-4 py-3 font-semibold">Статус</th>
+                          <th className="text-right px-4 py-3 font-semibold">Действия</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {filteredProducts.map(p => (
+                          <tr key={p.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+                                  {p.imageUrl ? <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-lg">📦</div>}
+                                </div>
+                                <div>
+                                  <p className="font-semibold line-clamp-1">{p.name}</p>
+                                  <p className="text-xs text-gray-400">{p.brand}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <p className="font-bold text-primary">{formatPrice(p.price)}</p>
+                              <p className="text-xs text-gray-500 font-medium">${Math.round(parseFloat(p.price) / exchangeRate)}</p>
+                              {p.discount ? <p className="text-xs text-gray-400">-{p.discount}%</p> : null}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className={`text-xs font-medium px-2 py-1 rounded-full ${(p.stock ?? 0) > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                {p.stock ?? 0} шт
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex gap-1 flex-wrap">
+                                {(p as any).isActive === false && <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">⛔ Нет в наличии</span>}
+                                {(p as any).isApproved === false && <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">На проверке</span>}
+                                {p.isFeatured && <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">Рекомендуем</span>}
+                                {p.isNew && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Новинка</span>}
+                                {(p as any).isHit && <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">🔥 Hit</span>}
+                                {(p as any).isPremium && <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{ background: '#1a1a2e', color: '#d4af37' }}>◈ Original</span>}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center justify-end gap-2">
+                                {(p as any).isApproved === false && (
+                                  <button onClick={() => approveProduct.mutate({ id: p.id })}
+                                    className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-lg hover:bg-green-200 transition-colors font-semibold">
+                                    Одобрить
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => toggleActive.mutate({ id: p.id, isActive: !(p as any).isActive })}
+                                  title={(p as any).isActive ? "Скрыть с сайта (нет в наличии)" : "Показать на сайте"}
+                                  className={`text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${
+                                    (p as any).isActive
+                                      ? "bg-green-100 text-green-700 hover:bg-red-100 hover:text-red-600"
+                                      : "bg-red-100 text-red-600 hover:bg-green-100 hover:text-green-700"
+                                  }`}
+                                >
+                                  {(p as any).isActive ? "✓ В наличии" : "⛔ Нет"}
+                                </button>
+                                <button onClick={() => handleEdit(p)} className="p-1.5 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors">
+                                  <Edit size={15} />
+                                </button>
+                                <button onClick={() => { if (confirm("Удалить этот товар?")) deleteProduct.mutate({ id: p.id }); }}
+                                  className="p-1.5 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors">
+                                  <Trash2 size={15} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             )}
