@@ -45,7 +45,7 @@ function ProductCardSkeleton() {
 
 function HitsSliderSkeleton() {
   return (
-    <section className="py-4" style={{ background: "linear-gradient(135deg, #fff7ed 0%, #fff3e0 50%, #fef9f0 100%)", borderTop: "3px solid #ffffff", borderBottom: "3px solid #ffffff" }}>
+    <section className="py-4" style={{ background: "linear-gradient(135deg, #fff7ed 0%, #fff3e0 50%, #fef9f0 100%)", borderTop: "3px solid #ffffff", borderBottom: "3px solid #ffffff", minHeight: '280px' }}>
       <div className="container">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
@@ -343,7 +343,7 @@ export default function Home() {
       )}
 
       {!hasMore && moreProducts.length > 0 && !isMainLoading && (
-        <div className="text-center py-6 text-sm text-gray-400 font-medium">
+        <div className="text-center py-6 text-sm text-gray-600 font-medium">
           Все товары загружены
         </div>
       )}

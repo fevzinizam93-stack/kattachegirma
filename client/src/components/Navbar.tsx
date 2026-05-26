@@ -222,6 +222,8 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           <div className="relative" ref={catalogModalRef}>
             <button
               onClick={() => setShowCatalogModal((v) => !v)}
+              aria-label={showCatalogModal ? "Закрыть каталог" : "Открыть каталог"}
+              aria-expanded={showCatalogModal}
               style={{ fontSize: "10px" }}
               className={`shrink-0 font-medium px-2.5 py-1.5 rounded-full transition-colors whitespace-nowrap flex items-center gap-1 ${
                 showCatalogModal ? "bg-red-600 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
@@ -251,10 +253,11 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                     <div className="flex items-center gap-2">
                       <LayoutGrid size={16} className="text-red-600" />
                       <p className="text-sm font-black text-gray-800">Все категории</p>
-                      <span className="text-xs text-gray-400 font-normal">({catalogCategories.length})</span>
+                      <span className="text-xs text-gray-500 font-normal">({catalogCategories.length})</span>
                     </div>
                     <button
                       onClick={() => setShowCatalogModal(false)}
+                      aria-label="Закрыть каталог"
                       className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors text-gray-400 hover:text-gray-600"
                     >
                       <X size={14} />

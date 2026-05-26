@@ -145,6 +145,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <button
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); const wasWishlisted = isWishlisted; toggleWishlist(product.id); track(wasWishlisted ? "remove_from_favorites" : "add_to_favorites", { productId: product.id, productName: displayName }); }}
             title={isWishlisted ? "Убрать из избранного" : "В избранное"}
+            aria-label={isWishlisted ? `Убрать ${displayName} из избранного` : `Добавить ${displayName} в избранное`}
             className={`absolute top-1.5 right-1.5 w-6 h-6 rounded-full flex items-center justify-center transition-all shadow-sm z-10 ${isWishlisted ? "bg-red-500 text-white border-red-500" : "bg-white/90 border border-gray-200 text-gray-600 hover:text-red-500 hover:border-red-300 hover:bg-red-50"}`}
           >
             <Heart size={11} className={isWishlisted ? "fill-white" : ""} />
@@ -161,6 +162,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               <TooltipTrigger asChild>
                 <button
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCompareOpen(true); }}
+                  aria-label={`Сравнить ${displayName}`}
                   className="absolute bottom-1.5 left-1.5 w-6 h-6 rounded-full bg-white/90 border border-gray-200 flex items-center justify-center text-gray-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all shadow-sm z-10"
                 >
                   <ArrowLeftRight size={10} />
@@ -195,7 +197,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               <div className="text-sm font-black leading-tight" style={{ color: "#cc0000" }}>{formatPrice(product.price)}</div>
             )}
           </div>
-          <button onClick={handleAddToCart} disabled={!inStock} className="w-full flex items-center justify-center gap-1 text-white py-1.5 px-1 rounded-lg text-[11px] font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:opacity-80 touch-manipulation" style={{ backgroundColor: inStock ? "#cc0000" : "#aaa" }}>
+          <button onClick={handleAddToCart} disabled={!inStock} aria-label={`Добавить ${displayName} в корзину`} className="w-full flex items-center justify-center gap-1 text-white py-1.5 px-1 rounded-lg text-[11px] font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:opacity-80 touch-manipulation" style={{ backgroundColor: inStock ? "#cc0000" : "#aaa" }}>
             <ShoppingCart size={12} />
             <span className="truncate">{inStock ? t.card_add_to_cart : t.detail_out_of_stock}</span>
           </button>

@@ -1293,3 +1293,17 @@
 - [x] Проблема 3: чекбоксы → компактные pill toggle-кнопки
 - [x] Проблема 4: поля склад/таймер — убрать красные фоны
 - [x] Общий стиль: rounded-lg→rounded-xl, py-2→py-2.5, label iOS-стиль
+
+## PageSpeed оптимизация v68 (41 → 70+)
+- [x] vite.config.ts: manualChunks (lucide, react-dom, react, trpc, query, charts, motion) — уже было
+- [x] vite.config.ts: esbuild target es2020, drop console/debugger, legalComments none — уже было
+- [x] Home.tsx: баннер min-h-[120px], PromoBanner minHeight 100px — уже было
+- [x] Home.tsx: HitsSliderSkeleton minHeight 280px — добавлено
+- [x] ProductCard.tsx: img width=220 height=154 + loading=lazy decoding=async — уже было
+- [x] OptimizedImage.tsx: width/height props + fetchPriority — уже было
+- [x] Navbar.tsx: aria-label на кнопки каталога (открыть/закрыть), aria-expanded
+- [x] ProductCard.tsx: aria-label на кнопки корзины, избранного, сравнения
+- [x] ProductCard.tsx: text-gray-400 → text-gray-600 — уже было
+- [x] Home.tsx: h2 для заголовков секций — уже было
+- [x] Home.tsx: text-gray-400 → text-gray-600 (загрузка завершена)
+- [x] server/_core/vite.ts: Cache-Control заголовки — уже было (1 год + immutable)
