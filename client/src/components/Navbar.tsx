@@ -18,7 +18,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
   const { user, isAuthenticated } = useAuth();
   const { lang, setLang, t } = useLanguage();
   const { currency, setCurrency } = useCurrency();
-  const { data: categoriesData } = trpc.categories.list.useQuery();
+  const { data: categoriesData } = trpc.categories.list.useQuery(undefined, { staleTime: 10 * 60 * 1000 });
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);

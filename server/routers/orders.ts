@@ -29,8 +29,10 @@ export const ordersRouter = router({
       totalAmount: z.string(),
       userId: z.number().optional(),
     }))
-    .mutation(async ({ input }) => {
-      const id = await createOrder(input);
+    .mutation(async ({ input, ctx }) => {
+      // Security: always use authenticated user's id from ctx, ignore input.userId
+      const secureInput = { ...input, userId: ctx.user?.id ?? input.userId };
+      const id = await createOrder(secureInput);
 
       // Обновить salesCount и hitScore для каждого купленного товара (non-blocking)
       getDb().then(async (db) => {

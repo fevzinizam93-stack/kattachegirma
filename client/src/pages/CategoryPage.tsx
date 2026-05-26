@@ -21,7 +21,7 @@ export default function CategoryPage({ slug }: CategoryPageProps) {
   const [maxPrice, setMaxPrice] = useState("");
   const [brandFilter, setBrandFilter] = useState("");
 
-  const { data: categoriesData } = trpc.categories.list.useQuery();
+  const { data: categoriesData } = trpc.categories.list.useQuery(undefined, { staleTime: 10 * 60 * 1000 });
   const categories = categoriesData ?? [];
   const category = categories.find(c => c.slug === slug || (c as any).slugUz === slug);
 

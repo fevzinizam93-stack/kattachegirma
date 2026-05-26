@@ -222,7 +222,7 @@ export default function SellerDashboard() {
   }
 
   const sellerQuery = trpc.sellers.me.useQuery(undefined, { enabled: !!user });
-  const categoriesQuery = trpc.categories.list.useQuery();
+  const categoriesQuery = trpc.categories.list.useQuery(undefined, { staleTime: 10 * 60 * 1000 });
   const myProductsQuery = trpc.products.sellerList.useQuery(undefined, {
     enabled: !!(user && sellerQuery.data?.isApproved),
   });

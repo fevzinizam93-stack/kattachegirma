@@ -264,14 +264,16 @@ export default function Home() {
             {/* Desktop: horizontal scroll with fixed-width equal cards, 5 visible */}
             <div
               ref={sliderRef}
-              className="hidden md:flex gap-3 overflow-x-auto scrollbar-hide pb-1"
+              className="hidden md:flex gap-3 overflow-x-auto scrollbar-hide pb-1 items-stretch"
               style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none" }}
               onMouseEnter={() => { sliderPausedRef.current = true; }}
               onMouseLeave={() => { sliderPausedRef.current = false; }}
             >
-              {[...hitProducts, ...hitProducts].map((p, idx) => (
-                <div key={`${p.id}-${idx}`} className="shrink-0" style={{ width: "calc((100% - 48px) / 5)", minWidth: "180px", scrollSnapAlign: "start" }}>
-                  <ProductCard product={p} />
+              {(hitProducts.length >= 5 ? [...hitProducts, ...hitProducts] : hitProducts).map((p, idx) => (
+                <div key={`${p.id}-${idx}`} className="shrink-0 flex flex-col" style={{ width: "calc((100% - 48px) / 5)", minWidth: "180px", scrollSnapAlign: "start" }}>
+                  <div className="flex-1 flex flex-col">
+                    <ProductCard product={p} />
+                  </div>
                 </div>
               ))}
             </div>

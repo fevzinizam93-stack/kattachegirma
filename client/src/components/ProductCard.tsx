@@ -43,6 +43,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { t, lang } = useLanguage();
   const { formatPrice } = useCurrency();
   const [compareOpen, setCompareOpen] = useState(false);
+  const [addedFeedback, setAddedFeedback] = useState(false);
   const { toggle: toggleWishlist, has: inWishlist } = useWishlist();
   const isWishlisted = inWishlist(product.id);
   const { track } = useAnalytics();
@@ -73,6 +74,9 @@ export default function ProductCard({ product }: ProductCardProps) {
       description: displayName,
       duration: 2000,
     });
+    // Brief visual feedback on button
+    setAddedFeedback(true);
+    setTimeout(() => setAddedFeedback(false), 1200);
   };
 
   const origPrice = product.originalPrice ? parseFloat(product.originalPrice) : null;
@@ -187,10 +191,10 @@ export default function ProductCard({ product }: ProductCardProps) {
           disabled={!inStock}
           aria-label={`Добавить ${displayName} в корзину`}
           className="w-full flex items-center justify-center gap-2 text-white py-2.5 px-3 rounded-xl text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97] touch-manipulation shadow-sm"
-          style={{ backgroundColor: inStock ? "#cc0000" : "#aaa" }}
+          style={{ backgroundColor: inStock ? (addedFeedback ? "#16a34a" : "#cc0000") : "#aaa", transition: 'background-color 0.2s' }}
         >
           <ShoppingCart size={15} />
-          <span>{inStock ? t.card_add_to_cart : t.detail_out_of_stock}</span>
+          <span>{!inStock ? t.detail_out_of_stock : addedFeedback ? "✓ Добавлено" : t.card_add_to_cart}</span>
         </button>
       </div>
     </div>

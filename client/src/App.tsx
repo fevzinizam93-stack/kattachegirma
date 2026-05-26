@@ -3,7 +3,7 @@ import { useUTMTracker } from "./hooks/useUTMTracker";
 import { useGA4 } from "./hooks/useGA4";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Route, Switch, useLocation } from "wouter";
+import { Route, Switch, Redirect, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { CartProvider } from "./contexts/CartContext";
@@ -103,7 +103,7 @@ function Router() {
       <Route path="/bestsellers" component={Bestsellers} />
       <Route path="/favorites" component={Favorites} />
       <Route path="/sellers" component={SellersList} />
-      <Route path="/seller">{() => { window.location.replace("/seller/register"); return null; }}</Route>
+      <Route path="/seller"><Redirect to="/seller/register" /></Route>
       <Route path="/seller/register" component={SellerRegister} />
       <Route path="/seller/dashboard" component={SellerDashboard} />
       <Route path="/seller/messages" component={SellerMessages} />

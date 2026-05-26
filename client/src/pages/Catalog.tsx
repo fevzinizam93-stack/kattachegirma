@@ -100,7 +100,7 @@ export default function Catalog() {
     setLocation('/catalog' + (qs ? '?' + qs : ''), { replace: true });
   }, [setLocation]);
 
-  const { data: categoriesData } = trpc.categories.list.useQuery();
+  const { data: categoriesData } = trpc.categories.list.useQuery(undefined, { staleTime: 10 * 60 * 1000 });
   const categories = categoriesData ?? [];
 
   // Load brands filtered by selected category

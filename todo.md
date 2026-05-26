@@ -1335,3 +1335,15 @@
 - [x] Home.tsx: лимит 5 товаров на категорию (limit: 5 в запросах)
 - [x] ProductCard.tsx: крупное фото (aspect-square, w-full), большая цена, кнопка на всю ширину
 - [x] ProductCard.tsx: убрать продавца с карточки, оставить только нужное
+
+## Аудит — исправления v76
+- [x] КРИТ: Checkout.tsx — передавать userId: user?.id при создании заказа
+- [x] КРИТ: orders.ts — использовать ctx.user?.id вместо input.userId для безопасности
+- [x] КРИТ: SocialProofBlock.tsx — уникальные ключи key={s.url} вместо key={s.handle}
+- [x] ВАЖНО: Home.tsx — items-stretch для слайдера хитов (одинаковая высота карточек)
+- [x] ВАЖНО: Home.tsx — не дублировать товары в слайдере если их < 5
+- [x] ВАЖНО: App.tsx — заменить window.location.replace на wouter Redirect
+- [x] ВАЖНО: Все файлы — проверены, rel="noopener noreferrer" уже стоит везде
+- [x] СРЕДНЕ: Navbar/Admin/Catalog/CategoryPage/SellerDashboard/SellerPanel — staleTime 10 мин
+- [x] СРЕДНЕ: ProductCard — loading="lazy" уже стоит (было добавлено ранее)
+- [x] СРЕДНЕ: ProductCard — зелёная кнопка «✓ Добавлено» на 1.2 сек после добавления

@@ -312,7 +312,7 @@ export default function Admin() {
 
   const utils = trpc.useUtils();
 
-  const { data: categoriesData } = trpc.categories.list.useQuery();
+  const { data: categoriesData } = trpc.categories.list.useQuery(undefined, { staleTime: 10 * 60 * 1000 });
   const categories = categoriesData ?? [];
   const { data: brandsData } = trpc.brands.list.useQuery(undefined, { retry: false, refetchOnWindowFocus: false });
   const brandsList = (brandsData ?? []) as Array<{ id: number; name: string }>;

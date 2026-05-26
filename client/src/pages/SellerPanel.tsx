@@ -38,7 +38,7 @@ export default function SellerPanel() {
   const { data: myProducts } = trpc.products.sellerList.useQuery(
     undefined, { enabled: isAuthenticated && !!sellerProfile?.isApproved }
   );
-  const { data: categoriesData } = trpc.categories.list.useQuery();
+  const { data: categoriesData } = trpc.categories.list.useQuery(undefined, { staleTime: 10 * 60 * 1000 });
   const categories = categoriesData ?? [];
 
   const registerMutation = trpc.sellers.register.useMutation({

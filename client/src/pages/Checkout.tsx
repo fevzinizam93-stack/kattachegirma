@@ -77,6 +77,7 @@ export default function Checkout() {
         imageUrl: i.imageUrl,
       })),
       totalAmount: totalAmount.toString(),
+      ...(user?.id ? { userId: user.id } : {}),
     });
   };
 

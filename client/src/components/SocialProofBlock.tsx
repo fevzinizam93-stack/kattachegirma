@@ -60,7 +60,7 @@ export default function SocialProofBlock() {
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
           {socials.map(s => (
             <a
-              key={s.handle}
+              key={s.url}
               href={s.url}
               target="_blank"
               rel="noopener noreferrer"
