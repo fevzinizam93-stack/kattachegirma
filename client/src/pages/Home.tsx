@@ -19,25 +19,23 @@ function shuffleArray<T>(arr: T[]): T[] {
 }
 
 // How many products to show per category section on home page
-const PER_CATEGORY = 8;
+const PER_CATEGORY = 5;
 // How many products to load per infinite scroll page
 const PAGE_SIZE = 40;
 
 // ---- Skeleton card ----
 function ProductCardSkeleton() {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden h-full flex flex-col animate-pulse">
-      <div className="relative bg-gray-100" style={{ paddingBottom: "70%" }}>
-        <div className="absolute inset-0 bg-gray-200" />
-      </div>
-      <div className="p-2 flex flex-col flex-1 gap-1.5">
-        <div className="h-2.5 w-12 bg-gray-200 rounded" />
-        <div className="flex-1 space-y-1">
+    <div className="bg-white rounded-2xl overflow-hidden flex flex-col animate-pulse" style={{ border: '1px solid #f0f0f0' }}>
+      <div className="bg-gray-100" style={{ aspectRatio: '1 / 1', width: '100%' }} />
+      <div className="p-3 flex flex-col gap-2">
+        <div className="h-2.5 w-14 bg-gray-200 rounded" />
+        <div className="space-y-1.5">
           <div className="h-3.5 bg-gray-200 rounded w-full" />
           <div className="h-3.5 bg-gray-200 rounded w-3/4" />
         </div>
-        <div className="h-4 w-20 bg-gray-200 rounded mt-1" />
-        <div className="h-7 bg-gray-200 rounded-lg mt-0.5" />
+        <div className="h-5 w-24 bg-gray-200 rounded mt-1" />
+        <div className="h-9 bg-gray-200 rounded-xl mt-0.5" />
       </div>
     </div>
   );

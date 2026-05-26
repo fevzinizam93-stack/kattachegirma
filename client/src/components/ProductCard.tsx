@@ -1,13 +1,12 @@
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
-import { ShoppingCart, ArrowLeftRight, Heart, Youtube } from "lucide-react";
+import { ShoppingCart, Heart } from "lucide-react";
 import { useWishlist } from "@/hooks/useWishlist";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import { useState } from "react";
 import CompareModal from "@/components/CompareModal";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { trpc } from "@/lib/trpc";
 import { imgUrl } from "@/lib/imgUrl";
 import { useAnalytics } from "@/hooks/useAnalytics";
@@ -37,28 +36,6 @@ interface Product {
 
 interface ProductCardProps {
   product: Product;
-}
-
-function VideoReviewButton({ productName }: { productName: string }) {
-  const { data, isLoading } = trpc.youtube.findVideoForProduct.useQuery(
-    { productName },
-    { staleTime: 60 * 60 * 1000, retry: false, refetchOnWindowFocus: false }
-  );
-
-  if (isLoading || !data?.videoId) return null;
-
-  return (
-    <a
-      href={`https://www.youtube.com/watch?v=${data.videoId}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={(e) => e.stopPropagation()}
-      className="mt-1.5 w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-[11px] font-semibold border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 hover:border-red-300 transition-colors"
-    >
-      <Youtube size={12} className="shrink-0" />
-      <span className="truncate">Смотреть видеообзор</span>
-    </a>
-  );
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
@@ -106,109 +83,118 @@ export default function ProductCard({ product }: ProductCardProps) {
     : (product.discount ?? 0);
   const inStock = !product.stock || product.stock > 0;
 
-  // VIP pricing disabled - all users see regular prices
-
   return (
     <>
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden h-full flex flex-col">
-    <Link href={`/product/${product.slug}`} onClick={() => { trackClick.mutate({ productId: product.id }); track("product_click", { productId: product.id, productName: displayName }); }} className="flex flex-col flex-1 cursor-pointer active:scale-[0.98] transition-transform touch-manipulation">
-      <div className="flex flex-col flex-1">
-        <div className="relative bg-gray-50" style={{ paddingBottom: "70%" }}>
-          <div className="absolute inset-0">
-            {product.imageUrl ? (
-              <img
-                src={product.thumbUrl ? imgUrl(product.thumbUrl) : imgUrl(product.imageUrl, 400, 75)}
-                alt={displayName}
-                className="w-full h-full object-contain p-1.5"
-                loading="lazy"
-                decoding="async"
-                width="220"
-                height="154"
-                sizes="(max-width: 640px) 45vw, (max-width: 768px) 30vw, (max-width: 1024px) 22vw, 220px"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-4xl text-gray-300">📦</div>
-            )}
-          </div>
-          <div className="absolute top-1.5 left-1.5 flex flex-col gap-1">
-            {hasDiscount && (
-              <span className="text-white text-xs font-bold px-1.5 py-0.5 rounded-md leading-none" style={{ backgroundColor: "#2e7d32" }}>-{discountPercent}%</span>
+    <div className="bg-white rounded-2xl overflow-hidden flex flex-col shadow-sm hover:shadow-md transition-shadow duration-200" style={{ border: '1px solid #f0f0f0' }}>
+      <Link
+        href={`/product/${product.slug}`}
+        onClick={() => {
+          trackClick.mutate({ productId: product.id });
+          track("product_click", { productId: product.id, productName: displayName });
+        }}
+        className="flex flex-col flex-1 cursor-pointer active:scale-[0.98] transition-transform touch-manipulation"
+      >
+        {/* Square photo — Uzum style */}
+        <div className="relative bg-gray-50" style={{ aspectRatio: '1 / 1', width: '100%' }}>
+          {product.imageUrl ? (
+            <img
+              src={product.thumbUrl ? imgUrl(product.thumbUrl) : imgUrl(product.imageUrl, 400, 80)}
+              alt={displayName}
+              className="w-full h-full object-contain p-2"
+              loading="lazy"
+              decoding="async"
+              width="300"
+              height="300"
+              sizes="(max-width: 640px) 48vw, (max-width: 768px) 32vw, (max-width: 1024px) 24vw, 260px"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-5xl text-gray-200">📦</div>
+          )}
+
+          {/* Badges top-left */}
+          <div className="absolute top-2 left-2 flex flex-col gap-1">
+            {hasDiscount && discountPercent > 0 && (
+              <span className="text-white text-xs font-bold px-2 py-0.5 rounded-lg leading-none shadow-sm" style={{ backgroundColor: "#cc0000" }}>-{discountPercent}%</span>
             )}
             {product.isNew && (
-              <span className="text-white text-xs font-bold px-1.5 py-0.5 rounded-md leading-none" style={{ backgroundColor: "#388e3c" }}>{t.card_new}</span>
+              <span className="text-white text-xs font-bold px-2 py-0.5 rounded-lg leading-none" style={{ backgroundColor: "#388e3c" }}>{t.card_new}</span>
             )}
             {product.isHit && (
-              <span className="text-white text-xs font-bold px-1.5 py-0.5 rounded-md leading-none flex items-center gap-0.5" style={{ backgroundColor: "#e65100" }}>🔥 {t.card_hit}</span>
+              <span className="text-white text-xs font-bold px-2 py-0.5 rounded-lg leading-none flex items-center gap-0.5" style={{ backgroundColor: "#e65100" }}>🔥 {t.card_hit}</span>
             )}
           </div>
-          {/* Wishlist button */}
+
+          {/* Premium badge */}
+          {product.isPremium && (
+            <div className="absolute top-2 right-10">
+              <span className="text-xs font-bold px-1.5 py-0.5 rounded-lg leading-none flex items-center gap-0.5" style={{ background: 'linear-gradient(135deg, #1a1a2e, #2d2d4e)', color: '#d4af37', border: '1px solid #d4af37' }}>◈ {t.card_original}</span>
+            </div>
+          )}
+
+          {/* Wishlist button — top right */}
           <button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); const wasWishlisted = isWishlisted; toggleWishlist(product.id); track(wasWishlisted ? "remove_from_favorites" : "add_to_favorites", { productId: product.id, productName: displayName }); }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              const wasWishlisted = isWishlisted;
+              toggleWishlist(product.id);
+              track(wasWishlisted ? "remove_from_favorites" : "add_to_favorites", { productId: product.id, productName: displayName });
+            }}
             title={isWishlisted ? "Убрать из избранного" : "В избранное"}
             aria-label={isWishlisted ? `Убрать ${displayName} из избранного` : `Добавить ${displayName} в избранное`}
-            className={`absolute top-1.5 right-1.5 w-6 h-6 rounded-full flex items-center justify-center transition-all shadow-sm z-10 ${isWishlisted ? "bg-red-500 text-white border-red-500" : "bg-white/90 border border-gray-200 text-gray-600 hover:text-red-500 hover:border-red-300 hover:bg-red-50"}`}
+            className={`absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm z-10 ${isWishlisted ? "bg-red-500 text-white" : "bg-white/90 border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-300"}`}
           >
-            <Heart size={11} className={isWishlisted ? "fill-white" : ""} />
+            <Heart size={14} className={isWishlisted ? "fill-white" : ""} />
           </button>
-          {product.isPremium && (
-            <div className="absolute top-8 right-1.5">
-              <span className="text-xs font-bold px-1.5 py-0.5 rounded-md leading-none flex items-center gap-0.5" style={{ background: 'linear-gradient(135deg, #1a1a2e, #2d2d4e)', color: '#d4af37', border: '1px solid #d4af37' }}>◈ {t.card_original}</span>
-            </div>
-          )}
-
-          {/* Compare button — always visible, bottom-left */}
-          <TooltipProvider delayDuration={300}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCompareOpen(true); }}
-                  aria-label={`Сравнить ${displayName}`}
-                  className="absolute bottom-1.5 left-1.5 w-6 h-6 rounded-full bg-white/90 border border-gray-200 flex items-center justify-center text-gray-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all shadow-sm z-10"
-                >
-                  <ArrowLeftRight size={10} />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="top" sideOffset={4} className="text-xs font-medium">
-                Сравнить товар
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
         </div>
 
-        <div className="p-2 flex flex-col flex-1">
-          {product.brand && <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide mb-0.5 truncate">{product.brand}</p>}
+        {/* Card body */}
+        <div className="p-3 flex flex-col flex-1 gap-1.5">
+          {/* Brand */}
+          {product.brand && (
+            <p className="text-xs text-gray-500 font-medium uppercase tracking-wide truncate">{product.brand}</p>
+          )}
+
+          {/* Rating */}
           {(product.reviewCount ?? 0) > 0 && (
-            <div className="flex items-center gap-0.5 mb-0.5">
+            <div className="flex items-center gap-0.5">
               <span className="text-xs text-yellow-500">{'★'.repeat(Math.round(product.avgRating ?? 0))}{'☆'.repeat(5 - Math.round(product.avgRating ?? 0))}</span>
-              <span className="text-xs text-gray-600">({product.reviewCount})</span>
+              <span className="text-xs text-gray-500">({product.reviewCount})</span>
             </div>
           )}
-          <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 flex-1 mb-1.5 leading-snug">{displayName}</h3>
-          <div className="mb-1.5">
+
+          {/* Product name */}
+          <h3 className="text-sm font-semibold text-gray-800 line-clamp-2 flex-1 leading-snug">{displayName}</h3>
+
+          {/* Price block */}
+          <div className="mt-auto pt-1">
             {hasDiscount && product.originalPrice ? (
               <>
-                <div className="flex items-center justify-between gap-1 mb-0.5">
-                  <span className="text-xs text-gray-600 line-through leading-tight">{formatPrice(product.originalPrice!)}</span>
-                  <span className="text-xs font-bold text-white px-1 py-0.5 rounded shrink-0" style={{ backgroundColor: "#2e7d32" }}>-{discountPercent}%</span>
-                </div>
-                <div className="text-sm font-black leading-tight" style={{ color: "#cc0000" }}>{formatPrice(product.price)}</div>
+                <div className="text-xs text-gray-400 line-through leading-tight mb-0.5">{formatPrice(product.originalPrice!)}</div>
+                <div className="text-lg font-black leading-tight" style={{ color: "#cc0000" }}>{formatPrice(product.price)}</div>
               </>
             ) : (
-              <div className="text-sm font-black leading-tight" style={{ color: "#cc0000" }}>{formatPrice(product.price)}</div>
+              <div className="text-lg font-black leading-tight" style={{ color: "#cc0000" }}>{formatPrice(product.price)}</div>
             )}
           </div>
-          <button onClick={handleAddToCart} disabled={!inStock} aria-label={`Добавить ${displayName} в корзину`} className="w-full flex items-center justify-center gap-1 text-white py-1.5 px-1 rounded-lg text-[11px] font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:opacity-80 touch-manipulation" style={{ backgroundColor: inStock ? "#cc0000" : "#aaa" }}>
-            <ShoppingCart size={12} />
-            <span className="truncate">{inStock ? t.card_add_to_cart : t.detail_out_of_stock}</span>
-          </button>
-          {/* Video review button */}
-          <VideoReviewButton productName={product.name} />
-          {/* Seller name is shown only on the product detail page, not here */}
         </div>
-      </div>
-    </Link>
+      </Link>
 
+      {/* CTA button — full width, outside Link to avoid nested anchor */}
+      <div className="px-3 pb-3">
+        <button
+          onClick={handleAddToCart}
+          disabled={!inStock}
+          aria-label={`Добавить ${displayName} в корзину`}
+          className="w-full flex items-center justify-center gap-2 text-white py-2.5 px-3 rounded-xl text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97] touch-manipulation shadow-sm"
+          style={{ backgroundColor: inStock ? "#cc0000" : "#aaa" }}
+        >
+          <ShoppingCart size={15} />
+          <span>{inStock ? t.card_add_to_cart : t.detail_out_of_stock}</span>
+        </button>
+      </div>
     </div>
+
     {/* Compare Modal — rendered outside Link to avoid nested anchor */}
     <CompareModal
       open={compareOpen}

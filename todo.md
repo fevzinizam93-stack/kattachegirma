@@ -1330,3 +1330,8 @@
 - [x] products.ts create: уже было исправлено ранее (строка 172)
 - [x] products.ts sellerCreate: деструктуризация перед createProduct
 - [x] products.ts sellerUpdate: деструктуризация перед updateProduct
+
+## Uzum стиль карточек v74
+- [x] Home.tsx: лимит 5 товаров на категорию (limit: 5 в запросах)
+- [x] ProductCard.tsx: крупное фото (aspect-square, w-full), большая цена, кнопка на всю ширину
+- [x] ProductCard.tsx: убрать продавца с карточки, оставить только нужное
