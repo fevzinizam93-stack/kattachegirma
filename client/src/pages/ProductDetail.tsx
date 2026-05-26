@@ -662,7 +662,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
     <>
     {/* Hidden element for language switcher to read product slug mapping */}
     <div data-product-slug-map={JSON.stringify({ slug: product.slug, slugUz: (product as any)?.slugUz || null })} className="hidden" />
-    <div className="min-h-screen bg-gray-50 pb-24 md:pb-0">
+    <div className="min-h-screen bg-gray-50 pb-32 md:pb-0">
       {/* Breadcrumb */}
       <div className="bg-white border-b border-gray-200">
         <div className="container py-1.5">
@@ -853,45 +853,49 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
 
               {/* ── Action block ── */}
               <div className="space-y-2">
-                {/* Row 1: Quantity stepper + Успей по скидке + Купить в 1 клик */}
+                {/* Строка 1: Счётчик + Главная кнопка */}
                 <div className="flex items-center gap-2">
                   {(product.stock ?? 0) > 0 && (
-                    <div className="flex items-center bg-gray-100 rounded-full overflow-hidden shrink-0">
+                    <div className="flex items-center bg-gray-100 rounded-xl overflow-hidden shrink-0 border border-gray-200">
                       <button
                         onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                        className="w-7 h-7 flex items-center justify-center hover:bg-gray-200 transition-colors text-gray-600 rounded-full"
+                        className="w-9 h-9 flex items-center justify-center hover:bg-gray-200 transition-colors text-gray-600"
                       >
-                        <Minus size={12} />
+                        <Minus size={14} />
                       </button>
-                      <span className="w-7 text-center font-black text-xs text-gray-800">{quantity}</span>
+                      <span className="w-8 text-center font-black text-sm text-gray-800">{quantity}</span>
                       <button
                         onClick={() => setQuantity(q => Math.min(product.stock ?? 99, q + 1))}
-                        className="w-7 h-7 flex items-center justify-center hover:bg-gray-200 transition-colors text-gray-600 rounded-full"
+                        className="w-9 h-9 flex items-center justify-center hover:bg-gray-200 transition-colors text-gray-600"
                       >
-                        <Plus size={12} />
+                        <Plus size={14} />
                       </button>
                     </div>
                   )}
-                  {/* Успей по скидке */}
+                  {/* Главная кнопка — полная ширина */}
                   <button
                     onClick={handleAddToCart}
                     disabled={(product.stock ?? 0) === 0}
-                    className={`flex-1 h-9 rounded-full font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
+                    className={`flex-1 h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${
                       (product.stock ?? 0) === 0
                         ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                         : "bg-primary text-white hover:bg-primary/90 active:scale-[0.98] shadow-md shadow-primary/30"
                     }`}
                   >
-                    <ShoppingCart size={13} />
-                    {(product.stock ?? 0) === 0 ? t.detail_out_of_stock : hasDiscount ? "Успей по скидке" : t.card_add_to_cart}
+                    <ShoppingCart size={16} />
+                    {(product.stock ?? 0) === 0 ? t.detail_out_of_stock : hasDiscount ? "Успей по скидке!" : t.card_add_to_cart}
                   </button>
+                </div>
+
+                {/* Строка 2: Купить в 1 клик + Связаться */}
+                <div className="flex gap-2">
                   {/* Купить в 1 клик */}
                   <button
                     onClick={() => setQuickBuyOpen(true)}
                     disabled={(product.stock ?? 0) === 0}
-                    className="flex-1 h-9 rounded-full font-bold text-xs flex items-center justify-center gap-1.5 transition-all border-2 border-primary text-primary hover:bg-primary hover:text-white active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="flex-1 h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border-2 border-primary text-primary hover:bg-primary hover:text-white active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    <Zap size={13} />
+                    <Zap size={16} />
                     Купить в 1 клик
                   </button>
                   {/* Связаться с продавцом */}
@@ -901,14 +905,14 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                     const tgUser = tg.replace("@", "").replace("https://t.me/", "");
                     if (!phone && !tgUser) return null;
                     return (
-                      <div className="relative shrink-0">
+                      <div className="relative">
                         <button
                           onClick={() => setContactOpen(v => !v)}
-                          className="h-9 px-3 rounded-full font-bold text-xs flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-[0.98] shadow-md shadow-emerald-600/30 whitespace-nowrap"
+                          className="h-11 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-[0.98] shadow-md shadow-emerald-600/30"
                         >
-                          <MessageSquare size={13} />
+                          <MessageSquare size={16} />
                           Связаться
-                          <ChevronDown size={11} className={`transition-transform shrink-0 ${contactOpen ? "rotate-180" : ""}`} />
+                          <ChevronDown size={12} className={`transition-transform ${contactOpen ? "rotate-180" : ""}`} />
                         </button>
                         {contactOpen && (
                           <div className="absolute top-full right-0 mt-1.5 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-30" style={{minWidth: '190px'}}>
@@ -1194,7 +1198,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
     />
     {/* Закреплённые кнопки покупки — только мобильный */}
     {(product.stock ?? 0) > 0 && (
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}>
+      <div className="md:hidden fixed left-0 right-0 z-[60] bg-white border-t border-gray-200 px-4 pt-3 shadow-[0_-4px_20px_rgba(0,0,0,0.10)]" style={{ bottom: '56px', paddingBottom: '12px' }}>
         <div className="flex gap-3 items-center">
           <div className="shrink-0">
             <p className="text-lg font-black text-primary leading-none">{formatPrice(Number(product.price))}</p>
