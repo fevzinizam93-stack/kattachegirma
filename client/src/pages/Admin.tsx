@@ -1161,8 +1161,8 @@ export default function Admin() {
 
             {/* Product Form Modal */}
             {showForm && (
-              <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center">
-                <div className="bg-white w-full sm:max-w-2xl sm:mx-4 sm:rounded-2xl rounded-t-3xl flex flex-col" style={{ maxHeight: "92vh" }}>
+              <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-end sm:items-center justify-center">
+                <div className="bg-white w-full sm:max-w-2xl sm:mx-4 sm:rounded-2xl rounded-t-3xl flex flex-col mb-14 sm:mb-0" style={{ maxHeight: 'calc(100vh - 80px)' }}>
                   {/* Шапка — фиксирована */}
                   <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
                     <div>
@@ -1539,7 +1539,7 @@ export default function Admin() {
                   </form>
                   </div>
                   {/* Кнопки — фиксированы внизу */}
-                  <div className="flex gap-3 px-4 sm:px-5 py-3 sm:py-4 border-t border-gray-100 bg-white shrink-0 sm:rounded-b-2xl" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}>
+                  <div className="flex gap-3 px-4 sm:px-5 pt-3 border-t border-gray-100 bg-white shrink-0 sm:rounded-b-2xl" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}>
                     <button
                       type="submit"
                       form="product-form"
