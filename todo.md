@@ -1239,3 +1239,12 @@
 - [x] ProductDetail.tsx: Action block переделан в 2 строки (строка 1: счётчик + главная кнопка; строка 2: «Купить в 1 клик» + «Связаться»)
 - [x] ProductDetail.tsx: нижняя панель поднята над навигацией (bottom: 56px, z-[60])
 - [x] ProductDetail.tsx: pb-32 md:pb-0 на главном контейнере (было pb-24)
+
+## Система «Хиты продаж» v62 — автоматический рейтинг
+- [x] orders.ts: salesCount и hitScore обновляются при каждой покупке (non-blocking)
+- [x] favorites.ts: +5 очков к hitScore при добавлении товара в избранное
+- [x] server/_core/index.ts: автопересчёт hitScore каждые 6 часов (только production)
+- [x] Admin.tsx: чекбокс isHit улучшен — предупреждение «ручное добавление»
+- [x] Admin.tsx: бейджи в таблице товаров показывают hitScore и (ручной)/(Npts)
+- [x] Admin.tsx: товары с hitScore > 20 но не в хитах показывают «📈 Npts»
+- [x] AdminSettingsTab.tsx: блок настроек авто-хитов улучшен — алгоритм, toggle, слайдер порога, 2 кнопки

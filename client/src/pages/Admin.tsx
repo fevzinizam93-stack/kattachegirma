@@ -1361,10 +1361,23 @@ export default function Admin() {
                           <input type="checkbox" checked={form.isFeatured} onChange={e => setForm(f => ({ ...f, isFeatured: e.target.checked }))} className="w-4 h-4 rounded flex-shrink-0" />
                           <span className="font-medium">⭐ Рекомендуемый</span>
                         </label>
-                        <label className="flex items-center gap-3 text-sm cursor-pointer bg-orange-50 border border-orange-200 rounded-lg px-4 py-3 hover:bg-orange-100 transition-colors select-none">
-                          <input type="checkbox" checked={form.isHit} onChange={e => setForm(f => ({ ...f, isHit: e.target.checked }))} className="w-4 h-4 rounded flex-shrink-0 accent-orange-500" />
-                          <span className="text-orange-700 font-semibold">🔥 Хит продаж</span>
-                        </label>
+                        <div className="border border-orange-200 rounded-xl p-3 bg-orange-50">
+                          <div className="flex items-center gap-2 mb-1">
+                            <input
+                              type="checkbox"
+                              id="isHit"
+                              checked={form.isHit}
+                              onChange={e => setForm(f => ({ ...f, isHit: e.target.checked }))}
+                              className="w-4 h-4 rounded accent-orange-500"
+                            />
+                            <label htmlFor="isHit" className="text-sm font-bold text-orange-800 cursor-pointer">
+                              🔥 Добавить в Хиты продаж вручную
+                            </label>
+                          </div>
+                          <p className="text-xs text-orange-600">
+                            ⚠️ Ручное добавление — товар останется в хитах даже с низким рейтингом
+                          </p>
+                        </div>
                         <label className="flex items-center gap-3 text-sm cursor-pointer bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-3 hover:bg-yellow-100 transition-colors select-none">
                           <input type="checkbox" checked={form.isPremium} onChange={e => setForm(f => ({ ...f, isPremium: e.target.checked }))} className="w-4 h-4 rounded flex-shrink-0" style={{ accentColor: '#d4af37' }} />
                           <span className="font-semibold" style={{ color: '#b8860b' }}>◈ Оригинал техника</span>
@@ -1454,7 +1467,20 @@ export default function Admin() {
                           <div className="flex flex-wrap gap-1 mt-1.5">
                             {(p as any).isActive === false && <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-bold">⛔ Скрыт</span>}
                             {(p as any).isApproved === false && <span className="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded-full">На проверке</span>}
-                            {(p as any).isHit && <span className="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full">🔥 Hit</span>}
+                            {(p as any).isHit && (
+                              <span className="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+                                🔥 Hit
+                                {(p as any).isHitManual
+                                  ? <span className="text-orange-500">(ручной)</span>
+                                  : <span className="text-orange-500">({(p as any).hitScore ?? 0}pts)</span>
+                                }
+                              </span>
+                            )}
+                            {!(p as any).isHit && ((p as any).hitScore ?? 0) > 20 && (
+                              <span className="text-[10px] bg-yellow-50 text-yellow-600 px-1.5 py-0.5 rounded-full">
+                                📈 {(p as any).hitScore}pts
+                              </span>
+                            )}
                             {p.isNew && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">Новинка</span>}
                             {p.isFeatured && <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">⭐ Топ</span>}
                             {(p as any).isPremium && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: '#1a1a2e', color: '#d4af37' }}>◈ Original</span>}
@@ -1540,7 +1566,20 @@ export default function Admin() {
                                 {(p as any).isApproved === false && <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">На проверке</span>}
                                 {p.isFeatured && <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">Рекомендуем</span>}
                                 {p.isNew && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Новинка</span>}
-                                {(p as any).isHit && <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">🔥 Hit</span>}
+                                {(p as any).isHit && (
+                                  <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
+                                    🔥 Hit
+                                    {(p as any).isHitManual
+                                      ? <span className="text-orange-500 ml-1">(ручной)</span>
+                                      : <span className="text-orange-500 ml-1">{(p as any).hitScore ?? 0}pts</span>
+                                    }
+                                  </span>
+                                )}
+                                {!(p as any).isHit && ((p as any).hitScore ?? 0) > 20 && (
+                                  <span className="text-xs bg-yellow-50 text-yellow-600 px-2 py-0.5 rounded-full">
+                                    📈 {(p as any).hitScore}pts
+                                  </span>
+                                )}
                                 {(p as any).isPremium && <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{ background: '#1a1a2e', color: '#d4af37' }}>◈ Original</span>}
                               </div>
                             </td>

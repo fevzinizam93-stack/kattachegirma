@@ -10,7 +10,7 @@ import {
   createNotification,
   getDb,
 } from "../db";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { notifyNewOrder } from "../telegram";
 
 export const ordersRouter = router({
@@ -31,6 +31,25 @@ export const ordersRouter = router({
     }))
     .mutation(async ({ input }) => {
       const id = await createOrder(input);
+
+      // Обновить salesCount и hitScore для каждого купленного товара (non-blocking)
+      getDb().then(async (db) => {
+        if (!db) return;
+        const { products: productsTable } = await import("../../drizzle/schema");
+        for (const item of input.items) {
+          await db.execute(
+            sql`UPDATE products
+                SET salesCount = COALESCE(salesCount, 0) + ${item.quantity},
+                    hitScore = FLOOR(
+                      COALESCE(viewCount, 0) * 1 +
+                      COALESCE(clickCount, 0) * 3 +
+                      (COALESCE(salesCount, 0) + ${item.quantity}) * 10
+                    )
+                WHERE id = ${item.productId} AND isHitManual = FALSE`
+          );
+        }
+      }).catch(e => console.error("[HitScore] Failed to update salesCount:", e));
+
       // Send Telegram notification (non-blocking)
       notifyNewOrder({
         id,

@@ -250,47 +250,84 @@ export default function AdminSettingsTab() {
       </div>
 
       {/* Auto-hits settings */}
-      <div className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-2xl p-5 mt-5">
-        <h3 className="font-bold text-base text-orange-900 mb-1 flex items-center gap-2">🔥 Авто-хиты</h3>
-        <p className="text-xs text-orange-700 mb-4">Товары автоматически получают метку «Хит» когда набирают достаточно кликов, просмотров и продаж. Формула: <span className="font-mono font-bold">Балл = Просмотры×1 + Клики×3 + Продажи×10</span></p>
-        <div className="flex flex-wrap items-end gap-3 mb-4">
+      <div className="bg-white rounded-xl border border-gray-200 p-5 mt-5">
+        <h3 className="font-black text-base mb-4 flex items-center gap-2">
+          🔥 Управление разделом «Хиты продаж»
+        </h3>
+
+        {/* Объяснение алгоритма */}
+        <div className="bg-orange-50 rounded-xl p-4 mb-4 text-sm">
+          <p className="font-bold text-orange-800 mb-2">Как работает рейтинг:</p>
+          <div className="space-y-1 text-orange-700">
+            <p>👁 Просмотр товара = +1 очко</p>
+            <p>🛒 Клик на товар = +3 очка</p>
+            <p>❤️ Добавление в избранное = +5 очков</p>
+            <p>💰 Покупка = +10 очков × количество</p>
+          </div>
+          <div className="mt-3 pt-3 border-t border-orange-200 text-xs text-orange-600">
+            <p>🔒 <strong>Ручные хиты</strong> (добавленные админом) не меняются автоматически</p>
+            <p>🤖 <strong>Авто-хиты</strong> обновляются каждые 6 часов</p>
+          </div>
+        </div>
+
+        {/* Переключатель авто-режима */}
+        <div className="flex items-center justify-between mb-4 p-3 bg-gray-50 rounded-xl">
           <div>
-            <label className="block text-xs font-semibold text-orange-800 mb-1">Порог баллов для хита</label>
+            <p className="font-semibold text-sm">Автоматический режим</p>
+            <p className="text-xs text-gray-500">Товары попадают в хиты автоматически по рейтингу</p>
+          </div>
+          <button
+            onClick={() => setHitAutoEnabled(v => !v)}
+            className={`w-12 h-6 rounded-full transition-colors relative ${hitAutoEnabled ? "bg-orange-500" : "bg-gray-300"}`}
+          >
+            <div className={`w-5 h-5 bg-white rounded-full shadow absolute top-0.5 transition-transform ${hitAutoEnabled ? "translate-x-6" : "translate-x-0.5"}`} />
+          </button>
+        </div>
+
+        {/* Порог */}
+        {hitAutoEnabled && (
+          <div className="mb-4">
+            <label className="block text-sm font-semibold mb-2">
+              Минимальный рейтинг для попадания в хиты:
+              <span className="text-orange-600 font-black ml-2">{hitThreshold} очков</span>
+            </label>
             <input
-              type="number"
+              type="range"
+              min="10"
+              max="500"
+              step="10"
               value={hitThreshold}
-              onChange={e => setHitThreshold(Number(e.target.value) || 50)}
-              className="w-32 border border-orange-300 rounded-lg px-3 py-2 text-sm font-bold text-orange-900 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400"
-              min={1}
-              max={100000}
+              onChange={e => setHitThreshold(Number(e.target.value))}
+              className="w-full accent-orange-500"
             />
+            <div className="flex justify-between text-xs text-gray-400 mt-1">
+              <span>10 (легко)</span>
+              <span>250 (средне)</span>
+              <span>500 (сложно)</span>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              💡 Рекомендуем 50-100 очков. Товар с 50 просмотрами = 50 очков
+            </p>
           </div>
-          <div className="flex items-center gap-2 pb-2">
-            <input
-              type="checkbox"
-              id="hitAutoEnabled"
-              checked={hitAutoEnabled}
-              onChange={e => setHitAutoEnabled(e.target.checked)}
-              className="w-4 h-4 accent-orange-500"
-            />
-            <label htmlFor="hitAutoEnabled" className="text-sm font-semibold text-orange-800">Авто-продвижение включено</label>
-          </div>
+        )}
+
+        {/* Кнопки */}
+        <div className="flex gap-3">
           <button
             onClick={() => saveHitSettingsMut.mutate({ threshold: hitThreshold, autoEnabled: hitAutoEnabled })}
             disabled={saveHitSettingsMut.isPending}
-            className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-bold transition-colors disabled:opacity-50"
+            className="flex-1 h-10 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-sm transition-colors disabled:opacity-50"
           >
-            {saveHitSettingsMut.isPending ? "Сохраняем..." : "Сохранить"}
+            {saveHitSettingsMut.isPending ? "Сохраняю..." : "💾 Сохранить"}
           </button>
           <button
             onClick={() => { if (confirm("Пересчитать баллы всех товаров и обновить хиты?")) recalcHitsMut.mutate(); }}
             disabled={recalcHitsMut.isPending}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold transition-colors disabled:opacity-50 flex items-center gap-2"
+            className="flex-1 h-10 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold text-sm transition-colors disabled:opacity-50"
           >
-            {recalcHitsMut.isPending ? <><span className="animate-spin">⏳</span> Пересчёт...</> : <>🔄 Пересчитать хиты</>}
+            {recalcHitsMut.isPending ? "Пересчёт..." : "🔄 Пересчитать сейчас"}
           </button>
         </div>
-        <p className="text-xs text-orange-600">Можно вручную убрать товар из хитов через редактирование товара (сняв галочку «Хит»).</p>
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { sql } from "drizzle-orm";
 import { router, protectedProcedure } from "../_core/trpc";
 import {
   getFavoritesByUserId,
@@ -6,6 +7,7 @@ import {
   removeFavorite,
   isFavorite,
   getProductById as getProductByIdDb,
+  getDb,
 } from "../db";
 
 export const favoritesRouter = router({
@@ -21,6 +23,15 @@ export const favoritesRouter = router({
     .input(z.object({ productId: z.number() }))
     .mutation(async ({ input, ctx }) => {
       await addFavorite(ctx.user.id, input.productId);
+      // +5 очков к hitScore при добавлении в избранное (non-blocking)
+      getDb().then(async (db) => {
+        if (!db) return;
+        await db.execute(
+          sql`UPDATE products
+              SET hitScore = COALESCE(hitScore, 0) + 5
+              WHERE id = ${input.productId} AND isHitManual = FALSE`
+        );
+      }).catch(() => {});
       return { success: true };
     }),
 

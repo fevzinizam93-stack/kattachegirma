@@ -168,6 +168,17 @@ async function startServer() {
         console.error("[AutoIndex] Error:", err);
       }
     }, 2 * 60 * 1000); // запустить через 2 минуты после старта сервера
+
+    // Пересчёт хитов каждые 6 часов
+    setInterval(async () => {
+      try {
+        const { recalcAllHitScores } = await import("../db");
+        await recalcAllHitScores();
+        console.log("[AutoHits] ✅ Hit scores recalculated");
+      } catch (e) {
+        console.error("[AutoHits] Error:", e);
+      }
+    }, 6 * 60 * 60 * 1000);
   }
 }
 
