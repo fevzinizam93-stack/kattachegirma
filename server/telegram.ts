@@ -436,10 +436,15 @@ export async function publishProductToChannel(product: {
   brand?: string | null;
 }): Promise<{ success: boolean; error?: string }> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  const channelId = process.env.TELEGRAM_CHANNEL_ID; // e.g. @kattachegirmauz
+  let channelId = process.env.TELEGRAM_CHANNEL_ID; // e.g. @kattachegirmauz or 1976989683
 
   if (!token || !channelId) {
     return { success: false, error: "TELEGRAM_BOT_TOKEN or TELEGRAM_CHANNEL_ID not set" };
+  }
+
+  // Normalize: if pure digits, add -100 prefix for channel/supergroup
+  if (/^\d+$/.test(channelId)) {
+    channelId = `-100${channelId}`;
   }
 
   const price = Math.round(Number(product.price)).toLocaleString("ru-RU");

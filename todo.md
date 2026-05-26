@@ -1266,18 +1266,23 @@
 - [x] Home.tsx: добавить SocialProofBlock перед Footer
 - [x] Footer.tsx: добавить иконки соцсетей
 - [x] ProductDetail.tsx: красивое меню «Поделиться» (Telegram, WhatsApp, Instagram, Скопировать)
-- [ ] TELEGRAM_CHANNEL_ID: добавить секрет (ожидает ввода)
+- [x] TELEGRAM_CHANNEL_ID: добавить секрет (@kattachegirmauz)
 
 ## Система продавцов v65
-- [ ] schema.ts: rejectionReason поле в sellers
-- [ ] Миграция: drizzle-kit generate + применить SQL
-- [ ] telegram.ts: notifySellerRejected функция
-- [ ] sellers.ts: reject процедура с reason + уведомление
-- [ ] sellers.ts: myStats endpoint
-- [ ] AdminSellersTab.tsx: модалка причины отклонения
-- [ ] SellerRegister.tsx: показывать причину отклонения + кнопка повторной подачи
-- [ ] SellerRegister.tsx: убрать noindex, улучшить SEO meta
-- [ ] SellerRegister.tsx: блок статистики (930k, 164+, 15млн, 0 сум)
-- [ ] SellerRegister.tsx: блок "Как это работает" 4 шага
-- [ ] SellerDashboard.tsx: блок статистики (4 карточки)
-- [ ] SellerDashboard.tsx: онбординг для нового продавца (0 товаров)
+- [x] schema.ts: rejectionReason поле в sellers
+- [x] Миграция: drizzle-kit generate + применить SQL
+- [x] telegram.ts: notifySellerRejected функция
+- [x] sellers.ts: reject процедура с reason + уведомление
+- [x] sellers.ts: myStats endpoint
+- [x] AdminSellersTab.tsx: модалка причины отклонения
+- [x] SellerRegister.tsx: показывать причину отклонения + кнопка повторной подачи
+- [x] SellerRegister.tsx: убрать noindex, улучшить SEO meta
+- [x] SellerRegister.tsx: блок статистики (930k, 164+, 15млн, 0 сум)
+- [x] SellerRegister.tsx: блок "Как это работает" 4 шага
+- [x] SellerDashboard.tsx: блок статистики (4 карточки)
+- [x] SellerDashboard.tsx: онбординг для нового продавца (0 товаров)
+
+## Категории — iOS стиль v66
+- [x] MobileBottomNav.tsx: grid-cols-3 → список строк в стиле iOS (без иконок, стрелка →)
+- [x] Navbar.tsx: grid-cols-4 → grid-cols-2, ширина 680px → 480px, чистые строки со стрелкой
+- [x] TELEGRAM_CHANNEL_ID: нормализация числового ID (добавляем -100 префикс)

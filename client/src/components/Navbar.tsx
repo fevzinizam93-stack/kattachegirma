@@ -3,7 +3,7 @@ import { useLanguage, getLocalizedPath } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { Bell, ChevronDown, Heart, LayoutGrid, Search, ShoppingCart, User, X, Youtube } from "lucide-react";
+import { Bell, ChevronDown, ChevronRight, Heart, LayoutGrid, Search, ShoppingCart, User, X, Youtube } from "lucide-react";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
@@ -244,7 +244,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                 {/* Мегаменю */}
                 <div
                   className="absolute top-full left-0 mt-2 bg-white rounded-2xl shadow-2xl z-50 overflow-hidden border border-gray-100"
-                  style={{ width: "680px", animation: "catalogSlideDown 0.2s ease-out" }}
+                  style={{ width: "480px", animation: "catalogSlideDown 0.2s ease-out" }}
                 >
                   {/* Шапка */}
                   <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 bg-gray-50">
@@ -261,30 +261,30 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                     </button>
                   </div>
 
-                  {/* Сетка категорий */}
-                  <div className="grid grid-cols-4 gap-1 p-3">
+                  {/* Список категорий — чистый стиль */}
+                  <div className="grid grid-cols-2 gap-1 p-3">
                     {catalogCategories.map((cat) => (
                       <Link
                         key={cat.id}
                         href={`/category/${cat.slug}`}
                         onClick={() => setShowCatalogModal(false)}
-                        className={`flex flex-col items-center gap-2 px-3 py-3 rounded-xl transition-all text-center group cursor-pointer ${
+                        className={`flex items-center justify-between px-4 py-2.5 rounded-xl transition-all group cursor-pointer ${
                           location === `/category/${cat.slug}`
-                            ? "bg-red-50 text-red-700"
-                            : "hover:bg-red-50 hover:text-red-700 text-gray-700"
+                            ? "bg-red-600 text-white"
+                            : "hover:bg-gray-50 text-gray-700"
                         }`}
                       >
-                        {/* Иконка в кружке */}
-                        <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-2xl transition-colors ${
-                          location === `/category/${cat.slug}`
-                            ? "bg-red-100"
-                            : "bg-gray-100 group-hover:bg-red-100"
+                        <span className={`text-sm font-medium ${
+                          location === `/category/${cat.slug}` ? "text-white" : "text-gray-700 group-hover:text-gray-900"
                         }`}>
-                          {cat.icon ? cat.icon : "📦"}
-                        </div>
-                        <span className="text-xs font-semibold leading-tight line-clamp-2">
                           {lang === "uz" && (cat as any).nameUz ? (cat as any).nameUz : cat.name}
                         </span>
+                        <ChevronRight
+                          size={14}
+                          className={`shrink-0 transition-transform group-hover:translate-x-0.5 ${
+                            location === `/category/${cat.slug}` ? "text-white/70" : "text-gray-300 group-hover:text-gray-500"
+                          }`}
+                        />
                       </Link>
                     ))}
                   </div>

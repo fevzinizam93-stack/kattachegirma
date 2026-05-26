@@ -436,31 +436,29 @@ export default function MobileBottomNav() {
               </button>
             </div>
 
-            {/* Сетка категорий — скроллится */}
+            {/* Сетка категорий — стиль iOS */}
             <div className="overflow-y-auto" style={{ maxHeight: "calc(85vh - 140px)" }}>
-              <div className="grid grid-cols-3 gap-2 p-4">
+              <div className="flex flex-col px-3 py-2 gap-1">
                 {categories.map((cat) => (
                   <Link
                     key={cat.id}
                     href={`/category/${cat.slug}`}
                     onClick={() => setCatalogOpen(false)}
-                    className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all active:scale-95 ${
+                    className={`flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all active:scale-[0.98] ${
                       location === `/category/${cat.slug}`
-                        ? "bg-red-50 border-2 border-red-200"
-                        : "bg-gray-50 border-2 border-transparent"
+                        ? "bg-red-600 text-white"
+                        : "bg-gray-50 text-gray-800 hover:bg-gray-100"
                     }`}
                   >
-                    {/* Иконка в кружке */}
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl ${
-                      location === `/category/${cat.slug}` ? "bg-red-100" : "bg-white"
-                    }`}>
-                      {cat.icon ? cat.icon : "📦"}
-                    </div>
-                    <span className={`text-[11px] font-semibold text-center leading-tight line-clamp-2 ${
-                      location === `/category/${cat.slug}` ? "text-red-700" : "text-gray-700"
+                    <span className={`text-sm font-semibold ${
+                      location === `/category/${cat.slug}` ? "text-white" : "text-gray-800"
                     }`}>
                       {lang === "uz" && (cat as any).nameUz ? (cat as any).nameUz : cat.name}
                     </span>
+                    <ChevronRight
+                      size={16}
+                      className={location === `/category/${cat.slug}` ? "text-white/70" : "text-gray-400"}
+                    />
                   </Link>
                 ))}
               </div>
