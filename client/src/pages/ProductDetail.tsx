@@ -373,10 +373,14 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
           .replace(/\s+/g, " ").trim();
       })()
     : undefined;
+  // og:image must be an absolute URL for Google, Facebook, Twitter
+  const absoluteImageUrl = product?.imageUrl
+    ? (product.imageUrl.startsWith('http') ? product.imageUrl : `https://kattachegirma.uz${product.imageUrl}`)
+    : undefined;
   usePageMeta({
     title: productTitle,
     description: productDesc,
-    imageUrl: product?.imageUrl ?? undefined,
+    imageUrl: absoluteImageUrl,
     // Always set canonical from slug immediately — don't wait for product data
     // This prevents Google from seeing canonical = homepage during loading state
     canonicalPath: product ? `/product/${product.slug}` : `/product/${slug}`,
@@ -415,7 +419,10 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
       "description": (product as any).description || name,
       "brand": product.brand ? { "@type": "Brand", "name": product.brand } : undefined,
       "sku": String(product.id),
-      "image": product.imageUrl || undefined,
+      // Google requires absolute URLs in image field
+      "image": product.imageUrl
+        ? (product.imageUrl.startsWith('http') ? product.imageUrl : `https://kattachegirma.uz${product.imageUrl}`)
+        : undefined,
       "offers": {
         "@type": "Offer",
         "priceCurrency": "UZS",

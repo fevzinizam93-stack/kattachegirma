@@ -829,13 +829,24 @@ export const productsRouter = router({
       const product = await getProductBySlug(input.slug);
       if (!product) return null;
 
+      // Load category for breadcrumb and SEO (categoryName, categorySlug)
+      const allCats = await getAllCategories();
+      const category = allCats.find(c => c.id === product.categoryId) ?? null;
+
       const [reviews, similar, reviewSummary] = await Promise.all([
         getApprovedReviewsByProduct(product.id),
         getSimilarProducts(product.categoryId ?? 0, product.id, 8),
         getReviewCountsByProduct(product.id),
       ]);
 
-      return { product, reviews, similar, reviewSummary };
+      // Attach category info directly to product for client-side breadcrumb and JSON-LD
+      const productWithCategory = {
+        ...product,
+        categoryName: category?.name ?? "",
+        categorySlug: category?.slug ?? "",
+      };
+
+      return { product: productWithCategory, reviews, similar, reviewSummary };
     }),
 
   autoScanVideoReviews: adminProcedure
