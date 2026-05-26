@@ -924,27 +924,99 @@ export default function Admin() {
       </div>
 
       <div className="container py-6">
-        {/* Tabs */}
-        <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide pb-1">
-          {tabConfig.map(({ key, icon: Icon, label }) => (
-            <button
-              key={key}
-              onClick={() => setTab(key)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl font-semibold text-sm transition-colors whitespace-nowrap flex-shrink-0 ${tab === key ? "bg-primary text-white" : "bg-white border border-gray-200 hover:bg-gray-50 text-gray-700"}`}
-            >
-              <Icon size={16} /> {label}
-            </button>
-          ))}
-          <Link href="/admin/analytics">
-            <button className="flex items-center gap-2 px-3 py-2 rounded-xl font-semibold text-sm transition-colors bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 whitespace-nowrap flex-shrink-0">
-              <BarChart3 size={16} /> Аналитика
-            </button>
-          </Link>
-          <Link href="/admin/reviews">
-            <button className="flex items-center gap-2 px-3 py-2 rounded-xl font-semibold text-sm transition-colors bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 whitespace-nowrap flex-shrink-0">
-              <Star size={16} /> Отзывы
-            </button>
-          </Link>
+        {/* Tabs — сетка 3×5 на мобильном, 4×4 на планшете, 2×7 на десктопе */}
+        <div className="mb-6">
+
+          {/* Десктоп — 2 строки по 7 кнопок */}
+          <div className="hidden lg:grid grid-cols-7 gap-1.5">
+            {[...tabConfig,
+              { key: "analytics" as Tab, icon: BarChart3, label: "Аналитика", href: "/admin/analytics" },
+              { key: "reviews" as Tab, icon: Star, label: "Отзывы", href: "/admin/reviews" },
+            ].map(({ key, icon: Icon, label, href }: { key: Tab; icon: React.ElementType; label: string; href?: string }) => (
+              href ? (
+                <Link key={key} href={href}>
+                  <button className="w-full flex flex-col items-center gap-1 px-2 py-2.5 rounded-xl font-semibold text-xs transition-colors bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 hover:text-gray-900">
+                    <Icon size={16} />
+                    <span className="leading-tight text-center">{label}</span>
+                  </button>
+                </Link>
+              ) : (
+                <button
+                  key={key}
+                  onClick={() => setTab(key)}
+                  className={`flex flex-col items-center gap-1 px-2 py-2.5 rounded-xl font-semibold text-xs transition-colors ${
+                    tab === key
+                      ? "bg-primary text-white shadow-md shadow-primary/30"
+                      : "bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  <Icon size={16} />
+                  <span className="leading-tight text-center">{label}</span>
+                </button>
+              )
+            ))}
+          </div>
+
+          {/* Планшет — 4 колонки */}
+          <div className="hidden sm:grid lg:hidden grid-cols-4 gap-1.5">
+            {[...tabConfig,
+              { key: "analytics" as Tab, icon: BarChart3, label: "Аналитика", href: "/admin/analytics" },
+              { key: "reviews" as Tab, icon: Star, label: "Отзывы", href: "/admin/reviews" },
+            ].map(({ key, icon: Icon, label, href }: { key: Tab; icon: React.ElementType; label: string; href?: string }) => (
+              href ? (
+                <Link key={key} href={href}>
+                  <button className="w-full flex items-center gap-2 px-3 py-2 rounded-xl font-semibold text-sm transition-colors bg-white border border-gray-200 hover:bg-gray-50 text-gray-600">
+                    <Icon size={15} />
+                    <span className="truncate">{label}</span>
+                  </button>
+                </Link>
+              ) : (
+                <button
+                  key={key}
+                  onClick={() => setTab(key)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl font-semibold text-sm transition-colors ${
+                    tab === key
+                      ? "bg-primary text-white shadow-md shadow-primary/30"
+                      : "bg-white border border-gray-200 hover:bg-gray-50 text-gray-600"
+                  }`}
+                >
+                  <Icon size={15} />
+                  <span className="truncate">{label}</span>
+                </button>
+              )
+            ))}
+          </div>
+
+          {/* Мобильный — 3 колонки */}
+          <div className="grid sm:hidden grid-cols-3 gap-1.5">
+            {[...tabConfig,
+              { key: "analytics" as Tab, icon: BarChart3, label: "Аналитика", href: "/admin/analytics" },
+              { key: "reviews" as Tab, icon: Star, label: "Отзывы", href: "/admin/reviews" },
+            ].map(({ key, icon: Icon, label, href }: { key: Tab; icon: React.ElementType; label: string; href?: string }) => (
+              href ? (
+                <Link key={key} href={href}>
+                  <button className="w-full flex flex-col items-center gap-1 px-2 py-2.5 rounded-xl font-semibold text-xs transition-all bg-white border border-gray-200 active:scale-95 text-gray-600">
+                    <Icon size={18} />
+                    <span className="text-[10px] leading-tight text-center line-clamp-1">{label}</span>
+                  </button>
+                </Link>
+              ) : (
+                <button
+                  key={key}
+                  onClick={() => setTab(key)}
+                  className={`flex flex-col items-center gap-1 px-2 py-2.5 rounded-xl font-semibold text-xs transition-all active:scale-95 ${
+                    tab === key
+                      ? "bg-primary text-white shadow-md shadow-primary/30"
+                      : "bg-white border border-gray-200 text-gray-600"
+                  }`}
+                >
+                  <Icon size={18} />
+                  <span className="text-[10px] leading-tight text-center line-clamp-1">{label}</span>
+                </button>
+              )
+            ))}
+          </div>
+
         </div>
 
         {/* ==================== PRODUCTS TAB ==================== */}

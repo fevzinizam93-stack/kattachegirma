@@ -1307,3 +1307,10 @@
 - [x] Home.tsx: h2 для заголовков секций — уже было
 - [x] Home.tsx: text-gray-400 → text-gray-600 (загрузка завершена)
 - [x] server/_core/vite.ts: Cache-Control заголовки — уже было (1 год + immutable)
+
+## Admin sekmeleri ızgara v69
+- [x] Admin.tsx: yatay kaydırmayı kaldır
+- [x] Admin.tsx: mobil 3×5 ızgara (ikon + kısa metin)
+- [x] Admin.tsx: tablet 4×4 ızgara (ikon + metin)
+- [x] Admin.tsx: masaüstü 2×7 ızgara (ikon + metin)
+- [x] Aktif sekme: kırmızı arka plan + gölge
