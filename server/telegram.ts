@@ -447,6 +447,9 @@ export async function publishProductToChannel(product: {
     channelId = `-100${channelId}`;
   }
 
+  // Escape special characters for MarkdownV2
+  const escMd = (s: string) => s.replace(/([_*[\]()~`>#+\-=|{}.!\\])/g, '\\$1');
+
   const price = Math.round(Number(product.price)).toLocaleString("ru-RU");
   const usdPrice = Math.round(Number(product.price) / 12800);
   const hasDiscount = product.discount && product.discount > 0;
@@ -457,18 +460,18 @@ export async function publishProductToChannel(product: {
   const url = `https://kattachegirma.uz/product/${product.slug}?utm_source=telegram&utm_medium=channel&utm_campaign=products`;
 
   const captionLines = [
-    hasDiscount ? `🔥 -${product.discount}% CHEGIRMA!` : `🛍 YANGI MAHSULOT`,
+    hasDiscount ? `🔥 \-${escMd(String(product.discount))}% CHEGIRMA\!` : `🛍 YANGI MAHSULOT`,
     ``,
-    `📦 *${product.name}*`,
-    product.brand ? `🏷 Brand: ${product.brand}` : null,
+    `📦 *${escMd(product.name)}*`,
+    product.brand ? `🏷 Brand: ${escMd(product.brand)}` : null,
     ``,
-    hasDiscount && originalPrice ? `~~${originalPrice} so'm~~` : null,
-    `💰 *${price} so'm* ($${usdPrice})`,
+    hasDiscount && originalPrice ? `~~${escMd(originalPrice)} so'm~~` : null,
+    `💰 *${escMd(price)} so'm* \($${escMd(String(usdPrice))}\)`,
     ``,
-    `✅ Mavjud — hoziroq buyurtma bering!`,
+    `✅ Mavjud — hoziroq buyurtma bering\!`,
     ``,
     `👇 *Onlayn buyurtma:*`,
-    url,
+    escMd(url),
   ].filter(Boolean).join("\n");
 
   const inlineKeyboard = {
@@ -487,12 +490,14 @@ export async function publishProductToChannel(product: {
           chat_id: channelId,
           photo: product.imageUrl,
           caption: captionLines,
-          parse_mode: "Markdown",
+          parse_mode: "MarkdownV2",
           reply_markup: inlineKeyboard,
         }),
       });
       if (res.ok) return { success: true };
       const err = await res.text();
+      // Log for debugging
+      console.error("[Telegram] sendPhoto failed:", err);
       return { success: false, error: err };
     }
 
@@ -502,12 +507,13 @@ export async function publishProductToChannel(product: {
       body: JSON.stringify({
         chat_id: channelId,
         text: captionLines,
-        parse_mode: "Markdown",
+        parse_mode: "MarkdownV2",
         reply_markup: inlineKeyboard,
       }),
     });
     if (res.ok) return { success: true };
     const err = await res.text();
+    console.error("[Telegram] sendMessage failed:", err);
     return { success: false, error: err };
   } catch (e: any) {
     return { success: false, error: e?.message ?? "Unknown error" };
