@@ -292,15 +292,12 @@ ${sitemapEntries.join("\n")}
           .select({ slug: categories.slug, slugUz: (categories as any).slugUz, createdAt: categories.createdAt, name: categories.name })
           .from(categories);
 
-        categoryEntries = allCategories.flatMap((c) => {
+        categoryEntries = allCategories.map((c) => {
           const lastmod = formatDate(new Date(c.createdAt));
           const ruLoc = `/category/${escapeXml(c.slug)}`;
           const uzLoc = c.slugUz ? `/kategoriya/${escapeXml(c.slugUz)}` : null;
-          const entries = [buildUrl(ruLoc, uzLoc, lastmod, "weekly", "0.8")];
-          if (uzLoc) {
-            entries.push(buildUzUrl(ruLoc, uzLoc, lastmod, "weekly", "0.8"));
-          }
-          return entries;
+          // Only include the canonical /category/ URL; /kategoriya/ is an alias with canonical pointing here
+          return buildUrl(ruLoc, uzLoc, lastmod, "weekly", "0.8");
         });
       }
 
@@ -349,17 +346,14 @@ ${sitemapEntries.join("\n")}
         return;
       }
 
-      const productEntries = chunkProducts.flatMap((p) => {
+      const productEntries = chunkProducts.map((p) => {
         const lastmod = formatDate(new Date(p.updatedAt));
         const ruLoc = `/product/${escapeXml(p.slug)}`;
         const uzLoc = p.slugUz ? `/mahsulot/${escapeXml(p.slugUz)}` : null;
         const imgUrl = p.imageUrl || undefined;
         const imgName = p.name || undefined;
-        const entries = [buildUrl(ruLoc, uzLoc, lastmod, "weekly", "0.7", imgUrl, imgName)];
-        if (uzLoc) {
-          entries.push(buildUzUrl(ruLoc, uzLoc, lastmod, "weekly", "0.7", imgUrl, imgName));
-        }
-        return entries;
+        // Only include the canonical /product/ URL; /mahsulot/ is an alias with canonical pointing here
+        return buildUrl(ruLoc, uzLoc, lastmod, "weekly", "0.7", imgUrl, imgName);
       });
 
       res.setHeader("Content-Type", "application/xml; charset=utf-8");
