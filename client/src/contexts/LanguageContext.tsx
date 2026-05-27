@@ -900,7 +900,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       const browserLang = navigator.language || (navigator as any).userLanguage || "";
       if (browserLang.toLowerCase().startsWith("uz")) return "uz";
     }
-    return "ru";
+    return "uz";
   });
 
   const setLang = useCallback((newLang: Language) => {
