@@ -27,15 +27,19 @@ const PAGE_SIZE = 40;
 function ProductCardSkeleton() {
   return (
     <div className="bg-white rounded-2xl overflow-hidden flex flex-col animate-pulse" style={{ border: '1px solid #f0f0f0' }}>
-      <div className="bg-gray-100" style={{ aspectRatio: '1 / 1', width: '100%' }} />
-      <div className="p-3 flex flex-col gap-2">
+      {/* Match fixed 220px photo height */}
+      <div className="bg-gray-100" style={{ height: '220px', width: '100%', flexShrink: 0 }} />
+      {/* Match fixed 130px text block height */}
+      <div className="p-3 flex flex-col gap-1.5" style={{ height: '130px', overflow: 'hidden' }}>
         <div className="h-2.5 w-14 bg-gray-200 rounded" />
         <div className="space-y-1.5">
           <div className="h-3.5 bg-gray-200 rounded w-full" />
           <div className="h-3.5 bg-gray-200 rounded w-3/4" />
         </div>
-        <div className="h-5 w-24 bg-gray-200 rounded mt-1" />
-        <div className="h-9 bg-gray-200 rounded-xl mt-0.5" />
+        <div className="h-5 w-24 bg-gray-200 rounded mt-auto" />
+      </div>
+      <div className="px-3 pb-3">
+        <div className="h-9 bg-gray-200 rounded-xl" />
       </div>
     </div>
   );
@@ -270,10 +274,8 @@ export default function Home() {
               onMouseLeave={() => { sliderPausedRef.current = false; }}
             >
               {(hitProducts.length >= 5 ? [...hitProducts, ...hitProducts] : hitProducts).map((p, idx) => (
-                <div key={`${p.id}-${idx}`} className="shrink-0 flex flex-col" style={{ width: "calc((100% - 48px) / 5)", minWidth: "180px", scrollSnapAlign: "start" }}>
-                  <div className="flex-1 flex flex-col">
-                    <ProductCard product={p} />
-                  </div>
+                <div key={`${p.id}-${idx}`} className="shrink-0" style={{ width: "calc((100% - 48px) / 5)", minWidth: "180px", scrollSnapAlign: "start" }}>
+                  <ProductCard product={p} />
                 </div>
               ))}
             </div>

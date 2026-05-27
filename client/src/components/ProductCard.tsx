@@ -98,8 +98,8 @@ export default function ProductCard({ product }: ProductCardProps) {
         }}
         className="flex flex-col flex-1 cursor-pointer active:scale-[0.98] transition-transform touch-manipulation"
       >
-        {/* Square photo — Uzum style */}
-        <div className="relative bg-gray-50" style={{ aspectRatio: '1 / 1', width: '100%' }}>
+        {/* Square photo — fixed 220px height so all cards have identical photo area */}
+        <div className="relative bg-gray-50" style={{ height: '220px', width: '100%', flexShrink: 0 }}>
           {product.imageUrl ? (
             <img
               src={product.thumbUrl ? imgUrl(product.thumbUrl) : imgUrl(product.imageUrl, 400, 80)}
@@ -152,8 +152,8 @@ export default function ProductCard({ product }: ProductCardProps) {
           </button>
         </div>
 
-        {/* Card body — fixed height so all cards in a row align */}
-        <div className="p-3 flex flex-col gap-1.5" style={{ minHeight: '120px' }}>
+        {/* Card body — fixed 130px height so all cards in a row align perfectly */}
+        <div className="p-3 flex flex-col gap-1" style={{ height: '130px', overflow: 'hidden' }}>
           {/* Brand */}
           {product.brand && (
             <p className="text-xs text-gray-500 font-medium uppercase tracking-wide truncate">{product.brand}</p>
@@ -167,8 +167,8 @@ export default function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
 
-          {/* Product name */}
-          <h3 className="text-sm font-semibold text-gray-800 line-clamp-2 flex-1 leading-snug">{displayName}</h3>
+          {/* Product name — clamp to 2 lines max */}
+          <h3 className="text-sm font-semibold text-gray-800 leading-snug" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', flexShrink: 0 }}>{displayName}</h3>
 
           {/* Price block */}
           <div className="mt-auto pt-1">
