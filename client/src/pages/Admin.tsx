@@ -1540,7 +1540,7 @@ export default function Admin() {
                   </form>
                   </div>
                   {/* Кнопки — фиксированы внизу */}
-                  <div className="flex gap-3 px-4 sm:px-5 pt-3 border-t border-gray-100 bg-white shrink-0 sm:rounded-b-2xl" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}>
+                  <div className="flex gap-3 px-4 sm:px-5 pt-3 pb-3 border-t border-gray-100 bg-white shrink-0 sm:rounded-b-2xl" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}>
                     <button
                       type="submit"
                       form="product-form"
