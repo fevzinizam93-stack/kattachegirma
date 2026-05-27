@@ -87,17 +87,26 @@ export function usePageMeta({
     }
 
     // --- Title ---
-    const fullTitle =
-      title.length > 60
-        ? title.slice(0, 60).replace(/\s+\S*$/, "") + "…"
-        : title;
+    // Google supports up to 600px (~70 chars). We allow up to 120 to avoid
+    // truncating long product names. Google rewrites titles anyway if needed.
+    const fullTitle = title.length > 120
+      ? title.slice(0, 120).replace(/\s+\S*$/, "") + "…"
+      : title;
     document.title = fullTitle;
 
     // --- Meta description ---
+    // Strip raw spec lines (lines that look like specs: short label + value pairs)
+    // and keep only the first meaningful sentence for the description.
+    const cleanDesc = description
+      .split(/\n+/)
+      .filter(line => line.trim().length > 20) // remove very short spec lines
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim();
     const desc =
-      description.length > 160
-        ? description.slice(0, 160).replace(/\s+\S*$/, "") + "…"
-        : description;
+      cleanDesc.length > 200
+        ? cleanDesc.slice(0, 200).replace(/\s+\S*$/, "") + "…"
+        : cleanDesc;
     setMeta('meta[name="description"]', "content", desc);
 
     // --- Keywords (RU + UZ combined — helps Uzbek search queries) ---

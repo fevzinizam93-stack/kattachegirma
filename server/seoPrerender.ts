@@ -198,7 +198,13 @@ async function prerenderProduct(slug: string, isUz: boolean): Promise<string | n
   const titleBrand = (brand && !nameHasBrand) ? ` ${brand}` : "";
   const title = `${displayName}${titleBrand} — купить в Ташкенте${discount ? ` со скидкой ${discount}%` : ""} | ${SITE_NAME} (kattachegirma)`;
 
-  const description = `${displayName}${brand && !nameHasBrand ? ` ${brand}` : ""}. Цена: ${price} сум${originalPrice ? ` (было ${originalPrice} сум)` : ""}. ${catName}. Купить в Ташкенте с доставкой по Узбекистану.${desc ? " " + desc.slice(0, 100) : ""}`;
+  // Build clean description: avoid raw spec lines (very short lines are spec key/value pairs)
+  const cleanDescLines = desc
+    .split(/\n+/)
+    .map((l: string) => l.trim())
+    .filter((l: string) => l.length > 25);
+  const cleanDescSentence = cleanDescLines.slice(0, 2).join(" ").slice(0, 120);
+  const description = `${displayName}${brand && !nameHasBrand ? ` ${brand}` : ""}. Цена: ${price} сум${originalPrice ? ` (было ${originalPrice} сум)` : ""}. ${catName}. Купить в Ташкенте с доставкой по Узбекистану.${cleanDescSentence ? " " + cleanDescSentence : ""}`;
 
   // Keywords: exact model + product name + brand + category — helps rank for model number searches
   const keywords = [
