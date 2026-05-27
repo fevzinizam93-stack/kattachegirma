@@ -424,6 +424,69 @@ export async function notifyCustomer(
   }
 }
 
+/**
+ * Notify buyer via Telegram when admin changes order status.
+ * Sends to buyer's telegramId if they have one linked.
+ */
+export async function notifyBuyerOrderStatus(params: {
+  telegramId: string;
+  orderId: number;
+  status: "confirmed" | "delivered" | "cancelled";
+  customerName?: string;
+  totalAmount?: string;
+}): Promise<void> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return;
+
+  const statusMessages = {
+    confirmed: {
+      emoji: "✅",
+      title: "Buyurtmangiz tasdiqlandi!",
+      body: `<b>#${params.orderId}</b> raqamli buyurtmangiz tasdiqlandi va ishlov berishga topshirildi.\n\n⏰ Tez orada menejerimiz siz bilan bog'lanadi.`,
+    },
+    delivered: {
+      emoji: "🎉",
+      title: "Buyurtmangiz yetkazib berildi!",
+      body: `<b>#${params.orderId}</b> raqamli buyurtmangiz muvaffaqiyatli yetkazib berildi.\n\nXarid uchun rahmat! Yana ko'ring 👇\n🌐 <a href="https://kattachegirma.uz">kattachegirma.uz</a>`,
+    },
+    cancelled: {
+      emoji: "❌",
+      title: "Buyurtmangiz bekor qilindi",
+      body: `<b>#${params.orderId}</b> raqamli buyurtmangiz bekor qilindi.\n\nSavollar bo'lsa, biz bilan bog'laning:\n🌐 <a href="https://kattachegirma.uz">kattachegirma.uz</a>`,
+    },
+  };
+
+  const s = statusMessages[params.status];
+  const greeting = params.customerName ? `Assalomu alaykum, <b>${params.customerName}</b>!\n\n` : "";
+  const message = [
+    `${s.emoji} <b>Katta Chegirma — ${s.title}</b>`,
+    ``,
+    `${greeting}${s.body}`,
+    params.totalAmount ? `\n💰 <b>Jami:</b> ${Number(params.totalAmount).toLocaleString("ru-RU")} so'm` : null,
+    ``,
+    `⏰ ${new Date().toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" })}`,
+  ].filter(Boolean).join("\n");
+
+  try {
+    const res = await fetch(`${TELEGRAM_API}/bot${token}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: params.telegramId,
+        text: message,
+        parse_mode: "HTML",
+        disable_web_page_preview: true,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      console.error(`[Telegram] notifyBuyerOrderStatus failed:`, err);
+    }
+  } catch (e) {
+    console.error("[Telegram] notifyBuyerOrderStatus error:", e);
+  }
+}
+
 // ─── Publish product to Telegram channel ───────────────────────────────────
 export async function publishProductToChannel(product: {
   id: number;

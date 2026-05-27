@@ -2,6 +2,7 @@ import ProductCard from "@/components/ProductCard";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { ChevronDown, Filter, SlidersHorizontal } from "lucide-react";
+import PriceRangeSlider from "@/components/PriceRangeSlider";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useLocation } from "wouter";
 import { usePageMeta } from "@/hooks/usePageMeta";
@@ -77,6 +78,14 @@ export default function Catalog() {
   const [sortBy, setSortBy] = useState<SortBy>(init.sortBy);
   const [selectedBrands, setSelectedBrands] = useState<string[]>(init.selectedBrands);
   const [minRating, setMinRating] = useState<number | undefined>(init.minRating);
+
+  // Price range from backend
+  const { data: priceRangeData } = trpc.products.priceRange.useQuery(
+    { categoryId: selectedCategory, search: search || undefined },
+    { staleTime: 5 * 60 * 1000 }
+  );
+  const priceRangeMin = priceRangeData?.min ?? 0;
+  const priceRangeMax = priceRangeData?.max ?? 50000000;
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
   // Sync filters to URL
@@ -390,41 +399,39 @@ export default function Catalog() {
                 </div>
               )}
 
-              {/* Price filter */}
+              {/* Price filter — dual-handle slider */}
               <div className="mt-4 pt-4 border-t border-border">
-                <h4 className="font-semibold text-xs text-muted-foreground uppercase tracking-wide mb-2">Цена (сум)</h4>
-                <div className="space-y-2">
-                  <input
-                    type="number"
-                    value={minPriceInput}
-                    onChange={e => setMinPriceInput(e.target.value)}
-                    placeholder="От"
-                    min={0}
-                    className="w-full border border-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                  />
-                  <input
-                    type="number"
-                    value={maxPriceInput}
-                    onChange={e => setMaxPriceInput(e.target.value)}
-                    placeholder="До"
-                    min={0}
-                    className="w-full border border-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                  />
+                <h4 className="font-semibold text-xs text-muted-foreground uppercase tracking-wide mb-3">Цена (сум)</h4>
+                <PriceRangeSlider
+                  min={priceRangeMin}
+                  max={priceRangeMax}
+                  value={[minPrice ?? priceRangeMin, maxPrice ?? priceRangeMax]}
+                  onChange={([newMin, newMax]) => {
+                    const isFullRange = newMin <= priceRangeMin && newMax >= priceRangeMax;
+                    setMinPrice(isFullRange ? undefined : newMin);
+                    setMaxPrice(isFullRange ? undefined : newMax);
+                    setMinPriceInput(isFullRange ? '' : String(newMin));
+                    setMaxPriceInput(isFullRange ? '' : String(newMax));
+                    setAllProducts([]);
+                    setPage(0);
+                    syncToUrl({
+                      category: selectedCategory,
+                      q: search,
+                      minPrice: isFullRange ? undefined : newMin,
+                      maxPrice: isFullRange ? undefined : newMax,
+                      sortBy,
+                      brands: selectedBrands,
+                    });
+                  }}
+                />
+                {(minPrice !== undefined || maxPrice !== undefined) && (
                   <button
-                    onClick={handlePriceFilter}
-                    className="w-full bg-primary text-primary-foreground px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
+                    onClick={handlePriceReset}
+                    className="mt-2 w-full border border-border px-3 py-1.5 rounded-lg text-sm hover:bg-accent transition-colors"
                   >
-                    Применить
+                    Сбросить цену
                   </button>
-                  {(minPrice !== undefined || maxPrice !== undefined) && (
-                    <button
-                      onClick={handlePriceReset}
-                      className="w-full border border-border px-3 py-1.5 rounded-lg text-sm hover:bg-accent transition-colors"
-                    >
-                      Сбросить цену
-                    </button>
-                  )}
-                </div>
+                )}
               </div>
             </div>
               {/* Rating filter */}

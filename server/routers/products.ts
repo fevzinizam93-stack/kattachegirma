@@ -80,6 +80,37 @@ export const productsRouter = router({
       return getProductBrands({ categoryId: input.categoryId });
     }),
 
+  // Get min/max price for slider range (filtered by category/search)
+  priceRange: publicProcedure
+    .input(z.object({
+      categoryId: z.number().optional(),
+      search: z.string().optional(),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return { min: 0, max: 50000000 };
+      const { products: productsTable } = await import("../../drizzle/schema");
+      const { sql: drizzleSql, and, like, eq } = await import("drizzle-orm");
+      const conditions: any[] = [
+        drizzleSql`${productsTable.isActive} = 1`,
+        drizzleSql`${productsTable.isApproved} = 1`,
+      ];
+      if (input.categoryId) conditions.push(eq(productsTable.categoryId, input.categoryId));
+      if (input.search) conditions.push(like(productsTable.name, `%${input.search}%`));
+      const rows = await db
+        .select({
+          minPrice: drizzleSql<number>`MIN(CAST(${productsTable.price} AS DECIMAL))`,
+          maxPrice: drizzleSql<number>`MAX(CAST(${productsTable.price} AS DECIMAL))`,
+        })
+        .from(productsTable)
+        .where(and(...conditions));
+      const row = rows[0];
+      return {
+        min: Math.floor(Number(row?.minPrice ?? 0)),
+        max: Math.ceil(Number(row?.maxPrice ?? 50000000)),
+      };
+    }),
+
   // Admin: all products including unapproved
   adminList: adminProcedure
     .input(z.object({

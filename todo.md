@@ -1347,3 +1347,8 @@
 - [x] СРЕДНЕ: Navbar/Admin/Catalog/CategoryPage/SellerDashboard/SellerPanel — staleTime 10 мин
 - [x] СРЕДНЕ: ProductCard — loading="lazy" уже стоит (было добавлено ранее)
 - [x] СРЕДНЕ: ProductCard — зелёная кнопка «✓ Добавлено» на 1.2 сек после добавления
+
+- [x] Add getMyOrders tRPC procedure — returns orders for authenticated user
+- [x] Add buyer Telegram notification when admin confirms order (status confirmed)
+- [x] Build My Orders page (/my-orders) — list with order status, product name, date, price
+- [x] Add price range filter slider to catalog page (min/max price, URL params)

@@ -11,7 +11,7 @@ import {
   getDb,
 } from "../db";
 import { eq, sql } from "drizzle-orm";
-import { notifyNewOrder } from "../telegram";
+import { notifyNewOrder, notifyBuyerOrderStatus } from "../telegram";
 
 export const ordersRouter = router({
   create: publicProcedure
@@ -141,6 +141,25 @@ export const ordersRouter = router({
             message: notif.message,
             orderId: input.id,
           }).catch((e) => console.error("[Notification] Failed:", e));
+        }
+
+        // Telegram notification to buyer if they have telegramId
+        if (input.status !== "pending") {
+          const db = await getDb();
+          if (db) {
+            const { users: usersTable } = await import("../../drizzle/schema");
+            const userRows = await db.select().from(usersTable).where(eq(usersTable.id, order.userId)).limit(1);
+            const buyer = userRows[0];
+            if (buyer?.telegramId) {
+              notifyBuyerOrderStatus({
+                telegramId: buyer.telegramId,
+                orderId: input.id,
+                status: input.status as "confirmed" | "delivered" | "cancelled",
+                customerName: order.customerName,
+                totalAmount: order.totalAmount,
+              }).catch((e) => console.error("[Telegram] Buyer notification failed:", e));
+            }
+          }
         }
       }
       return { success: true };
