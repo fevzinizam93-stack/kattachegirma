@@ -1,15 +1,60 @@
 import { useEffect } from "react";
 import { Link } from "wouter";
 
+const GOOGLE_MERCHANT_ID = 5766550284;
+
+/** Inject Google Customer Reviews opt-in survey after order placement */
+function injectGoogleCustomerReviews(orderId: number, email: string | null) {
+  // Add platform.js script if not already present
+  if (!document.querySelector('script[src*="apis.google.com/js/platform.js"]')) {
+    const script = document.createElement("script");
+    script.src = "https://apis.google.com/js/platform.js?onload=renderOptIn";
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+  }
+
+  // Estimated delivery: 7 days from now (UZ standard)
+  const deliveryDate = new Date();
+  deliveryDate.setDate(deliveryDate.getDate() + 7);
+  const estimatedDelivery = deliveryDate.toISOString().split("T")[0];
+
+  (window as any).renderOptIn = function () {
+    (window as any).gapi?.load("surveyoptin", function () {
+      (window as any).gapi.surveyoptin.render({
+        merchant_id: GOOGLE_MERCHANT_ID,
+        order_id: String(orderId),
+        ...(email ? { email } : {}),
+        delivery_country: "UZ",
+        estimated_delivery_date: estimatedDelivery,
+      });
+    });
+  };
+
+  // If gapi already loaded, call directly
+  if ((window as any).gapi) {
+    (window as any).renderOptIn();
+  }
+}
+
 export default function OrderSuccessModal({
   orderNumber,
   customerName,
+  customerEmail,
+  orderItems,
   onClose,
 }: {
   orderNumber: number;
   customerName: string;
+  customerEmail?: string | null;
+  orderItems?: Array<{ productId: number; name: string; price: number; quantity: number; imageUrl?: string }>;
   onClose: () => void;
 }) {
+  // Inject Google Customer Reviews opt-in
+  useEffect(() => {
+    injectGoogleCustomerReviews(orderNumber, customerEmail ?? null);
+  }, [orderNumber, customerEmail]);
+
   // Close on Escape key
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {

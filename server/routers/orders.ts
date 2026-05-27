@@ -68,7 +68,19 @@ export const ordersRouter = router({
       })
         .then(() => console.log(`[Orders] ✅ Telegram уведомление о заказе #${id} отправлено`))
         .catch(e => console.error(`[Orders] ❌ Telegram уведомление НЕ отправлено:`, e));
-      return { id };
+      // Return user email for Google Customer Reviews opt-in
+      let userEmail: string | null = null;
+      if (ctx.user?.id) {
+        try {
+          const db = await getDb();
+          if (db) {
+            const { users: usersTable } = await import("../../drizzle/schema");
+            const userRows = await db.select({ email: usersTable.email }).from(usersTable).where(eq(usersTable.id, ctx.user.id)).limit(1);
+            userEmail = userRows[0]?.email ?? null;
+          }
+        } catch (e) { /* non-critical */ }
+      }
+      return { id, email: userEmail };
     }),
 
   list: adminProcedure.query(async () => {

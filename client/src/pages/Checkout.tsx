@@ -15,7 +15,7 @@ export default function Checkout() {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
   const { isAuthenticated, user } = useAuth();
-  const [successOrder, setSuccessOrder] = useState<{ id: number; name: string } | null>(null);
+  const [successOrder, setSuccessOrder] = useState<{ id: number; name: string; email: string | null; items: typeof items } | null>(null);
 
   const [form, setForm] = useState({
     customerName: "",
@@ -43,7 +43,7 @@ export default function Checkout() {
         total: totalAmount,
         items: items.map(i => ({ id: i.productId, name: i.name, price: i.price, quantity: i.quantity })),
       });
-      setSuccessOrder({ id: data.id, name: form.customerName });
+      setSuccessOrder({ id: data.id, name: form.customerName, email: (data as any).email ?? null, items: [...items] });
       clearCart();
     },
     onError: (err) => {
@@ -100,6 +100,8 @@ export default function Checkout() {
       <OrderSuccessModal
         orderNumber={successOrder.id}
         customerName={successOrder.name}
+        customerEmail={successOrder.email}
+        orderItems={successOrder.items}
         onClose={() => { setSuccessOrder(null); window.location.href = '/'; }}
       />
     )}
