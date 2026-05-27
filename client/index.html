@@ -135,6 +135,17 @@
       defer
       src="%VITE_ANALYTICS_ENDPOINT%/umami"
       data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
+    <!-- Google Customer Reviews Badge (Merchant Widget) -->
+    <script id='merchantWidgetScript' src="https://www.gstatic.com/shopping/merchant/merchantwidget.js" defer></script>
+    <script>
+      document.getElementById('merchantWidgetScript').addEventListener('load', function () {
+        merchantwidget.start({
+          merchant_id: 5766550284,
+          position: 'BOTTOM_RIGHT',
+          region: 'UZ',
+        });
+      });
+    </script>
     <!-- Google Analytics 4 — moved to end of body to avoid blocking LCP -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-G9XX9QKJXL"></script>
     <script>
