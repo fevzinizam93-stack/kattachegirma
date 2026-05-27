@@ -526,9 +526,17 @@ export async function publishProductToChannel(product: {
   const price = Math.round(Number(product.price)).toLocaleString("ru-RU");
   const usdPrice = Math.round(Number(product.price) / uzsPerUsd);
   const hasDiscount = product.discount && product.discount > 0;
-  const originalPrice = product.originalPrice
-    ? Math.round(Number(product.originalPrice)).toLocaleString("ru-RU")
-    : null;
+
+  // Original price: prefer explicit originalPrice field, fallback to back-calculating from discount
+  let originalPriceNum: number | null = null;
+  if (product.originalPrice && Number(product.originalPrice) > 0) {
+    originalPriceNum = Math.round(Number(product.originalPrice));
+  } else if (hasDiscount && product.discount && product.discount > 0) {
+    // Back-calculate: currentPrice = originalPrice * (1 - discount/100)
+    originalPriceNum = Math.round(Number(product.price) / (1 - product.discount / 100));
+  }
+  const originalPriceStr = originalPriceNum ? originalPriceNum.toLocaleString("ru-RU") : null;
+  const originalUsdPrice = originalPriceNum ? Math.round(originalPriceNum / uzsPerUsd) : null;
 
   const url = `https://kattachegirma.uz/product/${product.slug}?utm_source=telegram&utm_medium=channel&utm_campaign=products`;
 
@@ -544,17 +552,25 @@ export async function publishProductToChannel(product: {
     }
   }
 
+  // Build caption in the requested format:
+  // 🏷️ Katta Chegirmada! (if discount) or 🛍 YANGI MAHSULOT
+  // 📦 Product name
+  // 🏷 Brand
+  // ❌ Old price (if discount)
+  // ✅ New price
+  // ✅ Mavjud...
+  // 👇 Order CTA
   const caption = [
-    hasDiscount ? `🔥 -${product.discount}% CHEGIRMA!` : `🛍 YANGI MAHSULOT`,
-    ``,
-    `📦 <b>${esc(product.name)}</b>`,
+    hasDiscount ? `🏷️ <b>Katta Chegirmada!</b>` : `🛍 <b>YANGI MAHSULOT</b>`,
+    `📦 ${esc(product.name)}`,
     product.brand ? `🏷 Brand: ${esc(product.brand)}` : null,
     ``,
-    hasDiscount && originalPrice ? `<s>${esc(originalPrice)} so'm</s>` : null,
-    `💰 <b>${esc(price)} so'm</b> ($${usdPrice})`,
+    hasDiscount && originalPriceStr && originalUsdPrice
+      ? `❌ <s>${esc(originalPriceStr)} so'm ($${originalUsdPrice})</s>`
+      : null,
+    `✅ <b>${esc(price)} so'm ($${usdPrice})</b>`,
     ``,
     `✅ Mavjud — hoziroq buyurtma bering!`,
-    ``,
     `👇 <b>Onlayn buyurtma quyidagi tugma orqali:</b>`,
   ].filter(Boolean).join("\n");
 
