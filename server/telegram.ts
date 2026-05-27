@@ -513,8 +513,18 @@ export async function publishProductToChannel(product: {
   // HTML escape helper — safe for Telegram HTML parse_mode
   const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
+  // Fetch real USD rate (same source as frontend CurrencyContext)
+  let uzsPerUsd = 12700; // fallback
+  try {
+    const rateRes = await fetch("https://open.er-api.com/v6/latest/USD", { signal: AbortSignal.timeout(5000) });
+    if (rateRes.ok) {
+      const rateData = await rateRes.json() as { rates: Record<string, number> };
+      if (rateData.rates["UZS"]) uzsPerUsd = Math.round(rateData.rates["UZS"]);
+    }
+  } catch { /* use fallback */ }
+
   const price = Math.round(Number(product.price)).toLocaleString("ru-RU");
-  const usdPrice = Math.round(Number(product.price) / 12800);
+  const usdPrice = Math.round(Number(product.price) / uzsPerUsd);
   const hasDiscount = product.discount && product.discount > 0;
   const originalPrice = product.originalPrice
     ? Math.round(Number(product.originalPrice)).toLocaleString("ru-RU")

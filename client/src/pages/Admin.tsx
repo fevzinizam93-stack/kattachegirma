@@ -504,10 +504,15 @@ export default function Admin() {
     },
     onError: (e) => toast.error("Ошибка: " + e.message),
   });
+  const [publishingTgId, setPublishingTgId] = useState<number | null>(null);
   const publishToTg = trpc.products.publishToTelegram.useMutation({
-    onSuccess: () => toast.success("✅ Товар опубликован в Telegram канале!"),
-    onError: (e) => toast.error("❌ Ошибка: " + e.message),
+    onSuccess: () => { setPublishingTgId(null); toast.success("✅ Товар опубликован в Telegram канале!"); },
+    onError: (e) => { setPublishingTgId(null); toast.error("❌ Ошибка публикации в Telegram: " + e.message); },
   });
+  const handlePublishToTg = (id: number) => {
+    setPublishingTgId(id);
+    publishToTg.mutate({ id });
+  };
   const updateOrderStatus = trpc.orders.updateStatus.useMutation({
     onSuccess: () => { toast.success("Статус обновлён!"); utils.orders.list.invalidate(); },
   });
@@ -1635,12 +1640,14 @@ export default function Admin() {
                           {(p as any).isActive ? "✓ В наличии" : "⛔ Скрыт"}
                         </button>
                         <button
-                          onClick={() => publishToTg.mutate({ id: p.id })}
-                          disabled={publishToTg.isPending}
+                          onClick={() => handlePublishToTg(p.id)}
+                          disabled={publishingTgId === p.id}
                           className="h-9 px-2 flex items-center gap-1 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold hover:bg-blue-100 transition-colors disabled:opacity-50"
                           title="Опубликовать в Telegram"
                         >
-                          <Send size={13} />
+                          {publishingTgId === p.id
+                            ? <span className="w-3 h-3 border-2 border-blue-400 border-t-blue-700 rounded-full animate-spin" />
+                            : <Send size={13} />}
                           TG
                         </button>
                         <button
@@ -1740,12 +1747,14 @@ export default function Admin() {
                                   {(p as any).isActive ? "✓ В наличии" : "⛔ Нет"}
                                 </button>
                                 <button
-                                  onClick={() => publishToTg.mutate({ id: p.id })}
-                                  disabled={publishToTg.isPending}
+                                  onClick={() => handlePublishToTg(p.id)}
+                                  disabled={publishingTgId === p.id}
                                   className="p-1.5 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors disabled:opacity-50"
                                   title="Опубликовать в Telegram"
                                 >
-                                  <Send size={15} />
+                                  {publishingTgId === p.id
+                                    ? <span className="w-3 h-3 border-2 border-blue-400 border-t-blue-700 rounded-full animate-spin" />
+                                    : <Send size={15} />}
                                 </button>
                                 <button onClick={() => handleEdit(p)} className="p-1.5 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors">
                                   <Edit size={15} />
