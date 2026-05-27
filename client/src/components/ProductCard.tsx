@@ -19,6 +19,8 @@ interface Product {
   brand?: string | null;
   price: string;
   originalPrice?: string | null;
+  priceUsd?: string | number | null;
+  originalPriceUsd?: string | number | null;
   discount?: number | null;
   imageUrl?: string | null;
   thumbUrl?: string | null;
@@ -41,7 +43,7 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
   const { t, lang } = useLanguage();
-  const { formatPrice } = useCurrency();
+  const { formatProductPrice } = useCurrency();
   const [compareOpen, setCompareOpen] = useState(false);
   const [addedFeedback, setAddedFeedback] = useState(false);
   const { toggle: toggleWishlist, has: inWishlist } = useWishlist();
@@ -174,11 +176,11 @@ export default function ProductCard({ product }: ProductCardProps) {
           <div className="mt-auto pt-1">
             {hasDiscount && product.originalPrice ? (
               <>
-                <div className="text-xs text-gray-400 line-through leading-tight mb-0.5">{formatPrice(product.originalPrice!)}</div>
-                <div className="text-lg font-black leading-tight" style={{ color: "#cc0000" }}>{formatPrice(product.price)}</div>
+                <div className="text-xs text-gray-400 line-through leading-tight mb-0.5">{formatProductPrice(product.originalPrice!, product.originalPriceUsd)}</div>
+                <div className="text-lg font-black leading-tight" style={{ color: "#cc0000" }}>{formatProductPrice(product.price, product.priceUsd)}</div>
               </>
             ) : (
-              <div className="text-lg font-black leading-tight" style={{ color: "#cc0000" }}>{formatPrice(product.price)}</div>
+              <div className="text-lg font-black leading-tight" style={{ color: "#cc0000" }}>{formatProductPrice(product.price, product.priceUsd)}</div>
             )}
           </div>
         </div>

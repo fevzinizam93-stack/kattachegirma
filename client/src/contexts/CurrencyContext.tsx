@@ -9,6 +9,8 @@ interface CurrencyContextType {
   currency: Currency;
   setCurrency: (c: Currency) => void;
   formatPrice: (priceInUzs: string | number) => string;
+  /** Use this for products — shows stored USD directly, never recalculates from UZS */
+  formatProductPrice: (priceInUzs: string | number, storedUsd?: string | number | null) => string;
   currencyLabel: string;
   usdRate: number;
 }
@@ -17,6 +19,7 @@ const CurrencyContext = createContext<CurrencyContextType>({
   currency: "uzs",
   setCurrency: () => {},
   formatPrice: (p) => `${Number(p).toLocaleString("ru-RU")} сум`,
+  formatProductPrice: (p) => `${Number(p).toLocaleString("ru-RU")} сум`,
   currencyLabel: "сум",
   usdRate: FALLBACK_USD_RATE,
 });
@@ -45,6 +48,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("kc_currency", c);
   };
 
+  /** Legacy: converts UZS to USD by dividing by current rate. Avoid for products. */
   const formatPrice = (priceInUzs: string | number): string => {
     const num = typeof priceInUzs === "string" ? parseFloat(priceInUzs) : priceInUzs;
     if (isNaN(num)) return String(priceInUzs);
@@ -55,10 +59,34 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     return `${num.toLocaleString("ru-RU")} сум`;
   };
 
+  /**
+   * Use for product prices. In USD mode: shows the stored USD value directly (never recalculates).
+   * Falls back to dividing UZS by current rate only for old products without stored USD.
+   */
+  const formatProductPrice = (
+    priceInUzs: string | number,
+    storedUsd?: string | number | null
+  ): string => {
+    if (currency === "usd") {
+      // If we have a stored USD value — use it directly, no recalculation
+      if (storedUsd != null && storedUsd !== "" && Number(storedUsd) > 0) {
+        return `$${Math.round(Number(storedUsd)).toLocaleString("en-US")}`;
+      }
+      // Fallback for old products without stored USD
+      const num = typeof priceInUzs === "string" ? parseFloat(priceInUzs) : priceInUzs;
+      if (isNaN(num)) return String(priceInUzs);
+      return `$${Math.round(num / usdRate).toLocaleString("en-US")}`;
+    }
+    // UZS mode: show sum as-is
+    const num = typeof priceInUzs === "string" ? parseFloat(priceInUzs) : priceInUzs;
+    if (isNaN(num)) return String(priceInUzs);
+    return `${num.toLocaleString("ru-RU")} сум`;
+  };
+
   const currencyLabel = currency === "usd" ? "$" : "сум";
 
   return (
-    <CurrencyContext.Provider value={{ currency, setCurrency, formatPrice, currencyLabel, usdRate }}>
+    <CurrencyContext.Provider value={{ currency, setCurrency, formatPrice, formatProductPrice, currencyLabel, usdRate }}>
       {children}
     </CurrencyContext.Provider>
   );

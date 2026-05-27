@@ -857,13 +857,14 @@ export default function Admin() {
     const rawSlug = translit(form.name).replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-").replace(/^-|-$/g, "");
     const slug = form.slug || rawSlug || `product-${Date.now()}`;
     const stockCountNum = form.stockCount !== "" ? parseInt(form.stockCount) : undefined;
-    // Strip UI-only fields that don't exist in the DB
-    const { priceUsd, originalPriceUsd, ...formClean } = form;
-    const formWithPrice = { ...formClean, price: finalPrice };
+    const formWithPrice = { ...form, price: finalPrice };
+    // Pass priceUsd/originalPriceUsd as numbers so they get stored in DB
+    const priceUsdNum = form.priceUsd ? Number(form.priceUsd) : undefined;
+    const origPriceUsdNum = form.originalPriceUsd ? Number(form.originalPriceUsd) : undefined;
     if (editId) {
-      updateProduct.mutate({ id: editId, ...formWithPrice, slug, stockCount: stockCountNum });
+      updateProduct.mutate({ id: editId, ...formWithPrice, slug, stockCount: stockCountNum, priceUsd: priceUsdNum, originalPriceUsd: origPriceUsdNum });
     } else {
-      createProduct.mutate({ ...formWithPrice, slug, stockCount: stockCountNum });
+      createProduct.mutate({ ...formWithPrice, slug, stockCount: stockCountNum, priceUsd: priceUsdNum, originalPriceUsd: origPriceUsdNum });
     }
   };
 
@@ -873,9 +874,10 @@ export default function Admin() {
       name: p.name, nameUz: (p as any).nameUz ?? "", slug: p.slug,
       description: p.description ?? "", descriptionUz: (p as any).descriptionUz ?? "",
       categoryId: p.categoryId, brand: p.brand ?? "", price: p.price,
-      priceUsd: p.price ? String(Math.round(parseFloat(p.price) / exchangeRate)) : "",
+      // Use stored USD values from DB; fall back to rate-based calculation only for old products
+      priceUsd: (p as any).priceUsd ? String(Math.round(Number((p as any).priceUsd))) : (p.price ? String(Math.round(parseFloat(p.price) / exchangeRate)) : ""),
       originalPrice: p.originalPrice ?? "",
-      originalPriceUsd: p.originalPrice ? String(Math.round(parseFloat(p.originalPrice) / exchangeRate)) : "",
+      originalPriceUsd: (p as any).originalPriceUsd ? String(Math.round(Number((p as any).originalPriceUsd))) : (p.originalPrice ? String(Math.round(parseFloat(p.originalPrice) / exchangeRate)) : ""),
       discount: p.discount ?? 0,
       imageUrl: p.imageUrl ?? "", images: existingImages, stock: p.stock ?? 0,
       isNew: p.isNew ?? false, isFeatured: p.isFeatured ?? false, isHit: (p as any).isHit ?? false, isPremium: (p as any).isPremium ?? false, hitOrder: (p as any).hitOrder ?? 0,

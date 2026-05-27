@@ -247,7 +247,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
   const { addItem } = useCart();
   const { addItem: addToRecentlyViewed } = useRecentlyViewed();
   const { t, lang } = useLanguage();
-  const { formatPrice } = useCurrency();
+  const { formatProductPrice } = useCurrency();
 
   // Optimized: single request for all product page data
   const { data: productPageData, isLoading } = trpc.products.getProductPage.useQuery(
@@ -797,9 +797,9 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
               <div className="flex items-end justify-between">
                 <div>
                   {hasDiscount && product.originalPrice && (
-                    <p className="text-gray-400 line-through text-sm mb-0.5">{formatPrice(product.originalPrice)}</p>
+                    <p className="text-gray-400 line-through text-sm mb-0.5">{formatProductPrice(product.originalPrice, (product as any).originalPriceUsd)}</p>
                   )}
-                  <p className="text-3xl font-black text-primary leading-none">{formatPrice(product.price)}</p>
+                  <p className="text-3xl font-black text-primary leading-none">{formatProductPrice(product.price, (product as any).priceUsd)}</p>
                   {hasDiscount && (
                     <span className="inline-flex items-center gap-0.5 mt-1 bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded-full">
                       <Tag size={10} /> Скидка {product.discount}%
@@ -1222,9 +1222,9 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
       <div className="md:hidden fixed left-0 right-0 z-[60] bg-white border-t border-gray-200 px-4 pt-3 shadow-[0_-4px_20px_rgba(0,0,0,0.10)]" style={{ bottom: '56px', paddingBottom: '12px' }}>
         <div className="flex gap-3 items-center">
           <div className="shrink-0">
-            <p className="text-lg font-black text-primary leading-none">{formatPrice(Number(product.price))}</p>
+            <p className="text-lg font-black text-primary leading-none">{formatProductPrice(product.price, (product as any).priceUsd)}</p>
             {hasDiscount && product.originalPrice && (
-              <p className="text-xs text-gray-400 line-through leading-none mt-0.5">{formatPrice(Number(product.originalPrice))}</p>
+              <p className="text-xs text-gray-400 line-through leading-none mt-0.5">{formatProductPrice(product.originalPrice, (product as any).originalPriceUsd)}</p>
             )}
           </div>
           <button

@@ -165,9 +165,9 @@ export const productsRouter = router({
       categoryId: z.number(),
       brand: z.string().optional(),
       price: z.string(),
-      priceUsd: z.string().optional(),
+      priceUsd: z.coerce.number().optional(),
       originalPrice: z.string().optional(),
-      originalPriceUsd: z.string().optional(),
+      originalPriceUsd: z.coerce.number().optional(),
       discount: z.number().default(0),
       imageUrl: z.string().optional(),
       images: z.array(z.string()).optional(),
@@ -199,16 +199,17 @@ export const productsRouter = router({
         safeSlug = `${baseSlug}-${suffix++}`;
         if (suffix > 100) { safeSlug = `${baseSlug}-${Date.now()}`; break; }
       }
-      // Strip virtual fields that don't exist in DB schema
-      const { priceUsd: _priceUsd, originalPriceUsd: _origPriceUsd, ...dbInput } = input;
       // Convert empty string decimal fields to undefined (MySQL rejects empty strings for decimal columns)
       const toDecimal = (v: string | undefined) => (v && v.trim() !== '' ? v : undefined);
       const id = await createProduct({
-        ...dbInput,
+        ...input,
         slug: safeSlug,
         price: toDecimal(input.price) as string,
         originalPrice: toDecimal(input.originalPrice),
         costPrice: toDecimal((input as any).costPrice),
+        // Store USD prices directly in DB as source of truth (convert number → string for decimal column)
+        priceUsd: input.priceUsd != null && input.priceUsd > 0 ? String(input.priceUsd) : undefined,
+        originalPriceUsd: input.originalPriceUsd != null && input.originalPriceUsd > 0 ? String(input.originalPriceUsd) : undefined,
         images: input.images ?? [],
         specs: (input.specs ?? {}) as Record<string, string>,
         discountEndsAt: input.discountEndsAt ? new Date(input.discountEndsAt) : undefined,
@@ -236,9 +237,9 @@ export const productsRouter = router({
       categoryId: z.number().optional(),
       brand: z.string().optional(),
       price: z.string().optional(),
-      priceUsd: z.string().optional(),
+      priceUsd: z.coerce.number().optional(),
       originalPrice: z.string().optional(),
-      originalPriceUsd: z.string().optional(),
+      originalPriceUsd: z.coerce.number().optional(),
       discount: z.number().optional(),
       imageUrl: z.string().optional(),
       images: z.array(z.string()).optional(),
@@ -261,13 +262,16 @@ export const productsRouter = router({
       videoId: z.string().max(32).optional().nullable(),
     }))
     .mutation(async ({ input }) => {
-      const { id, priceUsd: _pu, originalPriceUsd: _opu, ...data } = input;
+      const { id, ...data } = input;
       // Helper: convert empty strings to undefined for decimal/varchar fields (MySQL rejects empty string for decimal)
       const toDecimalOrUndef = (v: string | undefined | null) => (v != null && v.trim() !== '' ? v : undefined);
       const toStrOrUndef = (v: string | undefined | null) => (v != null && v.trim() !== '' ? v : undefined);
       const updateData: Record<string, unknown> = {
         ...data,
         specs: data.specs as Record<string, string> | undefined,
+        // Store USD prices directly in DB as source of truth
+        priceUsd: data.priceUsd != null && data.priceUsd > 0 ? String(data.priceUsd) : undefined,
+        originalPriceUsd: data.originalPriceUsd != null && data.originalPriceUsd > 0 ? String(data.originalPriceUsd) : undefined,
         // Sanitize decimal fields
         price: toDecimalOrUndef(data.price),
         originalPrice: toDecimalOrUndef(data.originalPrice),
