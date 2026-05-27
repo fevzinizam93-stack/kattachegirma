@@ -510,8 +510,8 @@ export async function publishProductToChannel(product: {
     channelId = `-100${channelId}`;
   }
 
-  // Escape special characters for MarkdownV2
-  const escMd = (s: string) => s.replace(/([_*[\]()~`>#+\-=|{}.!\\])/g, '\\$1');
+  // HTML escape helper — safe for Telegram HTML parse_mode
+  const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
   const price = Math.round(Number(product.price)).toLocaleString("ru-RU");
   const usdPrice = Math.round(Number(product.price) / 12800);
@@ -522,19 +522,30 @@ export async function publishProductToChannel(product: {
 
   const url = `https://kattachegirma.uz/product/${product.slug}?utm_source=telegram&utm_medium=channel&utm_campaign=products`;
 
-  const captionLines = [
-    hasDiscount ? `🔥 \-${escMd(String(product.discount))}% CHEGIRMA\!` : `🛍 YANGI MAHSULOT`,
+  // Normalize imageUrl — Telegram requires absolute https:// URL
+  let photoUrl: string | null = null;
+  if (product.imageUrl) {
+    if (product.imageUrl.startsWith("http://") || product.imageUrl.startsWith("https://")) {
+      photoUrl = product.imageUrl;
+    } else if (product.imageUrl.startsWith("/")) {
+      photoUrl = `https://kattachegirma.uz${product.imageUrl}`;
+    } else {
+      photoUrl = `https://kattachegirma.uz/${product.imageUrl}`;
+    }
+  }
+
+  const caption = [
+    hasDiscount ? `🔥 -${product.discount}% CHEGIRMA!` : `🛍 YANGI MAHSULOT`,
     ``,
-    `📦 *${escMd(product.name)}*`,
-    product.brand ? `🏷 Brand: ${escMd(product.brand)}` : null,
+    `📦 <b>${esc(product.name)}</b>`,
+    product.brand ? `🏷 Brand: ${esc(product.brand)}` : null,
     ``,
-    hasDiscount && originalPrice ? `~~${escMd(originalPrice)} so'm~~` : null,
-    `💰 *${escMd(price)} so'm* \($${escMd(String(usdPrice))}\)`,
+    hasDiscount && originalPrice ? `<s>${esc(originalPrice)} so'm</s>` : null,
+    `💰 <b>${esc(price)} so'm</b> ($${usdPrice})`,
     ``,
-    `✅ Mavjud — hoziroq buyurtma bering\!`,
+    `✅ Mavjud — hoziroq buyurtma bering!`,
     ``,
-    `👇 *Onlayn buyurtma:*`,
-    escMd(url),
+    `👇 <b>Onlayn buyurtma quyidagi tugma orqali:</b>`,
   ].filter(Boolean).join("\n");
 
   const inlineKeyboard = {
@@ -545,15 +556,15 @@ export async function publishProductToChannel(product: {
   };
 
   try {
-    if (product.imageUrl) {
+    if (photoUrl) {
       const res = await fetch(`${TELEGRAM_API}/bot${token}/sendPhoto`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           chat_id: channelId,
-          photo: product.imageUrl,
-          caption: captionLines,
-          parse_mode: "MarkdownV2",
+          photo: photoUrl,
+          caption: caption,
+          parse_mode: "HTML",
           reply_markup: inlineKeyboard,
         }),
       });
@@ -569,8 +580,8 @@ export async function publishProductToChannel(product: {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         chat_id: channelId,
-        text: captionLines,
-        parse_mode: "MarkdownV2",
+        text: caption,
+        parse_mode: "HTML",
         reply_markup: inlineKeyboard,
       }),
     });
