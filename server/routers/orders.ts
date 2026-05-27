@@ -12,6 +12,7 @@ import {
 } from "../db";
 import { eq, sql } from "drizzle-orm";
 import { notifyNewOrder, notifyBuyerOrderStatus } from "../telegram";
+import { sendPushToOrder, savePushSubscription } from "../pushNotifications";
 
 export const ordersRouter = router({
   create: publicProcedure
@@ -103,6 +104,8 @@ export const ordersRouter = router({
         status: o.status,
         totalAmount: o.totalAmount,
         items: o.items,
+        customerName: o.customerName,
+        deliveryAddress: o.deliveryAddress,
         createdAt: o.createdAt,
         updatedAt: o.updatedAt,
       };
@@ -162,6 +165,41 @@ export const ordersRouter = router({
           }
         }
       }
+      // Browser push notification to buyer
+      if (input.status !== "pending") {
+        const pushMessages: Record<string, { title: string; body: string } | undefined> = {
+          confirmed: { title: "✅ Заказ подтверждён", body: `Заказ #${input.id} принят в обработку` },
+          delivered: { title: "🎉 Заказ доставлен!", body: `Заказ #${input.id} успешно доставлен. Спасибо!` },
+          cancelled: { title: "❌ Заказ отменён", body: `Заказ #${input.id} был отменён` },
+        };
+        const pushMsg = pushMessages[input.status];
+        if (pushMsg) {
+          sendPushToOrder(input.id, { ...pushMsg, url: `/order/${input.id}` })
+            .catch((e) => console.error("[Push] Failed:", e));
+        }
+      }
       return { success: true };
     }),
+
+  // Save browser push subscription for an order (public — no auth needed)
+  subscribePush: publicProcedure
+    .input(z.object({
+      orderId: z.number(),
+      endpoint: z.string(),
+      p256dh: z.string(),
+      auth: z.string(),
+    }))
+    .mutation(async ({ input }) => {
+      await savePushSubscription(input.orderId, {
+        endpoint: input.endpoint,
+        keys: { p256dh: input.p256dh, auth: input.auth },
+      });
+      return { success: true };
+    }),
+
+  // Return VAPID public key for frontend subscription
+  vapidPublicKey: publicProcedure.query(() => {
+    const { ENV } = require("../_core/env");
+    return { publicKey: ENV.vapidPublicKey as string };
+  }),
 });

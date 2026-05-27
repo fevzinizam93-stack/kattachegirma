@@ -2,6 +2,7 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Package, CheckCircle2, Truck, XCircle, Clock, Search } from "lucide-react";
 import { Link } from "wouter";
+import PushSubscribeButton from "@/components/PushSubscribeButton";
 
 const STATUS_STEPS = [
   { key: "pending", label: "Принят", labelUz: "Qabul qilindi", icon: Clock, color: "text-yellow-500", bg: "bg-yellow-50", border: "border-yellow-200" },
@@ -124,6 +125,13 @@ function OrderStatusTracker({ orderId }: { orderId: number }) {
           <p className="text-base font-bold text-red-600">{formatPrice(order.totalAmount)}</p>
         </div>
       </div>
+
+      {/* Push notifications */}
+      {order.status !== "delivered" && order.status !== "cancelled" && (
+        <div className="flex justify-center">
+          <PushSubscribeButton orderId={order.id} />
+        </div>
+      )}
 
       {/* Created at */}
       <p className="text-xs text-gray-400 text-center">Заказ создан: {formatDate(order.createdAt)}</p>

@@ -13,10 +13,11 @@ import { useAnalytics } from "@/hooks/useAnalytics";
 
 const LIMIT = 12;
 
-type SortBy = 'newest' | 'price_asc' | 'price_desc' | 'discount' | 'rating' | 'reviews';
+type SortBy = 'newest' | 'price_asc' | 'price_desc' | 'discount' | 'rating' | 'reviews' | 'popularity';
 
 const SORT_OPTIONS: { value: SortBy; label: string }[] = [
   { value: 'newest', label: 'Новинки' },
+  { value: 'popularity', label: 'Популярные' },
   { value: 'price_asc', label: 'Дешевле' },
   { value: 'price_desc', label: 'Дороже' },
   { value: 'discount', label: 'По скидке' },
@@ -56,7 +57,7 @@ export default function Catalog() {
       maxPrice: maxP ? parseInt(maxP, 10) : undefined,
       minPriceInput: minP ?? '',
       maxPriceInput: maxP ?? '',
-      sortBy: (sort && ['newest','price_asc','price_desc','discount','rating','reviews'].includes(sort) ? sort : 'newest') as SortBy,
+      sortBy: (sort && ['newest','price_asc','price_desc','discount','rating','reviews','popularity'].includes(sort) ? sort : 'newest') as SortBy,
       selectedBrands: brandsParam ? brandsParam.split(',').filter(Boolean) : [],
       minRating: params.get('minRating') ? parseInt(params.get('minRating')!, 10) : undefined,
     };
@@ -125,7 +126,7 @@ export default function Catalog() {
     offset: page * LIMIT,
     minPrice: minPrice,
     maxPrice: maxPrice,
-    sortBy: sortBy as 'newest' | 'price_asc' | 'price_desc' | 'discount',
+    sortBy: sortBy as 'newest' | 'price_asc' | 'price_desc' | 'discount' | 'rating' | 'reviews' | 'popularity',
     brands: selectedBrands.length > 0 ? selectedBrands : undefined,
   });
 

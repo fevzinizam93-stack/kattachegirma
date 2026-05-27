@@ -342,3 +342,15 @@ export const indexingLog = mysqlTable("indexing_log", {
 
 export type IndexingLog = typeof indexingLog.$inferSelect;
 export type InsertIndexingLog = typeof indexingLog.$inferInsert;
+
+// Push notification subscriptions — stores browser push endpoints per order
+export const pushSubscriptions = mysqlTable("push_subscriptions", {
+  id: int("id").autoincrement().primaryKey(),
+  orderId: int("orderId").notNull(),
+  endpoint: text("endpoint").notNull(),
+  p256dh: varchar("p256dh", { length: 512 }).notNull(),
+  auth: varchar("auth", { length: 256 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type PushSubscriptionRow = typeof pushSubscriptions.$inferSelect;
+export type InsertPushSubscription = typeof pushSubscriptions.$inferInsert;

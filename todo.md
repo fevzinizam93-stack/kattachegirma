@@ -1352,3 +1352,8 @@
 - [x] Add buyer Telegram notification when admin confirms order (status confirmed)
 - [x] Build My Orders page (/my-orders) — list with order status, product name, date, price
 - [x] Add price range filter slider to catalog page (min/max price, URL params)
+
+- [x] Build /track-order page — public order tracking by order ID without login
+- [x] Add browser push notification subscription storage (pushSubscriptions table)
+- [x] Send push notification to buyer on order status change
+- [x] Add "popularity" sort option to catalog (by hitScore/salesCount)

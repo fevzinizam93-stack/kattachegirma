@@ -49,7 +49,7 @@ export const productsRouter = router({
       isPremium: z.boolean().optional(),
       minPrice: z.number().optional(),
       maxPrice: z.number().optional(),
-      sortBy: z.enum(['newest', 'price_asc', 'price_desc', 'discount', 'rating', 'reviews'] as const).optional(),
+      sortBy: z.enum(['newest', 'price_asc', 'price_desc', 'discount', 'rating', 'reviews', 'popularity'] as const).optional(),
       brands: z.array(z.string()).optional(),
       minRating: z.number().min(1).max(5).optional(),
       limit: z.number().default(20),
