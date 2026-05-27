@@ -552,25 +552,17 @@ export async function publishProductToChannel(product: {
     }
   }
 
-  // Build caption in the requested format:
-  // 🏷️ Katta Chegirmada! (if discount) or 🛍 YANGI MAHSULOT
-  // 📦 Product name
-  // 🏷 Brand
-  // ❌ Old price (if discount)
-  // ✅ New price
-  // ✅ Mavjud...
-  // 👇 Order CTA
+  // Build caption in the requested format
   const caption = [
-    hasDiscount ? `🏷️ <b>Katta Chegirmada!</b>` : `🛍 <b>YANGI MAHSULOT</b>`,
+    `🏷️ <b>Katta Chegirmada!</b>`,
+    `🛍 YANGI MAHSULOT`,
     `📦 ${esc(product.name)}`,
     product.brand ? `🏷 Brand: ${esc(product.brand)}` : null,
-    ``,
     hasDiscount && originalPriceStr && originalUsdPrice
       ? `❌ <s>${esc(originalPriceStr)} so'm ($${originalUsdPrice})</s>`
       : null,
     `✅ <b>${esc(price)} so'm ($${usdPrice})</b>`,
-    ``,
-    `✅ Mavjud — hoziroq buyurtma bering!`,
+    `✅ Mavjud — Chegirmada olish uchun!`,
     `👇 <b>Onlayn buyurtma quyidagi tugma orqali:</b>`,
   ].filter(Boolean).join("\n");
 
