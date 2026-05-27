@@ -265,18 +265,10 @@ export default function Home() {
                 </Link>
               </div>
             </div>
-            {/* Desktop: horizontal scroll with fixed-width equal cards, 5 visible */}
-            <div
-              ref={sliderRef}
-              className="hidden md:flex gap-3 overflow-x-auto scrollbar-hide pb-1 items-stretch"
-              style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none" }}
-              onMouseEnter={() => { sliderPausedRef.current = true; }}
-              onMouseLeave={() => { sliderPausedRef.current = false; }}
-            >
-              {(hitProducts.length >= 5 ? [...hitProducts, ...hitProducts] : hitProducts).map((p, idx) => (
-                <div key={`${p.id}-${idx}`} className="shrink-0" style={{ width: "calc((100% - 48px) / 5)", minWidth: "180px", scrollSnapAlign: "start" }}>
-                  <ProductCard product={p} />
-                </div>
+            {/* Desktop: same grid as category sections — identical card size */}
+            <div className="hidden md:grid grid-cols-5 gap-2 sm:gap-3">
+              {hitProducts.slice(0, 5).map((p) => (
+                <ProductCard key={p.id} product={p} />
               ))}
             </div>
             {/* Mobile: 2-column grid, show first 4 items */}
