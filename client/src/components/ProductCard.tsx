@@ -190,11 +190,11 @@ export default function ProductCard({ product }: ProductCardProps) {
           onClick={handleAddToCart}
           disabled={!inStock}
           aria-label={`Добавить ${displayName} в корзину`}
-          className="w-full flex items-center justify-center gap-2 text-white py-2.5 px-3 rounded-xl text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97] touch-manipulation shadow-sm"
-          style={{ backgroundColor: inStock ? (addedFeedback ? "#16a34a" : "#cc0000") : "#aaa", transition: 'background-color 0.2s' }}
+          className="w-full flex items-center justify-center gap-1.5 text-white py-2.5 px-2 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97] touch-manipulation shadow-sm whitespace-nowrap overflow-hidden"
+          style={{ backgroundColor: inStock ? (addedFeedback ? "#16a34a" : "#cc0000") : "#aaa", transition: 'background-color 0.2s', fontSize: 'clamp(11px, 1.1vw, 13px)' }}
         >
-          <ShoppingCart size={15} />
-          <span>{!inStock ? t.detail_out_of_stock : addedFeedback ? "✓ Добавлено" : t.card_add_to_cart}</span>
+          <ShoppingCart size={13} className="shrink-0" />
+          <span className="truncate">{!inStock ? t.detail_out_of_stock : addedFeedback ? "✓ Добавлено" : t.card_add_to_cart}</span>
         </button>
       </div>
     </div>
