@@ -262,7 +262,23 @@ export const productsRouter = router({
     }))
     .mutation(async ({ input }) => {
       const { id, priceUsd: _pu, originalPriceUsd: _opu, ...data } = input;
-      const updateData: Record<string, unknown> = { ...data, specs: data.specs as Record<string, string> | undefined };
+      // Helper: convert empty strings to undefined for decimal/varchar fields (MySQL rejects empty string for decimal)
+      const toDecimalOrUndef = (v: string | undefined | null) => (v != null && v.trim() !== '' ? v : undefined);
+      const toStrOrUndef = (v: string | undefined | null) => (v != null && v.trim() !== '' ? v : undefined);
+      const updateData: Record<string, unknown> = {
+        ...data,
+        specs: data.specs as Record<string, string> | undefined,
+        // Sanitize decimal fields
+        price: toDecimalOrUndef(data.price),
+        originalPrice: toDecimalOrUndef(data.originalPrice),
+        costPrice: toDecimalOrUndef(data.costPrice),
+        // Sanitize varchar fields that should be null when empty
+        videoId: toStrOrUndef(data.videoId),
+        sellerTelegram: toStrOrUndef(data.sellerTelegram),
+        sellerName: toStrOrUndef(data.sellerName),
+        sellerPhone: toStrOrUndef(data.sellerPhone),
+        contactPhone: toStrOrUndef(data.contactPhone),
+      };
       if (data.discountEndsAt) updateData.discountEndsAt = new Date(data.discountEndsAt);
       else if (data.discountEndsAt === '') updateData.discountEndsAt = null;
       await updateProduct(id, updateData as Parameters<typeof updateProduct>[1]);
