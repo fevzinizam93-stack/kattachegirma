@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import ProductCard from "@/components/ProductCard";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
-import { ArrowRight, ChevronLeft, ChevronRight, Flame, Loader2 } from "lucide-react";
+import { ArrowRight, Flame, Loader2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import RecentlyViewed from "@/components/RecentlyViewed";
@@ -115,22 +115,7 @@ export default function Home() {
   const categories = categoriesData ?? [];
 
   const hitProducts = useMemo(() => shuffleArray(hitsData ?? []), [hitsData]);
-  const sliderRef = useRef<HTMLDivElement>(null);
-  const sliderPausedRef = useRef(false);
-  const scrollSlider = (dir: "left" | "right") => {
-    if (!sliderRef.current) return;
-    sliderRef.current.scrollBy({ left: dir === "right" ? 280 : -280, behavior: "smooth" });
-  };
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (sliderPausedRef.current || !sliderRef.current) return;
-      const el = sliderRef.current;
-      const half = el.scrollWidth / 2;
-      if (el.scrollLeft >= half - 5) el.scrollLeft = el.scrollLeft - half;
-      el.scrollBy({ left: 240, behavior: "smooth" });
-    }, 2500);
-    return () => clearInterval(interval);
-  }, []);
+
 
   // Build stable list of category IDs once categories are loaded
   const categoryIds = useMemo(
@@ -254,28 +239,29 @@ export default function Home() {
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
-                <button onClick={() => scrollSlider("left")} className="hidden md:flex items-center justify-center w-8 h-8 rounded-full border-2 border-orange-300 bg-white hover:bg-orange-50 hover:border-orange-500 transition-colors shadow-sm">
-                  <ChevronLeft size={16} className="text-orange-500" />
-                </button>
-                <button onClick={() => scrollSlider("right")} className="hidden md:flex items-center justify-center w-8 h-8 rounded-full border-2 border-orange-300 bg-white hover:bg-orange-50 hover:border-orange-500 transition-colors shadow-sm">
-                  <ChevronRight size={16} className="text-orange-500" />
-                </button>
                 <Link href="/bestsellers" className="text-xs font-bold px-3 py-1.5 rounded-full bg-orange-500 hover:bg-orange-600 text-white transition-colors shadow-sm">
                   {t.home_view_all}
                 </Link>
               </div>
             </div>
-            {/* Desktop: same grid as category sections — identical card size */}
-            <div className="hidden md:grid grid-cols-5 gap-2 sm:gap-3">
-              {hitProducts.slice(0, 5).map((p, i) => (
-                <ProductCard key={p.id} product={p} priority={i < 4} />
-              ))}
-            </div>
-            {/* Mobile: 2-column grid, show first 4 items */}
-            <div className="grid grid-cols-2 gap-2 md:hidden">
-              {hitProducts.slice(0, 4).map((p, i) => (
-                <ProductCard key={p.id} product={p} priority={i < 4} />
-              ))}
+            {/* Бесконечная авто-карусель: товары едут слева направо, пауза при наведении */}
+            <style>{`
+              @keyframes hitMarquee {
+                from { transform: translateX(-50%); }
+                to   { transform: translateX(0); }
+              }
+              .hit-marquee { animation: hitMarquee 40s linear infinite; will-change: transform; }
+              .hit-marquee-wrap:hover .hit-marquee { animation-play-state: paused; }
+              @media (prefers-reduced-motion: reduce) { .hit-marquee { animation: none; } }
+            `}</style>
+            <div className="hit-marquee-wrap overflow-hidden">
+              <div className="hit-marquee flex gap-2 sm:gap-3 w-max">
+                {[...hitProducts, ...hitProducts].map((p, i) => (
+                  <div key={`${p.id}-${i}`} className="w-[160px] md:w-[230px] shrink-0">
+                    <ProductCard product={p} priority={i < 4} />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
