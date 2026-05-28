@@ -21,6 +21,16 @@ export async function scheduledReindexHandler(req: Request, res: Response) {
     return res.status(403).json({ error: "cron-only endpoint" });
   }
 
+  // Extra protection: if CRON_TASK_UID is set, only allow exact match.
+  // If env var is not set — works as before (cron not broken).
+  const expectedUid = process.env.CRON_TASK_UID;
+  if (expectedUid && taskUid !== expectedUid) {
+    return res.status(403).json({ error: "invalid cron task uid" });
+  }
+  if (!expectedUid) {
+    console.log(`[ScheduledReindex] cron task uid = ${taskUid} — set CRON_TASK_UID env var to this value to lock down the endpoint`);
+  }
+
   try {
     const db = await getDb();
     if (!db) {

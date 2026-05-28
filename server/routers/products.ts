@@ -37,6 +37,7 @@ import { storagePut } from "../storage";
 import { optimizeImage } from "../_core/imageOptimizer";
 import { pingSitemaps } from "../sitemap";
 import { invokeLLM } from "../_core/llm";
+import { createHash } from "crypto";
 import { ENV } from "../_core/env";
 import { notifyNewProduct, publishProductToChannel } from "../telegram";
 
@@ -584,14 +585,21 @@ export const productsRouter = router({
       text: z.string().min(1).max(8000),
     }))
     .mutation(async ({ input }) => {
+      // Cache by text hash: same text won't be translated via AI again (saves cost + latency)
+      const cacheKey = `translate:uz:${createHash("sha1").update(input.text).digest("hex")}`;
+      const cached = getCached<{ translated: string }>(cacheKey);
+      if (cached) return cached;
+
       const response = await invokeLLM({
         messages: [
           { role: "system", content: "You are a professional Russian-to-Uzbek translator. Translate the given text to Uzbek using modern Latin script (as used in Uzbekistan). Output only the translated text, no explanations." },
           { role: "user", content: input.text },
         ],
       });
-      const translated = response.choices?.[0]?.message?.content ?? "";
-      return { translated: typeof translated === "string" ? translated : JSON.stringify(translated) };
+      const raw = response.choices?.[0]?.message?.content ?? "";
+      const result = { translated: typeof raw === "string" ? raw : JSON.stringify(raw) };
+      setCached(cacheKey, result, 24 * 60 * 60 * 1000); // cache for 24 hours
+      return result;
     }),
 
   // Admin: generate UZ slugs for all products via LLM (uses nameUz if available, else name)
