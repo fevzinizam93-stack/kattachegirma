@@ -48,6 +48,15 @@ async function startServer() {
     res.json({ version: "v2-seoprerender", nodeEnv: process.env.NODE_ENV, ts: new Date().toISOString() });
   });
 
+  // 301 redirect: HTTP → HTTPS (check x-forwarded-proto from Cloud Run proxy)
+  app.use((req, res, next) => {
+    const proto = req.headers["x-forwarded-proto"];
+    if (proto && proto !== "https") {
+      return res.redirect(301, `https://kattachegirma.uz${req.originalUrl}`);
+    }
+    next();
+  });
+
   // Redirect www to non-www for canonical SEO (301 permanent)
   // Canonical domain is kattachegirma.uz (without www)
   app.use((req, res, next) => {
@@ -58,17 +67,47 @@ async function startServer() {
     next();
   });
 
+  // 301 redirect: old /catalog/:slug → /category/:slug (fixes 37 Google 404s)
+  // Note: bare /catalog (no slug) is a valid page — only redirect /catalog/SOMETHING
+  app.use((req, res, next) => {
+    const match = req.path.match(/^\/catalog\/(.+)$/);
+    if (match && match[1]) {
+      const slug = match[1];
+      const query = req.originalUrl.includes("?") ? req.originalUrl.substring(req.originalUrl.indexOf("?")) : "";
+      return res.redirect(301, `/category/${slug}${query}`);
+    }
+    next();
+  });
+
   // 301 redirect: uppercase or mixed-case category/catalog slugs → lowercase
   // Prevents duplicate content and 404s for old Google-indexed URLs like /catalog/MOROZILKA
   app.use((req, res, next) => {
     const path = req.path;
     // Check if path contains /catalog/ or /category/ or /kategoriya/ segments with uppercase
-    const categoryPrefixes = ["/catalog/", "/category/", "/kategoriya/"];
+    const categoryPrefixes = ["/catalog/", "/category/", "/kategoriya/", "/product/", "/mahsulot/"];
     const hasUppercase = /[A-Z]/.test(path);
     if (hasUppercase && categoryPrefixes.some(prefix => path.startsWith(prefix))) {
       const lowercasePath = path.toLowerCase();
       const query = req.originalUrl.includes("?") ? req.originalUrl.slice(req.originalUrl.indexOf("?")) : "";
       return res.redirect(301, lowercasePath + query);
+    }
+    next();
+  });
+
+  // 301 redirect: broken product slugs with leading/trailing/double dashes → clean slug
+  // Fixes Google-indexed URLs like /product/-franco-cfr252-g, /product/--4--1--series
+  app.use((req, res, next) => {
+    const match = req.path.match(/^\/product\/(.+)$/);
+    if (match && match[1]) {
+      const rawSlug = match[1];
+      // If slug has leading dashes, trailing dashes, or consecutive dashes — it's broken
+      if (/--|^-|-$/.test(rawSlug)) {
+        const clean = rawSlug.replace(/-+/g, "-").replace(/^-+|-+$/g, "");
+        if (clean && clean !== rawSlug) {
+          const query = req.originalUrl.includes("?") ? req.originalUrl.substring(req.originalUrl.indexOf("?")) : "";
+          return res.redirect(301, `/product/${clean}${query}`);
+        }
+      }
     }
     next();
   });

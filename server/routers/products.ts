@@ -948,4 +948,34 @@ export const productsRouter = router({
       if (!result.success) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: result.error });
       return { success: true };
     }),
+
+  // Fix broken product slugs: remove leading/trailing/double dashes
+  // Run once after deploy to clean up old DB records that Google has indexed with broken URLs
+  fixBrokenSlugs: adminProcedure.mutation(async () => {
+    const db = await getDb();
+    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+    const all = await db.select({ id: productsTable.id, slug: productsTable.slug }).from(productsTable);
+    const fixed: Array<{ id: number; old: string; newSlug: string }> = [];
+
+    const cleanSlug = (s: string) =>
+      s.toLowerCase()
+       .replace(/[^a-z0-9-]/g, "-")
+       .replace(/-+/g, "-")        // collapse consecutive dashes
+       .replace(/^-+|-+$/g, "")   // strip leading/trailing dashes
+       .slice(0, 80);
+
+    for (const p of all) {
+      if (!p.slug) continue;
+      const clean = cleanSlug(p.slug);
+      if (clean !== p.slug && clean.length > 0) {
+        // Ensure uniqueness: append id if collision
+        const exists = all.find((x) => x.slug === clean && x.id !== p.id);
+        const finalSlug = exists ? `${clean}-${p.id}` : clean;
+        await db.update(productsTable).set({ slug: finalSlug }).where(eq(productsTable.id, p.id));
+        fixed.push({ id: p.id, old: p.slug, newSlug: finalSlug });
+      }
+    }
+    return { fixedCount: fixed.length, fixed };
+  }),
 });

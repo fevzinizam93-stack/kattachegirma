@@ -2169,6 +2169,13 @@ function IndexingPanel() {
     retry: false,
   });
 
+  const fixSlugsMut = trpc.products.fixBrokenSlugs.useMutation({
+    onSuccess: (data) => {
+      toast.success(`✅ Исправлено slug: ${data.fixedCount}`, { description: data.fixedCount > 0 ? `Обновлено ${data.fixedCount} товаров с битыми ссылками` : "Битых slug не найдено — всё чисто!" });
+    },
+    onError: (err: { message: string }) => toast.error("Ошибка: " + err.message),
+  });
+
   const isLoading = submitAllMut.isPending || submitCatsMut.isPending || submitOneMut.isPending;
 
   return (
@@ -2451,6 +2458,42 @@ function IndexingPanel() {
           </div>
         </div>
       )}
+
+      {/* Fix Broken Slugs */}
+      <div className="bg-purple-50 border border-purple-200 rounded-2xl p-5">
+        <div className="flex items-start gap-3">
+          <span className="text-2xl mt-0.5">🔧</span>
+          <div className="flex-1">
+            <p className="font-bold text-purple-900 text-sm">Исправить битые ссылки товаров</p>
+            <p className="text-xs text-purple-700 mt-1 mb-3">
+              Google нашёл 28+ товаров с битыми URL (двойные дефисы, дефис в начале/конце): <code className="bg-purple-100 px-1 rounded">/product/-franco-cfr252-g</code>, <code className="bg-purple-100 px-1 rounded">/product/--4--1--series</code>.
+              Эта кнопка очищает slug в базе данных. Нажать <strong>один раз</strong> после деплоя.
+            </p>
+            <button
+              onClick={() => { if (confirm("Исправить битые slug товаров в базе данных? Это изменит URL товаров с лишними дефисами. Нажать только один раз!")) fixSlugsMut.mutate(); }}
+              disabled={fixSlugsMut.isPending}
+              className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
+            >
+              {fixSlugsMut.isPending ? (
+                <>
+                  <svg className="animate-spin h-4 w-4 text-white shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  Исправляю...
+                </>
+              ) : <>🔧 Исправить битые ссылки</>}
+            </button>
+            {fixSlugsMut.data && (
+              <p className="text-xs text-purple-700 mt-2">
+                {fixSlugsMut.data.fixedCount > 0
+                  ? `✅ Исправлено ${fixSlugsMut.data.fixedCount} slug. Теперь нажмите «Отправить все товары» чтобы Google узнал о новых URL.`
+                  : "✅ Битых slug не найдено — база данных чистая."}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Quota note */}
       <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 text-xs text-gray-500 text-center">

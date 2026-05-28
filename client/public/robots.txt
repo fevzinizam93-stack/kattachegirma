@@ -26,6 +26,13 @@ Disallow: /seller-register
 Disallow: /favorites
 Disallow: /login
 Disallow: /404
+Disallow: /search
+Disallow: /compare
+Disallow: /premium
+Disallow: /*?featured=
+Disallow: /*?onSale=
+Disallow: /*?sort=
+Disallow: /catalog?
 
 User-agent: Googlebot
 Allow: /
@@ -48,6 +55,13 @@ Disallow: /checkout
 Disallow: /seller-register
 Disallow: /favorites
 Disallow: /login
+Disallow: /search
+Disallow: /compare
+Disallow: /premium
+Disallow: /*?featured=
+Disallow: /*?onSale=
+Disallow: /*?sort=
+Disallow: /catalog?
 
 User-agent: Googlebot-Image
 Allow: /
@@ -77,6 +91,13 @@ Disallow: /seller-register
 Disallow: /favorites
 Disallow: /login
 Disallow: /404
+Disallow: /search
+Disallow: /compare
+Disallow: /premium
+Disallow: /*?featured=
+Disallow: /*?onSale=
+Disallow: /*?sort=
+Disallow: /catalog?
 Clean-param: utm_source&utm_medium&utm_campaign&utm_content&utm_term&ref&fbclid&gclid
 
 Host: kattachegirma.uz
