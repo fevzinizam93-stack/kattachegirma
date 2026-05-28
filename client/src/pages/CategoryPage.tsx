@@ -48,8 +48,8 @@ export default function CategoryPage({ slug }: CategoryPageProps) {
 
   // SEO: dynamic meta tags for category page
   const categoryTitle = category
-    ? `${category.name} — купить в Ташкенте со скидкой | Катта Чегирма`
-    : `Категория — Катта Чегирма`;
+    ? `${category.name} narxi — купить в Ташкенте | Katta Chegirma`
+    : `Категория — Katta Chegirma`;
   const categoryDesc = category
     ? `Купить ${category.name} со скидкой в Ташкенте. ${total > 0 ? `${total} товаров в наличии.` : ""} Выгодные цены, рассрочка, быстрая доставка по Ташкенту и всему Узбекистану. Гарантия качества.`
     : `Каталог техники в Ташкенте. Телефоны, холодильники, пылесосы, кондиционеры. Рассрочка, быстрая доставка по Узбекистану.`;

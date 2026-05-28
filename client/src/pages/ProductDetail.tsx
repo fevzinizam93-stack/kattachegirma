@@ -336,8 +336,20 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
         const brand = product.brand || "";
         const nameHasBrand = brand && product.name.toLowerCase().includes(brand.toLowerCase());
         const titleBrand = (brand && !nameHasBrand) ? ` ${brand}` : "";
-        const discount = product.discount || 0;
-        return `${product.name}${titleBrand} — купить в Ташкенте${discount ? ` со скидкой ${discount}%` : ""} | Катта Чегирма`;
+        const baseName = `${product.name}${titleBrand}`;
+        // SEO: add "narxi" keyword (high-intent Uzbek search term) + CTA
+        // Google displays ~120 chars; use short suffix for long names to stay within limit
+        // Thresholds: name ≤ 77 chars → full suffix (43 chars) → total ≤ 120
+        //             name ≤ 97 chars → medium suffix (23 chars) → total ≤ 120
+        //             name > 97 chars → short suffix (20 chars) → total ≤ 117
+        const FULL_SUFFIX   = " narxi — купить в Ташкенте | Katta Chegirma"; // 43 chars
+        const MEDIUM_SUFFIX = " narxi — Toshkent | Katta Chegirma";          // 34 chars
+        const SHORT_SUFFIX  = " narxi | Katta Chegirma";                      // 23 chars
+        const suffix =
+          baseName.length <= 77 ? FULL_SUFFIX :
+          baseName.length <= 86 ? MEDIUM_SUFFIX :
+          SHORT_SUFFIX;
+        return `${baseName}${suffix}`;
       })()
     : "Катта Чегирма — Магазин бытовой техники";
 

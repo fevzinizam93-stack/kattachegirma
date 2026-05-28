@@ -1357,3 +1357,4 @@
 - [x] Add browser push notification subscription storage (pushSubscriptions table)
 - [x] Send push notification to buyer on order status change
 - [x] Add "popularity" sort option to catalog (by hitScore/salesCount)
+- [x] SEO title optimization: add "narxi" keyword to product, category, catalog, home, bestsellers, sales pages

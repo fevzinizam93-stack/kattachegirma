@@ -7,7 +7,7 @@ import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
 
 export default function Bestsellers() {
   usePageMeta({
-    title: "Хиты продаж — Популярная бытовая техника | Катта Чегирма",
+    title: "Eng ko'p sotilgan texnika narxi | Katta Chegirma",
     description: "Самые популярные товары в интернет-магазине Катта Чегирма. Хиты продаж — техника, которую выбирают наши покупатели. Пылесосы, стиральные машины, холодильники, телевизоры с выгодными ценами. Быстрая доставка по Узбекистану.",
     canonicalPath: "/bestsellers",
   });

@@ -30,7 +30,7 @@ export default function Catalog() {
   const [location, setLocation] = useLocation();
 
   usePageMeta({
-    title: "Каталог техники со скидками в Ташкенте | Катта Чегирма",
+    title: "Texnika narxi — каталог со скидками в Ташкенте | Katta Chegirma",
     description: "Каталог техники в Ташкенте со скидкой. Телефоны, холодильники, пылесосы, кондиционеры, стиральные машины, телевизоры. Рассрочка, быстрая доставка по Узбекистану.",
     canonicalPath: "/catalog",
   });
