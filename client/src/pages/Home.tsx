@@ -267,14 +267,14 @@ export default function Home() {
             </div>
             {/* Desktop: same grid as category sections — identical card size */}
             <div className="hidden md:grid grid-cols-5 gap-2 sm:gap-3">
-              {hitProducts.slice(0, 5).map((p) => (
-                <ProductCard key={p.id} product={p} />
+              {hitProducts.slice(0, 5).map((p, i) => (
+                <ProductCard key={p.id} product={p} priority={i < 4} />
               ))}
             </div>
             {/* Mobile: 2-column grid, show first 4 items */}
             <div className="grid grid-cols-2 gap-2 md:hidden">
-              {hitProducts.slice(0, 4).map((p) => (
-                <ProductCard key={p.id} product={p} />
+              {hitProducts.slice(0, 4).map((p, i) => (
+                <ProductCard key={p.id} product={p} priority={i < 4} />
               ))}
             </div>
           </div>

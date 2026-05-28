@@ -15,7 +15,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <img src="/manus-storage/kc_logo_d6421d0d.png" alt="Katta Chegirma" className="h-14 w-auto object-contain" style={{ filter: 'invert(1)' }} />
+              <img src="/api/img?url=%2Fmanus-storage%2Fkc_logo_d6421d0d.png&w=120&q=85" alt="Katta Chegirma" className="h-14 w-auto object-contain" style={{ filter: 'invert(1)' }} />
             </div>
             <p className="text-sm text-red-100">{t.footer_tagline}</p>
             <div className="flex items-center gap-2 mt-4 flex-wrap">

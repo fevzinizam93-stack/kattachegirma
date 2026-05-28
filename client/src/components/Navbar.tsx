@@ -176,7 +176,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
         <div className="container flex items-center gap-4" style={{ height: "60px" }}>
           {/* Logo */}
           <Link href="/" className="shrink-0 flex items-center gap-2 min-w-fit">
-            <img src="/manus-storage/kc_logo_d6421d0d.png" alt="Katta Chegirma" className="object-contain shrink-0" style={{ height: "40px", width: "auto" }} width={120} height={40} fetchPriority="high" decoding="sync" />
+            <img src="/api/img?url=%2Fmanus-storage%2Fkc_logo_d6421d0d.png&w=240&q=85" alt="Katta Chegirma" className="object-contain shrink-0" style={{ height: "40px", width: "auto" }} width={120} height={40} fetchPriority="high" decoding="sync" />
             <div className="font-black text-gray-900 tracking-tight whitespace-nowrap" style={{ fontSize: "15px" }}>Katta Chegirma!!!</div>
           </Link>
 
@@ -536,7 +536,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
         {/* Top row: logo + name only */}
         <div className="flex items-center px-3 pt-2 pb-1">
           <Link href="/" className="flex items-center gap-2 min-w-0">
-            <img src="/manus-storage/kc_logo_d6421d0d.png" alt="Katta Chegirma" className="h-10 w-auto object-contain shrink-0" width={120} height={40} fetchPriority="high" decoding="sync" />
+            <img src="/api/img?url=%2Fmanus-storage%2Fkc_logo_d6421d0d.png&w=240&q=85" alt="Katta Chegirma" className="h-10 w-auto object-contain shrink-0" width={120} height={40} fetchPriority="high" decoding="sync" />
             <div className="font-black text-base text-gray-900 tracking-tight">Katta Chegirma!!!</div>
           </Link>
         </div>

@@ -94,7 +94,10 @@
     <!-- === PERFORMANCE OPTIMIZATIONS === -->
 
     <!-- 1. Preload logo — LCP critical resource, load before anything else -->
-    <link rel="preload" as="image" href="/manus-storage/kc_logo_d6421d0d.png" fetchpriority="high" />
+    <link rel="preload" as="image" href="/api/img?url=%2Fmanus-storage%2Fkc_logo_d6421d0d.png&w=240&q=85" fetchpriority="high" />
+
+    <!-- 1b. Preconnect to self for image proxy (same-origin, no crossorigin needed) -->
+    <link rel="preconnect" href="https://kattachegirma.uz" />
 
     <!-- 2. Preconnect to image CDN (CloudFront) — reduces connection latency for product images -->
     <link rel="preconnect" href="https://d36hbw14aib5lz.cloudfront.net" crossorigin />

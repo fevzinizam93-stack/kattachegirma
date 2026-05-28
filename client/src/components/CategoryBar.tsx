@@ -56,7 +56,7 @@ export default function CategoryBar() {
   const hasMore = hiddenCats.length > 0;
 
   return (
-    <div className="hidden md:block bg-gray-50 border-b border-gray-200">
+    <div className="hidden md:block bg-gray-50 border-b border-gray-200" style={{ minHeight: '44px' }}>
       <div className="container">
         <div ref={containerRef} className="flex items-center gap-1.5 py-2 relative">
           {visibleCats.map((cat) => (

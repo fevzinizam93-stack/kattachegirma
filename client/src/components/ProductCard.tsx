@@ -38,9 +38,10 @@ interface Product {
 
 interface ProductCardProps {
   product: Product;
+  priority?: boolean;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, priority = false }: ProductCardProps) {
   const { addItem } = useCart();
   const { t, lang } = useLanguage();
   const { formatProductPrice } = useCurrency();
@@ -104,11 +105,12 @@ export default function ProductCard({ product }: ProductCardProps) {
         <div className="relative bg-gray-50" style={{ height: '220px', width: '100%', flexShrink: 0 }}>
           {product.imageUrl ? (
             <img
-              src={product.thumbUrl ? imgUrl(product.thumbUrl) : imgUrl(product.imageUrl, 400, 80)}
+              src={product.thumbUrl ? imgUrl(product.thumbUrl, 300, 75) : imgUrl(product.imageUrl, 300, 75)}
               alt={displayName}
               className="w-full h-full object-contain p-2"
-              loading="lazy"
-              decoding="async"
+              loading={priority ? "eager" : "lazy"}
+              fetchPriority={priority ? "high" : "auto"}
+              decoding={priority ? "sync" : "async"}
               width="300"
               height="300"
               sizes="(max-width: 640px) 48vw, (max-width: 768px) 32vw, (max-width: 1024px) 24vw, 260px"
