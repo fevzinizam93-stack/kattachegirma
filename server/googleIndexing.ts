@@ -1,31 +1,31 @@
-import { OAuth2Client } from "google-auth-library";
+import { GoogleAuth } from "google-auth-library";
 
 const INDEXING_API_URL =
   "https://indexing.googleapis.com/v3/urlNotifications:publish";
 
-let oauth2Client: OAuth2Client | null = null;
+let auth: GoogleAuth | null = null;
 
 // Cache the access token to avoid requesting a new one for every URL
 let cachedToken: string | null = null;
 let tokenExpiresAt = 0;
 
-function getAuthClient(): OAuth2Client {
-  if (oauth2Client) return oauth2Client;
+function getAuth(): GoogleAuth {
+  if (auth) return auth;
 
-  const refreshToken = process.env.GOOGLE_OAUTH_REFRESH_TOKEN;
-  const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
-
-  if (!refreshToken || !clientId || !clientSecret) {
+  const keyJson = process.env.GOOGLE_INDEXING_SERVICE_ACCOUNT_JSON;
+  if (!keyJson) {
     throw new Error(
-      "Google OAuth credentials not set. Required: GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, GOOGLE_OAUTH_REFRESH_TOKEN"
+      "GOOGLE_INDEXING_SERVICE_ACCOUNT_JSON not set — required for Google Indexing API"
     );
   }
 
-  oauth2Client = new OAuth2Client(clientId, clientSecret);
-  oauth2Client.setCredentials({ refresh_token: refreshToken });
+  const credentials = JSON.parse(keyJson);
+  auth = new GoogleAuth({
+    credentials,
+    scopes: ["https://www.googleapis.com/auth/indexing"],
+  });
 
-  return oauth2Client;
+  return auth;
 }
 
 async function getAccessToken(): Promise<string> {
@@ -35,10 +35,10 @@ async function getAccessToken(): Promise<string> {
     return cachedToken;
   }
 
-  const client = getAuthClient();
+  const client = await getAuth().getClient();
   const tokenResponse = await client.getAccessToken();
   if (!tokenResponse.token) {
-    throw new Error("Failed to obtain access token from Google OAuth");
+    throw new Error("Failed to obtain access token from Google service account");
   }
 
   cachedToken = tokenResponse.token;
@@ -82,8 +82,8 @@ export async function submitUrlForIndexing(
         // Rate limited — wait longer before retry (exponential backoff)
         const waitMs = attempt * 5000; // 5s, 10s, 15s
         console.warn(`[Indexing] 429 rate limit for ${url}, waiting ${waitMs}ms before retry ${attempt}/${maxRetries}`);
-        // Invalidate cached token in case it's stale
         cachedToken = null;
+        tokenExpiresAt = 0;
         await sleep(waitMs);
         lastError = `HTTP 429 (attempt ${attempt})`;
         continue;
