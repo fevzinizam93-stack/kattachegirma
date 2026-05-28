@@ -44,7 +44,7 @@ const SellerProfile = lazy(() => import("./pages/SellerProfile"));
 // Lightweight spinner shown while a page chunk is loading
 function PageLoader() {
   return (
-    <div className="min-h-[60vh] flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center">
       <div className="w-8 h-8 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
     </div>
   );
