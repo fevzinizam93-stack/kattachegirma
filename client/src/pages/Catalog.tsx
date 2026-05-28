@@ -545,8 +545,8 @@ export default function Catalog() {
             ) : (
                <>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
-                  {allProducts.map(p => (
-                    <ProductCard key={p.id} product={p} />
+                  {allProducts.map((p, i) => (
+                    <ProductCard key={p.id} product={p} priority={i < 4} />
                   ))}
                 </div>
                 {/* Infinite scroll sentinel */}

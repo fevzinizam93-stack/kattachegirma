@@ -99,6 +99,10 @@
     <!-- 1b. Preconnect to self for image proxy (same-origin, no crossorigin needed) -->
     <link rel="preconnect" href="https://kattachegirma.uz" />
 
+    <!-- 1c. Preconnect for Facebook Pixel (heavy 3rd-party script) -->
+    <link rel="preconnect" href="https://connect.facebook.net" crossorigin />
+    <link rel="dns-prefetch" href="//connect.facebook.net" />
+
     <!-- 2. Preconnect to image CDN (CloudFront) — reduces connection latency for product images -->
     <link rel="preconnect" href="https://d36hbw14aib5lz.cloudfront.net" crossorigin />
     <link rel="dns-prefetch" href="//d36hbw14aib5lz.cloudfront.net" />

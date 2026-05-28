@@ -172,7 +172,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200" translate="no">
       {/* ── Desktop row ── */}
-      <div className="hidden md:block">
+      <div className="hidden md:block" style={{ minHeight: "60px" }}>
         <div className="container flex items-center gap-4" style={{ height: "60px" }}>
           {/* Logo */}
           <Link href="/" className="shrink-0 flex items-center gap-2 min-w-fit">
