@@ -133,7 +133,25 @@ export const ordersRouter = router({
       // Notify the user if status changed to confirmed, delivered or cancelled
       const allOrders = await getAllOrders();
       const order = allOrders.find((o) => o.id === input.id);
-      if (order?.userId) {
+      // Find user to notify: by userId on order, or by phone if guest order
+      let notifyUserId: number | null = order?.userId ?? null;
+      if (!notifyUserId && order?.customerPhone) {
+        const db = await getDb();
+        if (db) {
+          const { users: usersTable } = await import("../../drizzle/schema");
+          const phoneDigits = order.customerPhone.replace(/\D/g, "").slice(-9);
+          if (phoneDigits.length === 9) {
+            const matched = await db
+              .select()
+              .from(usersTable)
+              .where(sql`RIGHT(REGEXP_REPLACE(COALESCE(${usersTable.phone}, ''), '[^0-9]', ''), 9) = ${phoneDigits}`)
+              .limit(1);
+            if (matched[0]) notifyUserId = matched[0].id;
+          }
+        }
+      }
+
+      if (order && notifyUserId) {
         const statusMessages: Record<string, { title: string; message: string } | undefined> = {
           confirmed: {
             title: "Заказ подтверждён ✅",
@@ -141,7 +159,7 @@ export const ordersRouter = router({
           },
           delivered: {
             title: "Заказ доставлен 🎉",
-            message: `Ваш заказ #${input.id} успешно доставлен. Спасибо за покупку!`,
+            message: `Ваш заказ #${input.id} успешно доставлен. Спасибо за покупку! ⭐ Пожалуйста, оцените купленные товары — откройте заказ и поставьте оценку. Это помогает другим покупателям выбирать.`,
           },
           cancelled: {
             title: "Заказ отменён ❌",
@@ -151,10 +169,11 @@ export const ordersRouter = router({
         const notif = statusMessages[input.status];
         if (notif) {
           await createNotification({
-            userId: order.userId,
+            userId: notifyUserId,
             title: notif.title,
             message: notif.message,
             orderId: input.id,
+            type: input.status === "delivered" ? "review_request" : "order",
           }).catch((e) => console.error("[Notification] Failed:", e));
         }
 
@@ -163,7 +182,7 @@ export const ordersRouter = router({
           const db = await getDb();
           if (db) {
             const { users: usersTable } = await import("../../drizzle/schema");
-            const userRows = await db.select().from(usersTable).where(eq(usersTable.id, order.userId)).limit(1);
+            const userRows = await db.select().from(usersTable).where(eq(usersTable.id, notifyUserId)).limit(1);
             const buyer = userRows[0];
             if (buyer?.telegramId) {
               notifyBuyerOrderStatus({
