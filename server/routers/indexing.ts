@@ -31,7 +31,7 @@ export const indexingRouter = router({
     .input(z.object({ limit: z.number().min(1).max(10000).default(200) }))
     .mutation(async ({ input }) => {
       const db = await getDb();
-      if (!db) return { total: 0, succeeded: 0, failed: 0, results: [] };
+      if (!db) return { total: 0, started: false };
       const allProducts = await db
         .select({ slug: productsTable.slug })
         .from(productsTable)
@@ -40,18 +40,37 @@ export const indexingRouter = router({
       const urls = allProducts.map(
         (p: { slug: string }) => `https://kattachegirma.uz/product/${p.slug}`
       );
-      const results = await submitUrlsBatch(urls, "URL_UPDATED", 300);
-      const succeeded = results.filter((r) => r.success).length;
-      const failed = results.filter((r) => !r.success).length;
-      await saveIndexingLog({
-        engine: "google",
-        type: "products",
-        urlCount: urls.length,
-        succeeded,
-        failed,
-        status: failed === 0 ? "success" : succeeded > 0 ? "partial" : "error",
-      });
-      return { total: urls.length, succeeded, failed, results };
+
+      // Run in background — 163 URLs × 200ms pauses ≈ 1-2 min, which exceeds hosting timeout.
+      // Fire-and-forget: return immediately, log results when done.
+      void (async () => {
+        try {
+          const results = await submitUrlsBatch(urls, "URL_UPDATED", 200);
+          const succeeded = results.filter((r) => r.success).length;
+          const failed = results.filter((r) => !r.success).length;
+          await saveIndexingLog({
+            engine: "google",
+            type: "products",
+            urlCount: urls.length,
+            succeeded,
+            failed,
+            status: failed === 0 ? "success" : succeeded > 0 ? "partial" : "error",
+          });
+        } catch (err) {
+          console.error("[Indexing] background submitAllProducts failed:", err);
+          await saveIndexingLog({
+            engine: "google",
+            type: "products",
+            urlCount: urls.length,
+            succeeded: 0,
+            failed: urls.length,
+            status: "error",
+            note: err instanceof Error ? err.message : String(err),
+          }).catch(() => {});
+        }
+      })();
+
+      return { total: urls.length, started: true };
     }),
 
   // Yandex IndexNow: submit a single URL

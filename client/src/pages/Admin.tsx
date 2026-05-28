@@ -2118,13 +2118,10 @@ function IndexingPanel() {
 
   const submitAllMut = trpc.indexing.submitAllProducts.useMutation({
     onSuccess: (data) => {
-      setIndexResults(data.results);
-      if (data.failed === 0) {
-        toast.success(`✅ Google: все ${data.succeeded} товаров отправлены`, { description: "Страницы появятся в поиске в течение нескольких часов" });
-      } else {
-        toast.warning(`⚠️ Google: ${data.succeeded} из ${data.total} отправлено`, { description: `${data.failed} ошибок — смотрите результаты ниже` });
-      }
+      setIndexResults([]);
+      toast.success(`🚀 Google: запущена отправка ${data.total} товаров`, { description: "Идёт в фоне 1–2 минуты. Обновите «Историю отправок» через минуту, чтобы увидеть результат." });
       utils.indexing.getLogs.invalidate();
+      setTimeout(() => utils.indexing.getLogs.invalidate(), 90000);
     },
     onError: (err) => toast.error("Ошибка Google Indexing: " + err.message),
   });
