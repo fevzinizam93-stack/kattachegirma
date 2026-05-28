@@ -167,6 +167,7 @@ export function ReelsPlayer({ videos, initialIndex, onClose, onNeedMore }: Reels
           className="absolute inset-0 w-full h-full"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
           allowFullScreen
+          referrerPolicy="strict-origin-when-cross-origin"
           title={video.title}
           style={{ border: "none" }}
         />

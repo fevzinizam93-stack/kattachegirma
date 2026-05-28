@@ -116,7 +116,11 @@ async function startServer() {
   app.set("trust proxy", 1);
 
   // Security headers (helmet) — protects against XSS, clickjacking, etc.
-  app.use(helmet({ contentSecurityPolicy: false }));
+  // referrerPolicy: strict-origin-when-cross-origin is required for YouTube embeds (Error 153)
+  app.use(helmet({
+    contentSecurityPolicy: false,
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+  }));
 
   // Rate limiting — protect against spam and brute-force attacks
   const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200, standardHeaders: true, legacyHeaders: false });
