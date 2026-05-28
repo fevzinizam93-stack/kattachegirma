@@ -4,6 +4,7 @@ import BrandPicker from "@/components/BrandPicker";
 import AdminOrdersTab from "@/components/admin/AdminOrdersTab";
 import AdminSellersTab from "@/components/admin/AdminSellersTab";
 import AdminModerationTab from "@/components/admin/AdminModerationTab";
+import AdminReviewsTab from "@/components/admin/AdminReviewsTab";
 import AdminQuickOrdersTab from "@/components/admin/AdminQuickOrdersTab";
 import AdminBannersTab from "@/components/admin/AdminBannersTab";
 import AdminNotificationsTab from "@/components/admin/AdminNotificationsTab";
@@ -50,7 +51,7 @@ function AllSellersList({ onSelect, activeSellerUserId }: { onSelect: (sellerUse
   );
 }
 
-type Tab = "products" | "categories" | "orders" | "sellers" | "moderation" | "settings" | "banners" | "notifications" | "utm" | "messaging" | "quickorders" | "indexing";
+type Tab = "products" | "categories" | "orders" | "sellers" | "moderation" | "settings" | "banners" | "notifications" | "utm" | "messaging" | "quickorders" | "indexing" | "reviews";
 
 interface BannerForm {
   id?: number;
@@ -2081,6 +2082,8 @@ export default function Admin() {
 
         {/* ==================== QUICK ORDERS TAB ==================== */}
         {tab === "quickorders" && <AdminQuickOrdersTab />}
+        {/* ==================== REVIEWS TAB ==================== */}
+        {tab === "reviews" && <AdminReviewsTab />}
       </div>
 
       {/* ==================== INDEXING TAB ==================== */}

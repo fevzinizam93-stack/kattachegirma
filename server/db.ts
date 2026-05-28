@@ -887,12 +887,26 @@ export async function getLatestApprovedReviews(limit: number = 12) {
 export async function getAllReviews(status?: "pending" | "approved" | "hidden") {
   const db = await getDb();
   if (!db) return [];
+  const baseQuery = db
+    .select({
+      id: reviews.id,
+      productId: reviews.productId,
+      authorName: reviews.authorName,
+      userId: reviews.userId,
+      rating: reviews.rating,
+      comment: reviews.comment,
+      status: reviews.status,
+      createdAt: reviews.createdAt,
+      productName: products.name,
+      productSlug: products.slug,
+    })
+    .from(reviews)
+    .leftJoin(products, eq(reviews.productId, products.id))
+    .orderBy(desc(reviews.createdAt));
   if (status) {
-    return db.select().from(reviews)
-      .where(eq(reviews.status, status))
-      .orderBy(desc(reviews.createdAt));
+    return baseQuery.where(eq(reviews.status, status));
   }
-  return db.select().from(reviews).orderBy(desc(reviews.createdAt));
+  return baseQuery;
 }
 
 export async function setReviewStatus(id: number, status: "pending" | "approved" | "hidden") {
