@@ -61,7 +61,7 @@ function HitsSliderSkeleton() {
         </div>
         <div className="flex gap-3 overflow-hidden">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="shrink-0" style={{ width: "220px" }}>
+            <div key={i} className="shrink-0" style={{ width: "185px" }}>
               <ProductCardSkeleton />
             </div>
           ))}
@@ -81,7 +81,7 @@ function CategorySectionSkeleton({ count = 5 }: { count?: number }) {
         </div>
         <div className="h-5 w-16 bg-gray-100 rounded animate-pulse" />
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 sm:gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-2 sm:gap-3">
         {Array.from({ length: count }).map((_, i) => (
           <ProductCardSkeleton key={i} />
         ))}
@@ -260,7 +260,7 @@ export default function Home() {
                 style={{ animationDuration: `${Math.max(45, hitProducts.length * 8)}s` }}
               >
                 {[...hitProducts, ...hitProducts].map((p, i) => (
-                  <div key={`${p.id}-${i}`} className="w-[160px] md:w-[230px] shrink-0">
+                  <div key={`${p.id}-${i}`} className="w-[150px] md:w-[185px] shrink-0">
                     <ProductCard product={p} priority={i < 4} />
                   </div>
                 ))}
@@ -305,7 +305,7 @@ export default function Home() {
                 {t.home_view_all} <ArrowRight size={14} />
               </Link>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 sm:gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-2 sm:gap-3">
               {shown.map((p: any) => <ProductCard key={p.id} product={p} />)}
             </div>
             {/* Link to full category */}

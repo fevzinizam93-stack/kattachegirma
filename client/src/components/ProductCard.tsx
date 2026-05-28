@@ -102,7 +102,7 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
         className="flex flex-col flex-1 cursor-pointer active:scale-[0.98] transition-transform touch-manipulation"
       >
         {/* Square photo — fixed 220px height so all cards have identical photo area */}
-        <div className="relative bg-gray-50" style={{ height: '220px', width: '100%', flexShrink: 0 }}>
+        <div className="relative bg-gray-50 h-36 md:h-44" style={{ width: '100%', flexShrink: 0 }}>
           {product.imageUrl ? (
             <img
               src={product.thumbUrl ? imgUrl(product.thumbUrl, 300, 75) : imgUrl(product.imageUrl, 300, 75)}
@@ -157,7 +157,7 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
         </div>
 
         {/* Card body — fixed 130px height so all cards in a row align perfectly */}
-        <div className="p-3 flex flex-col gap-1" style={{ height: '130px', overflow: 'hidden' }}>
+        <div className="px-2.5 pt-2 pb-1 flex flex-col gap-0.5 h-[92px]" style={{ overflow: 'hidden' }}>
           {/* Brand */}
           {product.brand && (
             <p className="text-xs text-gray-500 font-medium uppercase tracking-wide truncate">{product.brand}</p>
@@ -189,12 +189,12 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
       </Link>
 
       {/* CTA button — full width, outside Link to avoid nested anchor */}
-      <div className="px-3 pb-3">
+      <div className="px-2.5 pb-2.5">
         <button
           onClick={handleAddToCart}
           disabled={!inStock}
           aria-label={`Добавить ${displayName} в корзину`}
-          className="w-full flex items-center justify-center gap-1.5 text-white py-2.5 px-2 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97] touch-manipulation shadow-sm whitespace-nowrap overflow-hidden"
+          className="w-full flex items-center justify-center gap-1.5 text-white py-2 px-2 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97] touch-manipulation shadow-sm whitespace-nowrap overflow-hidden"
           style={{ backgroundColor: inStock ? (addedFeedback ? "#16a34a" : "#cc0000") : "#aaa", transition: 'background-color 0.2s', fontSize: 'clamp(11px, 1.1vw, 13px)' }}
         >
           <ShoppingCart size={13} className="shrink-0" />
