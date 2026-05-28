@@ -90,6 +90,73 @@ function CategorySectionSkeleton({ count = 5 }: { count?: number }) {
   );
 }
 
+// ---- Хиты: 5 фиксированных окон, в каждом товары циклично сменяются из пула хитов ----
+function RotatingHitsGrid({ products }: { products: any[] }) {
+  const COLS = 5;          // количество видимых окон
+  const INTERVAL = 3800;   // мс — сколько товар держится перед сменой
+  const STAGGER = 700;     // мс — сдвиг «волны», чтобы окна листались не разом
+
+  const columns = useMemo(() => {
+    const buckets: any[][] = Array.from({ length: COLS }, () => []);
+    products.forEach((p, i) => buckets[i % COLS].push(p));
+    return buckets;
+  }, [products]);
+
+  const [indices, setIndices] = useState<number[]>(() => Array(COLS).fill(0));
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    const reduceMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion || paused) return;
+
+    const intervals: ReturnType<typeof setInterval>[] = [];
+    const timeouts: ReturnType<typeof setTimeout>[] = [];
+
+    columns.forEach((col, c) => {
+      if (col.length <= 1) return; // нечего ротировать в этом окне
+      const t = setTimeout(() => {
+        const id = setInterval(() => {
+          setIndices(prev => {
+            const next = [...prev];
+            next[c] = (next[c] + 1) % col.length;
+            return next;
+          });
+        }, INTERVAL);
+        intervals.push(id);
+      }, c * STAGGER);
+      timeouts.push(t);
+    });
+
+    return () => {
+      intervals.forEach(clearInterval);
+      timeouts.forEach(clearTimeout);
+    };
+  }, [columns, paused]);
+
+  return (
+    <div
+      className="grid grid-cols-2 md:grid-cols-5 gap-2 sm:gap-3"
+      onPointerEnter={() => setPaused(true)}
+      onPointerLeave={() => setPaused(false)}
+    >
+      {columns.map((col, c) => {
+        const product = col[indices[c] % Math.max(col.length, 1)];
+        if (!product) return null;
+        return (
+          <div key={c}>
+            {/* key=product.id => при смене перемонтируется и проигрывает анимацию */}
+            <div key={product.id} className="hit-rotate-fade">
+              <ProductCard product={product} priority={c < 4} />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function Home() {
   const { t, lang } = useLanguage();
   const [, navigate] = useLocation();
@@ -244,12 +311,8 @@ export default function Home() {
                 </Link>
               </div>
             </div>
-            {/* 5-card grid matching category sections */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 sm:gap-3">
-              {hitProducts.slice(0, 5).map((p, i) => (
-                <ProductCard key={p.id} product={p} priority={i < 4} />
-              ))}
-            </div>
+            {/* Хиты с авто-ротацией товаров внутри 5 окон */}
+            <RotatingHitsGrid products={hitProducts} />
           </div>
         </section>
       )}

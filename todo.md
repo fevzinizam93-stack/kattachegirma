@@ -1358,3 +1358,4 @@
 - [x] Send push notification to buyer on order status change
 - [x] Add "popularity" sort option to catalog (by hitScore/salesCount)
 - [x] SEO title optimization: add "narxi" keyword to product, category, catalog, home, bestsellers, sales pages
+- [x] Rotating hits grid: RotatingHitsGrid component with wave stagger animation (3.8s interval, 700ms stagger), CLS-safe, respects prefers-reduced-motion
