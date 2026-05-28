@@ -184,19 +184,19 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           {/* Videos link */}
           <Link
             href="/videos"
-            style={{ fontSize: "10px" }}
+            style={{ fontSize: "13px" }}
             className={`shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-full font-medium transition-colors whitespace-nowrap ${
               location === "/videos" ? "bg-red-50 text-red-600" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
             }`}
           >
-            <Youtube size={12} className="text-red-500 shrink-0" />
+            <Youtube size={14} className="text-red-500 shrink-0" />
             <span>Видеообзоры</span>
           </Link>
 
           {/* About link */}
           <Link
             href="/about"
-            style={{ fontSize: "10px" }}
+            style={{ fontSize: "13px" }}
             className={`shrink-0 font-medium px-2.5 py-1.5 rounded-full transition-colors whitespace-nowrap ${
               location === "/about" ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
             }`}
@@ -210,14 +210,14 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
               onClick={() => setShowCatalogModal((v) => !v)}
               aria-label={showCatalogModal ? "Закрыть каталог" : "Открыть каталог"}
               aria-expanded={showCatalogModal}
-              style={{ fontSize: "10px" }}
+              style={{ fontSize: "13px" }}
               className={`shrink-0 font-medium px-2.5 py-1.5 rounded-full transition-colors whitespace-nowrap flex items-center gap-1 ${
                 showCatalogModal ? "bg-red-600 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
               }`}
             >
-              <LayoutGrid size={12} />
+              <LayoutGrid size={14} />
               Каталог
-              <ChevronDown size={11} className={`transition-transform duration-200 ${showCatalogModal ? "rotate-180" : ""}`} />
+              <ChevronDown size={13} className={`transition-transform duration-200 ${showCatalogModal ? "rotate-180" : ""}`} />
             </button>
 
             {/* Catalog categories dropdown */}
@@ -298,7 +298,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           {sellerProfile ? (
             <Link
               href="/seller/dashboard"
-              style={{ fontSize: "10px" }}
+              style={{ fontSize: "13px" }}
               className="shrink-0 font-bold px-3 py-1.5 rounded-full border-2 border-green-600 text-green-700 hover:bg-green-600 hover:text-white transition-colors whitespace-nowrap"
             >
               + Добавить товар
@@ -306,7 +306,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           ) : (
             <Link
               href="/seller/register"
-              style={{ fontSize: "10px" }}
+              style={{ fontSize: "13px" }}
               className="shrink-0 font-bold px-3 py-1.5 rounded-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors whitespace-nowrap"
             >
               {t.nav_become_seller}
@@ -493,14 +493,14 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
               </Link>
             ) : (
               <button onClick={() => onOpenAuth?.(location)} aria-label="Войти" className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200">
-                <User size={18} className="text-gray-700" />
+                <User size={20} className="text-gray-700" />
                 <span className="text-[10px] text-gray-600 whitespace-nowrap">{t.nav_login}</span>
               </button>
             )}
 
             {/* Admin link */}
             {isAuthenticated && user?.role === "admin" && (
-              <Link href="/admin" className="text-red-600 text-xs font-bold px-2 py-1 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">Admin</Link>
+              <Link href="/admin" className="text-red-600 text-xs font-bold px-2.5 py-1 bg-red-50 rounded-full hover:bg-red-100 transition-colors">Admin</Link>
             )}
 
 
