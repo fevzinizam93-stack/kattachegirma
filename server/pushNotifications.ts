@@ -4,12 +4,14 @@ import { getDb } from "./db";
 import { pushSubscriptions } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 
-// Configure VAPID once on module load
-webpush.setVapidDetails(
-  ENV.vapidEmail,
-  ENV.vapidPublicKey,
-  ENV.vapidPrivateKey
-);
+// Configure VAPID once on module load — silently disabled if keys are not set
+if (ENV.vapidPublicKey && ENV.vapidPrivateKey) {
+  webpush.setVapidDetails(
+    ENV.vapidEmail,
+    ENV.vapidPublicKey,
+    ENV.vapidPrivateKey
+  );
+}
 
 export { ENV as pushEnv };
 

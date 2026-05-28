@@ -40,7 +40,6 @@ const OrderTracking = lazy(() => import("./pages/OrderTracking"));
 const PremiumCatalog = lazy(() => import("./pages/PremiumCatalog"));
 const SellerPanel = lazy(() => import("./pages/SellerPanel"));
 const SellerProfile = lazy(() => import("./pages/SellerProfile"));
-const ComponentShowcase = lazy(() => import("./pages/ComponentShowcase"));
 
 // Lightweight spinner shown while a page chunk is loading
 function PageLoader() {

@@ -8,7 +8,7 @@ export const ENV = {
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
   youtubeApiKey: process.env.YOUTUBE_API_KEY ?? "",
-  vapidPublicKey: process.env.VAPID_PUBLIC_KEY ?? "BCQcqNxlkDVqIGNBcH9j0HtHqP3uqoc3tkVnHE2-Q5F13kQUbR5sX-iVQJws2MDvKfsNRG0enqZuqhCuTo0t0Ws",
-  vapidPrivateKey: process.env.VAPID_PRIVATE_KEY ?? "U-pfX4pYfK9rR5-w_3T7ScyiHs9LFkec3Rmdt_D1XtQ",
+  vapidPublicKey: process.env.VAPID_PUBLIC_KEY ?? "",
+  vapidPrivateKey: process.env.VAPID_PRIVATE_KEY ?? "",
   vapidEmail: process.env.VAPID_EMAIL ?? "mailto:admin@kattachegirma.uz",
 };
