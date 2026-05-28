@@ -79,14 +79,14 @@ export async function submitUrlForIndexing(
       });
 
       if (response.status === 429) {
-        // Rate limited — wait longer before retry (exponential backoff)
-        const waitMs = attempt * 5000; // 5s, 10s, 15s
-        console.warn(`[Indexing] 429 rate limit for ${url}, waiting ${waitMs}ms before retry ${attempt}/${maxRetries}`);
-        cachedToken = null;
-        tokenExpiresAt = 0;
-        await sleep(waitMs);
-        lastError = `HTTP 429 (attempt ${attempt})`;
-        continue;
+        // 429 = дневной лимит Google Indexing API (200 URL/день) исчерпан.
+        // Повторять бессмысленно: квота сбрасывается раз в сутки, не за секунды.
+        console.warn(`[Indexing] 429 quota exceeded for ${url} — daily limit (200/day) reached`);
+        return {
+          url,
+          success: false,
+          error: "QUOTA_EXCEEDED: лимит Google 200 URL/день исчерпан — повторите завтра",
+        };
       }
 
       if (response.status === 401) {
@@ -134,9 +134,19 @@ export async function submitUrlsBatch(
 ): Promise<IndexingResult[]> {
   const results: IndexingResult[] = [];
 
-  for (const url of urls) {
-    const result = await submitUrlForIndexing(url, type);
+  for (let i = 0; i < urls.length; i++) {
+    const result = await submitUrlForIndexing(urls[i], type);
     results.push(result);
+
+    // Если уперлись в дневной лимит — нет смысла продолжать (квота общая на проект).
+    // Помечаем остаток как пропущенный и выходим из цикла.
+    if (!result.success && result.error?.startsWith("QUOTA_EXCEEDED")) {
+      for (const rest of urls.slice(i + 1)) {
+        results.push({ url: rest, success: false, error: "Пропущено: дневной лимит 200 URL исчерпан" });
+      }
+      break;
+    }
+
     // Delay between requests to respect Google's rate limit
     // Google Indexing API: 200 requests/day, ~1 req/sec burst limit
     if (delayMs > 0) {
