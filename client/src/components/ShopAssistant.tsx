@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -155,6 +156,10 @@ export function ShopAssistant() {
 
   // Choose prompts based on whether user has viewed products
   const prompts = viewedProducts.length > 0 ? PERSONALIZED_PROMPTS : SUGGESTED_PROMPTS;
+
+  // Hide AI assistant for guests — prevents costly AI calls from unauthenticated users
+  const { isAuthenticated } = useAuth();
+  if (!isAuthenticated) return null;
 
   return (
     <>

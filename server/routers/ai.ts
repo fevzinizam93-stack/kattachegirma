@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { router, publicProcedure } from "../_core/trpc";
+import { router, protectedProcedure } from "../_core/trpc";
 import { adminProcedure } from "./_shared";
 import { invokeLLM } from "../_core/llm";
 import {
@@ -11,7 +11,7 @@ import {
 
 export const aiRouter = router({
   // Public: AI product search — returns product IDs ranked by relevance
-  search: publicProcedure
+  search: protectedProcedure
     .input(z.object({
       query: z.string().min(1).max(500),
       limit: z.number().min(1).max(50).default(10),
@@ -74,7 +74,7 @@ export const aiRouter = router({
     }),
 
   // Public: AI product recommendation based on a product
-  recommend: publicProcedure
+  recommend: protectedProcedure
     .input(z.object({
       productId: z.number(),
       limit: z.number().min(1).max(20).default(6),
@@ -123,7 +123,7 @@ export const aiRouter = router({
     }),
 
   // Public: chat with AI shopping assistant
-  chat: publicProcedure
+  chat: protectedProcedure
     .input(z.object({
       messages: z.array(z.object({
         role: z.enum(["user", "assistant"]),
