@@ -15,6 +15,7 @@ import { registerSitemapRoute } from "../sitemap";
 import { registerFacebookFeedRoute } from "../facebookFeed";
 import { registerGoogleMerchantFeedRoute } from "../googleMerchantFeed";
 import { registerTelegramWebhook } from "../webhookRoute";
+import { scheduledReindexHandler } from "../scheduledReindex";
 import { autoRegisterTelegramWebhook } from "../telegram";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -100,6 +101,10 @@ async function startServer() {
   registerFacebookFeedRoute(app);
   registerGoogleMerchantFeedRoute(app);
   registerTelegramWebhook(app);
+
+  // Scheduled cron endpoints (Manus Heartbeat)
+  app.post("/api/scheduled/reindex", scheduledReindexHandler);
+
   // tRPC API
   app.use(
     "/api/trpc",

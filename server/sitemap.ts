@@ -353,7 +353,7 @@ ${sitemapEntries.join("\n")}
         const imgUrl = p.imageUrl || undefined;
         const imgName = p.name || undefined;
         // Only include the canonical /product/ URL; /mahsulot/ is an alias with canonical pointing here
-        return buildUrl(ruLoc, uzLoc, lastmod, "weekly", "0.7", imgUrl, imgName);
+        return buildUrl(ruLoc, uzLoc, lastmod, "weekly", "0.8", imgUrl, imgName);
       });
 
       res.setHeader("Content-Type", "application/xml; charset=utf-8");
