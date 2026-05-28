@@ -255,7 +255,10 @@ export default function Home() {
               @media (prefers-reduced-motion: reduce) { .hit-marquee { animation: none; } }
             `}</style>
             <div className="hit-marquee-wrap overflow-hidden">
-              <div className="hit-marquee flex gap-2 sm:gap-3 w-max">
+              <div
+                className="hit-marquee flex gap-2 sm:gap-3 w-max"
+                style={{ animationDuration: `${Math.max(45, hitProducts.length * 8)}s` }}
+              >
                 {[...hitProducts, ...hitProducts].map((p, i) => (
                   <div key={`${p.id}-${i}`} className="w-[160px] md:w-[230px] shrink-0">
                     <ProductCard product={p} priority={i < 4} />
