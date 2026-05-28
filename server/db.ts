@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, gte, ilike, inArray, like, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, getTableColumns, gte, ilike, inArray, like, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool } from "mysql2";
 import { analyticsEvents, banners, Banner, InsertBanner, brands, Brand, InsertBrand, categories, conversations, Conversation, InsertConversation, favorites, InsertAnalyticsEvent, InsertFavorite, InsertOrder, InsertProduct, InsertSeller, InsertUser, messages, Message, InsertMessage, notifications, InsertNotification, orders, products, reviews, InsertReview, sellers, sellerContacts, SellerContact, InsertSellerContact, sellerReviews, InsertSellerReview, storeSettings, telegramRecipients, TelegramRecipient, users, User, utmVisits, UtmVisit, quickOrders, QuickOrder, youtubeCache, indexingLog, IndexingLog, InsertIndexingLog } from "../drizzle/schema";
@@ -179,7 +179,11 @@ export async function getProducts(opts?: { categoryId?: number; search?: string;
     const minR = opts.minRating;
     conditions.push(sql`(SELECT COALESCE(AVG(r.rating), 0) FROM reviews r WHERE r.productId = ${products.id} AND r.status = 'approved') >= ${minR}`);
   }
-  const query = db.select().from(products);
+  const query = db.select({
+    ...getTableColumns(products),
+    avgRating: sql<number>`COALESCE((SELECT AVG(r.rating) FROM reviews r WHERE r.productId = ${products.id} AND r.status = 'approved'), 0)`,
+    reviewCount: sql<number>`(SELECT COUNT(*) FROM reviews r WHERE r.productId = ${products.id} AND r.status = 'approved')`,
+  }).from(products);
   if (conditions.length > 0) query.where(and(...conditions));
   const sortBy = opts?.sortBy ?? 'newest';
   if (sortBy === 'price_asc') {
@@ -199,23 +203,29 @@ export async function getProducts(opts?: { categoryId?: number; search?: string;
   }
   if (opts?.limit) query.limit(opts.limit);
   if (opts?.offset) query.offset(opts.offset);
-  return query;
+  const rows = await query;
+  return rows.map(p => ({ ...p, avgRating: Number(p.avgRating) || 0, reviewCount: Number(p.reviewCount) || 0 }));
 }
 
 // Get N products per category for homepage sections (one DB query for all categories)
 export async function getProductsByCategories(categoryIds: number[], perCategory = 8): Promise<Record<number, Awaited<ReturnType<typeof getProducts>>>> {
   const db = await getDb();
   if (!db) return {};
-  const allProds = await db.select().from(products)
+  const allProds = await db.select({
+    ...getTableColumns(products),
+    avgRating: sql<number>`COALESCE((SELECT AVG(r.rating) FROM reviews r WHERE r.productId = ${products.id} AND r.status = 'approved'), 0)`,
+    reviewCount: sql<number>`(SELECT COUNT(*) FROM reviews r WHERE r.productId = ${products.id} AND r.status = 'approved')`,
+  }).from(products)
     .where(and(
       eq(products.isActive, true),
       eq(products.isApproved, true),
       inArray(products.categoryId, categoryIds),
     ))
     .orderBy(desc(products.createdAt));
-  const result: Record<number, typeof allProds> = {};
+  const mappedProds = allProds.map(p => ({ ...p, avgRating: Number(p.avgRating) || 0, reviewCount: Number(p.reviewCount) || 0 }));
+  const result: Record<number, typeof mappedProds> = {};
   for (const catId of categoryIds) {
-    result[catId] = allProds.filter(p => p.categoryId === catId).slice(0, perCategory);
+    result[catId] = mappedProds.filter(p => p.categoryId === catId).slice(0, perCategory);
   }
   return result;
 }
@@ -263,18 +273,28 @@ export async function getProductsByIds(ids: number[]) {
   if (ids.length === 0) return [];
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(products).where(inArray(products.id, ids));
+  const rows = await db.select({
+    ...getTableColumns(products),
+    avgRating: sql<number>`COALESCE((SELECT AVG(r.rating) FROM reviews r WHERE r.productId = ${products.id} AND r.status = 'approved'), 0)`,
+    reviewCount: sql<number>`(SELECT COUNT(*) FROM reviews r WHERE r.productId = ${products.id} AND r.status = 'approved')`,
+  }).from(products).where(inArray(products.id, ids));
+  return rows.map(p => ({ ...p, avgRating: Number(p.avgRating) || 0, reviewCount: Number(p.reviewCount) || 0 }));
 }
 
 export async function getSimilarProducts(categoryId: number, excludeId: number, limit = 8) {
   const db = await getDb();
   if (!db) return [];
-  return db
-    .select()
+  const rows = await db
+    .select({
+      ...getTableColumns(products),
+      avgRating: sql<number>`COALESCE((SELECT AVG(r.rating) FROM reviews r WHERE r.productId = ${products.id} AND r.status = 'approved'), 0)`,
+      reviewCount: sql<number>`(SELECT COUNT(*) FROM reviews r WHERE r.productId = ${products.id} AND r.status = 'approved')`,
+    })
     .from(products)
     .where(and(eq(products.categoryId, categoryId), eq(products.moderationStatus, 'approved'), sql`${products.id} != ${excludeId}`))
     .orderBy(desc(products.createdAt))
     .limit(limit);
+  return rows.map(p => ({ ...p, avgRating: Number(p.avgRating) || 0, reviewCount: Number(p.reviewCount) || 0 }));
 }
 
 export async function createProduct(data: InsertProduct) {
@@ -509,9 +529,14 @@ export async function getHitProducts(limit?: number, sortByOrder?: boolean) {
   const db = await getDb();
   if (!db) return [];
   const orderCol = sortByOrder ? asc(products.hitOrder) : desc(products.hitScore);
-  const query = db.select().from(products).where(and(eq(products.isHit, true), eq(products.isActive, true))).orderBy(orderCol);
+  const query = db.select({
+    ...getTableColumns(products),
+    avgRating: sql<number>`COALESCE((SELECT AVG(r.rating) FROM reviews r WHERE r.productId = ${products.id} AND r.status = 'approved'), 0)`,
+    reviewCount: sql<number>`(SELECT COUNT(*) FROM reviews r WHERE r.productId = ${products.id} AND r.status = 'approved')`,
+  }).from(products).where(and(eq(products.isHit, true), eq(products.isActive, true))).orderBy(orderCol);
   if (limit) query.limit(limit);
-  return query;
+  const rows = await query;
+  return rows.map(p => ({ ...p, avgRating: Number(p.avgRating) || 0, reviewCount: Number(p.reviewCount) || 0 }));
 }
 
 export async function toggleProductHit(id: number, isHit: boolean) {
