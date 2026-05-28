@@ -61,7 +61,7 @@ function HitsSliderSkeleton() {
         </div>
         <div className="flex gap-3 overflow-hidden">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="shrink-0" style={{ width: "185px" }}>
+            <div key={i} className="shrink-0" style={{ width: "220px" }}>
               <ProductCardSkeleton />
             </div>
           ))}
@@ -81,7 +81,7 @@ function CategorySectionSkeleton({ count = 5 }: { count?: number }) {
         </div>
         <div className="h-5 w-16 bg-gray-100 rounded animate-pulse" />
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-2 sm:gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 sm:gap-3">
         {Array.from({ length: count }).map((_, i) => (
           <ProductCardSkeleton key={i} />
         ))}
@@ -244,27 +244,11 @@ export default function Home() {
                 </Link>
               </div>
             </div>
-            {/* Бесконечная авто-карусель: товары едут слева направо, пауза при наведении */}
-            <style>{`
-              @keyframes hitMarquee {
-                from { transform: translateX(-50%); }
-                to   { transform: translateX(0); }
-              }
-              .hit-marquee { animation: hitMarquee 40s linear infinite; will-change: transform; }
-              .hit-marquee-wrap:hover .hit-marquee { animation-play-state: paused; }
-              @media (prefers-reduced-motion: reduce) { .hit-marquee { animation: none; } }
-            `}</style>
-            <div className="hit-marquee-wrap overflow-hidden">
-              <div
-                className="hit-marquee flex gap-2 sm:gap-3 w-max"
-                style={{ animationDuration: `${Math.max(45, hitProducts.length * 8)}s` }}
-              >
-                {[...hitProducts, ...hitProducts].map((p, i) => (
-                  <div key={`${p.id}-${i}`} className="w-[150px] md:w-[185px] shrink-0">
-                    <ProductCard product={p} priority={i < 4} />
-                  </div>
-                ))}
-              </div>
+            {/* 5-card grid matching category sections */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 sm:gap-3">
+              {hitProducts.slice(0, 5).map((p, i) => (
+                <ProductCard key={p.id} product={p} priority={i < 4} />
+              ))}
             </div>
           </div>
         </section>
@@ -305,7 +289,7 @@ export default function Home() {
                 {t.home_view_all} <ArrowRight size={14} />
               </Link>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-2 sm:gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 sm:gap-3">
               {shown.map((p: any) => <ProductCard key={p.id} product={p} />)}
             </div>
             {/* Link to full category */}
