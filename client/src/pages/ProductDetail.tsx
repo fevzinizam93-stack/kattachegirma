@@ -2,7 +2,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { trpc } from "@/lib/trpc";
-import { ChevronDown, ChevronRight, MessageCircle, Minus, Phone, Plus, ShoppingCart, Star, Tag, Truck, Send, ArrowLeftRight, Zap, Youtube, Share2, Copy, Check, MessageSquare } from "lucide-react";
+import { ChevronDown, ChevronRight, MessageCircle, Minus, Phone, Plus, ShoppingCart, Star, Tag, Truck, Send, ArrowLeftRight, Zap, Youtube, Share2, Copy, Check, MessageSquare, TrendingDown, ShoppingBag, ShieldCheck, RotateCcw, BadgeCheck } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -813,9 +813,21 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                   )}
                   <p className="text-3xl font-black text-primary leading-none">{formatProductPrice(product.price, (product as any).priceUsd)}</p>
                   {hasDiscount && (
-                    <span className="inline-flex items-center gap-0.5 mt-1 bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded-full">
-                      <Tag size={10} /> Скидка {product.discount}%
-                    </span>
+                    <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                      <span className="inline-flex items-center gap-0.5 bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded-full">
+                        <Tag size={10} /> Скидка {product.discount}%
+                      </span>
+                      {product.originalPrice && (
+                        <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs font-bold px-2.5 py-0.5 rounded-full">
+                          <TrendingDown size={11} /> Выгода {formatProductPrice(
+                            Math.max(0, Number(product.originalPrice) - Number(product.price)),
+                            (Number((product as any).originalPriceUsd) > 0 && Number((product as any).priceUsd) > 0)
+                              ? Number((product as any).originalPriceUsd) - Number((product as any).priceUsd)
+                              : undefined
+                          )}
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
                 <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${
@@ -869,6 +881,22 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 }
                 return null;
               })()}
+
+              {/* Соцдоказательство — покупки + просмотры */}
+              {(((product as any).salesCount ?? 0) > 0 || (watchingNow ?? 0) > 0) && (
+                <div className="flex items-center gap-4 px-0.5">
+                  {((product as any).salesCount ?? 0) > 0 && (
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600">
+                      <ShoppingBag size={13} className="text-primary" /> Уже купили {(product as any).salesCount}
+                    </span>
+                  )}
+                  {(watchingNow ?? 0) > 0 && (
+                    <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
+                      <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" /> Смотрят сейчас: {watchingNow}
+                    </span>
+                  )}
+                </div>
+              )}
 
               {/* ── Action block ── */}
               <div className="space-y-2">
@@ -1086,6 +1114,19 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                     <span className="ml-auto text-[9px] text-gray-400">⚠️ Катта Чегирма не несёт ответственности</span>
                   </div>
                 )}
+
+                {/* Доверие — гарантия / возврат / оригинал */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="inline-flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-full px-3 py-1.5 text-[11px] font-semibold text-gray-600">
+                    <ShieldCheck size={13} className="text-emerald-600" /> Гарантия 1 год
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-full px-3 py-1.5 text-[11px] font-semibold text-gray-600">
+                    <RotateCcw size={13} className="text-blue-600" /> Возврат 14 дней
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-full px-3 py-1.5 text-[11px] font-semibold text-gray-600">
+                    <BadgeCheck size={13} className="text-primary" /> Оригинал
+                  </span>
+                </div>
 
                                 {/* Row 4: Delivery chip */}
                 <div className="flex items-center gap-2 text-xs text-gray-500">
