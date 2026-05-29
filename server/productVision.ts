@@ -19,7 +19,7 @@ interface RawProduct {
   brand?: string;
   priceUsd?: number;
   colorRu?: string;
-  specs?: Record<string, string>;
+  specs?: Array<{ key: string; value: string }>;
   photoBox?: { x: number; y: number; w: number; h: number };
 }
 
@@ -31,21 +31,16 @@ export async function recognizePriceSheet(
 ): Promise<RecognizedProduct[]> {
   const sheetBuffer = Buffer.from(sheetBase64, "base64");
   const ts = Date.now();
-  const ext = mimeType.includes("png") ? "png" : "jpg";
 
-  // Загружаем сам прайс в хранилище, чтобы дать vision-модели публичную ссылку
-  const { url: sheetUrl } = await storagePut(
-    `price-sheets/${ts}-sheet.${ext}`,
-    sheetBuffer,
-    mimeType,
-  );
+  // Передаём картинку модели НАПРЯМУЮ как data URL (шлюз не скачивает внешние ссылки)
+  const dataUrl = `data:${mimeType};base64,${sheetBase64}`;
 
   const systemPrompt =
     "Ты — ассистент по распознаванию прайс-листов бытовой техники. " +
     "На изображении сетка товаров: код модели, цена в долларах (число в тёмном бейдже), " +
     "характеристики (часто на узбекском) и фото. Извлеки КАЖДЫЙ товар. " +
     "Читай только то, что напечатано — ничего не выдумывай. " +
-    "Характеристики переведи на русский (и ключ, и значение). " +
+    "Характеристики верни списком пар key/value на русском (key — название характеристики, value — значение). " +
     "Для каждого товара укажи photoBox — прямоугольник ФОТО товара в долях от 0 до 1 " +
     "(x,y — левый верхний угол, w,h — ширина и высота относительно всего изображения). " +
     "Если не уверен в границах — возьми область чуть шире, чтобы фото попало целиком.";
@@ -57,7 +52,7 @@ export async function recognizePriceSheet(
         role: "user",
         content: [
           { type: "text", text: "Распознай все товары с этого прайс-листа." },
-          { type: "image_url", image_url: { url: sheetUrl, detail: "high" } },
+          { type: "image_url", image_url: { url: dataUrl, detail: "high" } },
         ],
       },
     ],
@@ -79,7 +74,14 @@ export async function recognizePriceSheet(
                   brand: { type: "string" },
                   priceUsd: { type: "number" },
                   colorRu: { type: "string" },
-                  specs: { type: "object", additionalProperties: { type: "string" } },
+                  specs: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: { key: { type: "string" }, value: { type: "string" } },
+                      required: ["key", "value"],
+                    },
+                  },
                   photoBox: {
                     type: "object",
                     properties: {
@@ -104,6 +106,12 @@ export async function recognizePriceSheet(
     typeof content === "string" ? content : JSON.stringify(content),
   ) as { products?: RawProduct[] };
   const raw = parsed.products ?? [];
+  if (raw.length === 0) {
+    throw new Error(
+      "Модель не вернула товары. Сырой ответ: " +
+        (typeof content === "string" ? content : JSON.stringify(content)).slice(0, 300),
+    );
+  }
 
   const meta = await sharp(sheetBuffer).metadata();
   const W = meta.width ?? 0;
@@ -117,7 +125,9 @@ export async function recognizePriceSheet(
       brand: (p.brand ?? "").trim(),
       priceUsd: typeof p.priceUsd === "number" ? p.priceUsd : 0,
       colorRu: (p.colorRu ?? "").trim(),
-      specs: p.specs ?? {},
+      specs: Array.isArray(p.specs)
+        ? Object.fromEntries(p.specs.filter((s) => s && s.key).map((s) => [s.key, s.value ?? ""]))
+        : {},
     };
 
     try {
