@@ -800,10 +800,10 @@ export default function Admin() {
       if (!res.ok) throw new Error(data.error ?? "Upload failed");
       setForm(f => ({
         ...f,
-        imageUrl: f.imageUrl || data.url, // first image becomes main
+        imageUrl: data.url, // загруженное фото сразу становится главным
         images: [...f.images, data.url],
       }));
-      toast.success("Фото загружено!");
+      toast.success("Фото загружено и сделано главным. Чтобы выбрать другое главное — нажмите на нужное фото.");
     } catch (e: any) {
       toast.error("Ошибка загрузки: " + e.message);
     } finally {
@@ -823,10 +823,10 @@ export default function Admin() {
       const newUrls: string[] = data.urls;
       setForm(f => ({
         ...f,
-        imageUrl: f.imageUrl || newUrls[0], // first uploaded becomes main if none set
+        imageUrl: newUrls[0], // первое из загруженных сразу становится главным
         images: [...f.images, ...newUrls],
       }));
-      toast.success(`Загружено ${newUrls.length} фото!`);
+      toast.success(`Загружено ${newUrls.length} фото. Главным сделано первое — нажмите на другое, если нужно.`);
     } catch (e: any) {
       toast.error("Ошибка загрузки: " + e.message);
     } finally {
