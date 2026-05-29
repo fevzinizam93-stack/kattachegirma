@@ -791,6 +791,11 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 </div>
               )}
 
+            </div>
+
+            {/* ===== RIGHT COLUMN: блок покупки ===== */}
+            <div className="flex flex-col gap-3 p-3 md:p-4">
+
               {/* ── Product name ── */}
               <h1 className="text-xl font-bold text-gray-900 leading-snug">{displayName}</h1>
               {product.brand && (
@@ -1134,9 +1139,10 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* ===== RIGHT COLUMN: Description + Specs (accordion) ===== */}
-            <div className="flex flex-col gap-3 p-3 md:p-4">
+          {/* ===== FULL WIDTH BELOW: Description + Specs ===== */}
+          <div className="flex flex-col gap-3 p-3 md:p-4 border-t border-gray-100">
 
               <AccordionSection title={t.detail_about} defaultOpen={true}>
                 {descriptionText ? (
@@ -1219,8 +1225,6 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                   </div>
                 </AccordionSection>
               )}
-
-            </div>
 
           </div>
         </div>
