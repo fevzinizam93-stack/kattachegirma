@@ -323,6 +323,43 @@ async function generateDescriptions(name: string, specsText: string): Promise<{ 
   return { ru: parsed.ru ?? "", uz: parsed.uz ?? "" };
 }
 
+async function generateDescriptionsBatch(
+  items: { name: string; specsText: string }[],
+): Promise<{ ru: string; uz: string }[]> {
+  if (items.length === 0) return [];
+  const list = items.map((it, idx) => `${idx + 1}. ${it.name} — ${it.specsText}`).join("\n");
+  const resp = await invokeLLM({
+    messages: [
+      { role: "system", content: "Ты — копирайтер интернет-магазина бытовой техники. Для КАЖДОГО товара из списка напиши уникальное продающее описание своими словами (2–4 предложения), без выдуманных фактов, только по переданным данным. Верни JSON { items: [ { ru, uz } ] } строго в том же порядке и количестве, что и список. uz — узбекская латиница." },
+      { role: "user", content: `Товары:\n${list}\n\nВерни JSON с массивом items: по одному объекту {ru, uz} на каждый товар, в том же порядке.` },
+    ],
+    response_format: {
+      type: "json_schema",
+      json_schema: {
+        name: "descriptions_batch",
+        strict: false,
+        schema: {
+          type: "object",
+          properties: {
+            items: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: { ru: { type: "string" }, uz: { type: "string" } },
+                required: ["ru", "uz"],
+              },
+            },
+          },
+          required: ["items"],
+        },
+      },
+    },
+  });
+  const content = resp.choices?.[0]?.message?.content ?? "{}";
+  const parsed = JSON.parse(typeof content === "string" ? content : JSON.stringify(content)) as { items?: { ru?: string; uz?: string }[] };
+  return (parsed.items ?? []).map((d) => ({ ru: d.ru ?? "", uz: d.uz ?? "" }));
+}
+
 export interface ImportProductInput {
   model: string;
   brand?: string;
@@ -334,50 +371,57 @@ export interface ImportProductInput {
 }
 
 type BulkJob =
-  | { status: "processing"; total: number; done: number; failed: number }
+  | { status: "processing"; stage: string; total: number; done: number; failed: number }
   | { status: "finished"; total: number; done: number; failed: number; errors: string[] };
 
 const bulkJobs = new Map<string, BulkJob>();
 
 export function startBulkCreateJob(items: ImportProductInput[], categoryId: number, exchangeRate: number, contact: { sellerName?: string; sellerPhone?: string; sellerTelegram?: string; sellerId?: number }): string {
   const jobId = `bulk-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  bulkJobs.set(jobId, { status: "processing", total: items.length, done: 0, failed: 0 });
+  bulkJobs.set(jobId, { status: "processing", stage: "Подготовка...", total: items.length, done: 0, failed: 0 });
   void (async () => {
     let done = 0;
     let failed = 0;
     const errors: string[] = [];
     const rate = exchangeRate > 0 ? exchangeRate : 12700;
-    for (const it of items) {
-      try {
-        const model = (it.model || "").trim();
-        const brand = (it.brand || "").trim();
-        const name = (brand ? `${brand} ${model}` : model).trim() || model || "Товар";
-        const specs = it.specs ?? {};
-        const specsText = Object.entries(specs).map(([k, v]) => `${k}: ${v}`).join("; ");
-        const slug = await makeUniqueSlug(model || name);
-        const priceUsd = Number(it.priceUsd) || 0;
-        const priceSum = Math.round(priceUsd * rate);
 
-        let ru = "";
-        let uz = "";
-        try {
-          const d = await generateDescriptions(name, specsText);
-          ru = d.ru; uz = d.uz;
-        } catch { /* описание не критично */ }
+    const prepared = items.map((it) => {
+      const model = (it.model || "").trim();
+      const brand = (it.brand || "").trim();
+      const name = (brand ? `${brand} ${model}` : model).trim() || model || "Товар";
+      const specs = it.specs ?? {};
+      const specsText = Object.entries(specs).map(([k, v]) => `${k}: ${v}`).join("; ");
+      return { it, model, brand, name, specs, specsText };
+    });
+
+    // Описания одним запросом на все товары
+    bulkJobs.set(jobId, { status: "processing", stage: "Генерирую описания...", total: items.length, done: 0, failed: 0 });
+    let descriptions: { ru: string; uz: string }[] = [];
+    try {
+      descriptions = await generateDescriptionsBatch(prepared.map((p) => ({ name: p.name, specsText: p.specsText })));
+    } catch { descriptions = []; }
+
+    for (let i = 0; i < prepared.length; i++) {
+      const p = prepared[i];
+      try {
+        const slug = await makeUniqueSlug(p.model || p.name);
+        const priceUsd = Number(p.it.priceUsd) || 0;
+        const priceSum = Math.round(priceUsd * rate);
+        const d = descriptions[i] ?? { ru: "", uz: "" };
 
         await createProduct({
-          name,
+          name: p.name,
           slug,
-          brand: brand || undefined,
-          description: ru || undefined,
-          descriptionUz: uz || undefined,
+          brand: p.brand || undefined,
+          description: d.ru || undefined,
+          descriptionUz: d.uz || undefined,
           categoryId,
           price: String(priceSum),
           priceUsd: priceUsd > 0 ? String(priceUsd) : undefined,
-          imageUrl: it.photoUrl || undefined,
-          thumbUrl: it.thumbUrl || undefined,
-          images: it.photoUrl ? [it.photoUrl] : [],
-          specs,
+          imageUrl: p.it.photoUrl || undefined,
+          thumbUrl: p.it.thumbUrl || undefined,
+          images: p.it.photoUrl ? [p.it.photoUrl] : [],
+          specs: p.specs,
           sellerName: contact.sellerName || undefined,
           sellerPhone: contact.sellerPhone || undefined,
           contactPhone: contact.sellerPhone || undefined,
@@ -391,12 +435,12 @@ export function startBulkCreateJob(items: ImportProductInput[], categoryId: numb
         done++;
       } catch (err) {
         failed++;
-        errors.push(`${it.model}: ${err instanceof Error ? err.message : String(err)}`);
+        errors.push(`${p.model}: ${err instanceof Error ? err.message : String(err)}`);
       }
-      bulkJobs.set(jobId, { status: "processing", total: items.length, done, failed });
+      bulkJobs.set(jobId, { status: "processing", stage: "Создаю товары", total: items.length, done, failed });
     }
     bulkJobs.set(jobId, { status: "finished", total: items.length, done, failed, errors });
-    setTimeout(() => bulkJobs.delete(jobId), 10 * 60 * 1000);
+    setTimeout(() => bulkJobs.delete(jobId), 60 * 60 * 1000);
   })();
   return jobId;
 }

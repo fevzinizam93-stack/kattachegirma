@@ -36,7 +36,7 @@ export default function PriceImportTab({ categories }: Props) {
   const exchangeRate = rateQuery.data?.usdToUzs ?? 12700;
   const bulkMut = trpc.products.bulkCreateFromImport.useMutation();
   const [creating, setCreating] = useState(false);
-  const [progress, setProgress] = useState<{ done: number; total: number; failed: number } | null>(null);
+  const [progress, setProgress] = useState<{ done: number; total: number; failed: number; stage?: string } | null>(null);
   const [seller, setSeller] = useState({ name: "", phone: "", telegram: "" });
   const [sellerId, setSellerId] = useState<number | "">("");
   const sellersQuery = trpc.sellers.list.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
@@ -132,9 +132,9 @@ export default function PriceImportTab({ categories }: Props) {
       createPollRef.current = setInterval(async () => {
         try {
           const job = (await utils.products.bulkCreateStatus.fetch({ jobId })) as {
-            status: string; total: number; done: number; failed: number; errors?: string[];
+            status: string; stage?: string; total: number; done: number; failed: number; errors?: string[];
           };
-          setProgress({ done: job.done, total: job.total, failed: job.failed });
+          setProgress({ done: job.done, total: job.total, failed: job.failed, stage: job.stage });
           if (job.status === "finished") {
             stopCreatePoll();
             setCreating(false);
@@ -458,7 +458,9 @@ export default function PriceImportTab({ categories }: Props) {
               className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
             >
               {creating ? <Loader2 size={16} className="animate-spin" /> : null}
-              {creating && progress ? `Создаю ${progress.done}/${progress.total}...` : "Создать все товары"}
+              {creating && progress
+                ? (progress.stage && progress.done === 0 ? progress.stage : `Создаю ${progress.done}/${progress.total}...`)
+                : "Создать все товары"}
             </button>
             {!categoryId && <p className="text-xs text-amber-600 mt-2">Выберите категорию выше, чтобы создать товары.</p>}
           </div>
