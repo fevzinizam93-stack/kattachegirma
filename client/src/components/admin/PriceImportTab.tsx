@@ -31,11 +31,60 @@ export default function PriceImportTab({ categories }: Props) {
   const recognizeMut = trpc.products.recognizePriceSheet.useMutation();
   const uploadMut = trpc.products.importUploadImage.useMutation();
   const whitenMut = trpc.products.whitenBackground.useMutation();
+  const rateQuery = trpc.currency.getRate.useQuery(undefined, { staleTime: 60 * 60 * 1000 });
+  const exchangeRate = rateQuery.data?.usdToUzs ?? 12700;
+  const bulkMut = trpc.products.bulkCreateFromImport.useMutation();
+  const [creating, setCreating] = useState(false);
+  const [progress, setProgress] = useState<{ done: number; total: number; failed: number } | null>(null);
+  const createPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   function stopPoll() {
     if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
   }
-  useEffect(() => () => stopPoll(), []);
+  function stopCreatePoll() {
+    if (createPollRef.current) { clearInterval(createPollRef.current); createPollRef.current = null; }
+  }
+  useEffect(() => () => { stopPoll(); stopCreatePoll(); }, []);
+
+  async function handleCreateAll() {
+    if (!categoryId) { toast.error("Сначала выберите категорию"); return; }
+    setCreating(true);
+    setProgress({ done: 0, total: rows.length, failed: 0 });
+    try {
+      const payload = rows.map((r) => ({
+        model: r.model,
+        brand: r.brand || undefined,
+        priceUsd: Number(r.priceUsd) || 0,
+        colorRu: r.colorRu || undefined,
+        specs: r.specs ?? {},
+        photoUrl: r.photoUrl || undefined,
+        thumbUrl: r.thumbUrl || undefined,
+      }));
+      const { jobId } = await bulkMut.mutateAsync({ categoryId: Number(categoryId), exchangeRate, products: payload });
+      createPollRef.current = setInterval(async () => {
+        try {
+          const job = (await utils.products.bulkCreateStatus.fetch({ jobId })) as {
+            status: string; total: number; done: number; failed: number; errors?: string[];
+          };
+          setProgress({ done: job.done, total: job.total, failed: job.failed });
+          if (job.status === "finished") {
+            stopCreatePoll();
+            setCreating(false);
+            toast.success(`Создано: ${job.done} из ${job.total}` + (job.failed ? `, ошибок: ${job.failed}` : ""));
+            (job.errors ?? []).slice(0, 3).forEach((e) => toast.error(e));
+            setRows([]);
+            setProgress(null);
+          }
+        } catch {
+          stopCreatePoll(); setCreating(false);
+          toast.error("Ошибка опроса статуса создания");
+        }
+      }, 2500);
+    } catch (err) {
+      setCreating(false);
+      toast.error("Ошибка создания: " + (err instanceof Error ? err.message : String(err)));
+    }
+  }
 
   async function downscaleToJpegBase64(file: File, maxSide = 1600, quality = 0.85): Promise<string> {
     const dataUrl: string = await new Promise((res, rej) => {
@@ -156,7 +205,7 @@ export default function PriceImportTab({ categories }: Props) {
     toast.success("Обработка фона завершена");
   }
 
-  const anyBusy = busy || rowBusy !== null || whitenAllBusy;
+  const anyBusy = busy || rowBusy !== null || whitenAllBusy || creating;
 
   return (
     <div className="space-y-4">
@@ -257,9 +306,15 @@ export default function PriceImportTab({ categories }: Props) {
           </div>
 
           <div className="pt-2 border-t border-gray-100">
-            <button onClick={() => toast.info("Массовое создание появится на следующем этапе (Этап 3)")} className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors">
-              Создать все товары
+            <button
+              onClick={handleCreateAll}
+              disabled={anyBusy || !categoryId}
+              className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
+            >
+              {creating ? <Loader2 size={16} className="animate-spin" /> : null}
+              {creating && progress ? `Создаю ${progress.done}/${progress.total}...` : "Создать все товары"}
             </button>
+            {!categoryId && <p className="text-xs text-amber-600 mt-2">Выберите категорию выше, чтобы создать товары.</p>}
           </div>
         </div>
       )}

@@ -1024,4 +1024,35 @@ export const productsRouter = router({
       const { whitenBackground } = await import("../productVision");
       return whitenBackground(input.imageUrl);
     }),
+
+  // Массовое создание товаров из импорта прайса
+  bulkCreateFromImport: adminProcedure
+    .input(z.object({
+      categoryId: z.number(),
+      exchangeRate: z.number().default(12700),
+      products: z.array(z.object({
+        model: z.string(),
+        brand: z.string().optional(),
+        priceUsd: z.number(),
+        colorRu: z.string().optional(),
+        specs: z.record(z.string(), z.string()).optional(),
+        photoUrl: z.string().optional(),
+        thumbUrl: z.string().optional(),
+      })).min(1),
+    }))
+    .mutation(async ({ input }) => {
+      const { startBulkCreateJob } = await import("../productVision");
+      const jobId = startBulkCreateJob(input.products, input.categoryId, input.exchangeRate);
+      return { jobId };
+    }),
+
+  // Статус фонового задания массового создания
+  bulkCreateStatus: adminProcedure
+    .input(z.object({ jobId: z.string() }))
+    .query(async ({ input }) => {
+      const { getBulkCreateJob } = await import("../productVision");
+      const job = getBulkCreateJob(input.jobId);
+      if (!job) return { status: "finished" as const, total: 0, done: 0, failed: 0, errors: ["Задание не найдено"] };
+      return job;
+    }),
 });

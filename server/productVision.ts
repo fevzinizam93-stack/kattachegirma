@@ -2,6 +2,8 @@ import sharp from "sharp";
 import { invokeLLM } from "./_core/llm";
 import { optimizeImage } from "./_core/imageOptimizer";
 import { storagePut } from "./storage";
+import { createProduct, getSlugExists } from "./db";
+import { pingSitemaps } from "./sitemap";
 
 export interface RecognizedProduct {
   model: string;
@@ -258,4 +260,123 @@ export async function whitenBackground(
   }
   const out = Buffer.from(await resp.arrayBuffer());
   return enhanceAndStore(out, `white-${Date.now()}`);
+}
+
+// ---- Bulk create: slug helpers ----
+const CYR: Record<string, string> = { а:"a",б:"b",в:"v",г:"g",д:"d",е:"e",ё:"yo",ж:"zh",з:"z",и:"i",й:"y",к:"k",л:"l",м:"m",н:"n",о:"o",п:"p",р:"r",с:"s",т:"t",у:"u",ф:"f",х:"kh",ц:"ts",ч:"ch",ш:"sh",щ:"sch",ъ:"",ы:"y",ь:"",э:"e",ю:"yu",я:"ya" };
+function translitSlug(s: string): string {
+  return s.toLowerCase().split("").map((c) => CYR[c] ?? c).join("");
+}
+async function makeUniqueSlug(base: string): Promise<string> {
+  const raw = translitSlug(base).replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-").replace(/^-|-$/g, "");
+  const baseSlug = raw || `product-${Date.now()}`;
+  let safe = baseSlug;
+  let suffix = 2;
+  while (await getSlugExists(safe)) {
+    safe = `${baseSlug}-${suffix++}`;
+    if (suffix > 100) { safe = `${baseSlug}-${Date.now()}`; break; }
+  }
+  return safe;
+}
+
+async function generateDescriptions(name: string, specsText: string): Promise<{ ru: string; uz: string }> {
+  const resp = await invokeLLM({
+    messages: [
+      { role: "system", content: "Ты — копирайтер интернет-магазина бытовой техники. Напиши УНИКАЛЬНОЕ продающее описание товара своими словами (не копируй сухие ТТХ построчно), 2–4 предложения, по-человечески, с пользой для покупателя. Никаких выдуманных фактов — опирайся только на переданные данные. Верни JSON: ru (русский) и uz (узбекская латиница)." },
+      { role: "user", content: `Товар: ${name}\nХарактеристики: ${specsText}\n\nОпиши на русском (ru) и узбекском (uz).` },
+    ],
+    response_format: {
+      type: "json_schema",
+      json_schema: {
+        name: "product_description",
+        strict: true,
+        schema: {
+          type: "object",
+          properties: { ru: { type: "string" }, uz: { type: "string" } },
+          required: ["ru", "uz"],
+          additionalProperties: false,
+        },
+      },
+    },
+  });
+  const content = resp.choices?.[0]?.message?.content ?? "{}";
+  const parsed = JSON.parse(typeof content === "string" ? content : JSON.stringify(content)) as { ru?: string; uz?: string };
+  return { ru: parsed.ru ?? "", uz: parsed.uz ?? "" };
+}
+
+export interface ImportProductInput {
+  model: string;
+  brand?: string;
+  priceUsd: number;
+  colorRu?: string;
+  specs?: Record<string, string>;
+  photoUrl?: string;
+  thumbUrl?: string;
+}
+
+type BulkJob =
+  | { status: "processing"; total: number; done: number; failed: number }
+  | { status: "finished"; total: number; done: number; failed: number; errors: string[] };
+
+const bulkJobs = new Map<string, BulkJob>();
+
+export function startBulkCreateJob(items: ImportProductInput[], categoryId: number, exchangeRate: number): string {
+  const jobId = `bulk-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  bulkJobs.set(jobId, { status: "processing", total: items.length, done: 0, failed: 0 });
+  void (async () => {
+    let done = 0;
+    let failed = 0;
+    const errors: string[] = [];
+    const rate = exchangeRate > 0 ? exchangeRate : 12700;
+    for (const it of items) {
+      try {
+        const model = (it.model || "").trim();
+        const brand = (it.brand || "").trim();
+        const name = (brand ? `${brand} ${model}` : model).trim() || model || "Товар";
+        const specs = it.specs ?? {};
+        const specsText = Object.entries(specs).map(([k, v]) => `${k}: ${v}`).join("; ");
+        const slug = await makeUniqueSlug(model || name);
+        const priceUsd = Number(it.priceUsd) || 0;
+        const priceSum = Math.round(priceUsd * rate);
+
+        let ru = "";
+        let uz = "";
+        try {
+          const d = await generateDescriptions(name, specsText);
+          ru = d.ru; uz = d.uz;
+        } catch { /* описание не критично */ }
+
+        await createProduct({
+          name,
+          slug,
+          brand: brand || undefined,
+          description: ru || undefined,
+          descriptionUz: uz || undefined,
+          categoryId,
+          price: String(priceSum),
+          priceUsd: priceUsd > 0 ? String(priceUsd) : undefined,
+          imageUrl: it.photoUrl || undefined,
+          thumbUrl: it.thumbUrl || undefined,
+          images: it.photoUrl ? [it.photoUrl] : [],
+          specs,
+          isActive: true,
+          isApproved: true,
+        });
+
+        pingSitemaps(`https://kattachegirma.uz/product/${slug}`);
+        done++;
+      } catch (err) {
+        failed++;
+        errors.push(`${it.model}: ${err instanceof Error ? err.message : String(err)}`);
+      }
+      bulkJobs.set(jobId, { status: "processing", total: items.length, done, failed });
+    }
+    bulkJobs.set(jobId, { status: "finished", total: items.length, done, failed, errors });
+    setTimeout(() => bulkJobs.delete(jobId), 10 * 60 * 1000);
+  })();
+  return jobId;
+}
+
+export function getBulkCreateJob(jobId: string): BulkJob | undefined {
+  return bulkJobs.get(jobId);
 }
