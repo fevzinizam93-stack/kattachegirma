@@ -986,4 +986,16 @@ export const productsRouter = router({
     }
     return { fixedCount: fixed.length, fixed };
   }),
+
+  // Распознать фото-прайс и вернуть товары для предпросмотра (без сохранения в БД)
+  recognizePriceSheet: adminProcedure
+    .input(z.object({
+      base64: z.string(),
+      mimeType: z.string(),
+    }))
+    .mutation(async ({ input }) => {
+      const { recognizePriceSheet } = await import("../productVision");
+      const products = await recognizePriceSheet(input.base64, input.mimeType);
+      return { products, count: products.length };
+    }),
 });
