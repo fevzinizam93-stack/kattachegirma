@@ -8,6 +8,21 @@ import { getAllCategories, getDb, getIndexingLogs, saveIndexingLog } from "../db
 import { and, eq } from "drizzle-orm";
 import { products as productsTable } from "../../drizzle/schema";
 
+// Собирает самую частую причину ошибки из результатов отправки для записи в лог.
+function summarizeErrors(results: { success: boolean; error?: string }[]): string | undefined {
+  const errors = results.filter((r) => !r.success && r.error).map((r) => r.error as string);
+  if (errors.length === 0) return undefined;
+  const counts: Record<string, number> = {};
+  for (const e of errors) counts[e] = (counts[e] ?? 0) + 1;
+  let top = errors[0];
+  let topCount = 0;
+  for (const msg of Object.keys(counts)) {
+    const n = counts[msg];
+    if (n > topCount) { top = msg; topCount = n; }
+  }
+  return `Ошибок ${errors.length}. Частая (${topCount}×): ${top}`.slice(0, 480);
+}
+
 export const indexingRouter = router({
   // Google Indexing API: submit a single URL
   submitUrl: adminProcedure
@@ -21,7 +36,7 @@ export const indexingRouter = router({
         succeeded: results.filter((r) => r.success).length,
         failed: results.filter((r) => !r.success).length,
         status: results[0]?.success ? "success" : "error",
-        note: input.url,
+        note: results[0]?.success ? input.url : (results[0]?.error ?? input.url),
       });
       return results[0] ?? { success: false };
     }),
@@ -55,6 +70,7 @@ export const indexingRouter = router({
             succeeded,
             failed,
             status: failed === 0 ? "success" : succeeded > 0 ? "partial" : "error",
+            note: summarizeErrors(results),
           });
         } catch (err) {
           console.error("[Indexing] background submitAllProducts failed:", err);
@@ -152,6 +168,7 @@ export const indexingRouter = router({
       succeeded,
       failed,
       status: failed === 0 ? "success" : succeeded > 0 ? "partial" : "error",
+      note: summarizeErrors(results),
     });
     return { total: urls.length, succeeded, failed, results };
   }),
