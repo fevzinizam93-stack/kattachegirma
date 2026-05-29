@@ -203,3 +203,59 @@ export function startRecognitionJob(sheetBase64: string, mimeType: string): stri
 export function getRecognitionJob(jobId: string): RecognitionJob | undefined {
   return recognitionJobs.get(jobId);
 }
+
+// ---- Улучшение качества (без ИИ) + сохранение ----
+export async function enhanceAndStore(
+  buffer: Buffer,
+  baseName: string,
+): Promise<{ url: string; thumbUrl: string }> {
+  const enhanced = await sharp(buffer)
+    .resize({ width: 1200, fit: "inside", withoutEnlargement: false, kernel: "lanczos3" })
+    .sharpen()
+    .normalize()
+    .toBuffer();
+  const safe = (baseName || `img-${Date.now()}`).replace(/[^a-zA-Z0-9-]/g, "_");
+  const optimized = await optimizeImage(enhanced, `${safe}.webp`);
+  const ts = Date.now();
+  const baseKey = `products/import/${ts}-${safe}`;
+  const [{ url }, { url: thumbUrl }] = await Promise.all([
+    storagePut(`${baseKey}.webp`, optimized.fullBuffer, optimized.fullMimeType),
+    storagePut(`${baseKey}-thumb.webp`, optimized.thumbBuffer, optimized.thumbMimeType),
+  ]);
+  return { url, thumbUrl };
+}
+
+// ---- Ручная загрузка фото (с улучшением) ----
+export async function uploadEnhancedImage(
+  base64: string,
+  filename: string,
+): Promise<{ url: string; thumbUrl: string }> {
+  const buffer = Buffer.from(base64, "base64");
+  const baseName = filename.replace(/\.[^.]+$/, "");
+  return enhanceAndStore(buffer, baseName);
+}
+
+// ---- Белый фон через remove.bg (matting, товар не меняется) ----
+export async function whitenBackground(
+  imageUrl: string,
+): Promise<{ url: string; thumbUrl: string }> {
+  const key = process.env.REMOVE_BG_API_KEY;
+  if (!key) {
+    throw new Error("Ключ remove.bg не задан. Добавьте переменную окружения REMOVE_BG_API_KEY.");
+  }
+  const form = new FormData();
+  form.append("image_url", imageUrl);
+  form.append("size", "auto");
+  form.append("bg_color", "ffffff");
+  const resp = await fetch("https://api.remove.bg/v1.0/removebg", {
+    method: "POST",
+    headers: { "X-Api-Key": key },
+    body: form,
+  });
+  if (!resp.ok) {
+    const t = await resp.text().catch(() => resp.statusText);
+    throw new Error(`remove.bg ${resp.status}: ${t.slice(0, 200)}`);
+  }
+  const out = Buffer.from(await resp.arrayBuffer());
+  return enhanceAndStore(out, `white-${Date.now()}`);
+}

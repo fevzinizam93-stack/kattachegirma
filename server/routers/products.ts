@@ -1008,4 +1008,20 @@ export const productsRouter = router({
       if (!job) return { status: "error" as const, error: "Задание не найдено или устарело" };
       return job;
     }),
+
+  // Ручная загрузка фото товара (с улучшением), возвращает URL
+  importUploadImage: adminProcedure
+    .input(z.object({ base64: z.string(), filename: z.string().default("photo.jpg") }))
+    .mutation(async ({ input }) => {
+      const { uploadEnhancedImage } = await import("../productVision");
+      return uploadEnhancedImage(input.base64, input.filename);
+    }),
+
+  // Сделать фон белым через remove.bg
+  whitenBackground: adminProcedure
+    .input(z.object({ imageUrl: z.string().url() }))
+    .mutation(async ({ input }) => {
+      const { whitenBackground } = await import("../productVision");
+      return whitenBackground(input.imageUrl);
+    }),
 });
