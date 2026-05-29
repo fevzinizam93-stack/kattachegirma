@@ -70,6 +70,23 @@ export const sellersRouter = router({
     return getAllSellers();
   }),
 
+  // Admin: быстро добавить продавца в базу (для импорта)
+  quickCreate: adminProcedure
+    .input(z.object({
+      name: z.string().min(1),
+      phone: z.string().optional(),
+      telegram: z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const id = await createSeller({
+        name: input.name,
+        phone: input.phone || null,
+        telegram: input.telegram || null,
+        isApproved: true,
+      } as any);
+      return { id };
+    }),
+
   // Admin: approve seller
   approve: adminProcedure
     .input(z.object({ id: z.number() }))

@@ -54,9 +54,7 @@ export async function recognizePriceSheet(
     "характеристики (часто на узбекском) и фото. Извлеки КАЖДЫЙ товар. " +
     "Читай только то, что напечатано — ничего не выдумывай. " +
     "Характеристики верни списком пар key/value на русском (key — название характеристики, value — значение). " +
-    "Для каждого товара укажи photoBox — прямоугольник ФОТО товара в долях от 0 до 1 " +
-    "(x,y — левый верхний угол, w,h — ширина и высота относительно всего изображения). " +
-    "Если не уверен в границах — возьми область чуть шире, чтобы фото попало целиком.";
+    "Фото НЕ нужно — извлекай только текстовые данные.";
 
   const response = await invokeLLM({
     messages: [
@@ -95,14 +93,6 @@ export async function recognizePriceSheet(
                       required: ["key", "value"],
                     },
                   },
-                  photoBox: {
-                    type: "object",
-                    properties: {
-                      x: { type: "number" }, y: { type: "number" },
-                      w: { type: "number" }, h: { type: "number" },
-                    },
-                    required: ["x", "y", "w", "h"],
-                  },
                 },
                 required: ["model", "priceUsd"],
               },
@@ -126,67 +116,16 @@ export async function recognizePriceSheet(
     );
   }
 
-  const meta = await sharp(sheetBuffer).metadata();
-  const W = meta.width ?? 0;
-  const H = meta.height ?? 0;
-
-  const results: RecognizedProduct[] = [];
-  let completed = 0;
-  onProgress?.({ stage: "Обрабатываю фото", done: 0, total: raw.length });
-
-  for (const p of raw) {
-    const out: RecognizedProduct = {
-      model: (p.model ?? "").trim(),
-      brand: (p.brand ?? "").trim(),
-      priceUsd: typeof p.priceUsd === "number" ? p.priceUsd : 0,
-      colorRu: (p.colorRu ?? "").trim(),
-      specs: Array.isArray(p.specs)
-        ? Object.fromEntries(p.specs.filter((s) => s && s.key).map((s) => [s.key, s.value ?? ""]))
-        : {},
-    };
-
-    try {
-      if (p.photoBox && W > 0 && H > 0) {
-        const left = Math.round(clamp01(p.photoBox.x) * W);
-        const top = Math.round(clamp01(p.photoBox.y) * H);
-        let width = Math.round(clamp01(p.photoBox.w) * W);
-        let height = Math.round(clamp01(p.photoBox.h) * H);
-        width = Math.min(width, W - left);
-        height = Math.min(height, H - top);
-
-        if (width > 20 && height > 20) {
-          // Вырезаем + улучшаем качество: апскейл до 800px, резкость, нормализация
-          const cropped = await sharp(sheetBuffer)
-            .extract({ left, top, width, height })
-            .resize({ width: Math.max(800, width), withoutEnlargement: false })
-            .sharpen()
-            .normalize()
-            .webp({ quality: 90 })
-            .toBuffer();
-
-          const safeModel = (out.model || `product-${ts}`).replace(/[^a-zA-Z0-9-]/g, "_");
-          const optimized = await optimizeImage(cropped, `${safeModel}.webp`);
-          const baseKey = `products/import/${ts}-${safeModel}`;
-          const [{ url }, { url: thumbUrl }] = await Promise.all([
-            storagePut(`${baseKey}.webp`, optimized.fullBuffer, optimized.fullMimeType),
-            storagePut(`${baseKey}-thumb.webp`, optimized.thumbBuffer, optimized.thumbMimeType),
-          ]);
-          out.photoUrl = url;
-          out.thumbUrl = thumbUrl;
-        } else {
-          out.photoError = "Слишком маленькая область фото";
-        }
-      } else {
-        out.photoError = "Нет координат фото";
-      }
-    } catch (err) {
-      out.photoError = err instanceof Error ? err.message : String(err);
-    }
-
-    completed++;
-    onProgress?.({ stage: "Обрабатываю фото", done: completed, total: raw.length });
-    results.push(out);
-  }
+  // Фото НЕ извлекаем — только текст. Фото пользователь добавит вручную.
+  const results: RecognizedProduct[] = raw.map((p) => ({
+    model: (p.model ?? "").trim(),
+    brand: (p.brand ?? "").trim(),
+    priceUsd: typeof p.priceUsd === "number" ? p.priceUsd : 0,
+    colorRu: (p.colorRu ?? "").trim(),
+    specs: Array.isArray(p.specs)
+      ? Object.fromEntries(p.specs.filter((s) => s && s.key).map((s) => [s.key, s.value ?? ""]))
+      : {},
+  }));
 
   return results;
 }
@@ -418,7 +357,7 @@ async function generateDescriptionsBatch(
   const list = items.map((it, idx) => `${idx + 1}. ${it.name} — ${it.specsText}`).join("\n");
   const resp = await invokeLLM({
     messages: [
-      { role: "system", content: "Ты — копирайтер интернет-магазина бытовой техники. Для КАЖДОГО товара из списка напиши уникальное продающее описание своими словами (2–4 предложения), без выдуманных фактов, только по переданным данным. Верни JSON { items: [ { ru, uz } ] } строго в том же порядке и количестве, что и список. uz — узбекская латиница." },
+      { role: "system", content: "Ты — топовый копирайтер интернет-магазина бытовой техники. Для КАЖДОГО товара напиши яркое продающее описание (3–5 предложений), от которого покупателю хочется купить: начни с главной выгоды, простым живым языком объясни чем товар хорош и кому подойдёт, подай 2–3 ключевые характеристики как пользу, а не сухие цифры. Без воды и без выдуманных фактов — только по переданным данным. Тон тёплый и уверенный. Верни JSON { items: [ { ru, uz } ] } строго в том же порядке и количестве. ru — на русском, uz — на узбекской латинице (естественный перевод, не транслит)." },
       { role: "user", content: `Товары:\n${list}\n\nВерни JSON с массивом items: по одному объекту {ru, uz} на каждый товар, в том же порядке.` },
     ],
     response_format: {
