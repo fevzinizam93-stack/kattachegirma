@@ -257,7 +257,7 @@ function ProductColumn({
           label === "Текущий" ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"
         }`}
       >
-        {label === "Текущий" ? "👁 Вы смотрите" : "🔍 Для сравнения"}
+        {label === "Текущий" ? "👁 Этот товар" : "👇 Выберите, с чем сравнить"}
       </div>
 
       {/* Image */}
@@ -616,6 +616,36 @@ export default function CompareModal({ open, onClose, currentProduct }: CompareM
             Товары близки по цене — выбирайте по характеристикам ниже.
           </div>
         )}
+
+        {/* Key facts — aligned comparison strip */}
+        {compareProduct && (() => {
+          const lp = parseFloat(currentProduct.price) || 0;
+          const rp = parseFloat(compareProduct.price) || 0;
+          const lOrig = currentProduct.originalPrice ? parseFloat(currentProduct.originalPrice) : 0;
+          const rOrig = compareProduct.originalPrice ? parseFloat(compareProduct.originalPrice) : 0;
+          const lDisc = lOrig > lp ? Math.round((1 - lp / lOrig) * 100) : 0;
+          const rDisc = rOrig > rp ? Math.round((1 - rp / rOrig) * 100) : 0;
+          const lStock = !currentProduct.stock || currentProduct.stock > 0;
+          const rStock = !compareProduct.stock || compareProduct.stock > 0;
+          const rows = [
+            { label: "Цена", l: formatPrice(currentProduct.price), r: formatPrice(compareProduct.price), lBetter: lp > 0 && rp > 0 && lp < rp, rBetter: lp > 0 && rp > 0 && rp < lp },
+            { label: "Скидка", l: lDisc ? `${lDisc}%` : "—", r: rDisc ? `${rDisc}%` : "—", lBetter: lDisc > rDisc, rBetter: rDisc > lDisc },
+            { label: "Наличие", l: lStock ? "В наличии" : "Нет", r: rStock ? "В наличии" : "Нет", lBetter: lStock && !rStock, rBetter: rStock && !lStock },
+            { label: "Бренд", l: currentProduct.brand || "—", r: compareProduct.brand || "—", lBetter: false, rBetter: false },
+          ];
+          return (
+            <div className="shrink-0 border-b border-gray-100 bg-white">
+              <div className="px-4 pt-2 pb-1 text-[11px] font-bold text-gray-400 uppercase tracking-wide">Главное</div>
+              {rows.map((row) => (
+                <div key={row.label} className="grid grid-cols-[76px_1fr_1fr] sm:grid-cols-[120px_1fr_1fr] gap-2 px-4 py-1.5 border-b border-gray-50 items-center">
+                  <div className="text-[11px] text-gray-400 font-semibold">{row.label}</div>
+                  <div className={`text-sm ${row.lBetter ? "font-bold text-emerald-700" : "text-gray-700"}`}>{row.l}{row.lBetter && <span className="ml-1 text-emerald-600">✓</span>}</div>
+                  <div className={`text-sm ${row.rBetter ? "font-bold text-emerald-700" : "text-gray-700"}`}>{row.r}{row.rBetter && <span className="ml-1 text-emerald-600">✓</span>}</div>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
 
         {/* Body */}
         <div className="flex flex-1 min-h-0 overflow-hidden">
