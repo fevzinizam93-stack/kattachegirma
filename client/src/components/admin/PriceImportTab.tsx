@@ -39,6 +39,7 @@ export default function PriceImportTab({ categories }: Props) {
   const [progress, setProgress] = useState<{ done: number; total: number; failed: number; stage?: string } | null>(null);
   const [seller, setSeller] = useState({ name: "", phone: "", telegram: "" });
   const [sellerId, setSellerId] = useState<number | "">("");
+  const [stock, setStock] = useState(10);
   const sellersQuery = trpc.sellers.list.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
   const [cropIdx, setCropIdx] = useState<number | null>(null);
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
@@ -127,6 +128,7 @@ export default function PriceImportTab({ categories }: Props) {
         sellerPhone: seller.phone || undefined,
         sellerTelegram: seller.telegram || undefined,
         sellerId: sellerId || undefined,
+        stock,
         products: payload,
       });
       createPollRef.current = setInterval(async () => {
@@ -358,6 +360,13 @@ export default function PriceImportTab({ categories }: Props) {
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
+              <span className="text-xs uppercase tracking-wide text-gray-400">Остаток</span>
+              <input
+                type="number"
+                value={stock}
+                onChange={(e) => setStock(Number(e.target.value) || 0)}
+                className="w-20 border border-gray-200 rounded-xl px-3 py-2 text-sm"
+              />
             </div>
           </div>
 

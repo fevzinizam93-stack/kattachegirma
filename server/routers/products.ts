@@ -1034,6 +1034,7 @@ export const productsRouter = router({
       sellerPhone: z.string().optional(),
       sellerTelegram: z.string().optional(),
       sellerId: z.number().optional(),
+      stock: z.number().default(10),
       products: z.array(z.object({
         model: z.string(),
         brand: z.string().optional(),
@@ -1051,6 +1052,7 @@ export const productsRouter = router({
         sellerPhone: input.sellerPhone,
         sellerTelegram: input.sellerTelegram,
         sellerId: input.sellerId,
+        stock: input.stock,
       });
       return { jobId };
     }),

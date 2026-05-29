@@ -376,7 +376,7 @@ type BulkJob =
 
 const bulkJobs = new Map<string, BulkJob>();
 
-export function startBulkCreateJob(items: ImportProductInput[], categoryId: number, exchangeRate: number, contact: { sellerName?: string; sellerPhone?: string; sellerTelegram?: string; sellerId?: number }): string {
+export function startBulkCreateJob(items: ImportProductInput[], categoryId: number, exchangeRate: number, contact: { sellerName?: string; sellerPhone?: string; sellerTelegram?: string; sellerId?: number; stock?: number }): string {
   const jobId = `bulk-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   bulkJobs.set(jobId, { status: "processing", stage: "Подготовка...", total: items.length, done: 0, failed: 0 });
   void (async () => {
@@ -433,6 +433,8 @@ export function startBulkCreateJob(items: ImportProductInput[], categoryId: numb
           contactPhone: contact.sellerPhone || undefined,
           sellerTelegram: contact.sellerTelegram || undefined,
           sellerId: contact.sellerId || undefined,
+          stock: contact.stock ?? 10,
+          stockCount: contact.stock ?? 10,
           isActive: true,
           isApproved: true,
         });
