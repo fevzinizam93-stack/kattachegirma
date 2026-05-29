@@ -584,13 +584,16 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                       className={`w-full flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 transition-colors text-left border-b border-gray-50 ${selectedIndex === idx ? "bg-red-50" : ""}`}
                       onMouseDown={(e) => { e.preventDefault(); navigate(`/product/${product.slug}`); setShowDropdown(false); setSearchQuery(""); inputRef.current?.blur(); }}>
                       <div className="w-9 h-9 rounded bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
-                        {product.imageUrl ? <img src={product.imageUrl} alt="" className="w-full h-full object-contain p-0.5" loading="lazy" /> : <span className="text-lg">📦</span>}
+                        {product.imageUrl ? <img src={`/api/img?url=${encodeURIComponent(product.imageUrl)}&w=72&q=75`} alt="" className="w-full h-full object-contain p-0.5" loading="lazy" /> : <span className="text-lg">📦</span>}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium text-gray-900 truncate">{getProductName(product)}</div>
                         <div className="flex items-center gap-2 mt-0.5">
                           {product.brand && <span className="text-xs text-gray-400">{product.brand}</span>}
                           <span className="text-xs font-semibold text-red-600">{formatPrice(product.price)}</span>
+                          {product.originalPrice && Number(product.originalPrice) > Number(product.price) && (
+                            <span className="text-[11px] text-gray-400 line-through">{formatPrice(product.originalPrice)}</span>
+                          )}
                         </div>
                       </div>
                     </button>
