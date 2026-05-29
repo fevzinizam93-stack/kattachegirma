@@ -627,12 +627,29 @@ export default function CompareModal({ open, onClose, currentProduct }: CompareM
           const rDisc = rOrig > rp ? Math.round((1 - rp / rOrig) * 100) : 0;
           const lStock = !currentProduct.stock || currentProduct.stock > 0;
           const rStock = !compareProduct.stock || compareProduct.stock > 0;
-          const rows = [
+          const baseRows = [
             { label: "Цена", l: formatPrice(currentProduct.price), r: formatPrice(compareProduct.price), lBetter: lp > 0 && rp > 0 && lp < rp, rBetter: lp > 0 && rp > 0 && rp < lp },
             { label: "Скидка", l: lDisc ? `${lDisc}%` : "—", r: rDisc ? `${rDisc}%` : "—", lBetter: lDisc > rDisc, rBetter: rDisc > lDisc },
             { label: "Наличие", l: lStock ? "В наличии" : "Нет", r: rStock ? "В наличии" : "Нет", lBetter: lStock && !rStock, rBetter: rStock && !lStock },
             { label: "Бренд", l: currentProduct.brand || "—", r: compareProduct.brand || "—", lBetter: false, rBetter: false },
           ];
+          const specRows = allSpecs
+            .filter((k) => !!currentProduct.specs?.[k] && !!compareProduct.specs?.[k])
+            .map((k) => {
+              const res = compareSpecValues(currentProduct.specs![k], compareProduct.specs![k]);
+              return {
+                label: k,
+                l: currentProduct.specs![k]!,
+                r: compareProduct.specs![k]!,
+                lBetter: res === "left_better",
+                rBetter: res === "right_better",
+                eq: res === "equal",
+              };
+            })
+            .sort((a, b) => Number(a.eq) - Number(b.eq))
+            .slice(0, 4)
+            .map(({ eq, ...row }) => row);
+          const rows = [...baseRows, ...specRows];
           return (
             <div className="shrink-0 border-b border-gray-100 bg-white">
               <div className="px-4 pt-2 pb-1 text-[11px] font-bold text-gray-400 uppercase tracking-wide">Главное</div>
