@@ -7,6 +7,7 @@ import {
   getReviewCountsByProduct,
   getAllReviews,
   setReviewStatus,
+  setReviewReply,
   deleteReview,
   getLatestApprovedReviews,
   getProductById,
@@ -98,6 +99,14 @@ export const reviewsRouter = router({
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
       await deleteReview(input.id);
+      return { ok: true };
+    }),
+
+  // Admin: ответ магазина на отзыв
+  adminReply: adminProcedure
+    .input(z.object({ id: z.number(), reply: z.string().max(2000) }))
+    .mutation(async ({ input }) => {
+      await setReviewReply(input.id, input.reply);
       return { ok: true };
     }),
 

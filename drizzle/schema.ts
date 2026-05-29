@@ -175,6 +175,8 @@ export const reviews = mysqlTable("reviews", {
   rating: int("rating").notNull(), // 1-5
   comment: text("comment").notNull(),
   status: mysqlEnum("status", ["pending", "approved", "hidden"]).default("pending").notNull(),
+  reply: text("reply"),
+  repliedAt: timestamp("repliedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 

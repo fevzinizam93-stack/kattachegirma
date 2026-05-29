@@ -151,6 +151,9 @@ export default function AdminReviews() {
 
                   {/* Comment */}
                   <p className="text-sm text-gray-700 leading-relaxed">{review.comment}</p>
+
+                  {/* Reply from store */}
+                  <ReviewReplyBox reviewId={review.id} initialReply={(review as any).reply ?? ""} />
                 </div>
 
                 {/* Action buttons */}
@@ -203,6 +206,61 @@ export default function AdminReviews() {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function ReviewReplyBox({ reviewId, initialReply }: { reviewId: number; initialReply: string }) {
+  const [text, setText] = useState(initialReply);
+  const [open, setOpen] = useState(false);
+  const utils = trpc.useUtils();
+  const replyMut = trpc.reviews.adminReply.useMutation({
+    onSuccess: () => {
+      utils.reviews.adminList.invalidate();
+      utils.reviews.listByProduct.invalidate();
+      toast.success(initialReply ? "Ответ обновлён" : "Ответ опубликован");
+      setOpen(false);
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  if (!open && !initialReply) {
+    return (
+      <button onClick={() => setOpen(true)} className="mt-2 text-xs font-semibold text-primary hover:underline">
+        💬 Ответить от магазина
+      </button>
+    );
+  }
+
+  if (!open && initialReply) {
+    return (
+      <div className="mt-2 bg-emerald-50 border border-emerald-100 rounded-lg p-2.5">
+        <div className="text-[11px] font-bold text-emerald-700 mb-0.5">Ответ Katta Chegirma:</div>
+        <p className="text-xs text-gray-700 leading-relaxed">{initialReply}</p>
+        <button onClick={() => setOpen(true)} className="mt-1 text-[11px] font-semibold text-emerald-700 hover:underline">Изменить ответ</button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-2">
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        rows={2}
+        placeholder="Ответ от магазина (виден покупателям под отзывом)"
+        className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm focus:border-primary outline-none resize-y"
+      />
+      <div className="flex items-center gap-2 mt-1.5">
+        <button
+          onClick={() => replyMut.mutate({ id: reviewId, reply: text })}
+          disabled={replyMut.isPending}
+          className="px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-bold hover:bg-primary/90 transition-colors disabled:opacity-50"
+        >
+          {replyMut.isPending ? "Сохранение..." : "Сохранить ответ"}
+        </button>
+        <button onClick={() => setText("")} className="text-xs text-gray-500 hover:text-gray-700">Очистить</button>
+      </div>
     </div>
   );
 }

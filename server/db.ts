@@ -966,6 +966,7 @@ export async function getAllReviews(status?: "pending" | "approved" | "hidden") 
       rating: reviews.rating,
       comment: reviews.comment,
       status: reviews.status,
+      reply: reviews.reply,
       createdAt: reviews.createdAt,
       productName: products.name,
       productSlug: products.slug,
@@ -989,6 +990,15 @@ export async function deleteReview(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(reviews).where(eq(reviews.id, id));
+}
+
+export async function setReviewReply(id: number, reply: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const value = reply.trim();
+  await db.update(reviews)
+    .set({ reply: value || null, repliedAt: value ? new Date() : null })
+    .where(eq(reviews.id, id));
 }
 
 export async function getReviewCountsByProduct(productId: number) {

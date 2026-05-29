@@ -1416,6 +1416,12 @@ function ReviewsSection({ productId, preloadedReviews, preloadedSummary }: { pro
                   </div>
                   <StarRating value={r.rating} />
                   <p className="text-sm text-gray-700 mt-1.5 leading-relaxed">{r.comment}</p>
+                  {(r as any).reply && (
+                    <div className="mt-2 ml-3 pl-3 border-l-2 border-emerald-200 bg-emerald-50/60 rounded-r-lg py-2 pr-2">
+                      <div className="text-[11px] font-bold text-emerald-700 mb-0.5">Ответ Katta Chegirma:</div>
+                      <p className="text-sm text-gray-700 leading-relaxed">{(r as any).reply}</p>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
