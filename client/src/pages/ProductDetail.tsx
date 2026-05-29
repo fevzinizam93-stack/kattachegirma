@@ -1216,7 +1216,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                       </div>
                     )}
                     {/* Description text */}
-                    <p className="text-gray-700 leading-normal text-sm whitespace-pre-line">
+                    <p className="text-gray-700 leading-normal text-sm whitespace-pre-line md:columns-2 md:gap-x-10 [column-fill:balance]">
                       {((lang === "ru" && showTranslated && translatedDesc ? translatedDesc : descriptionText) || "").replace(/\n{2,}/g, "\n").trim()}
                     </p>
                     {lang === "ru" && showTranslated && (

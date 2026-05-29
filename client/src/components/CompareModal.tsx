@@ -5,6 +5,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { toast } from "sonner";
 import { Link } from "wouter";
+import { getSpecTemplate, extractSpecs } from "@/lib/specTemplates";
 
 interface Product {
   id: number;
@@ -649,7 +650,22 @@ export default function CompareModal({ open, onClose, currentProduct }: CompareM
             .sort((a, b) => Number(a.eq) - Number(b.eq))
             .slice(0, 4)
             .map(({ eq, ...row }) => row);
-          const rows = [...baseRows, ...specRows];
+          // авто-характеристики из описания (стандартные поля по категории)
+          const lTpl = getSpecTemplate(currentProduct.name);
+          const rTpl = getSpecTemplate(compareProduct.name);
+          const lAuto: Record<string, string> = {};
+          const rAuto: Record<string, string> = {};
+          if (lTpl) for (const s of extractSpecs(lTpl, currentProduct.description, currentProduct.specs)) lAuto[s.label] = s.value;
+          if (rTpl) for (const s of extractSpecs(rTpl, compareProduct.description, compareProduct.specs)) rAuto[s.label] = s.value;
+          const orderLabels = (lTpl ?? rTpl)?.fields.map((f) => f.label) ?? [];
+          const autoRows = orderLabels
+            .filter((lbl) => lAuto[lbl] && rAuto[lbl])
+            .map((lbl) => {
+              const res = compareSpecValues(lAuto[lbl], rAuto[lbl]);
+              return { label: lbl, l: lAuto[lbl], r: rAuto[lbl], lBetter: res === "left_better", rBetter: res === "right_better" };
+            })
+            .slice(0, 6);
+          const rows = [...baseRows, ...(autoRows.length ? autoRows : specRows)];
           return (
             <div className="shrink-0 border-b border-gray-100 bg-white">
               <div className="px-4 pt-2 pb-1 text-[11px] font-bold text-gray-400 uppercase tracking-wide">Главное</div>
