@@ -353,13 +353,13 @@ function ProductColumn({
       <button
         onClick={() => onAddToCart(product)}
         disabled={!inStock}
-        className={`w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold mb-4 transition-all ${
+        className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold mb-4 transition-all ${
           inStock
-            ? "bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-200 active:scale-95"
+            ? "bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-200 active:scale-[0.98]"
             : "bg-gray-200 text-gray-400 cursor-not-allowed"
         }`}
       >
-        <ShoppingCart size={13} />
+        <ShoppingCart size={16} />
         {inStock ? "В корзину" : "Нет в наличии"}
       </button>
 
