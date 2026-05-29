@@ -5,7 +5,7 @@ import { nanoid } from "nanoid";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import viteConfig from "../../vite.config";
-import { seoPrerender } from "../seoPrerender";
+import { seoPrerender, isBot } from "../seoPrerender";
 
 export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
@@ -155,8 +155,11 @@ export function serveStatic(app: Express) {
         res.setHeader("Vary", "User-Agent");
         return res.status(200).set({ "Content-Type": "text/html; charset=utf-8" }).end(prerenderResult);
       }
-      // Product/category not found in DB → true 404
-      return res.status(404).sendFile(path.resolve(distPath, "index.html"));
+      // Бот + товара нет в БД → честный 404.
+      // Живой посетитель → отдаём SPA со статусом 200, страницу отрисует React.
+      const ua = req.headers["user-agent"] || "";
+      const status = isBot(ua) ? 404 : 200;
+      return res.status(status).sendFile(path.resolve(distPath, "index.html"));
     }
 
     // For other paths: SEO prerender for bots only

@@ -76,7 +76,7 @@ function shouldPrerender(userAgent: string, _path: string): boolean {
   return BOT_PATTERNS.some(pattern => pattern.test(userAgent));
 }
 
-function isBot(userAgent: string): boolean {
+export function isBot(userAgent: string): boolean {
   return BOT_PATTERNS.some(pattern => pattern.test(userAgent));
 }
 
