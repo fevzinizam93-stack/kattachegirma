@@ -35,8 +35,17 @@ export async function recognizePriceSheet(
   const sheetBuffer = Buffer.from(sheetBase64, "base64");
   const ts = Date.now();
 
+  // Для распознавания шлём в модель УМЕНЬШЕННУЮ копию (быстрее), а кропы режем из полного sheetBuffer (чётче)
+  let llmBase64 = sheetBase64;
+  try {
+    const small = await sharp(sheetBuffer)
+      .resize(1280, undefined, { withoutEnlargement: true, fit: "inside" })
+      .jpeg({ quality: 80 })
+      .toBuffer();
+    llmBase64 = small.toString("base64");
+  } catch { llmBase64 = sheetBase64; }
   // Передаём картинку модели НАПРЯМУЮ как data URL (шлюз не скачивает внешние ссылки)
-  const dataUrl = `data:${mimeType};base64,${sheetBase64}`;
+  const dataUrl = `data:image/jpeg;base64,${llmBase64}`;
   onProgress?.({ stage: "Распознаю текст и характеристики", done: 0, total: 0 });
 
   const systemPrompt =
