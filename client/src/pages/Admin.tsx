@@ -1077,6 +1077,42 @@ export default function Admin() {
         {/* ==================== PRODUCTS TAB ==================== */}
         {tab === "products" && (
           <div>
+            {(() => {
+              const groups: Record<string, typeof products> = {};
+              products.forEach((p) => {
+                const key = (p.imageUrl || "").trim();
+                if (!key) return;
+                (groups[key] ||= []).push(p);
+              });
+              const dups = Object.values(groups).filter((g) => g.length > 1);
+              if (dups.length === 0) return null;
+              const dupCount = dups.reduce((s, g) => s + g.length, 0);
+              return (
+                <details className="mb-4 rounded-xl border border-amber-200 bg-amber-50 overflow-hidden">
+                  <summary className="cursor-pointer select-none px-4 py-3 text-sm font-bold text-amber-800">
+                    ⚠️ Одинаковое главное фото у {dupCount} товаров ({dups.length} групп) — нажмите, чтобы посмотреть и исправить
+                  </summary>
+                  <div className="px-4 pb-3 space-y-3">
+                    {dups.map((g, i) => (
+                      <div key={i} className="bg-white rounded-lg border border-amber-100 p-2">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <img src={`/api/img?url=${encodeURIComponent(g[0].imageUrl!)}&w=64&q=70`} alt="" className="w-10 h-10 object-contain rounded bg-gray-50 shrink-0" />
+                          <span className="text-xs text-gray-500">Это фото стоит у {g.length} товаров:</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {g.map((p) => (
+                            <button key={p.id} type="button" onClick={() => handleEdit(p)}
+                              className="text-xs bg-amber-100 hover:bg-amber-200 text-amber-900 font-medium px-2 py-1 rounded-md transition-colors">
+                              {p.name} ✎
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              );
+            })()}
             <div className="flex flex-col gap-3 mb-4">
               {/* Строка 1: заголовок + кнопка Добавить */}
               <div className="flex justify-between items-center">
