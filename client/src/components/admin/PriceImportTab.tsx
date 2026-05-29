@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, type ChangeEvent } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Upload, Loader2, ImageOff } from "lucide-react";
+import { Upload, Loader2, ImageOff, RefreshCw, Wand2 } from "lucide-react";
 
 interface RecognizedProduct {
   model: string;
@@ -23,17 +23,20 @@ export default function PriceImportTab({ categories }: Props) {
   const [categoryId, setCategoryId] = useState<number | "">("");
   const [fileName, setFileName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [rowBusy, setRowBusy] = useState<number | null>(null);
+  const [whitenAllBusy, setWhitenAllBusy] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const utils = trpc.useUtils();
   const recognizeMut = trpc.products.recognizePriceSheet.useMutation();
+  const uploadMut = trpc.products.importUploadImage.useMutation();
+  const whitenMut = trpc.products.whitenBackground.useMutation();
 
   function stopPoll() {
     if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
   }
   useEffect(() => () => stopPoll(), []);
 
-  // Уменьшаем картинку до JPEG, чтобы не упереться в лимит запроса и ускорить распознавание
   async function downscaleToJpegBase64(file: File, maxSide = 1600, quality = 0.85): Promise<string> {
     const dataUrl: string = await new Promise((res, rej) => {
       const r = new FileReader();
@@ -103,12 +106,64 @@ export default function PriceImportTab({ categories }: Props) {
     setRows((prev) => prev.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
   }
 
+  async function handleReplacePhoto(i: number, e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setRowBusy(i);
+    try {
+      const base64 = await downscaleToJpegBase64(file, 1200, 0.9);
+      const res = await uploadMut.mutateAsync({ base64, filename: file.name });
+      updateRow(i, { photoUrl: res.url, thumbUrl: res.thumbUrl, photoError: undefined });
+      toast.success("Фото заменено");
+    } catch (err) {
+      toast.error("Ошибка загрузки: " + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      setRowBusy(null);
+      e.target.value = "";
+    }
+  }
+
+  async function handleWhiten(i: number) {
+    const r = rows[i];
+    if (!r.photoUrl) { toast.error("Сначала нужно фото"); return; }
+    setRowBusy(i);
+    try {
+      const res = await whitenMut.mutateAsync({ imageUrl: r.photoUrl });
+      updateRow(i, { photoUrl: res.url, thumbUrl: res.thumbUrl });
+      toast.success("Фон сделан белым");
+    } catch (err) {
+      toast.error("Ошибка: " + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      setRowBusy(null);
+    }
+  }
+
+  async function handleWhitenAll() {
+    setWhitenAllBusy(true);
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r.photoUrl) continue;
+      try {
+        const res = await whitenMut.mutateAsync({ imageUrl: r.photoUrl });
+        updateRow(i, { photoUrl: res.url, thumbUrl: res.thumbUrl });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        toast.error(`Фон (${r.model}): ` + msg);
+        if (msg.includes("remove.bg не задан")) break;
+      }
+    }
+    setWhitenAllBusy(false);
+    toast.success("Обработка фона завершена");
+  }
+
+  const anyBusy = busy || rowBusy !== null || whitenAllBusy;
+
   return (
     <div className="space-y-4">
       <div className="bg-white rounded-2xl border border-gray-200 p-5">
         <h2 className="text-lg font-black text-gray-900 mb-1">Импорт из прайса</h2>
         <p className="text-sm text-gray-500 mb-4">
-          Загрузите фото прайс-листа — система распознает модели, цены и характеристики и вырежет фото каждого товара. Перед сохранением всё можно проверить и поправить.
+          Загрузите фото прайс-листа — система распознает модели, цены и характеристики и вырежет фото каждого товара. Перед сохранением всё можно проверить, заменить фото и сделать фон белым.
         </p>
         <label className={`inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-semibold text-sm transition-colors ${busy ? "opacity-50 pointer-events-none" : "cursor-pointer"}`}>
           <Upload size={16} />
@@ -128,7 +183,15 @@ export default function PriceImportTab({ categories }: Props) {
         <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <p className="font-bold text-gray-900">Найдено товаров: {rows.length}</p>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={handleWhitenAll}
+                disabled={anyBusy}
+                className="inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-xl text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                {whitenAllBusy ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} />}
+                Сделать фон белым всем
+              </button>
               <span className="text-xs uppercase tracking-wide text-gray-400">Категория</span>
               <select
                 value={categoryId}
@@ -146,11 +209,16 @@ export default function PriceImportTab({ categories }: Props) {
           <div className="space-y-3">
             {rows.map((r, i) => (
               <div key={i} className="flex gap-3 items-start border border-gray-100 rounded-2xl p-3">
-                <div className="w-20 h-20 shrink-0 rounded-xl bg-gray-50 overflow-hidden flex items-center justify-center border border-gray-100">
+                <div className="w-20 h-20 shrink-0 rounded-xl bg-gray-50 overflow-hidden flex items-center justify-center border border-gray-100 relative">
                   {r.thumbUrl || r.photoUrl ? (
                     <img src={r.thumbUrl || r.photoUrl} alt={r.model} className="w-full h-full object-contain" />
                   ) : (
                     <ImageOff size={20} className="text-gray-300" />
+                  )}
+                  {rowBusy === i && (
+                    <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
+                      <Loader2 size={18} className="animate-spin text-blue-600" />
+                    </div>
                   )}
                 </div>
                 <div className="flex-1 min-w-0 space-y-2">
@@ -168,16 +236,28 @@ export default function PriceImportTab({ categories }: Props) {
                     {Object.entries(r.specs).map(([k, v]) => `${k}: ${v}`).join(" · ") || "Характеристики не распознаны"}
                   </div>
                   {r.photoError && <p className="text-xs text-amber-600">Фото: {r.photoError}</p>}
+                  <div className="flex items-center gap-2 flex-wrap pt-1">
+                    <label className={`inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${anyBusy ? "opacity-50 pointer-events-none" : "cursor-pointer"}`}>
+                      <RefreshCw size={13} />
+                      Заменить фото
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => handleReplacePhoto(i, e)} disabled={anyBusy} />
+                    </label>
+                    <button
+                      onClick={() => handleWhiten(i)}
+                      disabled={anyBusy || !r.photoUrl}
+                      className="inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
+                    >
+                      <Wand2 size={13} />
+                      Сделать фон белым
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
 
           <div className="pt-2 border-t border-gray-100">
-            <button
-              onClick={() => toast.info("Массовое создание появится на следующем этапе (Этап 3)")}
-              className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors"
-            >
+            <button onClick={() => toast.info("Массовое создание появится на следующем этапе (Этап 3)")} className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors">
               Создать все товары
             </button>
           </div>
