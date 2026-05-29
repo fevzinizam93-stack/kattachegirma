@@ -465,10 +465,13 @@ export function startBulkCreateJob(items: ImportProductInput[], categoryId: numb
     const rate = exchangeRate > 0 ? exchangeRate : 12700;
 
     let catName = "";
+    let catSlugUz = "";
     try {
       const cats = await getAllCategories();
-      catName = (cats.find((c: any) => c.id === categoryId)?.name ?? "").trim();
-    } catch { catName = ""; }
+      const cat = cats.find((c: any) => c.id === categoryId);
+      catName = ((cat as any)?.name ?? "").trim();
+      catSlugUz = (((cat as any)?.slugUz || (cat as any)?.slug || "")).toString().trim();
+    } catch { catName = ""; catSlugUz = ""; }
 
     const prepared = items.map((it) => {
       const model = (it.model || "").trim();
@@ -486,14 +489,12 @@ export function startBulkCreateJob(items: ImportProductInput[], categoryId: numb
       descriptions = await generateDescriptionsBatch(prepared.map((p) => ({ name: p.name, specsText: p.specsText })));
     } catch { descriptions = []; }
 
-    let uzSlugs: string[] = [];
-    try { uzSlugs = await generateUzSlugsBatch(prepared.map((p) => p.name)); } catch { uzSlugs = []; }
-
     for (let i = 0; i < prepared.length; i++) {
       const p = prepared[i];
       try {
         const slug = await makeUniqueSlug(p.model || p.name);
-        const slugUz = await uniqueUzSlug(uzSlugs[i] || cleanUzSlug(translitSlug(p.name).replace(/\s+/g, "-")));
+        const uzBase = cleanUzSlug(`${catSlugUz} ${p.model}`.trim().replace(/\s+/g, "-")) || cleanUzSlug(translitSlug(p.name).replace(/\s+/g, "-"));
+        const slugUz = await uniqueUzSlug(uzBase);
         const priceUsd = Number(p.it.priceUsd) || 0;
         const priceSum = Math.round(priceUsd * rate);
         const d = descriptions[i] ?? { ru: "", uz: "" };

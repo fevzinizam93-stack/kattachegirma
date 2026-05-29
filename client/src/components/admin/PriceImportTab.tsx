@@ -131,11 +131,13 @@ export default function PriceImportTab({ categories }: Props) {
         stock,
         products: payload,
       });
+      let pollErrors = 0;
       createPollRef.current = setInterval(async () => {
         try {
           const job = (await utils.products.bulkCreateStatus.fetch({ jobId })) as {
             status: string; stage?: string; total: number; done: number; failed: number; errors?: string[];
           };
+          pollErrors = 0;
           setProgress({ done: job.done, total: job.total, failed: job.failed, stage: job.stage });
           if (job.status === "finished") {
             stopCreatePoll();
@@ -149,8 +151,11 @@ export default function PriceImportTab({ categories }: Props) {
             try { localStorage.removeItem("kc_price_import_v1"); } catch {}
           }
         } catch {
-          stopCreatePoll(); setCreating(false);
-          toast.error("Ошибка опроса статуса создания");
+          pollErrors++;
+          if (pollErrors >= 8) {
+            stopCreatePoll(); setCreating(false);
+            toast.error("Не удалось получить статус. Возможно, товары уже созданы — обновите список товаров.");
+          }
         }
       }, 2500);
     } catch (err) {
