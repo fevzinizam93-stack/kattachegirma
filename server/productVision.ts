@@ -2,7 +2,7 @@ import sharp from "sharp";
 import { invokeLLM } from "./_core/llm";
 import { optimizeImage } from "./_core/imageOptimizer";
 import { storagePut } from "./storage";
-import { createProduct, getSlugExists } from "./db";
+import { createProduct, getSlugExists, getAllCategories } from "./db";
 import { pingSitemaps } from "./sitemap";
 
 export interface RecognizedProduct {
@@ -385,10 +385,16 @@ export function startBulkCreateJob(items: ImportProductInput[], categoryId: numb
     const errors: string[] = [];
     const rate = exchangeRate > 0 ? exchangeRate : 12700;
 
+    let catName = "";
+    try {
+      const cats = await getAllCategories();
+      catName = (cats.find((c: any) => c.id === categoryId)?.name ?? "").trim();
+    } catch { catName = ""; }
+
     const prepared = items.map((it) => {
       const model = (it.model || "").trim();
       const brand = (it.brand || "").trim();
-      const name = (brand ? `${brand} ${model}` : model).trim() || model || "Товар";
+      const name = [catName, brand, model].filter(Boolean).join(" ").trim() || model || "Товар";
       const specs = it.specs ?? {};
       const specsText = Object.entries(specs).map(([k, v]) => `${k}: ${v}`).join("; ");
       return { it, model, brand, name, specs, specsText };
