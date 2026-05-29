@@ -6,12 +6,13 @@
 import { Request, Response } from "express";
 import { getDb } from "./db";
 import { products as productsTable } from "../drizzle/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, gte } from "drizzle-orm";
 import { submitUrlsBatch } from "./googleIndexing";
 import { saveIndexingLog } from "./db";
 
 const BASE_URL = "https://kattachegirma.uz";
-const DAILY_LIMIT = 200; // Google Indexing API: 200 requests/day
+const FRESH_WINDOW_HOURS = 48; // только товары, изменённые за последние 48 часов
+const SUBMIT_CAP = 50;         // максимум 50 URL/день — оставляем запас квоты Google (лимит 200/сутки)
 
 export async function scheduledReindexHandler(req: Request, res: Response) {
   const taskUid = req.headers["x-manus-cron-task-uid"] as string | undefined;
@@ -37,12 +38,18 @@ export async function scheduledReindexHandler(req: Request, res: Response) {
       return res.status(503).json({ error: "Database unavailable" });
     }
 
-    // Fetch all active+approved products (up to daily limit)
+    // Только НОВЫЕ/ИЗМЕНЁННЫЕ товары за последние FRESH_WINDOW_HOURS часов.
+    // Старые, уже проиндексированные товары повторно НЕ отправляем — именно это выжигало квоту 200/сутки.
+    const since = new Date(Date.now() - FRESH_WINDOW_HOURS * 60 * 60 * 1000);
     const allProducts = await db
       .select({ slug: productsTable.slug })
       .from(productsTable)
-      .where(and(eq(productsTable.isActive, true), eq(productsTable.isApproved, true)))
-      .limit(DAILY_LIMIT);
+      .where(and(
+        eq(productsTable.isActive, true),
+        eq(productsTable.isApproved, true),
+        gte(productsTable.updatedAt, since),
+      ))
+      .limit(SUBMIT_CAP);
 
     const urls = allProducts
       .filter((p) => p.slug)

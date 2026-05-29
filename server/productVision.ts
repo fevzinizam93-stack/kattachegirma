@@ -466,8 +466,7 @@ export function startBulkCreateJob(items: ImportProductInput[], categoryId: numb
         });
         if (typeof newId === "number") created.push({ id: newId, name: p.name, specsText: p.specsText });
 
-        pingSitemaps(`https://kattachegirma.uz/product/${slug}`);
-        done++;
+        done++
       } catch (err) {
         failed++;
         errors.push(`${p.model}: ${err instanceof Error ? err.message : String(err)}`);
@@ -476,6 +475,10 @@ export function startBulkCreateJob(items: ImportProductInput[], categoryId: numb
     }
     // Товары готовы — сразу завершаем задание, чтобы пользователь не ждал
     bulkJobs.set(jobId, { status: "finished", total: items.length, done, failed, errors });
+
+    // Один пинг карты сайта на всю партию (IndexNow + Search Console — без лимита Google).
+    // Новые товары Google заберёт из sitemap и ночного крона в течение суток, без перерасхода квоты 200/день.
+    if (done > 0) pingSitemaps();
     setTimeout(() => bulkJobs.delete(jobId), 60 * 60 * 1000);
 
     // Описания генерируем ФОНОМ после завершения и дописываем в товары
