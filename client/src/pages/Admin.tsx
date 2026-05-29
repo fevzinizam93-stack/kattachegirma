@@ -254,6 +254,39 @@ function VideoSearchPicker({ productName, value, onChange }: { productName: stri
   );
 }
 
+// Счётчик до сброса дневного лимита Google Indexing API.
+// Лимит сбрасывается в полночь по тихоокеанскому времени (America/Los_Angeles);
+// зона сама учитывает летнее/зимнее время.
+function GoogleQuotaCountdown() {
+  const [left, setLeft] = useState<string>("");
+
+  useEffect(() => {
+    function msUntilPacificMidnight(): number {
+      const now = new Date();
+      const laNow = new Date(now.toLocaleString("en-US", { timeZone: "America/Los_Angeles" }));
+      const offsetMs = now.getTime() - laNow.getTime();
+      const nextMidnight = new Date(laNow);
+      nextMidnight.setHours(24, 0, 0, 0);
+      const resetInstant = nextMidnight.getTime() + offsetMs;
+      return resetInstant - now.getTime();
+    }
+    function tick() {
+      let ms = msUntilPacificMidnight();
+      if (ms < 0) ms = 0;
+      const h = Math.floor(ms / 3600000);
+      const m = Math.floor((ms % 3600000) / 60000);
+      const s = Math.floor((ms % 60000) / 1000);
+      const pad = (n: number) => String(n).padStart(2, "0");
+      setLeft(`${pad(h)}:${pad(m)}:${pad(s)}`);
+    }
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  return <span className="font-mono font-semibold text-blue-900">{left || "—"}</span>;
+}
+
 export default function Admin() {
   const { user, loading } = useAuth();
   const { openLogin } = useAuthModal();
@@ -2255,6 +2288,14 @@ function IndexingPanel() {
                 <p className="text-xs text-blue-600">Отправляем URL в Google Indexing API... Это может занять 10–30 секунд.</p>
               </div>
             )}
+            <div className="mt-3 pt-3 border-t border-blue-200 space-y-1.5">
+              <p className="text-xs text-blue-700 leading-relaxed">
+                ⚠️ Лимит Google — <strong>200 URL/день</strong> на весь сайт. Для всего каталога он не нужен: каталог обходит <strong>sitemap</strong> (Google) и <strong>Яндекс IndexNow</strong> (без лимита). Эту кнопку жмите точечно — после добавления партии новых товаров.
+              </p>
+              <p className="text-xs text-blue-600">
+                ⏳ До сброса лимита Google: <GoogleQuotaCountdown />
+              </p>
+            </div>
           </div>
 
           <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
