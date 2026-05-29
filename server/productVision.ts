@@ -30,12 +30,14 @@ const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 export async function recognizePriceSheet(
   sheetBase64: string,
   mimeType: string,
+  onProgress?: (p: { stage: string; done: number; total: number }) => void,
 ): Promise<RecognizedProduct[]> {
   const sheetBuffer = Buffer.from(sheetBase64, "base64");
   const ts = Date.now();
 
   // Передаём картинку модели НАПРЯМУЮ как data URL (шлюз не скачивает внешние ссылки)
   const dataUrl = `data:${mimeType};base64,${sheetBase64}`;
+  onProgress?.({ stage: "Распознаю текст и характеристики", done: 0, total: 0 });
 
   const systemPrompt =
     "Ты — ассистент по распознаванию прайс-листов бытовой техники. " +
@@ -120,6 +122,8 @@ export async function recognizePriceSheet(
   const H = meta.height ?? 0;
 
   const results: RecognizedProduct[] = [];
+  let completed = 0;
+  onProgress?.({ stage: "Обрабатываю фото", done: 0, total: raw.length });
 
   for (const p of raw) {
     const out: RecognizedProduct = {
@@ -170,6 +174,8 @@ export async function recognizePriceSheet(
       out.photoError = err instanceof Error ? err.message : String(err);
     }
 
+    completed++;
+    onProgress?.({ stage: "Обрабатываю фото", done: completed, total: raw.length });
     results.push(out);
   }
 
@@ -178,7 +184,7 @@ export async function recognizePriceSheet(
 
 // ---- Фоновые задания распознавания (in-memory) ----
 type RecognitionJob =
-  | { status: "processing" }
+  | { status: "processing"; stage: string; done: number; total: number }
   | { status: "done"; products: RecognizedProduct[] }
   | { status: "error"; error: string };
 
@@ -186,10 +192,12 @@ const recognitionJobs = new Map<string, RecognitionJob>();
 
 export function startRecognitionJob(sheetBase64: string, mimeType: string): string {
   const jobId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-  recognitionJobs.set(jobId, { status: "processing" });
+  recognitionJobs.set(jobId, { status: "processing", stage: "Запуск...", done: 0, total: 0 });
   void (async () => {
     try {
-      const products = await recognizePriceSheet(sheetBase64, mimeType);
+      const products = await recognizePriceSheet(sheetBase64, mimeType, (p) => {
+        recognitionJobs.set(jobId, { status: "processing", stage: p.stage, done: p.done, total: p.total });
+      });
       recognitionJobs.set(jobId, { status: "done", products });
     } catch (err) {
       recognitionJobs.set(jobId, {

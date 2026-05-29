@@ -37,6 +37,9 @@ export default function PriceImportTab({ categories }: Props) {
   const [creating, setCreating] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number; failed: number } | null>(null);
   const [seller, setSeller] = useState({ name: "", phone: "", telegram: "" });
+  const [recogInfo, setRecogInfo] = useState<{ stage: string; done: number; total: number } | null>(null);
+  const [elapsed, setElapsed] = useState(0);
+  const elapsedRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const createPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   function stopPoll() {
@@ -45,7 +48,7 @@ export default function PriceImportTab({ categories }: Props) {
   function stopCreatePoll() {
     if (createPollRef.current) { clearInterval(createPollRef.current); createPollRef.current = null; }
   }
-  useEffect(() => () => { stopPoll(); stopCreatePoll(); }, []);
+  useEffect(() => () => { stopPoll(); stopCreatePoll(); if (elapsedRef.current) clearInterval(elapsedRef.current); }, []);
 
   async function handleCreateAll() {
     if (!categoryId) { toast.error("Сначала выберите категорию"); return; }
@@ -130,29 +133,46 @@ export default function PriceImportTab({ categories }: Props) {
     setFileName(file.name);
     setRows([]);
     setBusy(true);
+    setRecogInfo(null);
+    setElapsed(0);
     stopPoll();
+    if (elapsedRef.current) clearInterval(elapsedRef.current);
+    elapsedRef.current = setInterval(() => setElapsed((s) => s + 1), 1000);
     try {
       const base64 = await downscaleToJpegBase64(file);
       const { jobId } = await recognizeMut.mutateAsync({ base64, mimeType: "image/jpeg" });
       pollRef.current = setInterval(async () => {
         try {
           const job = (await utils.products.recognitionStatus.fetch({ jobId })) as {
-            status: string; products?: RecognizedProduct[]; error?: string;
+            status: string; stage?: string; done?: number; total?: number; products?: RecognizedProduct[]; error?: string;
           };
-          if (job.status === "done") {
-            stopPoll(); setRows(job.products ?? []); setBusy(false);
+          if (job.status === "processing") {
+            setRecogInfo({ stage: job.stage ?? "Обработка...", done: job.done ?? 0, total: job.total ?? 0 });
+          } else if (job.status === "done") {
+            stopPoll();
+            if (elapsedRef.current) clearInterval(elapsedRef.current);
+            setRecogInfo(null);
+            setRows(job.products ?? []); setBusy(false);
             toast.success(`Распознано товаров: ${job.products?.length ?? 0}`);
           } else if (job.status === "error") {
-            stopPoll(); setBusy(false);
+            stopPoll();
+            if (elapsedRef.current) clearInterval(elapsedRef.current);
+            setRecogInfo(null);
+            setBusy(false);
             toast.error("Ошибка распознавания: " + (job.error ?? ""));
           }
         } catch {
-          stopPoll(); setBusy(false);
+          stopPoll();
+          if (elapsedRef.current) clearInterval(elapsedRef.current);
+          setRecogInfo(null);
+          setBusy(false);
           toast.error("Ошибка опроса статуса");
         }
       }, 3000);
     } catch (err) {
       setBusy(false);
+      if (elapsedRef.current) clearInterval(elapsedRef.current);
+      setRecogInfo(null);
       toast.error("Ошибка: " + (err instanceof Error ? err.message : String(err)));
     } finally {
       e.target.value = "";
@@ -229,9 +249,20 @@ export default function PriceImportTab({ categories }: Props) {
         </label>
         {fileName && <p className="text-xs text-gray-400 mt-2">{fileName}</p>}
         {busy && (
-          <div className="flex items-center gap-2 mt-3 text-sm text-blue-600">
-            <Loader2 size={16} className="animate-spin" />
-            Распознаю прайс — это может занять до 1–2 минут...
+          <div className="mt-3 space-y-1">
+            <div className="flex items-center gap-2 text-sm text-blue-600">
+              <Loader2 size={16} className="animate-spin" />
+              {recogInfo
+                ? (recogInfo.total > 0 ? `${recogInfo.stage}: ${recogInfo.done}/${recogInfo.total}` : recogInfo.stage)
+                : "Запускаю распознавание..."}
+              <span className="text-gray-400">· {elapsed} сек</span>
+            </div>
+            {recogInfo && recogInfo.total > 0 && (
+              <div className="w-full bg-blue-100 rounded-full h-1.5 overflow-hidden">
+                <div className="bg-blue-600 h-1.5 rounded-full transition-all" style={{ width: `${Math.round((recogInfo.done / recogInfo.total) * 100)}%` }} />
+              </div>
+            )}
+            <p className="text-xs text-gray-400">Обычно 1–2 минуты. Не закрывайте вкладку.</p>
           </div>
         )}
       </div>
