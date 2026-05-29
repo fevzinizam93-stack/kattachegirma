@@ -819,9 +819,17 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
               <div className="flex items-end justify-between">
                 <div>
                   {hasDiscount && product.originalPrice && (
-                    <p className="text-gray-400 line-through text-sm mb-0.5">{formatProductPrice(product.originalPrice, (product as any).originalPriceUsd)}</p>
+                    <div className="flex items-baseline gap-1.5 mb-0.5">
+                      <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Было</span>
+                      <span className="text-gray-400 line-through text-lg font-semibold">{formatProductPrice(product.originalPrice, (product as any).originalPriceUsd)}</span>
+                    </div>
                   )}
-                  <p className="text-3xl font-black text-primary leading-none">{formatProductPrice(product.price, (product as any).priceUsd)}</p>
+                  <div className="flex items-baseline gap-1.5">
+                    {hasDiscount && product.originalPrice && (
+                      <span className="text-[11px] font-bold text-primary uppercase tracking-wide">Стало</span>
+                    )}
+                    <p className="text-3xl font-black text-primary leading-none">{formatProductPrice(product.price, (product as any).priceUsd)}</p>
+                  </div>
                   {hasDiscount && (
                     <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
                       <span className="inline-flex items-center gap-0.5 bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded-full">
