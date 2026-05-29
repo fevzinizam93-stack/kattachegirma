@@ -5,7 +5,7 @@
  */
 
 import { Router } from "express";
-import { approveSeller, setSellerBlocked, getSellerById, getProductById, updateProduct, setReviewStatus, getAllReviews, getAllOrders, getAllSellers, getPendingProducts, getOrderById, updateOrderStatusWithManager } from "./db";
+import { approveSeller, setSellerBlocked, getSellerById, getProductById, updateProduct, setReviewStatus, setReviewReply, getAllReviews, getAllOrders, getAllSellers, getPendingProducts, getOrderById, updateOrderStatusWithManager } from "./db";
 import { answerCallbackQuery, editMessageText, sendTelegramMessageToChat, notifyCustomer } from "./telegram";
 
 const router = Router();
@@ -303,6 +303,31 @@ router.post("/api/telegram/webhook", async (req, res) => {
     // Respond to Telegram immediately after callback_query handling
     if (!res.headersSent) res.json({ ok: true });
     return;
+  }
+
+  // Handle reply to a review notification → save as store reply
+  if (update?.message?.reply_to_message && typeof update?.message?.text === "string") {
+    const repliedText: string = update.message.reply_to_message.text ?? update.message.reply_to_message.caption ?? "";
+    const m = repliedText.match(/#otziv(\d+)/);
+    if (m) {
+      const reviewId = parseInt(m[1], 10);
+      const chatId = String(update.message.chat?.id ?? "");
+      const replyText = String(update.message.text).trim();
+      try {
+        if (!replyText) {
+          await sendTelegramMessageToChat(chatId, "⚠️ Пустой ответ — напишите текст ответа.");
+        } else {
+          await setReviewReply(reviewId, replyText);
+          await setReviewStatus(reviewId, "approved");
+          await sendTelegramMessageToChat(chatId, `✅ Ответ сохранён. Отзыв #${reviewId} опубликован с «Ответом Katta Chegirma».`);
+        }
+      } catch (e) {
+        console.error("[TG Webhook] Error saving review reply:", e);
+        await sendTelegramMessageToChat(chatId, "⚠️ Не удалось сохранить ответ.");
+      }
+      if (!res.headersSent) res.json({ ok: true });
+      return;
+    }
   }
 
   // Handle /stats command

@@ -154,8 +154,10 @@ export async function notifyNewReview(review: {
     `📝 <b>Отзыв:</b>`,
     review.comment,
     ``,
+    `↩️ <i>Чтобы ответить покупателю — ответьте (Reply) на это сообщение, и ваш текст появится под отзывом как «Ответ Katta Chegirma».</i>`,
     `⚠️ <i>Отзыв ожидает модерации. Одобрите или скройте.</i>`,
     `⏰ ${new Date().toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" })}`,
+    `🆔 #otziv${review.id}`,
   ].filter(Boolean).join("\n");
 
   const inline_keyboard = [
