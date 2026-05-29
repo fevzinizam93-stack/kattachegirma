@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, type ChangeEvent } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Upload, Loader2, ImageOff, RefreshCw, UserPlus } from "lucide-react";
+import { Upload, Loader2, ImageOff, RefreshCw, Save } from "lucide-react";
 
 interface RecognizedProduct {
   model: string;
@@ -32,14 +32,13 @@ export default function PriceImportTab({ categories }: Props) {
   const rateQuery = trpc.currency.getRate.useQuery(undefined, { staleTime: 60 * 60 * 1000 });
   const exchangeRate = rateQuery.data?.usdToUzs ?? 12700;
   const bulkMut = trpc.products.bulkCreateFromImport.useMutation();
+  const sellerCreateMut = trpc.sellers.quickCreate.useMutation();
   const [creating, setCreating] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number; failed: number; stage?: string } | null>(null);
   const [seller, setSeller] = useState({ name: "", phone: "", telegram: "" });
   const [sellerId, setSellerId] = useState<number | "">("");
   const [stock, setStock] = useState(10);
   const sellersQuery = trpc.sellers.list.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
-  const quickCreateMut = trpc.sellers.quickCreate.useMutation();
-  const [savingNewSeller, setSavingNewSeller] = useState(false);
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
   const [recogInfo, setRecogInfo] = useState<{ stage: string; done: number; total: number } | null>(null);
   const [elapsed, setElapsed] = useState(0);
@@ -54,14 +53,12 @@ export default function PriceImportTab({ categories }: Props) {
   }
   useEffect(() => () => { stopPoll(); stopCreatePoll(); if (elapsedRef.current) clearInterval(elapsedRef.current); }, []);
 
-  // Сохраняем состояние импорта в браузере — чтобы не потерять при уходе/закрытии
   useEffect(() => {
     try {
       localStorage.setItem("kc_price_import_v1", JSON.stringify({ activeJobId, rows, categoryId, seller, sellerId, fileName }));
     } catch {}
   }, [activeJobId, rows, categoryId, seller, sellerId, fileName]);
 
-  // Восстанавливаем при открытии вкладки
   useEffect(() => {
     let saved: any = null;
     try { saved = JSON.parse(localStorage.getItem("kc_price_import_v1") || "null"); } catch {}
@@ -162,7 +159,7 @@ export default function PriceImportTab({ categories }: Props) {
     }
   }
 
-  async function downscaleToJpegBase64(file: File, maxSide = 2000, quality = 0.9): Promise<string> {
+  async function downscaleToJpegBase64(file: File, maxSide = 1600, quality = 0.9): Promise<string> {
     const dataUrl: string = await new Promise((res, rej) => {
       const r = new FileReader();
       r.onload = () => res(r.result as string);
@@ -204,7 +201,7 @@ export default function PriceImportTab({ categories }: Props) {
     if (elapsedRef.current) clearInterval(elapsedRef.current);
     elapsedRef.current = setInterval(() => setElapsed((s) => s + 1), 1000);
     try {
-      const base64 = await downscaleToJpegBase64(file);
+      const base64 = await downscaleToJpegBase64(file, 1500, 0.85);
       const { jobId } = await recognizeMut.mutateAsync({ base64, mimeType: "image/jpeg" });
       setActiveJobId(jobId);
       pollRef.current = setInterval(async () => {
@@ -254,7 +251,7 @@ export default function PriceImportTab({ categories }: Props) {
     if (!file) return;
     setRowBusy(i);
     try {
-      const base64 = await downscaleToJpegBase64(file, 2000, 0.9);
+      const base64 = await downscaleToJpegBase64(file, 1600, 0.92);
       const res = await uploadMut.mutateAsync({ base64, filename: file.name });
       updateRow(i, { photoUrl: res.url, thumbUrl: res.thumbUrl, photoError: undefined });
       toast.success("Фото добавлено");
@@ -266,33 +263,30 @@ export default function PriceImportTab({ categories }: Props) {
     }
   }
 
-  async function handleSaveNewSeller() {
+  async function handleSaveSeller() {
     if (!seller.name.trim()) { toast.error("Введите имя продавца"); return; }
-    setSavingNewSeller(true);
     try {
-      const { id } = await quickCreateMut.mutateAsync({
+      const { id } = await sellerCreateMut.mutateAsync({
         name: seller.name.trim(),
         phone: seller.phone.trim() || undefined,
         telegram: seller.telegram.trim() || undefined,
       });
-      await utils.sellers.list.invalidate();
+      await sellersQuery.refetch();
       setSellerId(id);
-      toast.success(`Продавец «${seller.name}» сохранён в базу (ID ${id})`);
+      toast.success("Продавец сохранён в базу");
     } catch (err) {
       toast.error("Ошибка: " + (err instanceof Error ? err.message : String(err)));
-    } finally {
-      setSavingNewSeller(false);
     }
   }
 
-  const anyBusy = busy || rowBusy !== null || creating || savingNewSeller;
+  const anyBusy = busy || rowBusy !== null || creating;
 
   return (
     <div className="space-y-4">
       <div className="bg-white rounded-2xl border border-gray-200 p-5">
         <h2 className="text-lg font-black text-gray-900 mb-1">Импорт из прайса</h2>
         <p className="text-sm text-gray-500 mb-4">
-          Загрузите фото прайс-листа — система распознает модели, цены и характеристики. Фото к каждому товару добавляете вручную кнопкой «Добавить/Заменить фото».
+          Загрузите фото прайс-листа — система распознает модели, цены и характеристики и создаст карточки с готовым продающим описанием. Фото к товарам добавьте вручную (кнопка «Добавить фото») — так качество остаётся максимальным.
         </p>
         <label className={`inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-semibold text-sm transition-colors ${busy ? "opacity-50 pointer-events-none" : "cursor-pointer"}`}>
           <Upload size={16} />
@@ -309,12 +303,7 @@ export default function PriceImportTab({ categories }: Props) {
                 : "Запускаю распознавание..."}
               <span className="text-gray-400">· {elapsed} сек</span>
             </div>
-            {recogInfo && recogInfo.total > 0 && (
-              <div className="w-full bg-blue-100 rounded-full h-1.5 overflow-hidden">
-                <div className="bg-blue-600 h-1.5 rounded-full transition-all" style={{ width: `${Math.round((recogInfo.done / recogInfo.total) * 100)}%` }} />
-              </div>
-            )}
-            <p className="text-xs text-gray-400">Обычно 30–60 секунд. Не закрывайте вкладку.</p>
+            <p className="text-xs text-gray-400">Обычно меньше минуты. Не закрывайте вкладку.</p>
           </div>
         )}
       </div>
@@ -322,7 +311,7 @@ export default function PriceImportTab({ categories }: Props) {
       {rows.length > 0 && (
         <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <p className="font-bold text-gray-800">Найдено товаров: {rows.length}</p>
+            <p className="font-bold text-gray-900">Найдено товаров: {rows.length}</p>
             <div className="flex items-center gap-2 flex-wrap">
               <button
                 onClick={clearImport}
@@ -351,9 +340,8 @@ export default function PriceImportTab({ categories }: Props) {
             </div>
           </div>
 
-          {/* Блок продавца */}
-          <div className="bg-gray-50 rounded-xl p-3 space-y-2">
-            <label className="block text-[10px] uppercase tracking-wide text-gray-400 mb-0.5">Выбрать продавца из базы</label>
+          <div className="bg-gray-50 rounded-xl p-3">
+            <label className="block text-[10px] uppercase tracking-wide text-gray-400 mb-0.5">Выбрать продавца из базы (или заполнить вручную ниже)</label>
             <select
               value={sellerId}
               onChange={(e) => {
@@ -364,56 +352,36 @@ export default function PriceImportTab({ categories }: Props) {
               }}
               className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm bg-white"
             >
-              <option value="">— Не выбран (заполнить вручную) —</option>
+              <option value="">— Не выбран —</option>
               {(sellersQuery.data ?? []).map((s: any) => (
                 <option key={s.id} value={s.id}>{s.name}{s.phone ? ` · ${s.phone}` : ""}</option>
               ))}
             </select>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
-              <div>
-                <label className="block text-[10px] uppercase tracking-wide text-gray-400 mb-0.5">Имя продавца</label>
-                <input
-                  value={seller.name}
-                  onChange={(e) => { setSeller((s) => ({ ...s, name: e.target.value })); setSellerId(""); }}
-                  placeholder="Напр. Katta Chegirma"
-                  className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] uppercase tracking-wide text-gray-400 mb-0.5">Телефон</label>
-                <input
-                  value={seller.phone}
-                  onChange={(e) => { setSeller((s) => ({ ...s, phone: e.target.value })); setSellerId(""); }}
-                  placeholder="+998 90 123 45 67"
-                  className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] uppercase tracking-wide text-gray-400 mb-0.5">Telegram</label>
-                <input
-                  value={seller.telegram}
-                  onChange={(e) => { setSeller((s) => ({ ...s, telegram: e.target.value })); setSellerId(""); }}
-                  placeholder="@username"
-                  className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm"
-                />
-              </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 bg-gray-50 rounded-xl p-3">
+            <div>
+              <label className="block text-[10px] uppercase tracking-wide text-gray-400 mb-0.5">Имя продавца</label>
+              <input value={seller.name} onChange={(e) => setSeller((s) => ({ ...s, name: e.target.value }))} placeholder="Напр. Katta Chegirma" className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm" />
             </div>
-
-            {/* Кнопка «Сохранить продавца в базу» — появляется когда sellerId не выбран и имя заполнено */}
-            {!sellerId && seller.name.trim() && (
+            <div>
+              <label className="block text-[10px] uppercase tracking-wide text-gray-400 mb-0.5">Телефон</label>
+              <input value={seller.phone} onChange={(e) => setSeller((s) => ({ ...s, phone: e.target.value }))} placeholder="+998 90 123 45 67" className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm" />
+            </div>
+            <div>
+              <label className="block text-[10px] uppercase tracking-wide text-gray-400 mb-0.5">Telegram</label>
+              <input value={seller.telegram} onChange={(e) => setSeller((s) => ({ ...s, telegram: e.target.value }))} placeholder="@username" className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm" />
+            </div>
+            <div className="sm:col-span-3">
               <button
-                onClick={handleSaveNewSeller}
-                disabled={savingNewSeller}
-                className="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
+                onClick={handleSaveSeller}
+                disabled={sellerCreateMut.isPending || !seller.name.trim()}
+                className="inline-flex items-center gap-1.5 bg-gray-900 hover:bg-black text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
               >
-                {savingNewSeller ? <Loader2 size={13} className="animate-spin" /> : <UserPlus size={13} />}
+                <Save size={13} />
                 Сохранить продавца в базу
               </button>
-            )}
-            {sellerId && (
-              <p className="text-xs text-green-600 font-medium">✓ Продавец выбран из базы (ID {sellerId})</p>
-            )}
+              <span className="text-[11px] text-gray-400 ml-2">потом выберешь его из списка</span>
+            </div>
           </div>
 
           <div className="space-y-3">
@@ -446,9 +414,9 @@ export default function PriceImportTab({ categories }: Props) {
                     {Object.entries(r.specs).map(([k, v]) => `${k}: ${v}`).join(" · ") || "Характеристики не распознаны"}
                   </div>
                   <div className="flex items-center gap-2 flex-wrap pt-1">
-                    <label className={`inline-flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${anyBusy ? "opacity-50 pointer-events-none" : "cursor-pointer"}`}>
+                    <label className={`inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${anyBusy ? "opacity-50 pointer-events-none" : "cursor-pointer"}`}>
                       <RefreshCw size={13} />
-                      {r.photoUrl ? "Заменить фото" : "Добавить фото"}
+                      Добавить фото
                       <input type="file" accept="image/*" className="hidden" onChange={(e) => handleReplacePhoto(i, e)} disabled={anyBusy} />
                     </label>
                   </div>
