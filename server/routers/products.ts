@@ -1019,7 +1019,7 @@ export const productsRouter = router({
 
   // Сделать фон белым через remove.bg
   whitenBackground: adminProcedure
-    .input(z.object({ imageUrl: z.string().url() }))
+    .input(z.object({ imageUrl: z.string().min(1) }))
     .mutation(async ({ input }) => {
       const { whitenBackground } = await import("../productVision");
       return whitenBackground(input.imageUrl);
@@ -1033,6 +1033,7 @@ export const productsRouter = router({
       sellerName: z.string().optional(),
       sellerPhone: z.string().optional(),
       sellerTelegram: z.string().optional(),
+      sellerId: z.number().optional(),
       products: z.array(z.object({
         model: z.string(),
         brand: z.string().optional(),
@@ -1049,6 +1050,7 @@ export const productsRouter = router({
         sellerName: input.sellerName,
         sellerPhone: input.sellerPhone,
         sellerTelegram: input.sellerTelegram,
+        sellerId: input.sellerId,
       });
       return { jobId };
     }),

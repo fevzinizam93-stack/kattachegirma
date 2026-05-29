@@ -56,7 +56,7 @@ export async function recognizePriceSheet(
         role: "user",
         content: [
           { type: "text", text: "Распознай все товары с этого прайс-листа." },
-          { type: "image_url", image_url: { url: dataUrl, detail: "high" } },
+          { type: "image_url", image_url: { url: dataUrl, detail: "auto" } },
         ],
       },
     ],
@@ -253,8 +253,19 @@ export async function whitenBackground(
   if (!key) {
     throw new Error("Ключ remove.bg не задан. Добавьте переменную окружения REMOVE_BG_API_KEY.");
   }
+  // Адрес из хранилища относительный (/manus-storage/...) — делаем абсолютным и скачиваем байты
+  const origin = "https://kattachegirma.uz";
+  const absUrl = imageUrl.startsWith("http")
+    ? imageUrl
+    : `${origin}${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;
+  const imgResp = await fetch(absUrl);
+  if (!imgResp.ok) {
+    throw new Error(`Не удалось загрузить фото для обработки (${imgResp.status})`);
+  }
+  const imgBuf = Buffer.from(await imgResp.arrayBuffer());
+
   const form = new FormData();
-  form.append("image_url", imageUrl);
+  form.append("image_file", new Blob([imgBuf]), "image.webp");
   form.append("size", "auto");
   form.append("bg_color", "ffffff");
   const resp = await fetch("https://api.remove.bg/v1.0/removebg", {
@@ -328,7 +339,7 @@ type BulkJob =
 
 const bulkJobs = new Map<string, BulkJob>();
 
-export function startBulkCreateJob(items: ImportProductInput[], categoryId: number, exchangeRate: number, contact: { sellerName?: string; sellerPhone?: string; sellerTelegram?: string }): string {
+export function startBulkCreateJob(items: ImportProductInput[], categoryId: number, exchangeRate: number, contact: { sellerName?: string; sellerPhone?: string; sellerTelegram?: string; sellerId?: number }): string {
   const jobId = `bulk-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   bulkJobs.set(jobId, { status: "processing", total: items.length, done: 0, failed: 0 });
   void (async () => {
@@ -371,6 +382,7 @@ export function startBulkCreateJob(items: ImportProductInput[], categoryId: numb
           sellerPhone: contact.sellerPhone || undefined,
           contactPhone: contact.sellerPhone || undefined,
           sellerTelegram: contact.sellerTelegram || undefined,
+          sellerId: contact.sellerId || undefined,
           isActive: true,
           isApproved: true,
         });

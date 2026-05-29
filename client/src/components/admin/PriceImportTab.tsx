@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, type ChangeEvent } from "react";
 import { trpc } from "@/lib/trpc";
+import CropModal from "@/components/admin/CropModal";
 import { toast } from "sonner";
 import { Upload, Loader2, ImageOff, RefreshCw, Wand2 } from "lucide-react";
 
@@ -37,6 +38,9 @@ export default function PriceImportTab({ categories }: Props) {
   const [creating, setCreating] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number; failed: number } | null>(null);
   const [seller, setSeller] = useState({ name: "", phone: "", telegram: "" });
+  const [sellerId, setSellerId] = useState<number | "">("");
+  const sellersQuery = trpc.sellers.list.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
+  const [cropIdx, setCropIdx] = useState<number | null>(null);
   const [recogInfo, setRecogInfo] = useState<{ stage: string; done: number; total: number } | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const elapsedRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -70,6 +74,7 @@ export default function PriceImportTab({ categories }: Props) {
         sellerName: seller.name || undefined,
         sellerPhone: seller.phone || undefined,
         sellerTelegram: seller.telegram || undefined,
+        sellerId: sellerId || undefined,
         products: payload,
       });
       createPollRef.current = setInterval(async () => {
@@ -97,7 +102,7 @@ export default function PriceImportTab({ categories }: Props) {
     }
   }
 
-  async function downscaleToJpegBase64(file: File, maxSide = 1600, quality = 0.85): Promise<string> {
+  async function downscaleToJpegBase64(file: File, maxSide = 1280, quality = 0.82): Promise<string> {
     const dataUrl: string = await new Promise((res, rej) => {
       const r = new FileReader();
       r.onload = () => res(r.result as string);
@@ -294,6 +299,24 @@ export default function PriceImportTab({ categories }: Props) {
             </div>
           </div>
 
+          <div className="bg-gray-50 rounded-xl p-3">
+            <label className="block text-[10px] uppercase tracking-wide text-gray-400 mb-0.5">Выбрать продавца из базы (или заполнить вручную ниже)</label>
+            <select
+              value={sellerId}
+              onChange={(e) => {
+                const id = e.target.value ? Number(e.target.value) : "";
+                setSellerId(id);
+                const s = (sellersQuery.data ?? []).find((x: any) => x.id === id);
+                if (s) setSeller({ name: s.name ?? "", phone: s.phone ?? "", telegram: s.telegram ?? "" });
+              }}
+              className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm bg-white"
+            >
+              <option value="">— Не выбран —</option>
+              {(sellersQuery.data ?? []).map((s: any) => (
+                <option key={s.id} value={s.id}>{s.name}{s.phone ? ` · ${s.phone}` : ""}</option>
+              ))}
+            </select>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 bg-gray-50 rounded-xl p-3">
             <div>
               <label className="block text-[10px] uppercase tracking-wide text-gray-400 mb-0.5">Имя продавца</label>
@@ -353,6 +376,13 @@ export default function PriceImportTab({ categories }: Props) {
                       <Wand2 size={13} />
                       Сделать фон белым
                     </button>
+                    <button
+                      onClick={() => setCropIdx(i)}
+                      disabled={anyBusy || !r.photoUrl}
+                      className="inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
+                    >
+                      ✂️ Обрезать
+                    </button>
                   </div>
                 </div>
               </div>
@@ -371,6 +401,13 @@ export default function PriceImportTab({ categories }: Props) {
             {!categoryId && <p className="text-xs text-amber-600 mt-2">Выберите категорию выше, чтобы создать товары.</p>}
           </div>
         </div>
+      )}
+      {cropIdx !== null && rows[cropIdx]?.photoUrl && (
+        <CropModal
+          imageUrl={rows[cropIdx].photoUrl as string}
+          onClose={() => setCropIdx(null)}
+          onCropped={(res) => updateRow(cropIdx, { photoUrl: res.url, thumbUrl: res.thumbUrl })}
+        />
       )}
     </div>
   );
