@@ -6,6 +6,7 @@ import AdminSellersTab from "@/components/admin/AdminSellersTab";
 import AdminModerationTab from "@/components/admin/AdminModerationTab";
 import AdminReviewsTab from "@/components/admin/AdminReviewsTab";
 import AdminQuickOrdersTab from "@/components/admin/AdminQuickOrdersTab";
+import PriceImportTab from "@/components/admin/PriceImportTab";
 import AdminBannersTab from "@/components/admin/AdminBannersTab";
 import AdminNotificationsTab from "@/components/admin/AdminNotificationsTab";
 import AdminUTMTab from "@/components/admin/AdminUTMTab";
@@ -51,7 +52,7 @@ function AllSellersList({ onSelect, activeSellerUserId }: { onSelect: (sellerUse
   );
 }
 
-type Tab = "products" | "categories" | "orders" | "sellers" | "moderation" | "settings" | "banners" | "notifications" | "utm" | "messaging" | "quickorders" | "indexing" | "reviews";
+type Tab = "products" | "categories" | "orders" | "sellers" | "moderation" | "settings" | "banners" | "notifications" | "utm" | "messaging" | "quickorders" | "indexing" | "reviews" | "priceimport";
 
 interface BannerForm {
   id?: number;
@@ -954,6 +955,7 @@ export default function Admin() {
     { key: "messaging" as Tab, icon: MessageSquare, label: `Сообщения${(adminConvs ?? []).reduce((s, c) => s + c.unread, 0) > 0 ? ` (${(adminConvs ?? []).reduce((s, c) => s + c.unread, 0)})` : ""}` },
     { key: "quickorders" as Tab, icon: Zap, label: `Быстрые заявки${(quickOrdersList ?? []).filter(o => o.status === 'new').length > 0 ? ` (${(quickOrdersList ?? []).filter(o => o.status === 'new').length})` : ""}` },
     { key: "indexing" as Tab, icon: Search, label: "Индексирование" },
+    { key: "priceimport" as Tab, icon: Upload, label: "Импорт из прайса" },
   ];
 
   return (
@@ -1060,6 +1062,11 @@ export default function Admin() {
           </div>
 
         </div>
+
+        {/* ==================== PRICE IMPORT TAB ==================== */}
+        {tab === "priceimport" && (
+          <PriceImportTab categories={categoriesData ?? []} />
+        )}
 
         {/* ==================== PRODUCTS TAB ==================== */}
         {tab === "products" && (
