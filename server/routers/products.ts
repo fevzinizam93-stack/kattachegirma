@@ -987,15 +987,25 @@ export const productsRouter = router({
     return { fixedCount: fixed.length, fixed };
   }),
 
-  // Распознать фото-прайс и вернуть товары для предпросмотра (без сохранения в БД)
+  // Запустить фоновое задание распознавания фото-прайса
   recognizePriceSheet: adminProcedure
     .input(z.object({
       base64: z.string(),
       mimeType: z.string(),
     }))
     .mutation(async ({ input }) => {
-      const { recognizePriceSheet } = await import("../productVision");
-      const products = await recognizePriceSheet(input.base64, input.mimeType);
-      return { products, count: products.length };
+      const { startRecognitionJob } = await import("../productVision");
+      const jobId = startRecognitionJob(input.base64, input.mimeType);
+      return { jobId };
+    }),
+
+  // Опрос статуса фонового задания распознавания
+  recognitionStatus: adminProcedure
+    .input(z.object({ jobId: z.string() }))
+    .query(async ({ input }) => {
+      const { getRecognitionJob } = await import("../productVision");
+      const job = getRecognitionJob(input.jobId);
+      if (!job) return { status: "error" as const, error: "Задание не найдено или устарело" };
+      return job;
     }),
 });

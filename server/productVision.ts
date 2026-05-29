@@ -163,3 +163,33 @@ export async function recognizePriceSheet(
 
   return results;
 }
+
+// ---- Фоновые задания распознавания (in-memory) ----
+type RecognitionJob =
+  | { status: "processing" }
+  | { status: "done"; products: RecognizedProduct[] }
+  | { status: "error"; error: string };
+
+const recognitionJobs = new Map<string, RecognitionJob>();
+
+export function startRecognitionJob(sheetBase64: string, mimeType: string): string {
+  const jobId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  recognitionJobs.set(jobId, { status: "processing" });
+  void (async () => {
+    try {
+      const products = await recognizePriceSheet(sheetBase64, mimeType);
+      recognitionJobs.set(jobId, { status: "done", products });
+    } catch (err) {
+      recognitionJobs.set(jobId, {
+        status: "error",
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+    setTimeout(() => recognitionJobs.delete(jobId), 10 * 60 * 1000);
+  })();
+  return jobId;
+}
+
+export function getRecognitionJob(jobId: string): RecognitionJob | undefined {
+  return recognitionJobs.get(jobId);
+}

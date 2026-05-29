@@ -133,9 +133,9 @@ async function startServer() {
   // Enable gzip compression for all responses (reduces transfer size ~70%)
   app.use(compression({ level: 6, threshold: 1024 }));
 
-  // Configure body parser — 1mb is sufficient for JSON API requests
-  app.use(express.json({ limit: "1mb" }));
-  app.use(express.urlencoded({ limit: "1mb", extended: true }));
+  // Configure body parser — 8mb to support price-sheet image uploads (base64 JPEG)
+  app.use(express.json({ limit: "8mb" }));
+  app.use(express.urlencoded({ limit: "8mb", extended: true }));
   registerStorageProxy(app);
   registerImageProxy(app);
   registerOAuthRoutes(app);
