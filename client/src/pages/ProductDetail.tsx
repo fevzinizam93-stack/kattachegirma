@@ -14,6 +14,7 @@ import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import QuickBuyModal from "@/components/QuickBuyModal";
 import { trackViewContent, trackAddToCart } from "@/hooks/useFacebookPixel";
 import { imgUrl } from "@/lib/imgUrl";
+import { getSpecTemplate, extractSpecs } from "@/lib/specTemplates";
 
 function VideoReviewDetailButton({ productName, savedVideoId }: { productName: string; savedVideoId?: string | null }) {
   const [open, setOpen] = useState(false);
@@ -649,6 +650,11 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
     ? ((product.discount ?? 0) > 0 ? (product.discount as number) : Math.round((1 - _priceNum / _origPriceNum) * 100))
     : 0;
   const specs = (product.specs as Record<string, string> | null) ?? {};
+  const _specTpl = getSpecTemplate(product.name);
+  const _autoSpecs = _specTpl ? extractSpecs(_specTpl, product.description, specs) : [];
+  const displaySpecs: Array<[string, string]> = _autoSpecs.length >= 2
+    ? _autoSpecs.map((s) => [s.label, s.value] as [string, string])
+    : Object.entries(specs);
   const telegramUsername = product.sellerTelegram?.replace("@", "").replace("https://t.me/", "");
   const displayName = lang === "uz" && (product as any).nameUz ? (product as any).nameUz : product.name;
   const descriptionText = lang === "uz" && (product as any).descriptionUz
@@ -1228,10 +1234,10 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 )}
               </AccordionSection>
 
-              {Object.keys(specs).length > 0 && (
+              {displaySpecs.length > 0 && (
                 <AccordionSection title={t.detail_specs} defaultOpen={true}>
                   <div className="space-y-0">
-                    {Object.entries(specs).map(([key, value]) => (
+                    {displaySpecs.map(([key, value]) => (
                       <div key={key} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
                         <span className="text-gray-500 text-sm">{key}</span>
                         <span className="text-gray-900 text-sm font-semibold text-right ml-4">{value}</span>
