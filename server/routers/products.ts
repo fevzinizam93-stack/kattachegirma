@@ -286,6 +286,16 @@ export const productsRouter = router({
       };
       if (data.discountEndsAt) updateData.discountEndsAt = new Date(data.discountEndsAt);
       else if (data.discountEndsAt === '') updateData.discountEndsAt = null;
+      // При смене фото пересоздаём миниатюру, чтобы в списках обновлялось вместе с основным фото
+      const newMain = data.imageUrl ?? (data.images && data.images.length > 0 ? data.images[0] : undefined);
+      if (newMain) {
+        try {
+          const { makeThumbFromUrl } = await import("../productVision");
+          updateData.thumbUrl = await makeThumbFromUrl(newMain);
+        } catch {
+          updateData.thumbUrl = newMain;
+        }
+      }
       await updateProduct(id, updateData as Parameters<typeof updateProduct>[1]);
       // Fetch current slug to build the product URL for Google Indexing API
       const updatedProduct = await getProductById(id);

@@ -235,6 +235,24 @@ export async function enhanceAndStore(
   return { url, thumbUrl };
 }
 
+export async function makeThumbFromUrl(imageUrl: string): Promise<string> {
+  const origin = "https://kattachegirma.uz";
+  const absUrl = imageUrl.startsWith("http")
+    ? imageUrl
+    : `${origin}${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;
+  const resp = await fetch(absUrl);
+  if (!resp.ok) throw new Error(`thumb fetch ${resp.status}`);
+  const buf = Buffer.from(await resp.arrayBuffer());
+  const optimized = await optimizeImage(buf, `thumb-${Date.now()}`);
+  const ts = Date.now();
+  const { url: thumbUrl } = await storagePut(
+    `products/thumb/${ts}-thumb.webp`,
+    optimized.thumbBuffer,
+    optimized.thumbMimeType,
+  );
+  return thumbUrl;
+}
+
 // ---- Ручная загрузка фото (с улучшением) ----
 export async function uploadEnhancedImage(
   base64: string,
