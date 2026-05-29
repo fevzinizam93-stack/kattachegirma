@@ -177,10 +177,10 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
           {/* Price block */}
           <div className="mt-auto pt-1">
             {hasDiscount && product.originalPrice ? (
-              <>
-                <div className="text-xs text-gray-400 line-through leading-tight mb-0.5">{formatProductPrice(product.originalPrice!, product.originalPriceUsd)}</div>
-                <div className="text-lg font-black leading-tight" style={{ color: "#cc0000" }}>{formatProductPrice(product.price, product.priceUsd)}</div>
-              </>
+              <div className="flex items-baseline justify-between gap-2 flex-wrap">
+                <span className="text-xs text-gray-400 line-through leading-tight">{formatProductPrice(product.originalPrice!, product.originalPriceUsd)}</span>
+                <span className="text-lg font-black leading-tight whitespace-nowrap" style={{ color: "#cc0000" }}>{formatProductPrice(product.price, product.priceUsd)}</span>
+              </div>
             ) : (
               <div className="text-lg font-black leading-tight" style={{ color: "#cc0000" }}>{formatProductPrice(product.price, product.priceUsd)}</div>
             )}

@@ -818,17 +818,19 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
               {/* ── Price + Stock ── */}
               <div className="flex items-end justify-between">
                 <div>
-                  {hasDiscount && product.originalPrice && (
-                    <div className="flex items-baseline gap-1.5 mb-0.5">
-                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Было</span>
-                      <span className="text-gray-500 line-through text-3xl font-bold">{formatProductPrice(product.originalPrice, (product as any).originalPriceUsd)}</span>
-                    </div>
-                  )}
-                  <div className="flex items-baseline gap-1.5">
+                  <div className="flex items-end gap-4 flex-wrap">
                     {hasDiscount && product.originalPrice && (
-                      <span className="text-[11px] font-bold text-primary uppercase tracking-wide">Стало</span>
+                      <div className="flex flex-col">
+                        <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Было</span>
+                        <span className="text-gray-400 line-through text-xl font-semibold leading-none">{formatProductPrice(product.originalPrice, (product as any).originalPriceUsd)}</span>
+                      </div>
                     )}
-                    <p className="text-xl font-black text-primary leading-none">{formatProductPrice(product.price, (product as any).priceUsd)}</p>
+                    <div className="flex flex-col">
+                      {hasDiscount && product.originalPrice && (
+                        <span className="text-[11px] font-bold text-primary uppercase tracking-wide">Стало</span>
+                      )}
+                      <p className="text-3xl font-black text-primary leading-none">{formatProductPrice(product.price, (product as any).priceUsd)}</p>
+                    </div>
                   </div>
                   {hasDiscount && (
                     <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
