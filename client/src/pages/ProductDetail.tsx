@@ -642,7 +642,12 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
     );
   }
 
-  const hasDiscount = (product.discount ?? 0) > 0 && product.originalPrice;
+  const _origPriceNum = product.originalPrice ? Number(product.originalPrice) : 0;
+  const _priceNum = Number(product.price);
+  const hasDiscount = _origPriceNum > _priceNum && _priceNum > 0;
+  const effectiveDiscount = hasDiscount
+    ? ((product.discount ?? 0) > 0 ? (product.discount as number) : Math.round((1 - _priceNum / _origPriceNum) * 100))
+    : 0;
   const specs = (product.specs as Record<string, string> | null) ?? {};
   const telegramUsername = product.sellerTelegram?.replace("@", "").replace("https://t.me/", "");
   const displayName = lang === "uz" && (product as any).nameUz ? (product as any).nameUz : product.name;
@@ -722,7 +727,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
                   {hasDiscount && (
                     <span className="bg-primary text-white text-xs font-black px-2.5 py-1 rounded-full shadow-lg shadow-primary/30">
-                      -{product.discount}%
+                      -{effectiveDiscount}%
                     </span>
                   )}
                   {product.isNew && (
@@ -820,7 +825,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                   {hasDiscount && (
                     <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
                       <span className="inline-flex items-center gap-0.5 bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded-full">
-                        <Tag size={10} /> Скидка {product.discount}%
+                        <Tag size={10} /> Скидка {effectiveDiscount}%
                       </span>
                       {product.originalPrice && (
                         <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs font-bold px-2.5 py-0.5 rounded-full">
@@ -1195,8 +1200,8 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                       </div>
                     )}
                     {/* Description text */}
-                    <p className="text-gray-700 leading-relaxed text-sm whitespace-pre-line">
-                      {lang === "ru" && showTranslated && translatedDesc ? translatedDesc : descriptionText}
+                    <p className="text-gray-700 leading-normal text-sm whitespace-pre-line">
+                      {((lang === "ru" && showTranslated && translatedDesc ? translatedDesc : descriptionText) || "").replace(/\n{2,}/g, "\n").trim()}
                     </p>
                     {lang === "ru" && showTranslated && (
                       <p className="text-[11px] text-gray-400 italic">AI yordamida tarjima qilindi</p>
