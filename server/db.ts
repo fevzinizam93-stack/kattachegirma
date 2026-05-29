@@ -970,6 +970,7 @@ export async function getAllReviews(status?: "pending" | "approved" | "hidden") 
       createdAt: reviews.createdAt,
       productName: products.name,
       productSlug: products.slug,
+      productImage: products.imageUrl,
     })
     .from(reviews)
     .leftJoin(products, eq(reviews.productId, products.id))

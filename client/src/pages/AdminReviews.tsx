@@ -125,6 +125,23 @@ export default function AdminReviews() {
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
+                  {/* Товар, к которому относится отзыв */}
+                  <a
+                    href={`/product/${(review as any).productSlug ?? ""}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2.5 mb-2.5 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="w-11 h-11 rounded-md bg-white border border-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
+                      {(review as any).productImage
+                        ? <img src={`/api/img?url=${encodeURIComponent((review as any).productImage)}&w=88&q=75`} alt="" className="w-full h-full object-contain p-0.5" />
+                        : <span className="text-lg">📦</span>}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-bold text-gray-900 truncate">{(review as any).productName ?? `Товар #${review.productId}`}</div>
+                      <div className="text-[11px] text-primary font-semibold">Открыть товар →</div>
+                    </div>
+                  </a>
                   {/* Author + date + status */}
                   <div className="flex items-center gap-2 flex-wrap mb-1">
                     <span className="font-bold text-sm text-gray-900">{review.authorName}</span>
