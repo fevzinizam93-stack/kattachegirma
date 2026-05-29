@@ -1030,6 +1030,9 @@ export const productsRouter = router({
     .input(z.object({
       categoryId: z.number(),
       exchangeRate: z.number().default(12700),
+      sellerName: z.string().optional(),
+      sellerPhone: z.string().optional(),
+      sellerTelegram: z.string().optional(),
       products: z.array(z.object({
         model: z.string(),
         brand: z.string().optional(),
@@ -1042,7 +1045,11 @@ export const productsRouter = router({
     }))
     .mutation(async ({ input }) => {
       const { startBulkCreateJob } = await import("../productVision");
-      const jobId = startBulkCreateJob(input.products, input.categoryId, input.exchangeRate);
+      const jobId = startBulkCreateJob(input.products, input.categoryId, input.exchangeRate, {
+        sellerName: input.sellerName,
+        sellerPhone: input.sellerPhone,
+        sellerTelegram: input.sellerTelegram,
+      });
       return { jobId };
     }),
 

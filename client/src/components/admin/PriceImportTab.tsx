@@ -36,6 +36,7 @@ export default function PriceImportTab({ categories }: Props) {
   const bulkMut = trpc.products.bulkCreateFromImport.useMutation();
   const [creating, setCreating] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number; failed: number } | null>(null);
+  const [seller, setSeller] = useState({ name: "", phone: "", telegram: "" });
   const createPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   function stopPoll() {
@@ -60,7 +61,14 @@ export default function PriceImportTab({ categories }: Props) {
         photoUrl: r.photoUrl || undefined,
         thumbUrl: r.thumbUrl || undefined,
       }));
-      const { jobId } = await bulkMut.mutateAsync({ categoryId: Number(categoryId), exchangeRate, products: payload });
+      const { jobId } = await bulkMut.mutateAsync({
+        categoryId: Number(categoryId),
+        exchangeRate,
+        sellerName: seller.name || undefined,
+        sellerPhone: seller.phone || undefined,
+        sellerTelegram: seller.telegram || undefined,
+        products: payload,
+      });
       createPollRef.current = setInterval(async () => {
         try {
           const job = (await utils.products.bulkCreateStatus.fetch({ jobId })) as {
@@ -252,6 +260,21 @@ export default function PriceImportTab({ categories }: Props) {
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 bg-gray-50 rounded-xl p-3">
+            <div>
+              <label className="block text-[10px] uppercase tracking-wide text-gray-400 mb-0.5">Имя продавца</label>
+              <input value={seller.name} onChange={(e) => setSeller((s) => ({ ...s, name: e.target.value }))} placeholder="Напр. Katta Chegirma" className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm" />
+            </div>
+            <div>
+              <label className="block text-[10px] uppercase tracking-wide text-gray-400 mb-0.5">Телефон</label>
+              <input value={seller.phone} onChange={(e) => setSeller((s) => ({ ...s, phone: e.target.value }))} placeholder="+998 90 123 45 67" className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm" />
+            </div>
+            <div>
+              <label className="block text-[10px] uppercase tracking-wide text-gray-400 mb-0.5">Telegram</label>
+              <input value={seller.telegram} onChange={(e) => setSeller((s) => ({ ...s, telegram: e.target.value }))} placeholder="@username" className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm" />
             </div>
           </div>
 
