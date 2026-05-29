@@ -61,6 +61,7 @@ export const reviewsRouter = router({
         authorName: input.authorName,
         rating: input.rating,
         comment: input.comment,
+        productImage: product?.imageUrl ?? null,
       }).catch(() => {});
       return { ok: true };
     }),

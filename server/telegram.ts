@@ -128,6 +128,58 @@ export async function broadcastTelegramMessage(
   }
 }
 
+export async function sendTelegramPhotoToChat(
+  chatId: string,
+  photoUrl: string,
+  caption: string,
+  extra?: Record<string, unknown>
+): Promise<boolean> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return false;
+  try {
+    const res = await fetch(`${TELEGRAM_API}/bot${token}/sendPhoto`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, photo: photoUrl, caption, parse_mode: "HTML", ...(extra ?? {}) }),
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      console.error(`[Telegram] sendPhoto to ${chatId} failed:`, err);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.error(`[Telegram] sendPhoto to ${chatId} error:`, e);
+    return false;
+  }
+}
+
+export async function broadcastTelegramPhoto(
+  photoUrl: string,
+  caption: string,
+  extra?: Record<string, unknown>
+): Promise<void> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) { console.error("[Telegram] \u274c TELEGRAM_BOT_TOKEN \u043d\u0435 \u0437\u0430\u0434\u0430\u043d!"); return; }
+  const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+  const sentTo = new Set<string>();
+  if (adminChatId) {
+    await sendTelegramPhotoToChat(adminChatId, photoUrl, caption, extra);
+    sentTo.add(adminChatId);
+  }
+  try {
+    const recipients = await getActiveTelegramRecipients();
+    for (const r of recipients) {
+      if (!sentTo.has(r.chatId)) {
+        await sendTelegramPhotoToChat(r.chatId, photoUrl, caption, extra);
+        sentTo.add(r.chatId);
+      }
+    }
+  } catch (e) {
+    console.error("[Telegram] Failed to load recipients from DB:", e);
+  }
+}
+
 // Keep backward-compatible alias
 export async function sendTelegramMessage(text: string): Promise<boolean> {
   const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
@@ -142,6 +194,7 @@ export async function notifyNewReview(review: {
   rating: number;
   comment: string;
   adminUrl?: string;
+  productImage?: string | null;
 }): Promise<void> {
   const stars = "⭐".repeat(review.rating) + "☆".repeat(5 - review.rating);
   const message = [
@@ -152,7 +205,7 @@ export async function notifyNewReview(review: {
     `${stars} <b>Оценка:</b> ${review.rating}/5`,
     ``,
     `📝 <b>Отзыв:</b>`,
-    review.comment,
+    (review.comment.length > 500 ? review.comment.slice(0, 500) + "…" : review.comment).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"),
     ``,
     `↩️ <i>Чтобы ответить покупателю — ответьте (Reply) на это сообщение, и ваш текст появится под отзывом как «Ответ Katta Chegirma».</i>`,
     `⚠️ <i>Отзыв ожидает модерации. Одобрите или скройте.</i>`,
@@ -167,7 +220,19 @@ export async function notifyNewReview(review: {
     ],
   ];
 
-  await broadcastTelegramMessage(message, { reply_markup: { inline_keyboard } });
+  // Абсолютный https URL фото (Telegram требует абсолютную ссылку)
+  let photoUrl: string | null = null;
+  if (review.productImage) {
+    if (review.productImage.startsWith("http://") || review.productImage.startsWith("https://")) photoUrl = review.productImage;
+    else if (review.productImage.startsWith("/")) photoUrl = `https://kattachegirma.uz${review.productImage}`;
+    else photoUrl = `https://kattachegirma.uz/${review.productImage}`;
+  }
+
+  if (photoUrl) {
+    await broadcastTelegramPhoto(photoUrl, message, { reply_markup: { inline_keyboard } });
+  } else {
+    await broadcastTelegramMessage(message, { reply_markup: { inline_keyboard } });
+  }
 }
 
 export async function notifyNewSeller(seller: {
