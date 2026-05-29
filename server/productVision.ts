@@ -2,7 +2,7 @@ import sharp from "sharp";
 import { invokeLLM } from "./_core/llm";
 import { optimizeImage } from "./_core/imageOptimizer";
 import { storagePut } from "./storage";
-import { createProduct, getSlugExists, getSlugUzExists, getAllCategories } from "./db";
+import { createProduct, updateProduct, getSlugExists, getSlugUzExists, getAllCategories } from "./db";
 import { pingSitemaps } from "./sitemap";
 
 export interface RecognizedProduct {
@@ -482,13 +482,9 @@ export function startBulkCreateJob(items: ImportProductInput[], categoryId: numb
       return { it, model, brand, name, specs, specsText };
     });
 
-    // Описания одним запросом на все товары
-    bulkJobs.set(jobId, { status: "processing", stage: "Генерирую описания...", total: items.length, done: 0, failed: 0 });
-    let descriptions: { ru: string; uz: string }[] = [];
-    try {
-      descriptions = await generateDescriptionsBatch(prepared.map((p) => ({ name: p.name, specsText: p.specsText })));
-    } catch { descriptions = []; }
-
+    // СНАЧАЛА быстро создаём товары (без ожидания ИИ); описания добавим фоном
+    bulkJobs.set(jobId, { status: "processing", stage: "Создаю товары", total: items.length, done: 0, failed: 0 });
+    const created: { id: number; name: string; specsText: string }[] = [];
     for (let i = 0; i < prepared.length; i++) {
       const p = prepared[i];
       try {
@@ -497,15 +493,12 @@ export function startBulkCreateJob(items: ImportProductInput[], categoryId: numb
         const slugUz = await uniqueUzSlug(uzBase);
         const priceUsd = Number(p.it.priceUsd) || 0;
         const priceSum = Math.round(priceUsd * rate);
-        const d = descriptions[i] ?? { ru: "", uz: "" };
 
-        await createProduct({
+        const newId = await createProduct({
           name: p.name,
           slug,
           slugUz,
           brand: p.brand || undefined,
-          description: d.ru || undefined,
-          descriptionUz: d.uz || undefined,
           categoryId,
           price: String(priceSum),
           priceUsd: priceUsd > 0 ? String(priceUsd) : undefined,
@@ -523,6 +516,7 @@ export function startBulkCreateJob(items: ImportProductInput[], categoryId: numb
           isActive: true,
           isApproved: true,
         });
+        if (typeof newId === "number") created.push({ id: newId, name: p.name, specsText: p.specsText });
 
         pingSitemaps(`https://kattachegirma.uz/product/${slug}`);
         done++;
@@ -532,8 +526,25 @@ export function startBulkCreateJob(items: ImportProductInput[], categoryId: numb
       }
       bulkJobs.set(jobId, { status: "processing", stage: "Создаю товары", total: items.length, done, failed });
     }
+    // Товары готовы — сразу завершаем задание, чтобы пользователь не ждал
     bulkJobs.set(jobId, { status: "finished", total: items.length, done, failed, errors });
     setTimeout(() => bulkJobs.delete(jobId), 60 * 60 * 1000);
+
+    // Описания генерируем ФОНОМ после завершения и дописываем в товары
+    try {
+      const descriptions = await generateDescriptionsBatch(created.map((c) => ({ name: c.name, specsText: c.specsText })));
+      for (let i = 0; i < created.length; i++) {
+        const d = descriptions[i];
+        if (d && (d.ru || d.uz)) {
+          try {
+            await updateProduct(created[i].id, {
+              description: d.ru || undefined,
+              descriptionUz: d.uz || undefined,
+            } as any);
+          } catch { /* пропускаем */ }
+        }
+      }
+    } catch { /* описания не критичны */ }
   })();
   return jobId;
 }
