@@ -154,16 +154,26 @@ export async function getProducts(opts?: { categoryId?: number; search?: string;
   const conditions = [];
   if (opts?.categoryId) conditions.push(eq(products.categoryId, opts.categoryId));
   if (opts?.search) {
-    const q = `%${opts.search.toLowerCase()}%`;
-    conditions.push(or(
-      sql`LOWER(${products.name}) LIKE ${q}`,
-      sql`LOWER(${products.brand}) LIKE ${q}`,
-      sql`LOWER(${products.description}) LIKE ${q}`,
-      sql`LOWER(${products.slug}) LIKE ${q}`,
-      sql`LOWER(COALESCE(${(products as any).nameUz}, '')) LIKE ${q}`,
-      sql`LOWER(COALESCE(${(products as any).descriptionUz}, '')) LIKE ${q}`,
-      sql`CAST(${products.price} AS CHAR) LIKE ${q}`,
-    ));
+    const { buildSearchClause } = await import("./searchHelper");
+    const { tokenGroups, synonymPhrases } = buildSearchClause(opts.search);
+    const fieldLike = (pat: string) => or(
+      sql`LOWER(${products.name}) LIKE ${pat}`,
+      sql`LOWER(COALESCE(${(products as any).nameUz}, '')) LIKE ${pat}`,
+      sql`LOWER(${products.brand}) LIKE ${pat}`,
+      sql`LOWER(${products.slug}) LIKE ${pat}`,
+      sql`LOWER(${products.description}) LIKE ${pat}`,
+      sql`LOWER(COALESCE(${(products as any).descriptionUz}, '')) LIKE ${pat}`,
+    );
+    const orParts: any[] = [];
+    if (tokenGroups.length > 0) {
+      orParts.push(and(...tokenGroups.map((variants) => or(...variants.map((v) => fieldLike(`%${v}%`))))));
+    }
+    if (synonymPhrases.length > 0) {
+      orParts.push(or(...synonymPhrases.map((p) => fieldLike(`%${p}%`))));
+    }
+    const rawSearch = opts.search.toLowerCase().trim();
+    if (rawSearch) orParts.push(sql`CAST(${products.price} AS CHAR) LIKE ${`%${rawSearch}%`}`);
+    if (orParts.length > 0) conditions.push(or(...orParts));
   }
   if (opts?.featured) conditions.push(eq(products.isFeatured, true));
   if (!opts?.includeInactive) conditions.push(eq(products.isActive, true));
@@ -331,16 +341,26 @@ export async function countProducts(opts?: { categoryId?: number; search?: strin
   const conditions = [];
   if (opts?.categoryId) conditions.push(eq(products.categoryId, opts.categoryId));
   if (opts?.search) {
-    const q = `%${opts.search.toLowerCase()}%`;
-    conditions.push(or(
-      sql`LOWER(${products.name}) LIKE ${q}`,
-      sql`LOWER(${products.brand}) LIKE ${q}`,
-      sql`LOWER(${products.description}) LIKE ${q}`,
-      sql`LOWER(${products.slug}) LIKE ${q}`,
-      sql`LOWER(COALESCE(${(products as any).nameUz}, '')) LIKE ${q}`,
-      sql`LOWER(COALESCE(${(products as any).descriptionUz}, '')) LIKE ${q}`,
-      sql`CAST(${products.price} AS CHAR) LIKE ${q}`,
-    ));
+    const { buildSearchClause } = await import("./searchHelper");
+    const { tokenGroups, synonymPhrases } = buildSearchClause(opts.search);
+    const fieldLike = (pat: string) => or(
+      sql`LOWER(${products.name}) LIKE ${pat}`,
+      sql`LOWER(COALESCE(${(products as any).nameUz}, '')) LIKE ${pat}`,
+      sql`LOWER(${products.brand}) LIKE ${pat}`,
+      sql`LOWER(${products.slug}) LIKE ${pat}`,
+      sql`LOWER(${products.description}) LIKE ${pat}`,
+      sql`LOWER(COALESCE(${(products as any).descriptionUz}, '')) LIKE ${pat}`,
+    );
+    const orParts: any[] = [];
+    if (tokenGroups.length > 0) {
+      orParts.push(and(...tokenGroups.map((variants) => or(...variants.map((v) => fieldLike(`%${v}%`))))));
+    }
+    if (synonymPhrases.length > 0) {
+      orParts.push(or(...synonymPhrases.map((p) => fieldLike(`%${p}%`))));
+    }
+    const rawSearch = opts.search.toLowerCase().trim();
+    if (rawSearch) orParts.push(sql`CAST(${products.price} AS CHAR) LIKE ${`%${rawSearch}%`}`);
+    if (orParts.length > 0) conditions.push(or(...orParts));
   }
   if (!opts?.includeInactive) conditions.push(eq(products.isActive, true));
   if (opts?.approvedOnly) conditions.push(eq(products.isApproved, true));
