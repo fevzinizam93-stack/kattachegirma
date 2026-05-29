@@ -41,6 +41,7 @@ export default function PriceImportTab({ categories }: Props) {
   const [sellerId, setSellerId] = useState<number | "">("");
   const sellersQuery = trpc.sellers.list.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
   const [cropIdx, setCropIdx] = useState<number | null>(null);
+  const [activeJobId, setActiveJobId] = useState<string | null>(null);
   const [recogInfo, setRecogInfo] = useState<{ stage: string; done: number; total: number } | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const elapsedRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -53,6 +54,57 @@ export default function PriceImportTab({ categories }: Props) {
     if (createPollRef.current) { clearInterval(createPollRef.current); createPollRef.current = null; }
   }
   useEffect(() => () => { stopPoll(); stopCreatePoll(); if (elapsedRef.current) clearInterval(elapsedRef.current); }, []);
+
+  // Сохраняем состояние импорта в браузере — чтобы не потерять при уходе/закрытии
+  useEffect(() => {
+    try {
+      localStorage.setItem("kc_price_import_v1", JSON.stringify({ activeJobId, rows, categoryId, seller, sellerId, fileName }));
+    } catch {}
+  }, [activeJobId, rows, categoryId, seller, sellerId, fileName]);
+
+  // Восстанавливаем при открытии вкладки
+  useEffect(() => {
+    let saved: any = null;
+    try { saved = JSON.parse(localStorage.getItem("kc_price_import_v1") || "null"); } catch {}
+    if (!saved) return;
+    if (saved.categoryId) setCategoryId(saved.categoryId);
+    if (saved.seller) setSeller(saved.seller);
+    if (saved.sellerId) setSellerId(saved.sellerId);
+    if (saved.fileName) setFileName(saved.fileName);
+    if (Array.isArray(saved.rows) && saved.rows.length > 0) {
+      setRows(saved.rows);
+      return;
+    }
+    if (saved.activeJobId) {
+      setBusy(true);
+      setActiveJobId(saved.activeJobId);
+      pollRef.current = setInterval(async () => {
+        try {
+          const job = (await utils.products.recognitionStatus.fetch({ jobId: saved.activeJobId })) as {
+            status: string; stage?: string; done?: number; total?: number; products?: RecognizedProduct[]; error?: string;
+          };
+          if (job.status === "processing") {
+            setRecogInfo({ stage: job.stage ?? "Обработка...", done: job.done ?? 0, total: job.total ?? 0 });
+          } else if (job.status === "done") {
+            stopPoll(); setRecogInfo(null); setRows(job.products ?? []); setBusy(false);
+          } else {
+            stopPoll(); setRecogInfo(null); setBusy(false);
+          }
+        } catch { stopPoll(); setBusy(false); }
+      }, 3000);
+    }
+  }, []);
+
+  function clearImport() {
+    stopPoll();
+    if (elapsedRef.current) clearInterval(elapsedRef.current);
+    setRows([]);
+    setActiveJobId(null);
+    setFileName("");
+    setRecogInfo(null);
+    setBusy(false);
+    try { localStorage.removeItem("kc_price_import_v1"); } catch {}
+  }
 
   async function handleCreateAll() {
     if (!categoryId) { toast.error("Сначала выберите категорию"); return; }
@@ -90,6 +142,9 @@ export default function PriceImportTab({ categories }: Props) {
             (job.errors ?? []).slice(0, 3).forEach((e) => toast.error(e));
             setRows([]);
             setProgress(null);
+            setActiveJobId(null);
+            setFileName("");
+            try { localStorage.removeItem("kc_price_import_v1"); } catch {}
           }
         } catch {
           stopCreatePoll(); setCreating(false);
@@ -146,6 +201,7 @@ export default function PriceImportTab({ categories }: Props) {
     try {
       const base64 = await downscaleToJpegBase64(file);
       const { jobId } = await recognizeMut.mutateAsync({ base64, mimeType: "image/jpeg" });
+      setActiveJobId(jobId);
       pollRef.current = setInterval(async () => {
         try {
           const job = (await utils.products.recognitionStatus.fetch({ jobId })) as {
@@ -284,6 +340,12 @@ export default function PriceImportTab({ categories }: Props) {
               >
                 {whitenAllBusy ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} />}
                 Сделать фон белым всем
+              </button>
+              <button
+                onClick={clearImport}
+                className="inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-xl text-sm font-medium transition-colors"
+              >
+                Очистить
               </button>
               <span className="text-xs uppercase tracking-wide text-gray-400">Категория</span>
               <select

@@ -205,7 +205,7 @@ export function startRecognitionJob(sheetBase64: string, mimeType: string): stri
         error: err instanceof Error ? err.message : String(err),
       });
     }
-    setTimeout(() => recognitionJobs.delete(jobId), 10 * 60 * 1000);
+    setTimeout(() => recognitionJobs.delete(jobId), 60 * 60 * 1000);
   })();
   return jobId;
 }
