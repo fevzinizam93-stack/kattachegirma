@@ -220,7 +220,7 @@ export async function enhanceAndStore(
   baseName: string,
 ): Promise<{ url: string; thumbUrl: string }> {
   const enhanced = await sharp(buffer)
-    .resize({ width: 1200, fit: "inside", withoutEnlargement: false, kernel: "lanczos3" })
+    .resize({ width: 1600, fit: "inside", withoutEnlargement: false, kernel: "lanczos3" })
     .sharpen()
     .normalize()
     .toBuffer();

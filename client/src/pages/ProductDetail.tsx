@@ -751,7 +751,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                 </div>
                 {activeUrl ? (
                   <img
-                    src={imgUrl(activeUrl, 1200, 85)}
+                    src={imgUrl(activeUrl, 1600, 90)}
                     alt={displayName}
                     className="w-full h-full object-contain p-4 transition-transform duration-300 ease-out"
                     style={{

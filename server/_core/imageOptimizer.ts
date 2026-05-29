@@ -39,8 +39,8 @@ export async function optimizeImage(
   try {
     const [fullBuffer, thumbBuffer] = await Promise.all([
       sharp(inputBuffer)
-        .resize(1200, undefined, { withoutEnlargement: true, fit: "inside" })
-        .webp({ quality: 85 })
+        .resize(1600, undefined, { withoutEnlargement: true, fit: "inside" })
+        .webp({ quality: 90 })
         .toBuffer(),
       sharp(inputBuffer)
         .resize(400, undefined, { withoutEnlargement: true, fit: "inside" })

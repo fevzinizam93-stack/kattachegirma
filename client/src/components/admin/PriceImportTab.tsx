@@ -164,7 +164,7 @@ export default function PriceImportTab({ categories }: Props) {
     }
   }
 
-  async function downscaleToJpegBase64(file: File, maxSide = 1280, quality = 0.82): Promise<string> {
+  async function downscaleToJpegBase64(file: File, maxSide = 2000, quality = 0.9): Promise<string> {
     const dataUrl: string = await new Promise((res, rej) => {
       const r = new FileReader();
       r.onload = () => res(r.result as string);
