@@ -252,6 +252,15 @@ export async function getSlugExists(slug: string, excludeId?: number): Promise<b
   return true;
 }
 
+export async function getSlugUzExists(slugUz: string, excludeId?: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+  const result = await db.select({ id: products.id }).from(products).where(eq((products as any).slugUz, slugUz)).limit(1);
+  if (result.length === 0) return false;
+  if (excludeId !== undefined) return result[0].id !== excludeId;
+  return true;
+}
+
 export async function getProductBySlug(slug: string) {
   const db = await getDb();
   if (!db) return undefined;

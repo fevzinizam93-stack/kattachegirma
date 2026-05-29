@@ -202,9 +202,16 @@ export const productsRouter = router({
       }
       // Convert empty string decimal fields to undefined (MySQL rejects empty strings for decimal columns)
       const toDecimal = (v: string | undefined) => (v && v.trim() !== '' ? v : undefined);
+      // Авто UZ-slug при создании
+      let autoSlugUz: string | undefined;
+      try {
+        const { generateUzSlug } = await import("../productVision");
+        autoSlugUz = await generateUzSlug((input as any).nameUz || input.name);
+      } catch { autoSlugUz = undefined; }
       const id = await createProduct({
         ...input,
         slug: safeSlug,
+        slugUz: autoSlugUz,
         price: toDecimal(input.price) as string,
         originalPrice: toDecimal(input.originalPrice),
         costPrice: toDecimal((input as any).costPrice),

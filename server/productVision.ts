@@ -2,7 +2,7 @@ import sharp from "sharp";
 import { invokeLLM } from "./_core/llm";
 import { optimizeImage } from "./_core/imageOptimizer";
 import { storagePut } from "./storage";
-import { createProduct, getSlugExists, getAllCategories } from "./db";
+import { createProduct, getSlugExists, getSlugUzExists, getAllCategories } from "./db";
 import { pingSitemaps } from "./sitemap";
 
 export interface RecognizedProduct {
@@ -316,6 +316,67 @@ async function makeUniqueSlug(base: string): Promise<string> {
   return safe;
 }
 
+async function uniqueUzSlug(base: string): Promise<string> {
+  const b = (base || "").trim() || `mahsulot-${Date.now()}`;
+  let safe = b;
+  let suffix = 2;
+  while (await getSlugUzExists(safe)) {
+    safe = `${b}-${suffix++}`;
+    if (suffix > 100) { safe = `${b}-${Date.now()}`; break; }
+  }
+  return safe;
+}
+
+function cleanUzSlug(raw: string): string {
+  return (raw || "").toString().trim().toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "").slice(0, 80);
+}
+
+export async function generateUzSlug(name: string): Promise<string> {
+  let raw = "";
+  try {
+    const response = await invokeLLM({
+      messages: [
+        { role: "system", content: "You are a URL slug generator. Given a product name (Russian or Uzbek), generate a short SEO-friendly URL slug in Uzbek Latin script. Use hyphens between words, only lowercase a-z, 0-9 and hyphens, max 80 chars. Output ONLY the slug, nothing else." },
+        { role: "user", content: name },
+      ],
+    });
+    raw = (response.choices?.[0]?.message?.content ?? "").toString();
+  } catch { raw = ""; }
+  let base = cleanUzSlug(raw);
+  if (!base) base = cleanUzSlug(translitSlug(name).replace(/\s+/g, "-"));
+  return uniqueUzSlug(base);
+}
+
+async function generateUzSlugsBatch(names: string[]): Promise<string[]> {
+  if (names.length === 0) return [];
+  const list = names.map((n, i) => `${i + 1}. ${n}`).join("\n");
+  let arr: string[] = [];
+  try {
+    const resp = await invokeLLM({
+      messages: [
+        { role: "system", content: "Ты генерируешь SEO-слаги для URL на узбекской латинице. Для КАЖДОГО названия верни короткий слаг (только строчные a-z, 0-9 и дефисы, до 80 символов). Верни JSON { items: [ \"slug1\", ... ] } строго в том же порядке и количестве, что и список." },
+        { role: "user", content: `Названия:\n${list}` },
+      ],
+      response_format: {
+        type: "json_schema",
+        json_schema: {
+          name: "uz_slugs",
+          strict: false,
+          schema: { type: "object", properties: { items: { type: "array", items: { type: "string" } } }, required: ["items"] },
+        },
+      },
+    });
+    const content = resp.choices?.[0]?.message?.content ?? "{}";
+    const parsed = JSON.parse(typeof content === "string" ? content : JSON.stringify(content)) as { items?: string[] };
+    arr = parsed.items ?? [];
+  } catch { arr = []; }
+  return names.map((n, i) => {
+    let base = cleanUzSlug(arr[i] ?? "");
+    if (!base) base = cleanUzSlug(translitSlug(n).replace(/\s+/g, "-"));
+    return base || `mahsulot-${Date.now()}-${i}`;
+  });
+}
+
 async function generateDescriptions(name: string, specsText: string): Promise<{ ru: string; uz: string }> {
   const resp = await invokeLLM({
     messages: [
@@ -425,10 +486,14 @@ export function startBulkCreateJob(items: ImportProductInput[], categoryId: numb
       descriptions = await generateDescriptionsBatch(prepared.map((p) => ({ name: p.name, specsText: p.specsText })));
     } catch { descriptions = []; }
 
+    let uzSlugs: string[] = [];
+    try { uzSlugs = await generateUzSlugsBatch(prepared.map((p) => p.name)); } catch { uzSlugs = []; }
+
     for (let i = 0; i < prepared.length; i++) {
       const p = prepared[i];
       try {
         const slug = await makeUniqueSlug(p.model || p.name);
+        const slugUz = await uniqueUzSlug(uzSlugs[i] || cleanUzSlug(translitSlug(p.name).replace(/\s+/g, "-")));
         const priceUsd = Number(p.it.priceUsd) || 0;
         const priceSum = Math.round(priceUsd * rate);
         const d = descriptions[i] ?? { ru: "", uz: "" };
@@ -436,6 +501,7 @@ export function startBulkCreateJob(items: ImportProductInput[], categoryId: numb
         await createProduct({
           name: p.name,
           slug,
+          slugUz,
           brand: p.brand || undefined,
           description: d.ru || undefined,
           descriptionUz: d.uz || undefined,
