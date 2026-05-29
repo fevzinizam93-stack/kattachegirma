@@ -7,6 +7,7 @@ import AdminModerationTab from "@/components/admin/AdminModerationTab";
 import AdminReviewsTab from "@/components/admin/AdminReviewsTab";
 import AdminQuickOrdersTab from "@/components/admin/AdminQuickOrdersTab";
 import PriceImportTab from "@/components/admin/PriceImportTab";
+import PriceUpdateTab from "@/components/admin/PriceUpdateTab";
 import AdminBannersTab from "@/components/admin/AdminBannersTab";
 import AdminNotificationsTab from "@/components/admin/AdminNotificationsTab";
 import AdminUTMTab from "@/components/admin/AdminUTMTab";
@@ -52,7 +53,7 @@ function AllSellersList({ onSelect, activeSellerUserId }: { onSelect: (sellerUse
   );
 }
 
-type Tab = "products" | "categories" | "orders" | "sellers" | "moderation" | "settings" | "banners" | "notifications" | "utm" | "messaging" | "quickorders" | "indexing" | "reviews" | "priceimport";
+type Tab = "products" | "categories" | "orders" | "sellers" | "moderation" | "settings" | "banners" | "notifications" | "utm" | "messaging" | "quickorders" | "indexing" | "reviews" | "priceimport" | "priceupdate";
 
 interface BannerForm {
   id?: number;
@@ -956,6 +957,7 @@ export default function Admin() {
     { key: "quickorders" as Tab, icon: Zap, label: `Быстрые заявки${(quickOrdersList ?? []).filter(o => o.status === 'new').length > 0 ? ` (${(quickOrdersList ?? []).filter(o => o.status === 'new').length})` : ""}` },
     { key: "indexing" as Tab, icon: Search, label: "Индексирование" },
     { key: "priceimport" as Tab, icon: Upload, label: "Импорт из прайса" },
+    { key: "priceupdate" as Tab, icon: RefreshCw, label: "Обновление цен" },
   ];
 
   return (
@@ -1066,6 +1068,10 @@ export default function Admin() {
         {/* ==================== PRICE IMPORT TAB ==================== */}
         {tab === "priceimport" && (
           <PriceImportTab categories={categoriesData ?? []} />
+        )}
+
+        {tab === "priceupdate" && (
+          <PriceUpdateTab />
         )}
 
         {/* ==================== PRODUCTS TAB ==================== */}
