@@ -1004,6 +1004,32 @@ export const productsRouter = router({
     return { fixedCount: fixed.length, fixed };
   }),
 
+  // Сопоставить прайс с товарами сайта и сравнить цены
+  priceUpdateMatch: adminProcedure
+    .input(z.object({
+      items: z.array(z.object({ model: z.string(), brand: z.string().optional(), priceUsd: z.number() })),
+      rate: z.number(),
+    }))
+    .mutation(async ({ input }) => {
+      const { matchPriceUpdates } = await import("../priceUpdate");
+      return matchPriceUpdates(input.items, input.rate);
+    }),
+
+  // Применить выбранные обновления цен
+  priceUpdateApply: adminProcedure
+    .input(z.object({
+      updates: z.array(z.object({
+        productId: z.number(),
+        newPriceSum: z.number(),
+        newPriceUsd: z.number(),
+        makeOldPrice: z.boolean(),
+      })),
+    }))
+    .mutation(async ({ input }) => {
+      const { applyPriceUpdates } = await import("../priceUpdate");
+      return applyPriceUpdates(input.updates);
+    }),
+
   // Запустить фоновое задание распознавания фото-прайса
   recognizePriceSheet: adminProcedure
     .input(z.object({
