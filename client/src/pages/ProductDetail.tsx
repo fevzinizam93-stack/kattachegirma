@@ -934,16 +934,16 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                   </button>
                 </div>
 
-                {/* Строка 2: Купить в 1 клик + Связаться */}
-                <div className="flex gap-2">
+                {/* Действия в один ряд — компактные кнопки одинакового размера */}
+                <div className="flex items-stretch gap-2">
                   {/* Купить в 1 клик */}
                   <button
                     onClick={() => setQuickBuyOpen(true)}
                     disabled={(product.stock ?? 0) === 0}
-                    className="flex-1 h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border-2 border-primary text-primary hover:bg-primary hover:text-white active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="flex-1 flex flex-col items-center justify-center gap-1 h-[58px] rounded-2xl border border-gray-200 bg-white text-gray-700 hover:border-primary/40 hover:bg-primary/5 active:scale-[0.96] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    <Zap size={16} />
-                    Купить в 1 клик
+                    <Zap size={18} className="text-primary" />
+                    <span className="text-[11px] font-semibold leading-none">В 1 клик</span>
                   </button>
                   {/* Связаться с продавцом */}
                   {(() => {
@@ -952,17 +952,16 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                     const tgUser = tg.replace("@", "").replace("https://t.me/", "");
                     if (!phone && !tgUser) return null;
                     return (
-                      <div className="relative">
+                      <div className="relative flex-1">
                         <button
                           onClick={() => setContactOpen(v => !v)}
-                          className="h-11 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-[0.98] shadow-md shadow-emerald-600/30"
+                          className="w-full flex flex-col items-center justify-center gap-1 h-[58px] rounded-2xl border border-gray-200 bg-white text-gray-700 hover:border-emerald-300 hover:bg-emerald-50 active:scale-[0.96] transition-all"
                         >
-                          <MessageSquare size={16} />
-                          Связаться
-                          <ChevronDown size={12} className={`transition-transform ${contactOpen ? "rotate-180" : ""}`} />
+                          <MessageSquare size={18} className="text-emerald-600" />
+                          <span className="text-[11px] font-semibold leading-none">Связаться</span>
                         </button>
                         {contactOpen && (
-                          <div className="absolute top-full right-0 mt-1.5 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-30" style={{minWidth: '190px'}}>
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1.5 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-30" style={{minWidth: '190px'}}>
                             {phone && (
                               <a
                                 href={`tel:${phone}`}
@@ -1017,28 +1016,25 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                       </div>
                     );
                   })()}
-                </div>
-
-                {/* Row 2: Сравнить + Поделиться */}
-                <div className="flex items-center gap-2">
+                  {/* Сравнить */}
                   <button
                     onClick={() => setCompareOpen(true)}
-                    className="flex items-center gap-1 h-8 px-3 rounded-full text-[11px] font-semibold border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50/60 transition-all shrink-0"
+                    className="flex-1 flex flex-col items-center justify-center gap-1 h-[58px] rounded-2xl border border-gray-200 bg-white text-gray-500 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50/60 active:scale-[0.96] transition-all"
                   >
-                    <ArrowLeftRight size={12} />
-                    Сравнить
+                    <ArrowLeftRight size={18} />
+                    <span className="text-[11px] font-semibold leading-none">Сравнить</span>
                   </button>
                   {/* Поделиться — выпадающее меню */}
-                  <div className="relative">
+                  <div className="relative flex-1">
                     <button
                       onClick={() => setShareOpen(v => !v)}
-                      className="flex items-center gap-1 h-8 px-3 rounded-full text-[11px] font-semibold border border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50 transition-all shrink-0"
+                      className="w-full flex flex-col items-center justify-center gap-1 h-[58px] rounded-2xl border border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:bg-gray-50 active:scale-[0.96] transition-all"
                     >
-                      <Share2 size={12} />
-                      Поделиться
+                      <Share2 size={18} />
+                      <span className="text-[11px] font-semibold leading-none">Поделиться</span>
                     </button>
                     {shareOpen && (
-                      <div className="absolute top-full left-0 mt-1.5 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-30 min-w-[200px]">
+                      <div className="absolute top-full right-0 mt-1.5 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-30 min-w-[200px]">
                         {/* Telegram */}
                         <a
                           href={`https://t.me/share/url?url=${encodeURIComponent(`https://kattachegirma.uz/product/${product.slug}?utm_source=share&utm_medium=user`)}&text=${encodeURIComponent(product.name || '')}`}
