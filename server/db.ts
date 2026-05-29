@@ -208,6 +208,22 @@ export async function getProducts(opts?: { categoryId?: number; search?: string;
     query.orderBy(desc(sql`(SELECT COUNT(*) FROM reviews r WHERE r.productId = ${products.id} AND r.status = 'approved')`));
   } else if (sortBy === 'popularity') {
     query.orderBy(desc(products.hitScore), desc(products.salesCount), desc(products.viewCount));
+  } else if (opts?.search) {
+    const rq = opts.search.toLowerCase().trim();
+    const prefixP = `${rq}%`;
+    const containsP = `%${rq}%`;
+    query.orderBy(
+      desc(sql`(
+        (CASE WHEN LOWER(${products.name}) = ${rq} THEN 1000 ELSE 0 END)
+        + (CASE WHEN LOWER(${products.name}) LIKE ${prefixP} THEN 400 ELSE 0 END)
+        + (CASE WHEN LOWER(${products.name}) LIKE ${containsP} THEN 200 ELSE 0 END)
+        + (CASE WHEN LOWER(COALESCE(${(products as any).nameUz}, '')) LIKE ${containsP} THEN 150 ELSE 0 END)
+        + (CASE WHEN LOWER(COALESCE(${products.brand}, '')) LIKE ${containsP} THEN 120 ELSE 0 END)
+        + (COALESCE(${products.hitScore}, 0) * 2)
+        + COALESCE(${products.salesCount}, 0)
+      )`),
+      desc(products.createdAt)
+    );
   } else {
     query.orderBy(desc(products.createdAt));
   }
