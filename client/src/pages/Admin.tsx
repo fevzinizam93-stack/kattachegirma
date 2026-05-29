@@ -14,7 +14,8 @@ import AdminUTMTab from "@/components/admin/AdminUTMTab";
 import AdminSettingsTab from "@/components/admin/AdminSettingsTab";
 import { trpc } from "@/lib/trpc";
 import { BarChart3, Bell, Edit, FolderOpen, ImagePlus, MapPin, MessageSquare, Package, Plus, Search, Send, Settings, ShoppingBag, Star, Store, Trash2, Upload, Users, X, Zap, Phone, CheckCircle2, Clock, Youtube, PlayCircle, RefreshCw } from "lucide-react";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, Fragment } from "react";
+import { explainIndexNote } from "@/lib/indexErrorHelp";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import { useAuthModal } from "@/App";
@@ -2625,8 +2626,11 @@ function IndexingPanel() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {logsQuery.data.map((log) => (
-                  <tr key={log.id} className="hover:bg-gray-50 transition-colors">
+                {logsQuery.data.map((log) => {
+                  const help = explainIndexNote(log.note, log.status);
+                  return (
+                  <Fragment key={log.id}>
+                  <tr className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3 text-gray-600 whitespace-nowrap text-xs">
                       {new Date(log.createdAt).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}
                     </td>
@@ -2643,7 +2647,7 @@ function IndexingPanel() {
                        log.type === 'single_url' ? '🔗 Один URL' :
                        log.type === 'auto' ? '⚡ Авто' :
                        log.type === 'sitemap' ? '🗺️ Sitemap' : log.type}
-                      {log.note && <span className="block text-gray-400 truncate max-w-32" title={log.note}>{log.note}</span>}</>
+                      {log.note && log.status === 'success' && <span className="block text-gray-400 break-words max-w-[220px] mt-0.5">{log.note}</span>}</>
                     </td>
                     <td className="px-4 py-3 text-right text-gray-700 font-mono text-xs">{log.urlCount}</td>
                     <td className="px-4 py-3 text-right text-green-700 font-mono text-xs font-semibold">{log.succeeded}</td>
@@ -2662,7 +2666,21 @@ function IndexingPanel() {
                       </span>
                     </td>
                   </tr>
-                ))}
+                  {help && (log.status === 'error' || log.status === 'partial') && (
+                    <tr className="bg-red-50/40">
+                      <td colSpan={7} className="px-4 pb-3 pt-0 text-xs">
+                        <div className="bg-white border border-red-100 rounded-lg p-3 space-y-1">
+                          <div className="font-semibold text-red-700">⚠️ Почему ошибка: {help.friendly}</div>
+                          {help.fix && <div className="text-gray-700">✅ Что делать: {help.fix}</div>}
+                          {help.raw && <div className="text-gray-400 break-words">Тех. детали: {help.raw}</div>}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                  </Fragment>
+                  );
+                })}
+
               </tbody>
             </table>
           </div>
