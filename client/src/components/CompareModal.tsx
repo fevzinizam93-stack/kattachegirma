@@ -505,6 +505,35 @@ export default function CompareModal({ open, onClose, currentProduct }: CompareM
     return { leftBetter, rightBetter, equal };
   }, [compareProduct, allSpecs, currentProduct]);
 
+  const verdict = useMemo(() => {
+    if (!compareProduct) return null;
+    const lp = parseFloat(currentProduct.price) || 0;
+    const rp = parseFloat(compareProduct.price) || 0;
+    const lOrig = currentProduct.originalPrice ? parseFloat(currentProduct.originalPrice) : 0;
+    const rOrig = compareProduct.originalPrice ? parseFloat(compareProduct.originalPrice) : 0;
+    const lDisc = lOrig > lp ? Math.round((1 - lp / lOrig) * 100) : 0;
+    const rDisc = rOrig > rp ? Math.round((1 - rp / rOrig) * 100) : 0;
+    const lStock = !currentProduct.stock || currentProduct.stock > 0;
+    const rStock = !compareProduct.stock || compareProduct.stock > 0;
+
+    let winner: "left" | "right" | null = null;
+    if (lp && rp && lp !== rp) winner = lp < rp ? "left" : "right";
+    else if (lDisc !== rDisc) winner = lDisc > rDisc ? "left" : "right";
+    else if (lStock !== rStock) winner = lStock ? "left" : "right";
+
+    if (!winner) return { winner: null as "left" | "right" | null, name: "", reasons: [] as string[] };
+
+    const isLeft = winner === "left";
+    const reasons: string[] = [];
+    const priceDiff = Math.abs(lp - rp);
+    if (priceDiff > 0) reasons.push(`дешевле на ${formatPrice(String(priceDiff))}`);
+    const wDisc = isLeft ? lDisc : rDisc;
+    const oDisc = isLeft ? rDisc : lDisc;
+    if (wDisc > oDisc) reasons.push(`скидка больше — ${wDisc}% против ${oDisc}%`);
+    if (isLeft ? lStock : rStock) reasons.push("в наличии");
+    return { winner, name: isLeft ? currentProduct.name : compareProduct.name, reasons };
+  }, [compareProduct, currentProduct, formatPrice]);
+
   const handleAddToCart = (p: Product) => {
     addItem({
       productId: p.id,
@@ -567,23 +596,24 @@ export default function CompareModal({ open, onClose, currentProduct }: CompareM
           </div>
         </div>
 
-        {/* Summary bar — shown when both products selected */}
-        {compareProduct && summary && (
-          <div className="flex items-center justify-center gap-4 px-4 py-2 bg-gray-50 border-b border-gray-100 shrink-0 text-xs">
-            <span className="flex items-center gap-1 font-semibold text-red-600">
-              <TrendingUp size={12} className="text-green-600" />
-              Левый лучше: <strong className="text-green-700">{summary.leftBetter}</strong>
-            </span>
-            <span className="text-gray-300">|</span>
-            <span className="flex items-center gap-1 font-semibold text-gray-500">
-              <Minus size={12} />
-              Одинаково: <strong>{summary.equal}</strong>
-            </span>
-            <span className="text-gray-300">|</span>
-            <span className="flex items-center gap-1 font-semibold text-blue-600">
-              <TrendingUp size={12} className="text-green-600" />
-              Правый лучше: <strong className="text-green-700">{summary.rightBetter}</strong>
-            </span>
+        {/* Verdict — plain-language recommendation */}
+        {compareProduct && verdict && verdict.winner && (
+          <div className="px-4 py-3 bg-emerald-50 border-b border-emerald-100 shrink-0">
+            <div className="flex items-start gap-2 max-w-3xl mx-auto">
+              <span className="text-lg leading-none mt-0.5">💡</span>
+              <div className="min-w-0">
+                <div className="text-sm font-bold text-emerald-900">Выгоднее: {verdict.name}</div>
+                {verdict.reasons.length > 0 && (
+                  <div className="text-xs text-emerald-700 mt-0.5">{verdict.reasons.join(" · ")}</div>
+                )}
+                <div className="text-[11px] text-emerald-600/70 mt-1">Подсказка по цене и скидке. Характеристики сравните в таблице ниже.</div>
+              </div>
+            </div>
+          </div>
+        )}
+        {compareProduct && verdict && !verdict.winner && (
+          <div className="px-4 py-2 bg-gray-50 border-b border-gray-100 shrink-0 text-center text-xs text-gray-500">
+            Товары близки по цене — выбирайте по характеристикам ниже.
           </div>
         )}
 
