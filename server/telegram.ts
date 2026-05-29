@@ -84,6 +84,43 @@ export async function editMessageText(
   }
 }
 
+export async function editMessageCaption(
+  chatId: string,
+  messageId: number,
+  caption: string,
+  extra?: Record<string, unknown>
+): Promise<void> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return;
+  try {
+    await fetch(`${TELEGRAM_API}/bot${token}/editMessageCaption`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, message_id: messageId, caption, parse_mode: "HTML", ...(extra ?? {}) }),
+    });
+  } catch (e) {
+    console.error("[Telegram] editMessageCaption error:", e);
+  }
+}
+
+export async function editMessageReplyMarkup(
+  chatId: string,
+  messageId: number,
+  replyMarkup: Record<string, unknown>
+): Promise<void> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return;
+  try {
+    await fetch(`${TELEGRAM_API}/bot${token}/editMessageReplyMarkup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, message_id: messageId, reply_markup: replyMarkup }),
+    });
+  } catch (e) {
+    console.error("[Telegram] editMessageReplyMarkup error:", e);
+  }
+}
+
 /**
  * Broadcast a message to:
  * 1. The main admin chat (TELEGRAM_ADMIN_CHAT_ID env var)
@@ -217,6 +254,9 @@ export async function notifyNewReview(review: {
     [
       { text: "✅ Одобрить отзыв", callback_data: `review_approve:${review.id}` },
       { text: "🙈 Скрыть", callback_data: `review_hide:${review.id}` },
+    ],
+    [
+      { text: "✍️ Ответить покупателю", callback_data: `review_reply:${review.id}` },
     ],
   ];
 

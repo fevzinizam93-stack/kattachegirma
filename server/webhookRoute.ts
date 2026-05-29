@@ -6,7 +6,7 @@
 
 import { Router } from "express";
 import { approveSeller, setSellerBlocked, getSellerById, getProductById, updateProduct, setReviewStatus, setReviewReply, getAllReviews, getAllOrders, getAllSellers, getPendingProducts, getOrderById, updateOrderStatusWithManager } from "./db";
-import { answerCallbackQuery, editMessageText, sendTelegramMessageToChat, notifyCustomer } from "./telegram";
+import { answerCallbackQuery, editMessageText, editMessageCaption, editMessageReplyMarkup, sendTelegramMessageToChat, notifyCustomer } from "./telegram";
 
 const router = Router();
 
@@ -201,7 +201,10 @@ router.post("/api/telegram/webhook", async (req, res) => {
         ].filter(Boolean).join("\n");
 
         if (chatId && messageId) {
-          await editMessageText(chatId, messageId, approvedReviewText);
+          const isPhoto = Array.isArray(cbq.message?.photo) && cbq.message.photo.length > 0;
+          if (isPhoto) await editMessageCaption(chatId, messageId, approvedReviewText);
+          else await editMessageText(chatId, messageId, approvedReviewText);
+          await editMessageReplyMarkup(chatId, messageId, { inline_keyboard: [] });
         }
 
       } else if (data.startsWith("review_hide:")) {
@@ -231,7 +234,22 @@ router.post("/api/telegram/webhook", async (req, res) => {
         ].filter(Boolean).join("\n");
 
         if (chatId && messageId) {
-          await editMessageText(chatId, messageId, hiddenReviewText);
+          const isPhoto = Array.isArray(cbq.message?.photo) && cbq.message.photo.length > 0;
+          if (isPhoto) await editMessageCaption(chatId, messageId, hiddenReviewText);
+          else await editMessageText(chatId, messageId, hiddenReviewText);
+          await editMessageReplyMarkup(chatId, messageId, { inline_keyboard: [] });
+        }
+
+      } else if (data.startsWith("review_reply:")) {
+        const reviewId = parseInt(data.split(":")[1], 10);
+        if (isNaN(reviewId)) throw new Error("Invalid review id");
+        await answerCallbackQuery(callbackQueryId, "✍️ Напишите ответ покупателю");
+        if (chatId) {
+          await sendTelegramMessageToChat(
+            chatId,
+            `✍️ <b>Напишите ответ покупателю</b> и отправьте сообщением — он появится под отзывом как «Ответ Katta Chegirma».\n\n🆔 #otziv${reviewId}`,
+            { reply_markup: { force_reply: true, input_field_placeholder: "Ваш ответ покупателю..." } }
+          );
         }
 
       } else if (data.startsWith("take_order:")) {
