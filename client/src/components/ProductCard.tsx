@@ -95,14 +95,14 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
 
   return (
     <>
-    <div className="group bg-white rounded-2xl overflow-hidden flex flex-col shadow-sm ring-1 ring-gray-100 transition-all duration-200 ease-out transform-gpu hover:-translate-y-1 hover:shadow-xl hover:ring-2 hover:ring-primary/40 motion-reduce:transform-none motion-reduce:hover:translate-y-0">
+    <div className="group bg-white rounded-2xl overflow-hidden flex flex-col shadow-sm ring-1 ring-gray-100 transition-all duration-200 ease-out transform-gpu hover:-translate-y-1 hover:shadow-xl hover:ring-2 hover:ring-primary/40 active:ring-2 active:ring-primary/50 active:shadow-lg motion-reduce:transform-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100">
       <Link
         href={`/product/${product.slug}`}
         onClick={() => {
           trackClick.mutate({ productId: product.id });
           track("product_click", { productId: product.id, productName: displayName });
         }}
-        className="flex flex-col flex-1 cursor-pointer active:scale-[0.98] transition-transform touch-manipulation"
+        className="flex flex-col flex-1 cursor-pointer active:scale-[0.97] active:bg-gray-50 transition-all duration-100 ease-out touch-manipulation select-none"
       >
         {/* Square photo — fixed 220px height so all cards have identical photo area */}
         <div className="relative bg-gray-50 h-36 md:h-44" style={{ width: '100%', flexShrink: 0 }}>
