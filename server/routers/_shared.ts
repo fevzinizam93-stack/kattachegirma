@@ -8,17 +8,20 @@ export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
   return next({ ctx });
 });
 
-// Owner-only guard — uses OWNER_OPEN_ID (already in env) for fail-closed access
+// Owner-only guard — проверяет поле isOwner в таблице users (надёжнее чем env-переменные).
+// Запасной вариант: если isOwner не в контексте — проверяем по OWNER_OPEN_ID / OWNER_EMAIL.
 export const ownerProcedure = adminProcedure.use(({ ctx, next }) => {
+  // Основная проверка: поле isOwner в БД
+  if ((ctx.user as any).isOwner === true) return next();
+  // Запасной вариант: OWNER_OPEN_ID / OWNER_EMAIL
   const ownerOpenId = (process.env.OWNER_OPEN_ID || "").trim();
   const userOpenId = ((ctx.user as any).openId || "").trim();
-  // Also allow matching by email as fallback
   const ownerEmail = (process.env.OWNER_EMAIL || "").toLowerCase().trim();
   const userEmail = ((ctx.user as any).email || "").toLowerCase().trim();
-  const isOwner =
+  const isOwnerEnv =
     (ownerOpenId && userOpenId && ownerOpenId === userOpenId) ||
     (ownerEmail && userEmail && ownerEmail === userEmail);
-  if (!isOwner) throw new TRPCError({ code: "FORBIDDEN", message: "Доступ только для владельца" });
+  if (!isOwnerEnv) throw new TRPCError({ code: "FORBIDDEN", message: "Доступ только для владельца" });
   return next();
 });
 
