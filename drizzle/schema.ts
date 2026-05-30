@@ -101,6 +101,7 @@ export const products = mysqlTable("products", {
   sellerTelegram: varchar("sellerTelegram", { length: 128 }),
   sellerName: varchar("sellerName", { length: 256 }),
   isApproved: boolean("isApproved").default(true),
+  isOfficial: boolean("isOfficial").default(true),
   isActive: boolean("isActive").default(true).notNull(),
   moderationStatus: mysqlEnum("moderationStatus", ["approved", "pending", "rejected"]).default("approved").notNull(),
   costPrice: decimal("costPrice", { precision: 12, scale: 2 }),

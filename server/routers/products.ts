@@ -411,6 +411,7 @@ export const productsRouter = router({
         sellerPhone: seller.phone ?? undefined,
         sellerTelegram: seller.telegram ?? undefined,
         isApproved: false,
+        isOfficial: false,
         moderationStatus: "pending" as const,
         isFeatured: false,
       });
