@@ -993,12 +993,12 @@ export async function deleteReview(id: number) {
   await db.delete(reviews).where(eq(reviews.id, id));
 }
 
-export async function setReviewReply(id: number, reply: string) {
+export async function setReviewReply(id: number, reply: string, bySeller = false) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   const value = reply.trim();
   await db.update(reviews)
-    .set({ reply: value || null, repliedAt: value ? new Date() : null })
+    .set({ reply: value || null, repliedAt: value ? new Date() : null, replyBySeller: value ? bySeller : false })
     .where(eq(reviews.id, id));
 }
 

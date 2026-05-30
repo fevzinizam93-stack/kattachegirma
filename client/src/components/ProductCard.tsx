@@ -10,6 +10,7 @@ import CompareModal from "@/components/CompareModal";
 import { trpc } from "@/lib/trpc";
 import { imgUrl } from "@/lib/imgUrl";
 import { useAnalytics } from "@/hooks/useAnalytics";
+import OfficialBadge from "@/components/OfficialBadge";
 
 interface Product {
   id: number;
@@ -27,6 +28,7 @@ interface Product {
   isNew?: boolean | null;
   isFeatured?: boolean | null;
   isHit?: boolean | null;
+  isOfficial?: boolean | null;
   isPremium?: boolean | null;
   stock?: number | null;
   sellerId?: number | null;
@@ -172,7 +174,7 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
           )}
 
           {/* Product name — clamp to 2 lines max */}
-          <h3 className="text-sm font-semibold text-gray-800 leading-snug" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', flexShrink: 0 }}>{displayName}</h3>
+          <h3 className="text-sm font-semibold text-gray-800 leading-snug" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', flexShrink: 0 }}>{displayName}{product.isOfficial && <OfficialBadge size={13} className="ml-1 align-middle" />}</h3>
 
           {/* Price block */}
           <div className="mt-auto pt-1">

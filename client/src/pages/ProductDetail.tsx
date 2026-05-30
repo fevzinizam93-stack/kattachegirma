@@ -15,6 +15,7 @@ import QuickBuyModal from "@/components/QuickBuyModal";
 import { trackViewContent, trackAddToCart } from "@/hooks/useFacebookPixel";
 import { imgUrl } from "@/lib/imgUrl";
 import { getSpecTemplate, extractSpecs } from "@/lib/specTemplates";
+import OfficialBadge from "@/components/OfficialBadge";
 
 function VideoReviewDetailButton({ productName, savedVideoId }: { productName: string; savedVideoId?: string | null }) {
   const [open, setOpen] = useState(false);
@@ -808,7 +809,10 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
             <div className="flex flex-col gap-3 p-3 md:p-4">
 
               {/* ── Product name ── */}
-              <h1 className="text-xl font-bold text-gray-900 leading-snug">{displayName}</h1>
+              <h1 className="text-xl font-bold text-gray-900 leading-snug">
+                {displayName}
+                {(product as any).isOfficial && <OfficialBadge size={18} className="ml-1.5 align-middle" />}
+              </h1>
               {product.brand && (
                 <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide -mt-1">{product.brand}</p>
               )}
@@ -1424,7 +1428,9 @@ function ReviewsSection({ productId, preloadedReviews, preloadedSummary }: { pro
                   <p className="text-sm text-gray-700 mt-1.5 leading-relaxed">{r.comment}</p>
                   {(r as any).reply && (
                     <div className="mt-2 ml-3 pl-3 border-l-2 border-emerald-200 bg-emerald-50/60 rounded-r-lg py-2 pr-2">
-                      <div className="text-[11px] font-bold text-emerald-700 mb-0.5">Ответ Katta Chegirma:</div>
+                      <div className="text-[11px] font-bold text-emerald-700 mb-0.5 flex items-center gap-1">
+                        {(r as any).replyBySeller ? "Ответ продавца:" : <>Ответ Katta Chegirma <OfficialBadge size={13} /></>}
+                      </div>
                       <p className="text-sm text-gray-700 leading-relaxed">{(r as any).reply}</p>
                     </div>
                   )}
