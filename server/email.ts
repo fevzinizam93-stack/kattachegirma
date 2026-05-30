@@ -3,7 +3,12 @@
 // Пока ключа нет — письма не отправляются, но сайт работает без ошибок.
 
 const BASE_URL = "https://kattachegirma.uz";
-const FROM = process.env.EMAIL_FROM || "Katta Chegirma <no-reply@kattachegirma.uz>";
+// Боевой отправитель — подтверждённый домен kattachegirma.uz.
+// Тестовый адрес Resend (onboarding@resend.dev шлёт только владельцу аккаунта) игнорируем.
+const ENV_FROM = process.env.EMAIL_FROM;
+const FROM = (ENV_FROM && !ENV_FROM.includes("onboarding@resend.dev"))
+  ? ENV_FROM
+  : "Katta Chegirma <no-reply@kattachegirma.uz>";
 
 export async function sendEmail(to: string, subject: string, html: string): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
