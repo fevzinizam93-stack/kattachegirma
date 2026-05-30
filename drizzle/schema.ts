@@ -61,6 +61,7 @@ export const sellers = mysqlTable("sellers", {
   telegram: varchar("telegram", { length: 128 }),
   description: text("description"),
   isApproved: boolean("isApproved").default(false),
+  isTrusted: boolean("isTrusted").default(false),
   isBlocked: boolean("isBlocked").default(false),
   rejectionReason: varchar("rejectionReason", { length: 512 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

@@ -1105,6 +1105,21 @@ export async function setProductModerationStatus(id: number, status: "approved" 
   await db.update(products).set({ moderationStatus: status, isApproved: status === "approved" }).where(eq(products.id, id));
 }
 
+export async function setSellerTrusted(sellerId: number, trusted: boolean) {
+  const db = await getDb();
+  if (!db) return;
+  const seller = await getSellerById(sellerId);
+  if (!seller) return;
+  // Флаг доверия у продавца
+  await db.update(sellers).set({ isTrusted: trusted }).where(eq(sellers.id, sellerId));
+  // Роль аккаунта: доверенному выдаём admin (полный доступ), при снятии — обратно seller
+  if (seller.userId) {
+    await db.update(users).set({ role: trusted ? "admin" : "seller" }).where(eq(users.id, seller.userId));
+  }
+  // Товары доверенного продавца становятся официальными (галочка), при снятии — обычными
+  await db.update(products).set({ isOfficial: trusted }).where(eq(products.sellerId, sellerId));
+}
+
 export async function getSellerById(id: number) {
   const db = await getDb();
   if (!db) return null;

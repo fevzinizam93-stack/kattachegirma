@@ -10,6 +10,7 @@ import {
   approveSeller,
   rejectSeller,
   setSellerBlocked,
+  setSellerTrusted,
   getSellerProducts,
   promoteToAdmin,
   getPendingProducts,
@@ -103,6 +104,14 @@ export const sellersRouter = router({
         })
         .catch(() => {});
       return { success: true };
+    }),
+
+  // Admin: сделать продавца доверенным со-админом (или снять)
+  setTrusted: adminProcedure
+    .input(z.object({ id: z.number(), trusted: z.boolean() }))
+    .mutation(async ({ input }) => {
+      await setSellerTrusted(input.id, input.trusted);
+      return { ok: true };
     }),
 
   // Admin: reject seller
