@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { Store, Users, XCircle } from "lucide-react";
+import { Store, Users, XCircle, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 export default function AdminSellersTab() {
@@ -22,6 +22,13 @@ export default function AdminSellersTab() {
   const blockSeller = trpc.sellers.blockSeller.useMutation({
     onSuccess: (_data, vars) => {
       toast.success(vars.blocked ? "Продавец заблокирован" : "Продавец разблокирован");
+      utils.sellers.list.invalidate();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const setTrusted = trpc.sellers.setTrusted.useMutation({
+    onSuccess: (_data, vars) => {
+      toast.success(vars.trusted ? "Продавец назначен доверенным со-админом" : "Доверие снято");
       utils.sellers.list.invalidate();
     },
     onError: (e) => toast.error(e.message),
@@ -55,7 +62,12 @@ export default function AdminSellersTab() {
                     <Store size={20} className="text-primary" />
                   </div>
                   <div>
-                    <p className="font-bold text-gray-900">{seller.name}</p>
+                    <p className="font-bold text-gray-900 flex items-center gap-1.5">
+                      {seller.name}
+                      {(seller as any).isTrusted && (
+                        <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full"><ShieldCheck size={11} /> Доверенный</span>
+                      )}
+                    </p>
                     <p className="text-sm text-gray-500">{seller.phone}</p>
                     {seller.telegram && <p className="text-xs text-blue-600">{seller.telegram}</p>}
                     {/* Show rejection reason if exists */}
@@ -87,6 +99,23 @@ export default function AdminSellersTab() {
                   {seller.isApproved && (
                     <span className="bg-green-50 text-green-700 text-xs font-bold px-3 py-1 rounded-full">✓ Одобрен</span>
                   )}
+                  {seller.isApproved && ((seller as any).isTrusted ? (
+                    <button
+                      onClick={() => { if (confirm("Снять доверие? Продавец потеряет доступ к админ-панели, а его товары станут обычными (без галочки).")) setTrusted.mutate({ id: seller.id, trusted: false }); }}
+                      className="bg-blue-50 text-blue-700 text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-1"
+                    >
+                      <ShieldCheck size={12} />
+                      Снять доверие
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => { if (confirm("Сделать продавца доверенным со-админом?\n\nОн получит доступ ко ВСЕМ разделам админ-панели (как ты) и официальную галочку на товарах. Назначай только своего человека.")) setTrusted.mutate({ id: seller.id, trusted: true }); }}
+                      className="bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1"
+                    >
+                      <ShieldCheck size={12} />
+                      Сделать доверенным
+                    </button>
+                  ))}
                   {(seller as any).isBlocked ? (
                     <button
                       onClick={() => blockSeller.mutate({ id: seller.id, blocked: false })}
