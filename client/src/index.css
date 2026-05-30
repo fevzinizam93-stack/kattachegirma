@@ -279,6 +279,9 @@
 @media (prefers-reduced-motion: reduce) {
   .hit-rotate-fade { animation: none; }
   .press:active, .press-icon:hover { transform: none; }
+  button:hover, [role="button"]:hover, .press:hover, .press-icon:hover {
+    transform: none; box-shadow: none;
+  }
 }
 
 /* ---- Глобальная реакция всех элементов управления ---- */
@@ -296,19 +299,20 @@
   /* Наведение — только на настоящих указателях (без «залипания» на тач) */
   @media (hover: hover) and (pointer: fine) {
     button:not(:disabled):hover,
-    a[href]:hover,
     [role="button"]:not([aria-disabled="true"]):hover {
-      filter: brightness(1.06);
+      filter: brightness(1.04);
+      transform: translateY(-1px) scale(1.02);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     }
+    a[href]:hover { filter: brightness(1.04); }
+    .press:hover { transform: scale(1.03); }
+    .press-icon:hover { transform: scale(1.08); }
   }
 }
 button:disabled, [aria-disabled="true"] { filter: none !important; }
 
 /* Класс «вдавливания» для настоящих кнопок (не для карточек!) */
 .press:active { transform: scale(.96); }
-@media (hover: hover) and (pointer: fine) {
-  .press-icon:hover { transform: scale(1.08); }
-}
 
 /* ---- Ripple: волна из точки нажатия ---- */
 .ripple { position: relative; overflow: hidden; }
