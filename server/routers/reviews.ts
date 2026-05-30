@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { router, publicProcedure } from "../_core/trpc";
-import { adminProcedure } from "./_shared";
+import { adminProcedure, sellerProcedure } from "./_shared";
 import {
   getApprovedReviewsByProduct,
   insertReview,
@@ -11,6 +11,9 @@ import {
   deleteReview,
   getLatestApprovedReviews,
   getProductById,
+  getReviewsForSeller,
+  setReviewReplyForSeller,
+  getSellerByUserId,
 } from "../db";
 import { notifyNewReview } from "../telegram";
 
@@ -108,6 +111,23 @@ export const reviewsRouter = router({
     .input(z.object({ id: z.number(), reply: z.string().max(2000) }))
     .mutation(async ({ input }) => {
       await setReviewReply(input.id, input.reply);
+      return { ok: true };
+    }),
+
+  // Seller: отзывы на товары самого продавца
+  sellerReviews: sellerProcedure.query(async ({ ctx }) => {
+    const seller = await getSellerByUserId(ctx.user.id);
+    if (!seller) return [];
+    return getReviewsForSeller(seller.id);
+  }),
+
+  // Seller: ответить на отзыв своего товара
+  sellerReply: sellerProcedure
+    .input(z.object({ id: z.number(), reply: z.string().max(2000) }))
+    .mutation(async ({ input, ctx }) => {
+      const seller = await getSellerByUserId(ctx.user.id);
+      if (!seller) throw new Error("Профиль продавца не найден");
+      await setReviewReplyForSeller(input.id, input.reply, seller.id);
       return { ok: true };
     }),
 

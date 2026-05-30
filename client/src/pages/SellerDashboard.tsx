@@ -12,6 +12,7 @@ import {
   Upload, X, Store, ImagePlus, Loader2, MessageSquare, Youtube, Search, PlayCircle
 } from "lucide-react";
 import { Link } from "wouter";
+import SellerReviews from "@/components/SellerReviews";
 
 const MAX_PHOTOS = 10;
 
@@ -856,6 +857,8 @@ export default function SellerDashboard() {
             ))}
           </div>
         )}
+
+        <SellerReviews />
       </div>
     </div>
   );

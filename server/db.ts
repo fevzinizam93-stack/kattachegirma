@@ -1002,6 +1002,40 @@ export async function setReviewReply(id: number, reply: string, bySeller = false
     .where(eq(reviews.id, id));
 }
 
+export async function getReviewsForSeller(sellerId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select({
+    id: reviews.id,
+    productId: reviews.productId,
+    productName: products.name,
+    authorName: reviews.authorName,
+    rating: reviews.rating,
+    comment: reviews.comment,
+    status: reviews.status,
+    reply: reviews.reply,
+    repliedAt: reviews.repliedAt,
+    replyBySeller: reviews.replyBySeller,
+    createdAt: reviews.createdAt,
+  })
+  .from(reviews)
+  .innerJoin(products, eq(reviews.productId, products.id))
+  .where(and(eq(products.sellerId, sellerId), eq(reviews.status, "approved")))
+  .orderBy(desc(reviews.createdAt));
+}
+
+export async function setReviewReplyForSeller(reviewId: number, reply: string, sellerId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const rows = await db.select({ pid: products.sellerId })
+    .from(reviews)
+    .innerJoin(products, eq(reviews.productId, products.id))
+    .where(eq(reviews.id, reviewId))
+    .limit(1);
+  if (!rows[0] || rows[0].pid !== sellerId) throw new Error("Это не отзыв на ваш товар");
+  await setReviewReply(reviewId, reply, true);
+}
+
 export async function getReviewCountsByProduct(productId: number) {
   const db = await getDb();
   if (!db) return { count: 0, avgRating: 0 };
