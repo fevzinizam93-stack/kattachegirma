@@ -201,14 +201,16 @@ export async function broadcastTelegramPhoto(
   const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
   const sentTo = new Set<string>();
   if (adminChatId) {
-    await sendTelegramPhotoToChat(adminChatId, photoUrl, caption, extra);
+    const ok = await sendTelegramPhotoToChat(adminChatId, photoUrl, caption, extra);
+    if (!ok) await sendTelegramMessageToChat(adminChatId, caption, extra);
     sentTo.add(adminChatId);
   }
   try {
     const recipients = await getActiveTelegramRecipients();
     for (const r of recipients) {
       if (!sentTo.has(r.chatId)) {
-        await sendTelegramPhotoToChat(r.chatId, photoUrl, caption, extra);
+        const ok = await sendTelegramPhotoToChat(r.chatId, photoUrl, caption, extra);
+        if (!ok) await sendTelegramMessageToChat(r.chatId, caption, extra);
         sentTo.add(r.chatId);
       }
     }

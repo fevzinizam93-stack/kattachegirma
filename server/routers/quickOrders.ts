@@ -5,6 +5,7 @@ import {
   createQuickOrder,
   getAllQuickOrders,
   updateQuickOrderStatus,
+  getProductById,
 } from "../db";
 import { notifyNewOrder } from "../telegram";
 
@@ -20,14 +21,26 @@ export const quickOrdersRouter = router({
     }))
     .mutation(async ({ input }) => {
       const id = await createQuickOrder(input);
-      // Notify via Telegram (non-blocking)
-      notifyNewOrder({
-        id,
-        phone: input.customerPhone,
-        address: "",
-        items: [{ productName: input.productName, quantity: 1, price: input.productPrice }],
-        total: input.productPrice,
-      }).catch((e: unknown) => console.error("[Telegram] notifyQuickOrder failed:", e));
+      // Notify via Telegram with photo + USD/UZS price (non-blocking)
+      void (async () => {
+        try {
+          const p = await getProductById(input.productId);
+          const priceNum = p?.price != null ? Number(p.price) : Number(input.productPrice);
+          const priceStr = Number.isFinite(priceNum) ? String(priceNum) : "0";
+          const priceUsd = p?.priceUsd != null ? Number(p.priceUsd) : undefined;
+          await notifyNewOrder({
+            id,
+            phone: input.customerPhone,
+            customerName: input.customerName,
+            address: "",
+            items: [{ productName: input.productName, quantity: 1, price: priceStr, priceUsd, imageUrl: p?.imageUrl ?? undefined }],
+            total: priceStr,
+            totalUsd: priceUsd,
+          });
+        } catch (e) {
+          console.error("[Telegram] notifyQuickOrder failed:", e);
+        }
+      })();
       return { id };
     }),
 
@@ -42,13 +55,25 @@ export const quickOrdersRouter = router({
     }))
     .mutation(async ({ input }) => {
       const id = await createQuickOrder({ ...input, customerName: input.customerName ?? "Покупатель" });
-      notifyNewOrder({
-        id,
-        phone: input.customerPhone,
-        address: "",
-        items: [{ productName: input.productName, quantity: 1, price: input.productPrice }],
-        total: input.productPrice,
-      }).catch((e: unknown) => console.error("[Telegram] notifyQuickOrder failed:", e));
+      void (async () => {
+        try {
+          const p = await getProductById(input.productId);
+          const priceNum = p?.price != null ? Number(p.price) : Number(input.productPrice);
+          const priceStr = Number.isFinite(priceNum) ? String(priceNum) : "0";
+          const priceUsd = p?.priceUsd != null ? Number(p.priceUsd) : undefined;
+          await notifyNewOrder({
+            id,
+            phone: input.customerPhone,
+            customerName: input.customerName ?? "Покупатель",
+            address: "",
+            items: [{ productName: input.productName, quantity: 1, price: priceStr, priceUsd, imageUrl: p?.imageUrl ?? undefined }],
+            total: priceStr,
+            totalUsd: priceUsd,
+          });
+        } catch (e) {
+          console.error("[Telegram] notifyQuickOrder failed:", e);
+        }
+      })();
       return { id };
     }),
 
