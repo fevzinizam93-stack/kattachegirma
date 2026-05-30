@@ -271,6 +271,13 @@ export const productsRouter = router({
     }))
     .mutation(async ({ input }) => {
       const { id, ...data } = input;
+      // Normalize slug on edit (same rules as create — no double dashes, no leading/trailing dash)
+      const cyrMapU: Record<string, string> = { а:"a",б:"b",в:"v",г:"g",д:"d",е:"e",ё:"yo",ж:"zh",з:"z",и:"i",й:"y",к:"k",л:"l",м:"m",н:"n",о:"o",п:"p",р:"r",с:"s",т:"t",у:"u",ф:"f",х:"kh",ц:"ts",ч:"ch",ш:"sh",щ:"sch",ъ:"",ы:"y",ь:"",э:"e",ю:"yu",я:"ya" };
+      const translitU = (s: string) => s.toLowerCase().split("").map(c => cyrMapU[c] ?? c).join("");
+      if (typeof data.slug === "string" && data.slug.trim() !== "") {
+        const cleaned = translitU(data.slug).replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-").replace(/^-|-$/g, "");
+        if (cleaned) data.slug = cleaned;
+      }
       // Helper: convert empty strings to undefined for decimal/varchar fields (MySQL rejects empty string for decimal)
       const toDecimalOrUndef = (v: string | undefined | null) => (v != null && v.trim() !== '' ? v : undefined);
       const toStrOrUndef = (v: string | undefined | null) => (v != null && v.trim() !== '' ? v : undefined);
