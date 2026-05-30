@@ -459,7 +459,7 @@ export default function AdminAnalytics() {
           <StatCard icon={<Heart size={20} />} label="Добавлено в избранное (всего)" value={(stats as any).favoritesCount ?? 0} color="#c62828" />
           <StatCard icon={<RotateCcw size={20} />} label="Повторных покупателей" value={(stats as any).repeatOrderUsers ?? 0} color="#6a1b9a" />
           <StatCard icon={<Users size={20} />} label="Авторизованных пользователей" value={(stats as any).uniqueUsers ?? 0} color="#1565c0" />
-          <StatCard icon={<Clock size={20} />} label="Период анализа" value={`${days} дней`} color="#00838f" />
+          <StatCard icon={<Clock size={20} />} label="Период анализа" value={days === 7 ? "Неделя" : days === 30 ? "Месяц" : days === 90 ? "3 месяца" : days === 180 ? "6 месяцев" : days === 365 ? "Год" : `${days} дней`} color="#00838f" />
         </div>
 
       </div>
