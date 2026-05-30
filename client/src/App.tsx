@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, lazy, Suspense, useEffect } from "react";
 import { useUTMTracker } from "./hooks/useUTMTracker";
 import { useGA4 } from "./hooks/useGA4";
+import { usePageView } from "./hooks/useAnalytics";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Route, Switch, Redirect, useLocation } from "wouter";
@@ -70,6 +71,7 @@ export function useAuthModal() {
 function Router() {
   const [location] = useLocation();
   useGA4();
+  usePageView(location);
 
   // Parse search query from URL
   const searchParams = new URLSearchParams(location.includes("?") ? location.split("?")[1] : "");

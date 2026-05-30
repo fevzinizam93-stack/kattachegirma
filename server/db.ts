@@ -826,14 +826,14 @@ export async function getAnalyticsStats(days = 30) {
     .groupBy(sql`DATE(createdAt)`)
     .orderBy(sql`DATE(createdAt)`);
 
-  // Unique sessions per day
+  // Unique sessions per day (по всем событиям, а не только просмотрам страниц)
   const dailySessions = await db
     .select({
       date: sql<string>`DATE(createdAt)`,
       sessions: sql<number>`COUNT(DISTINCT sessionId)`,
     })
     .from(analyticsEvents)
-    .where(and(eq(analyticsEvents.eventType, "page_view"), gte(analyticsEvents.createdAt, since)))
+    .where(gte(analyticsEvents.createdAt, since))
     .groupBy(sql`DATE(createdAt)`)
     .orderBy(sql`DATE(createdAt)`);
 

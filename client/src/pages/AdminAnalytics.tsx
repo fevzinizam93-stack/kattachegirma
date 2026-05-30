@@ -218,13 +218,19 @@ export default function AdminAnalytics() {
             <h1 className="text-lg font-black text-gray-800">Аналитика</h1>
           </div>
           <div className="flex items-center gap-2">
-            {[7, 14, 30, 60, 90].map(d => (
+            {[
+              { d: 7, label: "Неделя" },
+              { d: 30, label: "Месяц" },
+              { d: 90, label: "3 месяца" },
+              { d: 180, label: "6 месяцев" },
+              { d: 365, label: "Год" },
+            ].map(({ d, label }) => (
               <button
                 key={d}
                 onClick={() => setDays(d)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${days === d ? "bg-red-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
               >
-                {d}д
+                {label}
               </button>
             ))}
           </div>
