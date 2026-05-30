@@ -5,7 +5,7 @@
  */
 
 import { Router } from "express";
-import { approveSeller, setSellerBlocked, getSellerById, getProductById, updateProduct, setReviewStatus, setReviewReply, getAllReviews, getAllOrders, getAllSellers, getPendingProducts, getOrderById, updateOrderStatusWithManager } from "./db";
+import { approveSeller, setSellerBlocked, getSellerById, getProductById, updateProduct, setReviewStatus, setReviewReply, getAllReviews, getAllOrders, getAllSellers, getPendingProducts, getOrderById, updateOrderStatusWithManager, createNotification } from "./db";
 import { answerCallbackQuery, editMessageText, editMessageCaption, editMessageReplyMarkup, sendTelegramMessageToChat, notifyCustomer } from "./telegram";
 
 const router = Router();
@@ -292,12 +292,35 @@ router.post("/api/telegram/webhook", async (req, res) => {
           notifyCustomer(order.customerPhone, orderId, managerName).catch(console.error);
         }
 
+        // Уведомление в колокольчике для веб-покупателя
+        if (order.userId) {
+          await createNotification({
+            userId: order.userId,
+            title: "Заказ принят ✅",
+            message: `Ваш заказ #${orderId} принят! Менеджер ${managerName} свяжется с вами в ближайшее время для подтверждения деталей.`,
+            orderId,
+            type: "order",
+          }).catch((e) => console.error("[Notification] take_order failed:", e));
+        }
+
       } else if (data.startsWith("reject_order:")) {
         const orderId = parseInt(data.split(":")[1], 10);
         if (isNaN(orderId)) throw new Error("Invalid order id");
 
+        const rejectedOrder = await getOrderById(orderId);
         await updateOrderStatusWithManager(orderId, "cancelled");
         await answerCallbackQuery(callbackQueryId, `❌ Buyurtma #${orderId} rad etildi`);
+
+        // Уведомление в колокольчике для веб-покупателя
+        if (rejectedOrder?.userId) {
+          await createNotification({
+            userId: rejectedOrder.userId,
+            title: "Заказ отменён ❌",
+            message: `К сожалению, ваш заказ #${orderId} был отменён. Свяжитесь с нами для уточнения деталей.`,
+            orderId,
+            type: "order",
+          }).catch((e) => console.error("[Notification] reject_order failed:", e));
+        }
 
         if (chatId && messageId) {
           const originalText = cbq.message?.text ?? "";

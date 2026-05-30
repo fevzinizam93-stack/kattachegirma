@@ -35,6 +35,18 @@ export const ordersRouter = router({
       const secureInput = { ...input, userId: ctx.user?.id ?? input.userId };
       const id = await createOrder(secureInput);
 
+      // Мгновенное уведомление покупателю (колокольчик): заказ принят в обработку
+      const buyerUserId = ctx.user?.id ?? input.userId;
+      if (buyerUserId) {
+        createNotification({
+          userId: buyerUserId,
+          title: "Заказ оформлен ⏳",
+          message: `Ваш заказ #${id} принят и передан продавцу. Ожидайте — продавец свяжется с вами для подтверждения.`,
+          orderId: id,
+          type: "order",
+        }).catch((e) => console.error("[Notification] order placed failed:", e));
+      }
+
       // Обновить salesCount и hitScore для каждого купленного товара (non-blocking)
       getDb().then(async (db) => {
         if (!db) return;
