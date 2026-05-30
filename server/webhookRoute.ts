@@ -277,6 +277,17 @@ router.post("/api/telegram/webhook", async (req, res) => {
         // Убрать кнопки и показать «взял заказ X» во ВСЕХ копиях сообщения (фото и текст)
         await markOrderTaken(orderId, managerName).catch((e) => console.error("[take_order] markOrderTaken:", e));
 
+        // Гарантированно обновляем кнопку у НАЖАТОГО сообщения (если сохранённые ссылки отсутствуют)
+        {
+          const pChatId = String(cbq.message?.chat?.id ?? "");
+          const pMsgId = cbq.message?.message_id;
+          if (pChatId && pMsgId) {
+            await editMessageReplyMarkup(pChatId, pMsgId, {
+              inline_keyboard: [[{ text: `✅ Buyurtmani oldi: ${managerName}`, callback_data: `taken:${orderId}` }]],
+            }).catch((e) => console.error("[take_order] edit pressed msg:", e));
+          }
+        }
+
         // Notify the customer in Telegram if they have a telegramId
         if (order.customerPhone) {
           notifyCustomer(order.customerPhone, orderId, managerName).catch(console.error);
@@ -314,6 +325,17 @@ router.post("/api/telegram/webhook", async (req, res) => {
 
         const rejManagerName = [cbq.from?.first_name, cbq.from?.last_name].filter(Boolean).join(" ") || adminName;
         await markOrderRejected(orderId, rejManagerName).catch((e) => console.error("[reject_order] markOrderRejected:", e));
+
+        // Гарантированно обновляем кнопку у НАЖАТОГО сообщения
+        {
+          const pChatId = String(cbq.message?.chat?.id ?? "");
+          const pMsgId = cbq.message?.message_id;
+          if (pChatId && pMsgId) {
+            await editMessageReplyMarkup(pChatId, pMsgId, {
+              inline_keyboard: [[{ text: `❌ Rad etilgan — ${rejManagerName}`, callback_data: `taken:${orderId}` }]],
+            }).catch((e) => console.error("[reject_order] edit pressed msg:", e));
+          }
+        }
 
       } else if (data.startsWith("taken:")) {
         const oid = parseInt(data.split(":")[1], 10);
