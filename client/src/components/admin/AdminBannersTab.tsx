@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
 import { trpc } from "@/lib/trpc";
-import { Edit, ImagePlus, Plus, Trash2, X } from "lucide-react";
+import { Edit, ImagePlus, Plus, Trash2, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface BannerForm {
@@ -8,21 +8,29 @@ interface BannerForm {
   titleUz: string;
   description: string;
   descriptionUz: string;
+  imageUrl: string;
+  imageUrlMobile: string;
+  imageUrlUz: string;
+  imageUrlMobileUz: string;
   bgColor: string;
   textColor: string;
   link: string;
   linkText: string;
   linkTextUz: string;
+  startsAt: string;
   endsAt: string;
   isActive: boolean;
   sortOrder: number;
 }
 
+type ImgField = "imageUrl" | "imageUrlMobile" | "imageUrlUz" | "imageUrlMobileUz";
+
 const emptyBannerForm: BannerForm = {
   title: "", titleUz: "", description: "", descriptionUz: "",
+  imageUrl: "", imageUrlMobile: "", imageUrlUz: "", imageUrlMobileUz: "",
   bgColor: "#dc2626", textColor: "#ffffff",
   link: "", linkText: "", linkTextUz: "",
-  endsAt: "", isActive: true, sortOrder: 0,
+  startsAt: "", endsAt: "", isActive: true, sortOrder: 0,
 };
 
 export default function AdminBannersTab() {
@@ -30,6 +38,8 @@ export default function AdminBannersTab() {
   const [showBannerForm, setShowBannerForm] = useState(false);
   const [bannerForm, setBannerForm] = useState<BannerForm>(emptyBannerForm);
   const [bannerEditId, setBannerEditId] = useState<number | null>(null);
+  const [imgBusy, setImgBusy] = useState<string | null>(null);
+  const uploadMut = trpc.products.importUploadImage.useMutation();
 
   const { data: bannersData, isLoading: bannersLoading } = trpc.banners.listAll.useQuery(undefined, {
     refetchOnWindowFocus: false,
@@ -51,11 +61,59 @@ export default function AdminBannersTab() {
 
   function handleBannerSubmit() {
     const endsAt = bannerForm.endsAt ? new Date(bannerForm.endsAt) : undefined;
+    const startsAt = bannerForm.startsAt ? new Date(bannerForm.startsAt) : undefined;
     if (bannerEditId) {
-      updateBannerMut.mutate({ id: bannerEditId, ...bannerForm, endsAt });
+      updateBannerMut.mutate({ id: bannerEditId, ...bannerForm, startsAt, endsAt });
     } else {
-      createBannerMut.mutate({ ...bannerForm, endsAt });
+      createBannerMut.mutate({ ...bannerForm, startsAt, endsAt });
     }
+  }
+
+  function fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result).split(",")[1] ?? "");
+      reader.onerror = () => reject(new Error("read failed"));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handleBannerImage(field: ImgField, e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImgBusy(field);
+    try {
+      const base64 = await fileToBase64(file);
+      const res = await uploadMut.mutateAsync({ base64, filename: file.name });
+      setBannerForm(f => ({ ...f, [field]: res.url }));
+      toast.success("Картинка загружена");
+    } catch (err) {
+      toast.error("Ошибка загрузки: " + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      setImgBusy(null);
+      e.target.value = "";
+    }
+  }
+
+  function imageSlot(label: string, field: ImgField, hint: string) {
+    const val = bannerForm[field];
+    return (
+      <div>
+        <label className="text-xs font-semibold text-gray-600 mb-1 block">{label}</label>
+        <div className="flex items-center gap-2">
+          <div className="w-16 h-12 rounded-lg bg-gray-50 border border-gray-200 overflow-hidden flex items-center justify-center shrink-0 relative">
+            {val ? <img src={val} alt="" className="w-full h-full object-cover" /> : <ImagePlus size={16} className="text-gray-300" />}
+            {imgBusy === field && <div className="absolute inset-0 bg-white/70 flex items-center justify-center"><Loader2 size={14} className="animate-spin text-primary" /></div>}
+          </div>
+          <label className="cursor-pointer text-xs font-semibold text-primary border border-primary/30 rounded-lg px-3 py-2 hover:bg-primary/5">
+            {val ? "Заменить" : "Загрузить"}
+            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleBannerImage(field, e)} disabled={imgBusy !== null} />
+          </label>
+          {val && <button type="button" onClick={() => setBannerForm(f => ({ ...f, [field]: "" }))} className="text-xs text-gray-400 hover:text-red-500">убрать</button>}
+        </div>
+        <p className="text-[11px] text-gray-400 mt-1">{hint}</p>
+      </div>
+    );
   }
 
   return (
@@ -95,6 +153,16 @@ export default function AdminBannersTab() {
                 <label className="text-xs font-semibold text-gray-600 mb-1 block">Описание (узбекский, необязательно)</label>
                 <textarea value={bannerForm.descriptionUz} onChange={e => setBannerForm(f => ({ ...f, descriptionUz: e.target.value }))} rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="Только до конца недели" />
               </div>
+              <div className="border-t border-gray-100 pt-3">
+                <div className="text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">Картинки баннера</div>
+                <div className="space-y-3">
+                  {imageSlot("ПК — русский", "imageUrl", "Широкая картинка, напр. 1200×400")}
+                  {imageSlot("Телефон — русский", "imageUrlMobile", "Вертикальнее, напр. 800×500")}
+                  {imageSlot("ПК — узбекский (необязательно)", "imageUrlUz", "Если пусто — покажется русская")}
+                  {imageSlot("Телефон — узбекский (необязательно)", "imageUrlMobileUz", "Если пусто — покажется русская")}
+                </div>
+                <p className="text-[11px] text-gray-400 mt-2">Если заданы картинки — баннер на сайте показывается картинкой. Цвет и текст ниже — запасной вариант, если картинки нет.</p>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-semibold text-gray-600 mb-1 block">Цвет фона</label>
@@ -126,6 +194,11 @@ export default function AdminBannersTab() {
                 </div>
               </div>
               <div>
+                <label className="text-xs font-semibold text-gray-600 mb-1 block">Дата начала акции</label>
+                <input type="datetime-local" value={bannerForm.startsAt} onChange={e => setBannerForm(f => ({ ...f, startsAt: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+                <p className="text-xs text-gray-400 mt-1">Пусто — показать сразу. Можно задать будущую дату — баннер включится сам.</p>
+              </div>
+              <div>
                 <label className="text-xs font-semibold text-gray-600 mb-1 block">Дата окончания акции</label>
                 <input type="datetime-local" value={bannerForm.endsAt} onChange={e => setBannerForm(f => ({ ...f, endsAt: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
                 <p className="text-xs text-gray-400 mt-1">Оставьте пустым если акция бессрочная</p>
@@ -144,11 +217,17 @@ export default function AdminBannersTab() {
               </div>
               <div>
                 <label className="text-xs font-semibold text-gray-600 mb-1 block">Предпросмотр</label>
-                <div className="rounded-xl px-4 py-3" style={{ backgroundColor: bannerForm.bgColor, color: bannerForm.textColor }}>
-                  <div className="font-bold text-sm">{bannerForm.title || "Заголовок баннера"}</div>
-                  {bannerForm.description && <div className="text-xs mt-0.5 opacity-90">{bannerForm.description}</div>}
-                  {bannerForm.linkText && <div className="mt-2 inline-block text-xs border border-current rounded-full px-3 py-1 font-semibold">{bannerForm.linkText} →</div>}
-                </div>
+                {bannerForm.imageUrl ? (
+                  <div className="rounded-xl overflow-hidden border border-gray-100">
+                    <img src={bannerForm.imageUrl} alt="" className="w-full h-auto" />
+                  </div>
+                ) : (
+                  <div className="rounded-xl px-4 py-3" style={{ backgroundColor: bannerForm.bgColor, color: bannerForm.textColor }}>
+                    <div className="font-bold text-sm">{bannerForm.title || "Заголовок баннера"}</div>
+                    {bannerForm.description && <div className="text-xs mt-0.5 opacity-90">{bannerForm.description}</div>}
+                    {bannerForm.linkText && <div className="mt-2 inline-block text-xs border border-current rounded-full px-3 py-1 font-semibold">{bannerForm.linkText} →</div>}
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex gap-3 mt-5">
@@ -179,8 +258,8 @@ export default function AdminBannersTab() {
             const isExpired = banner.endsAt && new Date(banner.endsAt) < new Date();
             return (
               <div key={banner.id} className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: banner.bgColor }}>
-                  <span className="text-lg">🎯</span>
+                <div className="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center shrink-0" style={{ backgroundColor: banner.imageUrl ? undefined : banner.bgColor }}>
+                  {banner.imageUrl ? <img src={banner.imageUrl} alt="" className="w-full h-full object-cover" /> : <span className="text-lg">🎯</span>}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
@@ -206,6 +285,11 @@ export default function AdminBannersTab() {
                         link: banner.link ?? "",
                         linkText: banner.linkText ?? "",
                         linkTextUz: banner.linkTextUz ?? "",
+                        imageUrl: banner.imageUrl ?? "",
+                        imageUrlMobile: banner.imageUrlMobile ?? "",
+                        imageUrlUz: banner.imageUrlUz ?? "",
+                        imageUrlMobileUz: banner.imageUrlMobileUz ?? "",
+                        startsAt: banner.startsAt ? new Date(banner.startsAt).toISOString().slice(0, 16) : "",
                         endsAt: banner.endsAt ? new Date(banner.endsAt).toISOString().slice(0, 16) : "",
                         isActive: banner.isActive,
                         sortOrder: banner.sortOrder,
