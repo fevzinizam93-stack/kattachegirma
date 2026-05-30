@@ -115,14 +115,14 @@ function ReviewsSection() {
   ];
 
   return (
-    <section className="bg-white py-16">
+    <section className="bg-white py-10">
       <div className="container">
         {/* Header */}
-        <div className="text-center mb-10">
+        <div className="text-center mb-6">
           <span className="inline-block bg-amber-50 text-amber-700 font-semibold text-sm px-4 py-1.5 rounded-full mb-3 border border-amber-200">
             ⭐ Отзывы покупателей
           </span>
-          <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-3">
+          <h2 className="text-2xl md:text-2xl font-black text-gray-900 mb-3">
             Нам доверяют тысячи людей
           </h2>
           <p className="text-gray-500 max-w-xl mx-auto">
@@ -267,13 +267,13 @@ function VideoReviewsSection() {
     { staleTime: 5 * 60 * 1000, retry: false }
   );
   return (
-    <section className="bg-gray-50 py-16">
+    <section className="bg-gray-50 py-10">
       <div className="container">
-        <div className="text-center mb-10">
+        <div className="text-center mb-6">
           <span className="inline-block bg-red-50 text-red-600 font-semibold text-sm px-4 py-1.5 rounded-full mb-3 border border-red-200">
             ▶ Видеообзоры
           </span>
-          <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-3">
+          <h2 className="text-2xl md:text-2xl font-black text-gray-900 mb-3">
             Смотрите обзоры наших товаров
           </h2>
           <p className="text-gray-500 max-w-xl mx-auto">
@@ -342,17 +342,17 @@ export default function About() {
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/15 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
 
-        <div className="container relative py-16 md:py-24">
+        <div className="container relative py-8 md:py-10">
           <div className="max-w-3xl mx-auto text-center">
             {/* badge */}
             <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm font-medium mb-6 backdrop-blur-sm">
               <BadgeCheck size={15} className="text-primary" />
               <span>Платформа №1 для бытовой техники в Узбекистане</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-black mb-4 leading-tight">
+            <h1 className="text-3xl md:text-4xl font-black mb-4 leading-tight">
               О проекте <span className="text-primary">Katta Chegirma</span>
             </h1>
-            <p className="text-white/80 text-lg md:text-xl leading-relaxed mb-8">
+            <p className="text-white/80 text-base md:text-lg leading-relaxed mb-6 max-w-2xl mx-auto">
               Качественная бытовая техника — доступна каждой семье. Без переплат, без обмана, с настоящей заботой о покупателе.
             </p>
             <div className="flex flex-wrap gap-3 justify-center">
@@ -395,9 +395,9 @@ export default function About() {
       </section>
 
       {/* ── INTRO ── */}
-      <section className="container py-14">
+      <section className="container py-10">
         <div className="max-w-3xl mx-auto">
-          <div className="flex items-start gap-4 bg-gradient-to-r from-primary/5 to-orange-50 border border-primary/15 rounded-3xl p-7 md:p-10">
+          <div className="flex items-start gap-4 bg-gradient-to-r from-primary/5 to-orange-50 border border-primary/15 rounded-3xl p-5 md:p-7">
             <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center flex-shrink-0 mt-1">
               <Award size={22} className="text-white" />
             </div>
@@ -415,12 +415,12 @@ export default function About() {
       </section>
 
       {/* ── WHY TRUST US ── */}
-      <section className="bg-gray-50 py-14">
+      <section className="bg-gray-50 py-10">
         <div className="container">
           <div className="max-w-3xl mx-auto">
-            <div className="text-center mb-10">
+            <div className="text-center mb-6">
               <span className="inline-block bg-primary/10 text-primary text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wide">Доверие</span>
-              <h2 className="text-3xl font-black text-gray-900 mb-2">Почему нам доверяют тысячи покупателей?</h2>
+              <h2 className="text-2xl font-black text-gray-900 mb-2">Почему нам доверяют тысячи покупателей?</h2>
               <p className="text-gray-500">Мы строим отношения с покупателями на трёх принципах</p>
             </div>
             <div className="space-y-4">
@@ -445,11 +445,11 @@ export default function About() {
       </section>
 
       {/* ── BENEFITS GRID ── */}
-      <section className="container py-14">
+      <section className="container py-10">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-10">
+          <div className="text-center mb-6">
             <span className="inline-block bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wide">Преимущества</span>
-            <h2 className="text-3xl font-black text-gray-900 mb-2">Что вы получаете?</h2>
+            <h2 className="text-2xl font-black text-gray-900 mb-2">Что вы получаете?</h2>
             <p className="text-gray-500">Покупайте выгодно, быстро и с уверенностью</p>
           </div>
           <div className="grid sm:grid-cols-2 gap-5">
@@ -467,7 +467,7 @@ export default function About() {
       </section>
 
       {/* ── BRANDS ── */}
-      <section className="bg-gray-50 py-12">
+      <section className="bg-gray-50 py-8">
         <div className="container">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-2xl font-black text-gray-900 mb-2">Бренды, которым мы доверяем</h2>
@@ -484,15 +484,15 @@ export default function About() {
       </section>
 
       {/* ── MISSION ── */}
-      <section className="container py-14">
+      <section className="container py-10">
         <div className="max-w-3xl mx-auto">
-          <div className="relative bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-3xl p-8 md:p-12 overflow-hidden">
+          <div className="relative bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-3xl p-6 md:p-8 overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
             <div className="relative">
               <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center mb-6">
                 <Users size={26} className="text-white" />
               </div>
-              <h2 className="text-2xl md:text-3xl font-black mb-4">Наша миссия</h2>
+              <h2 className="text-2xl md:text-2xl font-black mb-4">Наша миссия</h2>
               <p className="text-white/85 leading-relaxed text-lg">
                 Сделать так, чтобы каждая семья в Узбекистане могла позволить себе современную, надёжную бытовую технику — <strong className="text-white">без переплат, без обмана</strong>, с настоящей заботой о покупателе.
               </p>
@@ -514,12 +514,12 @@ export default function About() {
       </section>
 
       {/* ── PHOTO GALLERY ── */}
-      <section className="bg-gray-50 py-14">
+      <section className="bg-gray-50 py-10">
         <div className="container">
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-10">
+            <div className="text-center mb-6">
               <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wide">Наш магазин</span>
-              <h2 className="text-3xl font-black text-gray-900 mb-2">Загляните к нам</h2>
+              <h2 className="text-2xl font-black text-gray-900 mb-2">Загляните к нам</h2>
               <p className="text-gray-500">Мы всегда рады гостям — приходите и убедитесь лично!</p>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
@@ -555,11 +555,11 @@ export default function About() {
       <VideoReviewsSection />
 
       {/* ── CTA BANNER ── */}
-      <section className="container py-14">
+      <section className="container py-10">
         <div className="max-w-3xl mx-auto">
-          <div className="bg-gradient-to-r from-primary to-orange-500 rounded-3xl p-8 md:p-12 text-white text-center shadow-xl shadow-primary/25">
+          <div className="bg-gradient-to-r from-primary to-orange-500 rounded-3xl p-6 md:p-8 text-white text-center shadow-xl shadow-primary/25">
             <div className="text-4xl mb-4">🎉</div>
-            <h2 className="text-2xl md:text-3xl font-black mb-3">Присоединяйтесь к нашей семье!</h2>
+            <h2 className="text-2xl md:text-2xl font-black mb-3">Присоединяйтесь к нашей семье!</h2>
             <p className="text-white/90 leading-relaxed mb-8 text-lg max-w-xl mx-auto">
               Тысячи довольных покупателей уже выбрали Katta Chegirma. Убедитесь сами — выгодные покупки возможны!
             </p>
@@ -585,12 +585,12 @@ export default function About() {
 
       {/* ── CONTACTS ── */}
       {(s.phone || s.address || s.telegram || s.instagram || s.workingHours) && (
-        <section id="contacts" className="bg-gray-50 py-14">
+        <section id="contacts" className="bg-gray-50 py-10">
           <div className="container">
             <div className="max-w-3xl mx-auto">
-              <div className="text-center mb-10">
+              <div className="text-center mb-6">
                 <span className="inline-block bg-primary/10 text-primary text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wide">Контакты</span>
-                <h2 className="text-3xl font-black text-gray-900 mb-2">Свяжитесь с нами</h2>
+                <h2 className="text-2xl font-black text-gray-900 mb-2">Свяжитесь с нами</h2>
                 <p className="text-gray-500">Мы всегда на связи и готовы помочь</p>
               </div>
               <div className="grid sm:grid-cols-2 gap-4">
