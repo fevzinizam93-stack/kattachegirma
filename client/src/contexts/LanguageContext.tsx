@@ -614,7 +614,7 @@ const uz: Translations = {
   catalog_products_found: "ta mahsulot topildi",
 
   // Product card
-  card_add_to_cart: "chegirmada olish",
+  card_add_to_cart: "Chegirmada olish",
   card_new: "YANGI",
   card_in_cart: "Savatda",
   card_hit: "Hit",
@@ -622,7 +622,7 @@ const uz: Translations = {
   card_added_to_cart: "Savatga qo'shildi!",
 
   // Product detail
-  detail_add_to_cart: "chegirmada olish",
+  detail_add_to_cart: "Chegirmada olish",
   detail_buy_now: "Chegirmaga ulgurasiz!",
   detail_description: "Tavsif",
   detail_brand: "Brend",
@@ -646,7 +646,7 @@ const uz: Translations = {
   detail_delivery_desc: "Butun O'zbekiston bo'ylab",
   detail_about: "Mahsulot haqida",
   detail_specs: "Texnik xususiyatlar",
-  detail_buy_discount: "chegirmada olish",
+  detail_buy_discount: "Chegirmada olish",
   detail_no_description: "Tavsif hali qo'shilmagan",
   detail_reviews: "Xaridorlar sharhlari",
   detail_no_reviews: "Hali sharhlar yo'q",
