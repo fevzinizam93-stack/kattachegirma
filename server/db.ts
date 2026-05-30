@@ -75,6 +75,42 @@ export async function getUserById(id: number) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+export async function setEmailVerifyToken(userId: number, token: string, expires: Date) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(users).set({ emailVerifyToken: token, emailVerifyExpires: expires }).where(eq(users.id, userId));
+}
+
+export async function verifyEmailByToken(token: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+  const rows = await db.select().from(users).where(eq(users.emailVerifyToken, token)).limit(1);
+  const u = rows[0];
+  if (!u || !u.emailVerifyExpires || u.emailVerifyExpires < new Date()) return false;
+  await db.update(users).set({ emailVerified: true, emailVerifyToken: null, emailVerifyExpires: null }).where(eq(users.id, u.id));
+  return true;
+}
+
+export async function setPasswordResetToken(email: string, token: string, expires: Date): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+  const user = await getUserByEmail(email);
+  if (!user) return false;
+  await db.update(users).set({ passwordResetToken: token, passwordResetExpires: expires }).where(eq(users.id, user.id));
+  return true;
+}
+
+export async function resetPasswordByToken(token: string, newPassword: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+  const rows = await db.select().from(users).where(eq(users.passwordResetToken, token)).limit(1);
+  const u = rows[0];
+  if (!u || !u.passwordResetExpires || u.passwordResetExpires < new Date()) return false;
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  await db.update(users).set({ passwordHash, passwordResetToken: null, passwordResetExpires: null }).where(eq(users.id, u.id));
+  return true;
+}
+
 export async function registerUser(data: { name: string; email: string; password: string }): Promise<{ id: number; email: string; name: string; role: string; openId: string }> {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
