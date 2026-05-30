@@ -4,6 +4,7 @@ import { adminProcedure } from "./_shared";
 import {
   trackEvent,
   getAnalyticsStats,
+  getPopularSearchQueries,
 } from "../db";
 
 export const analyticsRouter = router({
@@ -29,6 +30,13 @@ export const analyticsRouter = router({
         meta: input.meta,
       });
       return { success: true };
+    }),
+
+  // Public: popular search queries (for "Часто ищут" block)
+  popularQueries: publicProcedure
+    .input(z.object({ limit: z.number().min(1).max(100).default(30) }).optional())
+    .query(async ({ input }) => {
+      return getPopularSearchQueries(input?.limit ?? 30, 90);
     }),
 
   // Admin: get analytics stats

@@ -733,6 +733,31 @@ export async function trackEvent(event: InsertAnalyticsEvent) {
   }
 }
 
+export async function getPopularSearchQueries(limit = 30, days = 90) {
+  const db = await getDb();
+  if (!db) return [];
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  const rows = await db
+    .select({ query: sql<string>`JSON_UNQUOTE(JSON_EXTRACT(meta, '$.query'))`, total: count() })
+    .from(analyticsEvents)
+    .where(and(eq(analyticsEvents.eventType, "search"), gte(analyticsEvents.createdAt, since)))
+    .groupBy(sql`JSON_UNQUOTE(JSON_EXTRACT(meta, '$.query'))`)
+    .orderBy(desc(count()))
+    .limit(limit * 3);
+  const seen = new Set<string>();
+  const out: { query: string; total: number }[] = [];
+  for (const r of rows) {
+    const q = (r.query ?? "").trim();
+    if (!q || q.toLowerCase() === "null" || q.length < 2) continue;
+    const key = q.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({ query: q, total: Number(r.total) });
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
 export async function getAnalyticsStats(days = 30) {
   const db = await getDb();
   if (!db) return null;

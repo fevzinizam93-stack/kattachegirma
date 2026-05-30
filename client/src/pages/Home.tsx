@@ -7,6 +7,7 @@ import { Link, useLocation } from "wouter";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import RecentlyViewed from "@/components/RecentlyViewed";
 import SocialProofBlock from "@/components/SocialProofBlock";
+import PopularSearches from "@/components/PopularSearches";
 
 /** Fisher-Yates shuffle — returns a new shuffled array */
 function shuffleArray<T>(arr: T[]): T[] {
@@ -387,6 +388,7 @@ export default function Home() {
 
       <RecentlyViewed />
       <SocialProofBlock />
+      <PopularSearches />
       <div className="pb-20 md:pb-8" />
     </div>
   );

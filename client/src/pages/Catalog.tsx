@@ -8,6 +8,7 @@ import { useLocation } from "wouter";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
 import RecentlyViewed from "@/components/RecentlyViewed";
+import PopularSearches from "@/components/PopularSearches";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { useAnalytics } from "@/hooks/useAnalytics";
 
@@ -579,6 +580,7 @@ export default function Catalog() {
           </div>
         </div>
       </div>
+      <PopularSearches />
       {/* Recently viewed */}
       <RecentlyViewed />
       {/* Floating scroll-to-top button */}

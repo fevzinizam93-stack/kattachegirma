@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import PopularSearches from "@/components/PopularSearches";
 import { trpc } from "@/lib/trpc";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -93,6 +94,11 @@ export default function Footer() {
               <li><Link href="/seller" className="text-sm text-red-100 hover:text-white transition-colors">{t.footer_seller}</Link></li>
             </ul>
           </div>
+        </div>
+
+        <div className="border-t border-red-700 mt-8 pt-6">
+          <h4 className="font-bold mb-3 text-sm uppercase tracking-wide text-white">Часто ищут</h4>
+          <PopularSearches variant="footer" limit={20} />
         </div>
 
         <div className="border-t border-red-700 mt-8 pt-6 text-center text-xs text-red-200">
