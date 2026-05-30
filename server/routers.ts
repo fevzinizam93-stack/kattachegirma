@@ -4,9 +4,11 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { registerUser, loginUser, updateUserPhone } from "./db";
+import { registerUser, loginUser, updateUserPhone, setEmailVerifyToken, verifyEmailByToken, setPasswordResetToken, resetPasswordByToken } from "./db";
 import { SignJWT } from "jose";
 import { ENV } from "./_core/env";
+import { sendVerificationEmail, sendPasswordResetEmail } from "./email";
+import { randomBytes } from "crypto";
 
 // ── Sub-routers ──────────────────────────────────────────────────────────────
 import { categoriesRouter } from "./routers/categories";
@@ -56,6 +58,14 @@ export const appRouter = router({
       .mutation(async ({ input, ctx }) => {
         try {
           const user = await registerUser(input);
+          // Письмо-подтверждение почты (не блокирует регистрацию)
+          try {
+            const vToken = randomBytes(32).toString("hex");
+            await setEmailVerifyToken(user.id, vToken, new Date(Date.now() + 24 * 60 * 60 * 1000));
+            void sendVerificationEmail(user.email, vToken);
+          } catch (mailErr) {
+            console.error("[auth] не удалось отправить письмо-подтверждение:", mailErr);
+          }
           const secret = new TextEncoder().encode(ENV.cookieSecret);
           const token = await new SignJWT({
             openId: user.openId ?? `local_${user.email}`,
@@ -107,6 +117,39 @@ export const appRouter = router({
           }
           throw e;
         }
+      }),
+
+    // Подтверждение почты по ссылке из письма
+    verifyEmail: publicProcedure
+      .input(z.object({ token: z.string().min(10) }))
+      .mutation(async ({ input }) => {
+        const ok = await verifyEmailByToken(input.token);
+        if (!ok) throw new TRPCError({ code: "BAD_REQUEST", message: "Ссылка недействительна или устарела" });
+        return { success: true };
+      }),
+
+    // Запрос сброса пароля — отправляет письмо со ссылкой
+    requestPasswordReset: publicProcedure
+      .input(z.object({ email: z.string().email() }))
+      .mutation(async ({ input }) => {
+        try {
+          const token = randomBytes(32).toString("hex");
+          const ok = await setPasswordResetToken(input.email, token, new Date(Date.now() + 60 * 60 * 1000));
+          if (ok) void sendPasswordResetEmail(input.email, token);
+        } catch (e) {
+          console.error("[auth] requestPasswordReset:", e);
+        }
+        // Всегда успех — не раскрываем, существует ли такой email
+        return { success: true };
+      }),
+
+    // Установка нового пароля по токену из письма
+    resetPassword: publicProcedure
+      .input(z.object({ token: z.string().min(10), password: z.string().min(6) }))
+      .mutation(async ({ input }) => {
+        const ok = await resetPasswordByToken(input.token, input.password);
+        if (!ok) throw new TRPCError({ code: "BAD_REQUEST", message: "Ссылка недействительна или устарела. Запросите сброс заново." });
+        return { success: true };
       }),
 
     // Update phone number
