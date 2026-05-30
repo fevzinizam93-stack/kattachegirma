@@ -846,6 +846,22 @@ export async function getAnalyticsStats(days = 30) {
     .where(gte(orders.createdAt, since))
     .groupBy(orders.status);
 
+  // Быстрые заказы (1 клик / Telegram) за период.
+  // Цена хранится текстом (productPrice), поэтому выручку считаем по цифрам из строки.
+  const quickRows = await db
+    .select({ productPrice: quickOrders.productPrice })
+    .from(quickOrders)
+    .where(gte(quickOrders.createdAt, since));
+  let quickRevenue = 0;
+  for (const q of quickRows) {
+    const digits = (q.productPrice ?? "").replace(/[^\d]/g, "");
+    if (digits) quickRevenue += Number(digits);
+  }
+  const ordersStatsCombined = [
+    ...ordersStats.map((r) => ({ status: String(r.status), total: Number(r.total), revenue: Number(r.revenue ?? 0) })),
+    ...(quickRows.length > 0 ? [{ status: "Быстрые", total: quickRows.length, revenue: quickRevenue }] : []),
+  ];
+
   // Daily orders
   const dailyOrders = await db
     .select({
@@ -955,7 +971,7 @@ export async function getAnalyticsStats(days = 30) {
     ratingsDistribution: ratingsResult,
     avgRating: Math.round(avgRating * 10) / 10,
     totalReviews,
-    ordersStats,
+    ordersStats: ordersStatsCombined,
     dailyOrders,
     repeatOrderUsers,
     utmStats,
