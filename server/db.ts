@@ -788,7 +788,7 @@ export async function getAnalyticsStats(days = 30) {
     .where(and(eq(analyticsEvents.eventType, "search"), gte(analyticsEvents.createdAt, since)))
     .groupBy(sql`JSON_UNQUOTE(JSON_EXTRACT(meta, '$.query'))`)
     .orderBy(desc(count()))
-    .limit(20);
+    .limit(300);
 
   // Daily page views
   const dailyViews = await db

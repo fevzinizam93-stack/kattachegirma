@@ -120,6 +120,7 @@ function FunnelBar({ label, value, max, color }: { label: string; value: number;
 export default function AdminAnalytics() {
   const { user, loading: authLoading } = useAuth();
   const [days, setDays] = useState(30);
+  const [showAllQueries, setShowAllQueries] = useState(false);
   const isAdmin = user?.role === "admin";
 
   const { data: stats, isLoading, error } = trpc.analytics.stats.useQuery(
@@ -369,14 +370,24 @@ export default function AdminAnalytics() {
             {searchQueries.length === 0 ? (
               <p className="text-sm text-gray-400 italic">Нет поисковых запросов</p>
             ) : (
-              <div className="space-y-1.5">
-                {searchQueries.slice(0, 15).map((q: any, i: number) => (
-                  <div key={i} className="flex items-center justify-between py-1 border-b border-gray-50 last:border-0">
-                    <span className="text-sm text-gray-700 truncate max-w-[75%]">{q.query}</span>
-                    <span className="text-xs font-bold text-indigo-600 shrink-0">{fmt(Number(q.total))} раз</span>
-                  </div>
-                ))}
-              </div>
+              <>
+                <div className={`space-y-1.5 ${showAllQueries ? "max-h-[420px] overflow-y-auto pr-1" : ""}`}>
+                  {(showAllQueries ? searchQueries : searchQueries.slice(0, 15)).map((q: any, i: number) => (
+                    <div key={i} className="flex items-center justify-between py-1 border-b border-gray-50 last:border-0">
+                      <span className="text-sm text-gray-700 truncate max-w-[75%]">{q.query}</span>
+                      <span className="text-xs font-bold text-indigo-600 shrink-0">{fmt(Number(q.total))} раз</span>
+                    </div>
+                  ))}
+                </div>
+                {searchQueries.length > 15 && (
+                  <button
+                    onClick={() => setShowAllQueries((v) => !v)}
+                    className="mt-3 w-full text-xs font-semibold text-gray-500 hover:text-gray-800 border-t border-gray-100 pt-2 transition-colors"
+                  >
+                    {showAllQueries ? "Свернуть" : `Показать все (${searchQueries.length})`}
+                  </button>
+                )}
+              </>
             )}
           </div>
 
