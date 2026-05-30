@@ -5,6 +5,7 @@ import { useCurrency } from "@/contexts/CurrencyContext";
 import { trpc } from "@/lib/trpc";
 import { ChevronDown, ChevronRight, MessageCircle, Minus, Phone, Plus, ShoppingCart, Star, Tag, Truck, Send, ArrowLeftRight, Zap, Youtube, Share2, Copy, Check, MessageSquare, TrendingDown, ShoppingBag, ShieldCheck, RotateCcw, BadgeCheck } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import { usePageMeta } from "@/hooks/usePageMeta";
@@ -258,6 +259,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
     { staleTime: 2 * 60 * 1000 }
   );
   const product = productPageData?.product ?? null;
+  const { track } = useAnalytics();
   const reviewSummary = productPageData?.reviewSummary ?? null;
   const preloadedReviews = productPageData?.reviews ?? null;
   const preloadedSimilar = productPageData?.similar ?? null;
@@ -307,6 +309,8 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
     }
     sessionStorage.setItem(key, "1");
     incrementView.mutate({ productId: product.id });
+    // Аналитика: просмотр товара (для блока «Самые просматриваемые»)
+    track("product_view", { productId: product.id, productName: product.name });
     // Track Facebook Pixel ViewContent
     trackViewContent({
       id: product.id,
