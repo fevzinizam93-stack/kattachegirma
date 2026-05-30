@@ -55,7 +55,7 @@ function AllSellersList({ onSelect, activeSellerUserId }: { onSelect: (sellerUse
   );
 }
 
-type Tab = "products" | "categories" | "orders" | "sellers" | "moderation" | "settings" | "banners" | "notifications" | "utm" | "messaging" | "quickorders" | "indexing" | "reviews" | "priceimport" | "priceupdate" | "customers";
+type Tab = "products" | "categories" | "orders" | "sellers" | "moderation" | "settings" | "banners" | "notifications" | "utm" | "messaging" | "indexing" | "reviews" | "priceimport" | "priceupdate" | "customers";
 
 interface BannerForm {
   id?: number;
@@ -372,15 +372,10 @@ export default function Admin() {
     enabled: tab === "orders" && user?.role === "admin",
   });
 
-  // Quick orders
-  const { data: quickOrdersList, isLoading: quickOrdersLoading, refetch: refetchQuickOrders } = trpc.quickOrders.list.useQuery(undefined, {
-    enabled: tab === "quickorders" && user?.role === "admin",
+  // Quick orders — loaded alongside regular orders for the combined counter
+  const { data: quickOrdersList } = trpc.quickOrders.list.useQuery(undefined, {
+    enabled: tab === "orders" && user?.role === "admin",
   });
-  const updateQuickOrderStatusMut = trpc.quickOrders.updateStatus.useMutation({
-    onSuccess: () => { refetchQuickOrders(); toast.success("Статус обновлён"); },
-    onError: (e) => toast.error(e.message),
-  });
-
   const { data: sellers, isLoading: sellersLoading } = trpc.sellers.list.useQuery(undefined, {
     enabled: tab === "sellers" && user?.role === "admin",
   });
@@ -948,7 +943,7 @@ export default function Admin() {
   const tabConfig = [
     { key: "products" as Tab, icon: Package, label: "Товары" },
     { key: "categories" as Tab, icon: FolderOpen, label: "Категории" },
-    { key: "orders" as Tab, icon: ShoppingBag, label: "Заказы" },
+    { key: "orders" as Tab, icon: ShoppingBag, label: `Заказы${(() => { const newRegular = (orders ?? []).filter(o => o.status === 'pending').length; const newQuick = (quickOrdersList ?? []).filter(o => o.status === 'new').length; const total = newRegular + newQuick; return total > 0 ? ` (${total})` : ''; })()}` },
     { key: "sellers" as Tab, icon: Users, label: "Продавцы" },
     { key: "moderation" as Tab, icon: Store, label: `Модерация${pendingProducts.length > 0 ? ` (${pendingProducts.length})` : ""}` },
     { key: "banners" as Tab, icon: ImagePlus, label: "Баннеры" },
@@ -957,7 +952,6 @@ export default function Admin() {
     { key: "customers" as Tab, icon: Users, label: "Клиенты" },
     { key: "settings" as Tab, icon: Settings, label: "Настройки" },
     { key: "messaging" as Tab, icon: MessageSquare, label: `Сообщения${(adminConvs ?? []).reduce((s, c) => s + c.unread, 0) > 0 ? ` (${(adminConvs ?? []).reduce((s, c) => s + c.unread, 0)})` : ""}` },
-    { key: "quickorders" as Tab, icon: Zap, label: `Быстрые заявки${(quickOrdersList ?? []).filter(o => o.status === 'new').length > 0 ? ` (${(quickOrdersList ?? []).filter(o => o.status === 'new').length})` : ""}` },
     { key: "indexing" as Tab, icon: Search, label: "Индексирование" },
     { key: "priceimport" as Tab, icon: Upload, label: "Импорт из прайса" },
     { key: "priceupdate" as Tab, icon: RefreshCw, label: "Обновление цен" },
@@ -2167,8 +2161,6 @@ export default function Admin() {
 
         {tab === "customers" && <AdminCustomersTab />}
 
-        {/* ==================== QUICK ORDERS TAB ==================== */}
-        {tab === "quickorders" && <AdminQuickOrdersTab />}
         {/* ==================== REVIEWS TAB ==================== */}
         {tab === "reviews" && <AdminReviewsTab />}
       </div>
