@@ -1,4 +1,5 @@
 import { useCart } from "@/contexts/CartContext";
+import SocialIcon from "@/components/SocialIcon";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { trpc } from "@/lib/trpc";
@@ -1072,7 +1073,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                           className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors"
                           onClick={() => setShareOpen(false)}
                         >
-                          <div className="w-7 h-7 rounded-full bg-[#2AABEE]/15 flex items-center justify-center shrink-0 text-base">✈️</div>
+                          <div className="w-7 h-7 rounded-full bg-[#2AABEE]/15 flex items-center justify-center shrink-0"><SocialIcon name="telegram" className="w-4 h-4 text-[#2AABEE]" /></div>
                           <span className="text-sm font-medium text-gray-800">Telegram</span>
                         </a>
                         <div className="border-t border-gray-100" />
@@ -1083,7 +1084,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                           className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors"
                           onClick={() => setShareOpen(false)}
                         >
-                          <div className="w-7 h-7 rounded-full bg-[#25D366]/15 flex items-center justify-center shrink-0 text-base">💬</div>
+                          <div className="w-7 h-7 rounded-full bg-[#25D366]/15 flex items-center justify-center shrink-0"><SocialIcon name="whatsapp" className="w-4 h-4 text-[#25D366]" /></div>
                           <span className="text-sm font-medium text-gray-800">WhatsApp</span>
                         </a>
                         <div className="border-t border-gray-100" />
@@ -1098,7 +1099,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                           }}
                           className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors"
                         >
-                          <div className="w-7 h-7 rounded-full bg-pink-50 flex items-center justify-center shrink-0 text-base">📸</div>
+                          <div className="w-7 h-7 rounded-full bg-pink-50 flex items-center justify-center shrink-0"><SocialIcon name="instagram" className="w-4 h-4 text-pink-600" /></div>
                           <span className="text-sm font-medium text-gray-800">Instagram Stories</span>
                         </button>
                         <div className="border-t border-gray-100" />
