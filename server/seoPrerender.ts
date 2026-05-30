@@ -296,14 +296,22 @@ async function prerenderProduct(slug: string, isUz: boolean): Promise<string | n
     }));
   }
 
-  // BreadcrumbList
+  // BreadcrumbList — защищённая сборка: категорию добавляем только если есть и catName, и catSlug;
+  // у последнего элемента item опускаем если canonical пустой (Google разрешает).
+  const hasCatBreadcrumb = !!(catName && catSlug);
+  const productBreadcrumbItem: Record<string, unknown> = {
+    "@type": "ListItem",
+    "position": hasCatBreadcrumb ? 3 : 2,
+    "name": displayName,
+  };
+  if (canonical) productBreadcrumbItem["item"] = canonical;
   const breadcrumb = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "Главная", "item": BASE_URL },
-      ...(catName ? [{ "@type": "ListItem", "position": 2, "name": catName, "item": `${BASE_URL}/category/${catSlug}` }] : []),
-      { "@type": "ListItem", "position": catName ? 3 : 2, "name": displayName, "item": canonical }
+      ...(hasCatBreadcrumb ? [{ "@type": "ListItem", "position": 2, "name": catName, "item": `${BASE_URL}/category/${catSlug}` }] : []),
+      productBreadcrumbItem,
     ]
   };
 
@@ -399,13 +407,19 @@ async function prerenderCategory(slug: string, isUz: boolean): Promise<string | 
   const hreflangRu = canonical;
   const hreflangUz = catSlugUz ? `${BASE_URL}/kategoriya/${catSlugUz}` : canonical;
 
-  // BreadcrumbList
+  // BreadcrumbList — защищённая сборка: item у последнего элемента опускаем если canonical пустой.
+  const catBreadcrumbItem: Record<string, unknown> = {
+    "@type": "ListItem",
+    "position": 2,
+    "name": catName,
+  };
+  if (canonical) catBreadcrumbItem["item"] = canonical;
   const breadcrumb = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "Главная", "item": BASE_URL },
-      { "@type": "ListItem", "position": 2, "name": catName, "item": canonical }
+      catBreadcrumbItem,
     ]
   };
 
