@@ -170,7 +170,8 @@ export const appRouter = router({
       if ((u as any).emailVerified) return { success: true, alreadyVerified: true };
       const vToken = randomBytes(32).toString("hex");
       await setEmailVerifyToken(u.id, vToken, new Date(Date.now() + 24 * 60 * 60 * 1000));
-      void sendVerificationEmail(u.email, vToken);
+      const sent = await sendVerificationEmail(u.email, vToken);
+      if (!sent) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Не удалось отправить письмо. Проверьте настройку почты или попробуйте позже." });
       return { success: true, alreadyVerified: false };
     }),
 
