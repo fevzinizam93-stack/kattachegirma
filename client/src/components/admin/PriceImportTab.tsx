@@ -34,10 +34,10 @@ interface Props {
   categories: Array<{ id: number; name: string }>;
 }
 
-const FILE_TIMEOUT_MS = 120_000; // 120 seconds per file
-const RETRY_COUNT = 2;
-const RETRY_DELAY_MS = 2500;
-const INTER_FILE_DELAY_MS = 1500;
+const FILE_TIMEOUT_MS = 240_000; // 4 минуты на файл — шлюз бывает медленным
+const RETRY_COUNT = 1;
+const RETRY_DELAY_MS = 3000;
+const INTER_FILE_DELAY_MS = 2500;
 
 export default function PriceImportTab({ categories }: Props) {
   const [rows, setRows] = useState<RecognizedProduct[]>([]);
@@ -232,7 +232,7 @@ export default function PriceImportTab({ categories }: Props) {
               const elapsed = Date.now() - startedAt;
               if (elapsed > FILE_TIMEOUT_MS) {
                 clearInterval(poll);
-                reject(new Error("Превышено время ожидания (120 сек)"));
+                reject(new Error("Превышено время ожидания (4 мин)"));
                 return;
               }
               const job = (await utils.products.recognitionStatus.fetch({ jobId })) as {
