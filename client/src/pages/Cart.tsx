@@ -152,12 +152,12 @@ export default function Cart() {
                       itemCount: totalItems,
                     });
                   }}
-                  className="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors text-center block active:opacity-80 touch-manipulation">
+                  className="press w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors text-center block active:opacity-80 touch-manipulation">
                   {t.cart_checkout}
                 </button>
               </Link>
               <Link href="/catalog">
-                <button className="w-full mt-2 border border-gray-200 py-2.5 rounded-xl font-medium hover:bg-gray-50 transition-colors text-sm text-center block active:bg-gray-100 touch-manipulation">
+                <button className="press w-full mt-2 border border-gray-200 py-2.5 rounded-xl font-medium hover:bg-gray-50 transition-colors text-sm text-center block active:bg-gray-100 touch-manipulation">
                   {t.cart_continue}
                 </button>
               </Link>

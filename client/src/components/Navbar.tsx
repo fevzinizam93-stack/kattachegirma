@@ -176,7 +176,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
       <div className="hidden md:block" style={{ minHeight: "60px" }}>
         <div className="container flex items-center gap-4" style={{ height: "60px" }}>
           {/* Logo */}
-          <Link href="/" aria-label="На главную" className="shrink-0 flex items-center gap-2 min-w-fit cursor-pointer -m-2 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+          <Link href="/" aria-label="На главную" className="press shrink-0 flex items-center gap-2 min-w-fit cursor-pointer -m-2 p-2 rounded-lg hover:bg-gray-50 transition-colors">
             <img src="/api/img?url=%2Fmanus-storage%2Fkc_logo_d6421d0d.png&w=240&q=85" alt="Katta Chegirma" className="object-contain shrink-0" style={{ height: "40px", width: "auto" }} width={120} height={40} fetchPriority="high" decoding="sync" />
             <div className="font-black text-gray-900 tracking-tight whitespace-nowrap" style={{ fontSize: "15px" }}>Katta Chegirma!!!</div>
           </Link>
@@ -186,7 +186,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           <Link
             href="/videos"
             style={{ fontSize: "13px" }}
-            className={`shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-full font-medium transition-colors whitespace-nowrap ${
+            className={`press shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-full font-medium transition-colors whitespace-nowrap ${
               location === "/videos" ? "bg-red-50 text-red-600" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
             }`}
           >
@@ -198,7 +198,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           <Link
             href="/about"
             style={{ fontSize: "13px" }}
-            className={`shrink-0 font-medium px-2.5 py-1.5 rounded-full transition-colors whitespace-nowrap ${
+            className={`press shrink-0 font-medium px-2.5 py-1.5 rounded-full transition-colors whitespace-nowrap ${
               location === "/about" ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
             }`}
           >
@@ -212,7 +212,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
               aria-label={showCatalogModal ? "Закрыть каталог" : "Открыть каталог"}
               aria-expanded={showCatalogModal}
               style={{ fontSize: "13px" }}
-              className={`shrink-0 font-medium px-2.5 py-1.5 rounded-full transition-colors whitespace-nowrap flex items-center gap-1 ${
+              className={`press shrink-0 font-medium px-2.5 py-1.5 rounded-full transition-colors whitespace-nowrap flex items-center gap-1 ${
                 showCatalogModal ? "bg-red-600 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
               }`}
             >
@@ -300,7 +300,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
             <Link
               href="/seller/dashboard"
               style={{ fontSize: "13px" }}
-              className="shrink-0 font-bold px-3 py-1.5 rounded-full border-2 border-green-600 text-green-700 hover:bg-green-600 hover:text-white transition-colors whitespace-nowrap"
+              className="press shrink-0 font-bold px-3 py-1.5 rounded-full border-2 border-green-600 text-green-700 hover:bg-green-600 hover:text-white transition-colors whitespace-nowrap"
             >
               + Добавить товар
             </Link>
@@ -308,7 +308,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
             <Link
               href="/seller/register"
               style={{ fontSize: "13px" }}
-              className="shrink-0 font-bold px-3 py-1.5 rounded-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors whitespace-nowrap"
+              className="press shrink-0 font-bold px-3 py-1.5 rounded-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors whitespace-nowrap"
             >
               {t.nav_become_seller}
             </Link>
@@ -394,7 +394,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                 <button
                   onClick={() => setShowNotifDropdown((v) => !v)}
                   aria-label="Уведомления"
-                  className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors relative"
+                  className="press press-icon flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors relative"
                 >
                   <div className="relative">
                     <Bell size={20} className="text-gray-700" />
@@ -469,7 +469,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
             )}
 
             {/* Wishlist */}
-            <Link href="/favorites" aria-label="Избранное" className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors relative">
+            <Link href="/favorites" aria-label="Избранное" className="press press-icon flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors relative">
               <div className="relative">
                 <Heart size={20} className="text-gray-700" />
                 {wishlistCount > 0 && (
@@ -479,7 +479,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
               <span className="text-[10px] text-gray-600 whitespace-nowrap">Избранное</span>
             </Link>
             {/* Cart */}
-            <Link href="/cart" aria-label="Корзина" className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors relative">
+            <Link href="/cart" aria-label="Корзина" className="press press-icon flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors relative">
               <div className="relative">
                 <ShoppingCart size={20} className="text-gray-700" />
                 {totalItems > 0 && (
@@ -508,7 +508,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
 
             {/* Admin shortcut — иконка вместо дублирующей плашки с ролью */}
             {isAuthenticated && user?.role === "admin" && (
-              <Link href="/admin" title="Админ-панель" aria-label="Админ-панель" className="shrink-0 w-9 h-9 flex items-center justify-center rounded-full bg-red-50 text-red-600 hover:bg-red-100 transition-colors">
+              <Link href="/admin" title="Админ-панель" aria-label="Админ-панель" className="press press-icon shrink-0 w-9 h-9 flex items-center justify-center rounded-full bg-red-50 text-red-600 hover:bg-red-100 transition-colors">
                 <ShieldCheck size={18} />
               </Link>
             )}
@@ -518,7 +518,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
             <button
               onClick={() => setCurrency(currency === "uzs" ? "usd" : "uzs")}
               title={currency === "uzs" ? "Dollarga o'tish" : "So'mga o'tish"}
-              className="group flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl hover:bg-red-50 transition-all cursor-pointer select-none border border-transparent hover:border-red-100"
+              className="press group flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl hover:bg-red-50 transition-all cursor-pointer select-none border border-transparent hover:border-red-100"
             >
               <span className="text-lg leading-none">{currency === "uzs" ? "🇺🇿" : "🇺🇸"}</span>
               <span className="text-[10px] font-bold text-gray-600 group-hover:text-red-600 transition-colors">
@@ -530,7 +530,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
             <button
               onClick={() => handleLangSwitch(lang === "uz" ? "ru" : "uz")}
               title={lang === "uz" ? "Русский язык" : "O'zbek tili"}
-              className="group flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl hover:bg-red-50 transition-all cursor-pointer select-none border border-transparent hover:border-red-100"
+              className="press group flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl hover:bg-red-50 transition-all cursor-pointer select-none border border-transparent hover:border-red-100"
             >
               <span className="text-lg leading-none">{lang === "uz" ? "🇺🇿" : "🇷🇺"}</span>
               <span className="text-[10px] font-bold text-gray-600 group-hover:text-red-600 transition-colors">

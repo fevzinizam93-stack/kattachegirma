@@ -970,7 +970,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                   <button
                     onClick={() => setQuickBuyOpen(true)}
                     disabled={(product.stock ?? 0) === 0}
-                    className="flex-1 flex flex-col items-center justify-center gap-1 h-[58px] rounded-2xl border border-gray-200 bg-white text-gray-700 hover:border-primary/40 hover:bg-primary/5 active:scale-[0.96] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="press flex-1 flex flex-col items-center justify-center gap-1 h-[58px] rounded-2xl border border-gray-200 bg-white text-gray-700 hover:border-primary/40 hover:bg-primary/5 active:scale-[0.96] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <Zap size={18} className="text-primary" />
                     <span className="text-[11px] font-semibold leading-none">В 1 клик</span>
@@ -985,7 +985,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                       <div className="relative flex-1">
                         <button
                           onClick={() => setContactOpen(v => !v)}
-                          className="w-full flex flex-col items-center justify-center gap-1 h-[58px] rounded-2xl border border-gray-200 bg-white text-gray-700 hover:border-emerald-300 hover:bg-emerald-50 active:scale-[0.96] transition-all"
+                          className="press w-full flex flex-col items-center justify-center gap-1 h-[58px] rounded-2xl border border-gray-200 bg-white text-gray-700 hover:border-emerald-300 hover:bg-emerald-50 active:scale-[0.96] transition-all"
                         >
                           <MessageSquare size={18} className="text-emerald-600" />
                           <span className="text-[11px] font-semibold leading-none">Связаться</span>
@@ -1049,7 +1049,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                   {/* Сравнить */}
                   <button
                     onClick={() => setCompareOpen(true)}
-                    className="flex-1 flex flex-col items-center justify-center gap-1 h-[58px] rounded-2xl border border-gray-200 bg-white text-gray-500 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50/60 active:scale-[0.96] transition-all"
+                    className="press flex-1 flex flex-col items-center justify-center gap-1 h-[58px] rounded-2xl border border-gray-200 bg-white text-gray-500 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50/60 active:scale-[0.96] transition-all"
                   >
                     <ArrowLeftRight size={18} />
                     <span className="text-[11px] font-semibold leading-none">Сравнить</span>
@@ -1058,7 +1058,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                   <div className="relative flex-1">
                     <button
                       onClick={() => setShareOpen(v => !v)}
-                      className="w-full flex flex-col items-center justify-center gap-1 h-[58px] rounded-2xl border border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:bg-gray-50 active:scale-[0.96] transition-all"
+                      className="press w-full flex flex-col items-center justify-center gap-1 h-[58px] rounded-2xl border border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:bg-gray-50 active:scale-[0.96] transition-all"
                     >
                       <Share2 size={18} />
                       <span className="text-[11px] font-semibold leading-none">Поделиться</span>
@@ -1307,14 +1307,14 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
           </div>
           <button
             onClick={handleAddToCart}
-            className="flex-1 h-12 rounded-2xl bg-primary text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary/30 active:scale-[0.98] transition-all"
+            className="press flex-1 h-12 rounded-2xl bg-primary text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary/30 active:scale-[0.98] transition-all"
           >
             <ShoppingCart size={18} />
             {hasDiscount ? "Успей по скидке!" : "В корзину"}
           </button>
           <button
             onClick={() => setQuickBuyOpen(true)}
-            className="h-12 px-4 rounded-2xl border-2 border-primary text-primary font-black text-sm flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all"
+            className="press h-12 px-4 rounded-2xl border-2 border-primary text-primary font-black text-sm flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all"
           >
             <Zap size={16} />
             1 клик

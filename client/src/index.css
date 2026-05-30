@@ -278,4 +278,34 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .hit-rotate-fade { animation: none; }
+  .press:active, .press-icon:hover { transform: none; }
+}
+
+/* ---- Глобальная реакция всех элементов управления ---- */
+@media (prefers-reduced-motion: no-preference) {
+  button, a[href], [role="button"], summary {
+    transition: filter .15s ease, color .15s ease, background-color .15s ease,
+                box-shadow .15s ease, transform .12s ease, opacity .15s ease;
+  }
+  /* Нажатие — на любом устройстве (мышь и палец) */
+  button:not(:disabled):active,
+  a[href]:active,
+  [role="button"]:not([aria-disabled="true"]):active {
+    filter: brightness(.92);
+  }
+  /* Наведение — только на настоящих указателях (без «залипания» на тач) */
+  @media (hover: hover) and (pointer: fine) {
+    button:not(:disabled):hover,
+    a[href]:hover,
+    [role="button"]:not([aria-disabled="true"]):hover {
+      filter: brightness(1.06);
+    }
+  }
+}
+button:disabled, [aria-disabled="true"] { filter: none !important; }
+
+/* Класс «вдавливания» для настоящих кнопок (не для карточек!) */
+.press:active { transform: scale(.96); }
+@media (hover: hover) and (pointer: fine) {
+  .press-icon:hover { transform: scale(1.08); }
 }
