@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, type ChangeEvent } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Upload, Loader2, ImageOff, RefreshCw, Save } from "lucide-react";
+import { Upload, Loader2, ImageOff, Save, Copy, Search, X, ImagePlus } from "lucide-react";
 
 interface RecognizedProduct {
   model: string;
@@ -12,6 +12,8 @@ interface RecognizedProduct {
   photoUrl?: string;
   thumbUrl?: string;
   photoError?: string;
+  images?: string[];
+  originalPriceUsd?: number;
 }
 
 interface Props {
@@ -111,10 +113,12 @@ export default function PriceImportTab({ categories }: Props) {
         model: r.model,
         brand: r.brand || undefined,
         priceUsd: Number(r.priceUsd) || 0,
+        originalPriceUsd: r.originalPriceUsd != null && r.originalPriceUsd > 0 ? Number(r.originalPriceUsd) : undefined,
         colorRu: r.colorRu || undefined,
         specs: r.specs ?? {},
-        photoUrl: r.photoUrl || undefined,
+        photoUrl: r.photoUrl || (r.images && r.images[0]) || undefined,
         thumbUrl: r.thumbUrl || undefined,
+        images: r.images && r.images.length ? r.images : undefined,
       }));
       const { jobId } = await bulkMut.mutateAsync({
         categoryId: Number(categoryId),
@@ -246,21 +250,49 @@ export default function PriceImportTab({ categories }: Props) {
     setRows((prev) => prev.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
   }
 
-  async function handleReplacePhoto(i: number, e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  async function handleAddPhotos(i: number, e: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
     setRowBusy(i);
     try {
-      const base64 = await downscaleToJpegBase64(file, 1600, 0.92);
-      const res = await uploadMut.mutateAsync({ base64, filename: file.name });
-      updateRow(i, { photoUrl: res.url, thumbUrl: res.thumbUrl, photoError: undefined });
-      toast.success("Фото добавлено");
+      const uploaded: { url: string; thumbUrl?: string }[] = [];
+      for (const file of files) {
+        const base64 = await downscaleToJpegBase64(file, 1600, 0.92);
+        const res = await uploadMut.mutateAsync({ base64, filename: file.name });
+        uploaded.push({ url: res.url, thumbUrl: res.thumbUrl });
+      }
+      setRows((prev) => prev.map((r, idx) => {
+        if (idx !== i) return r;
+        const merged = [...(r.images ?? []), ...uploaded.map((u) => u.url)];
+        return {
+          ...r,
+          images: merged,
+          photoUrl: merged[0],
+          thumbUrl: r.images && r.images.length ? r.thumbUrl : uploaded[0]?.thumbUrl,
+          photoError: undefined,
+        };
+      }));
+      toast.success(files.length > 1 ? `Добавлено фото: ${files.length}` : "Фото добавлено");
     } catch (err) {
       toast.error("Ошибка загрузки: " + (err instanceof Error ? err.message : String(err)));
     } finally {
       setRowBusy(null);
       e.target.value = "";
     }
+  }
+
+  function removePhoto(i: number, url: string) {
+    setRows((prev) => prev.map((r, idx) => {
+      if (idx !== i) return r;
+      const imgs = (r.images ?? []).filter((u) => u !== url);
+      return { ...r, images: imgs, photoUrl: imgs[0], thumbUrl: imgs.length ? r.thumbUrl : undefined };
+    }));
+  }
+
+  function copyModel(name: string) {
+    navigator.clipboard?.writeText(name)
+      .then(() => toast.success("Название скопировано"))
+      .catch(() => toast.error("Не удалось скопировать"));
   }
 
   async function handleSaveSeller() {
@@ -385,13 +417,20 @@ export default function PriceImportTab({ categories }: Props) {
           </div>
 
           <div className="space-y-3">
-            {rows.map((r, i) => (
+            {rows.map((r, i) => {
+              const gallery = r.images ?? [];
+              const mainThumb = r.thumbUrl || r.photoUrl || gallery[0];
+              const fullName = `${r.brand ? r.brand + " " : ""}${r.model}`;
+              return (
               <div key={i} className="flex gap-3 items-start border border-gray-100 rounded-2xl p-3">
                 <div className="w-20 h-20 shrink-0 rounded-xl bg-gray-50 overflow-hidden flex items-center justify-center border border-gray-100 relative">
-                  {r.thumbUrl || r.photoUrl ? (
-                    <img src={r.thumbUrl || r.photoUrl} alt={r.model} className="w-full h-full object-contain" />
+                  {mainThumb ? (
+                    <img src={mainThumb} alt={r.model} className="w-full h-full object-contain" />
                   ) : (
                     <ImageOff size={20} className="text-gray-300" />
+                  )}
+                  {gallery.length > 1 && (
+                    <span className="absolute bottom-0.5 right-0.5 bg-black/70 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full">{gallery.length} фото</span>
                   )}
                   {rowBusy === i && (
                     <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
@@ -400,29 +439,57 @@ export default function PriceImportTab({ categories }: Props) {
                   )}
                 </div>
                 <div className="flex-1 min-w-0 space-y-2">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-[10px] uppercase tracking-wide text-gray-400 mb-0.5">Модель</label>
-                      <input value={r.model} onChange={(e) => updateRow(i, { model: e.target.value })} className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm" />
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-wide text-gray-400 mb-0.5">Модель</label>
+                    <div className="flex gap-1.5">
+                      <input value={r.model} onChange={(e) => updateRow(i, { model: e.target.value })} className="flex-1 min-w-0 border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm" />
+                      <button type="button" onClick={() => copyModel(fullName)} title="Копировать название" className="shrink-0 inline-flex items-center justify-center w-9 border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50">
+                        <Copy size={14} />
+                      </button>
+                      <a href={`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(fullName)}`} target="_blank" rel="noopener noreferrer" title="Найти фото в Google" className="shrink-0 inline-flex items-center justify-center w-9 border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50">
+                        <Search size={14} />
+                      </a>
                     </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="block text-[10px] uppercase tracking-wide text-gray-400 mb-0.5">Цена, $</label>
                       <input type="number" value={r.priceUsd} onChange={(e) => updateRow(i, { priceUsd: Number(e.target.value) })} className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm" />
                     </div>
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-wide text-gray-400 mb-0.5">Старая цена, $</label>
+                      <input type="number" value={r.originalPriceUsd ?? ""} placeholder="—" onChange={(e) => updateRow(i, { originalPriceUsd: e.target.value === "" ? undefined : Number(e.target.value) })} className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm" />
+                    </div>
                   </div>
+                  {r.originalPriceUsd != null && r.originalPriceUsd > r.priceUsd && (
+                    <div className="text-[11px] text-green-600 font-medium">Скидка {Math.round((1 - r.priceUsd / r.originalPriceUsd) * 100)}%</div>
+                  )}
                   <div className="text-xs text-gray-500 line-clamp-2">
                     {Object.entries(r.specs).map(([k, v]) => `${k}: ${v}`).join(" · ") || "Характеристики не распознаны"}
                   </div>
+                  {gallery.length > 0 && (
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {gallery.map((url) => (
+                        <div key={url} className="relative w-10 h-10 rounded-lg overflow-hidden border border-gray-100 group">
+                          <img src={url} alt="" className="w-full h-full object-cover" />
+                          <button type="button" onClick={() => removePhoto(i, url)} title="Удалить фото" className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <div className="flex items-center gap-2 flex-wrap pt-1">
                     <label className={`inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${anyBusy ? "opacity-50 pointer-events-none" : "cursor-pointer"}`}>
-                      <RefreshCw size={13} />
-                      Добавить фото
-                      <input type="file" accept="image/*" className="hidden" onChange={(e) => handleReplacePhoto(i, e)} disabled={anyBusy} />
+                      <ImagePlus size={13} />
+                      Добавить фото (можно несколько)
+                      <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => handleAddPhotos(i, e)} disabled={anyBusy} />
                     </label>
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="pt-2 border-t border-gray-100">

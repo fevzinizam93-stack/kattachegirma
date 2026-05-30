@@ -1086,6 +1086,8 @@ export const productsRouter = router({
         specs: z.record(z.string(), z.string()).optional(),
         photoUrl: z.string().optional(),
         thumbUrl: z.string().optional(),
+        originalPriceUsd: z.number().optional(),
+        images: z.array(z.string()).optional(),
       })).min(1),
     }))
     .mutation(async ({ input }) => {

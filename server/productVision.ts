@@ -391,10 +391,12 @@ export interface ImportProductInput {
   model: string;
   brand?: string;
   priceUsd: number;
+  originalPriceUsd?: number;
   colorRu?: string;
   specs?: Record<string, string>;
   photoUrl?: string;
   thumbUrl?: string;
+  images?: string[];
 }
 
 type BulkJob =
@@ -441,6 +443,10 @@ export function startBulkCreateJob(items: ImportProductInput[], categoryId: numb
         const slugUz = await uniqueUzSlug(uzBase);
         const priceUsd = Number(p.it.priceUsd) || 0;
         const priceSum = Math.round(priceUsd * rate);
+        const origUsd = Number(p.it.originalPriceUsd) || 0;
+        const hasDiscount = origUsd > priceUsd && priceUsd > 0;
+        const gallery = (p.it.images && p.it.images.length) ? p.it.images : (p.it.photoUrl ? [p.it.photoUrl] : []);
+        const mainImg = gallery[0] || p.it.photoUrl || undefined;
 
         const newId = await createProduct({
           name: p.name,
@@ -450,9 +456,12 @@ export function startBulkCreateJob(items: ImportProductInput[], categoryId: numb
           categoryId,
           price: String(priceSum),
           priceUsd: priceUsd > 0 ? String(priceUsd) : undefined,
-          imageUrl: p.it.photoUrl || undefined,
+          originalPrice: hasDiscount ? String(Math.round(origUsd * rate)) : undefined,
+          originalPriceUsd: hasDiscount ? String(origUsd) : undefined,
+          discount: hasDiscount ? Math.round((1 - priceUsd / origUsd) * 100) : undefined,
+          imageUrl: mainImg,
           thumbUrl: p.it.thumbUrl || undefined,
-          images: p.it.photoUrl ? [p.it.photoUrl] : [],
+          images: gallery,
           specs: p.specs,
           sellerName: contact.sellerName || undefined,
           sellerPhone: contact.sellerPhone || undefined,
@@ -463,7 +472,7 @@ export function startBulkCreateJob(items: ImportProductInput[], categoryId: numb
           stockCount: contact.stock ?? 10,
           isActive: true,
           isApproved: true,
-        });
+        } as Parameters<typeof createProduct>[0]);
         if (typeof newId === "number") created.push({ id: newId, name: p.name, specsText: p.specsText });
 
         done++
