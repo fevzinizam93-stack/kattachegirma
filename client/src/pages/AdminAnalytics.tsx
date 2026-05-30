@@ -193,7 +193,6 @@ export default function AdminAnalytics() {
   const topFavoritedProducts = (stats as any).topFavoritedProducts ?? [];
   const topOrderedProducts = (stats as any).topOrderedProducts ?? [];
   const topRatedProducts = (stats as any).topRatedProducts ?? [];
-  const topPages = (stats as any).topPages ?? [];
   const searchQueries = (stats as any).searchQueries ?? [];
 
   return (
@@ -426,22 +425,6 @@ export default function AdminAnalytics() {
           </div>
         </div>
 
-        {/* ── 8. Top Pages ─────────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-          <SectionTitle><Eye size={16} className="text-blue-600" /> Самые посещаемые страницы</SectionTitle>
-          {topPages.length === 0 ? (
-            <p className="text-sm text-gray-400 italic">Нет данных</p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {topPages.slice(0, 12).map((p: any, i: number) => (
-                <div key={i} className="flex items-center justify-between py-1.5 px-3 bg-gray-50 rounded-lg">
-                  <span className="text-xs text-gray-700 truncate max-w-[70%]">{p.page || "/"}</span>
-                  <span className="text-xs font-bold text-blue-600 shrink-0">{fmt(Number(p.views))}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
 
         {/* ── 9. Additional stats ───────────────────────────────────────── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
