@@ -95,7 +95,7 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
 
   return (
     <>
-    <div className="bg-white rounded-2xl overflow-hidden flex flex-col shadow-sm hover:shadow-md transition-shadow duration-200" style={{ border: '1px solid #f0f0f0' }}>
+    <div className="group bg-white rounded-2xl overflow-hidden flex flex-col shadow-sm ring-1 ring-gray-100 transition-all duration-200 ease-out transform-gpu hover:-translate-y-1 hover:shadow-xl hover:ring-2 hover:ring-primary/40 motion-reduce:transform-none motion-reduce:hover:translate-y-0">
       <Link
         href={`/product/${product.slug}`}
         onClick={() => {
