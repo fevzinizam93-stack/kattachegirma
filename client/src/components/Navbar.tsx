@@ -176,7 +176,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
       <div className="hidden md:block" style={{ minHeight: "60px" }}>
         <div className="container flex items-center gap-4" style={{ height: "60px" }}>
           {/* Logo */}
-          <Link href="/" aria-label="На главную" className="press shrink-0 flex items-center gap-2 min-w-fit cursor-pointer -m-2 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+          <Link href="/" aria-label="На главную" onClick={() => window.scrollTo({ top: 0 })} className="press shrink-0 flex items-center gap-2 min-w-fit cursor-pointer -m-2 p-2 rounded-lg hover:bg-gray-50 transition-colors">
             <img src="/api/img?url=%2Fmanus-storage%2Fkc_logo_d6421d0d.png&w=240&q=85" alt="Katta Chegirma" className="object-contain shrink-0" style={{ height: "40px", width: "auto" }} width={120} height={40} fetchPriority="high" decoding="sync" />
             <div className="font-black text-gray-900 tracking-tight whitespace-nowrap" style={{ fontSize: "15px" }}>Katta Chegirma!!!</div>
           </Link>
@@ -545,7 +545,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
       <div className="md:hidden">
         {/* Top row: logo + name only */}
         <div className="flex items-center px-3 pt-2 pb-1">
-          <Link href="/" aria-label="На главную" className="flex items-center gap-2 min-w-0 cursor-pointer -m-2 p-2 rounded-lg active:bg-gray-50 transition-colors">
+          <Link href="/" aria-label="На главную" onClick={() => window.scrollTo({ top: 0 })} className="flex items-center gap-2 min-w-0 cursor-pointer -m-2 p-2 rounded-lg active:bg-gray-50 transition-colors">
             <img src="/api/img?url=%2Fmanus-storage%2Fkc_logo_d6421d0d.png&w=240&q=85" alt="Katta Chegirma" className="h-10 w-auto object-contain shrink-0" width={120} height={40} fetchPriority="high" decoding="sync" />
             <div className="font-black text-base text-gray-900 tracking-tight">Katta Chegirma!!!</div>
           </Link>
