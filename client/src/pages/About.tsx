@@ -35,33 +35,33 @@ const TRUST_ITEMS = [
     icon: Tag,
     title: "Честные скидки",
     desc: "Мы не завышаем «старую цену». Наши акции — это реальное снижение стоимости, которое вы можете проверить сами.",
-    color: "bg-orange-50 border-orange-200",
-    iconBg: "bg-orange-500",
+    color: "bg-white border-gray-200",
+    iconBg: "bg-gray-900",
     check: "Цены проверяются ежедневно",
   },
   {
     icon: ShieldCheck,
     title: "Прозрачность и гарантия",
     desc: "Вся техника — новая, в заводской упаковке, с официальной гарантией. Мы дорожим репутацией.",
-    color: "bg-blue-50 border-blue-200",
-    iconBg: "bg-blue-600",
+    color: "bg-white border-gray-200",
+    iconBg: "bg-gray-900",
     check: "Официальная гарантия на каждый товар",
   },
   {
     icon: Star,
     title: "Только проверенные бренды",
     desc: "Samsung, LG, Franco, Avangard, Ferro и другие. Каждый товар проходит отбор перед публикацией.",
-    color: "bg-green-50 border-green-200",
-    iconBg: "bg-green-600",
+    color: "bg-white border-gray-200",
+    iconBg: "bg-gray-900",
     check: "Модерация каждого товара",
   },
 ];
 
 const BENEFITS = [
-  { icon: TrendingUp, title: "Лучшая цена на рынке", desc: "Мы допускаем к публикации только товары с самой низкой ценой в Узбекистане — покупатель видит реальную выгоду и покупает сразу.", color: "bg-primary" },
-  { icon: Package, title: "Широкий ассортимент", desc: "Холодильники, стиральные машины, телевизоры, кухонная техника — всё в одном месте с доставкой по всему Узбекистану.", color: "bg-blue-600" },
-  { icon: HeartHandshake, title: "Поддержка 24/7", desc: "Наши менеджеры всегда на связи. Помогаем с выбором, оформлением и любыми вопросами после покупки.", color: "bg-green-600" },
-  { icon: Zap, title: "Быстрый заказ", desc: "Купить в 1 клик или через Telegram — без лишних шагов. Менеджер перезвонит в течение 15 минут.", color: "bg-orange-500" },
+  { icon: TrendingUp, title: "Лучшая цена на рынке", desc: "Мы допускаем к публикации только товары с самой низкой ценой в Узбекистане — покупатель видит реальную выгоду и покупает сразу.", color: "bg-gray-900" },
+  { icon: Package, title: "Широкий ассортимент", desc: "Холодильники, стиральные машины, телевизоры, кухонная техника — всё в одном месте с доставкой по всему Узбекистану.", color: "bg-gray-900" },
+  { icon: HeartHandshake, title: "Поддержка 24/7", desc: "Наши менеджеры всегда на связи. Помогаем с выбором, оформлением и любыми вопросами после покупки.", color: "bg-gray-900" },
+  { icon: Zap, title: "Быстрый заказ", desc: "Купить в 1 клик или через Telegram — без лишних шагов. Менеджер перезвонит в течение 15 минут.", color: "bg-gray-900" },
 ];
 
 const BRANDS = ["Samsung", "LG", "Franco", "Avangard", "Ferro", "Artel", "Beko", "Bosch", "Haier", "Midea"];
@@ -119,7 +119,7 @@ function ReviewsSection() {
       <div className="container">
         {/* Header */}
         <div className="text-center mb-6">
-          <span className="inline-block bg-amber-50 text-amber-700 font-semibold text-sm px-4 py-1.5 rounded-full mb-3 border border-amber-200">
+          <span className="inline-block text-gray-400 font-semibold text-xs mb-3 uppercase tracking-widest">
             ⭐ Отзывы покупателей
           </span>
           <h2 className="text-2xl md:text-2xl font-black text-gray-900 mb-3">
@@ -129,7 +129,7 @@ function ReviewsSection() {
             Реальные отзывы покупателей, которые уже сделали выгодные покупки на Katta Chegirma
           </p>
           {/* Overall rating badge */}
-          <div className="inline-flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-6 py-3 mt-5">
+          <div className="inline-flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-2xl px-6 py-3 mt-5">
             <span className="text-4xl font-black text-amber-500">{avgRating}</span>
             <div className="text-left">
               <StarRating rating={5} size={18} />
@@ -155,7 +155,7 @@ function ReviewsSection() {
               </p>
               {/* Author */}
               <div className="flex items-center gap-3 mt-auto pt-3 border-t border-gray-50">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-orange-400 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                <div className="w-9 h-9 rounded-full bg-gray-900 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                   {review.authorName.charAt(0)}
                 </div>
                 <div>
@@ -397,8 +397,8 @@ export default function About() {
       {/* ── INTRO ── */}
       <section className="container py-10">
         <div className="max-w-3xl mx-auto">
-          <div className="flex items-start gap-4 bg-gradient-to-r from-primary/5 to-orange-50 border border-primary/15 rounded-3xl p-5 md:p-7">
-            <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center flex-shrink-0 mt-1">
+          <div className="flex items-start gap-4 bg-gray-50 border border-gray-200 rounded-3xl p-5 md:p-7">
+            <div className="w-12 h-12 bg-gray-900 rounded-2xl flex items-center justify-center flex-shrink-0 mt-1">
               <Award size={22} className="text-white" />
             </div>
             <div>
@@ -419,7 +419,7 @@ export default function About() {
         <div className="container">
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-6">
-              <span className="inline-block bg-primary/10 text-primary text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wide">Доверие</span>
+              <span className="inline-block text-gray-400 text-xs font-semibold mb-3 uppercase tracking-widest">Доверие</span>
               <h2 className="text-2xl font-black text-gray-900 mb-2">Почему нам доверяют тысячи покупателей?</h2>
               <p className="text-gray-500">Мы строим отношения с покупателями на трёх принципах</p>
             </div>
@@ -448,7 +448,7 @@ export default function About() {
       <section className="container py-10">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-6">
-            <span className="inline-block bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wide">Преимущества</span>
+            <span className="inline-block text-gray-400 text-xs font-semibold mb-3 uppercase tracking-widest">Преимущества</span>
             <h2 className="text-2xl font-black text-gray-900 mb-2">Что вы получаете?</h2>
             <p className="text-gray-500">Покупайте выгодно, быстро и с уверенностью</p>
           </div>
@@ -518,7 +518,7 @@ export default function About() {
         <div className="container">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-6">
-              <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wide">Наш магазин</span>
+              <span className="inline-block text-gray-400 text-xs font-semibold mb-3 uppercase tracking-widest">Наш магазин</span>
               <h2 className="text-2xl font-black text-gray-900 mb-2">Загляните к нам</h2>
               <p className="text-gray-500">Мы всегда рады гостям — приходите и убедитесь лично!</p>
             </div>
@@ -557,7 +557,7 @@ export default function About() {
       {/* ── CTA BANNER ── */}
       <section className="container py-10">
         <div className="max-w-3xl mx-auto">
-          <div className="bg-gradient-to-r from-primary to-orange-500 rounded-3xl p-6 md:p-8 text-white text-center shadow-xl shadow-primary/25">
+          <div className="bg-gray-900 rounded-3xl p-8 md:p-12 text-white text-center">
             <div className="text-4xl mb-4">🎉</div>
             <h2 className="text-2xl md:text-2xl font-black mb-3">Присоединяйтесь к нашей семье!</h2>
             <p className="text-white/90 leading-relaxed mb-8 text-lg max-w-xl mx-auto">
@@ -589,7 +589,7 @@ export default function About() {
           <div className="container">
             <div className="max-w-3xl mx-auto">
               <div className="text-center mb-6">
-                <span className="inline-block bg-primary/10 text-primary text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wide">Контакты</span>
+                <span className="inline-block text-gray-400 text-xs font-semibold mb-3 uppercase tracking-widest">Контакты</span>
                 <h2 className="text-2xl font-black text-gray-900 mb-2">Свяжитесь с нами</h2>
                 <p className="text-gray-500">Мы всегда на связи и готовы помочь</p>
               </div>
@@ -661,7 +661,7 @@ export default function About() {
                           href={`https://instagram.com/${s.instagram.replace("@", "")}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-opacity"
+                          className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-opacity"
                         >
                           <Instagram size={14} /> Instagram
                         </a>
