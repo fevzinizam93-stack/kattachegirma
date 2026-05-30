@@ -193,10 +193,47 @@ export default function PriceImportTab({ categories }: Props) {
     return out.split(",")[1] ?? "";
   }
 
+  function recognizeOneFile(file: File, label: string): Promise<RecognizedProduct[]> {
+    return new Promise((resolve) => {
+      (async () => {
+        try {
+          const base64 = await downscaleToJpegBase64(file, 1500, 0.85);
+          const { jobId } = await recognizeMut.mutateAsync({ base64, mimeType: "image/jpeg" });
+          setActiveJobId(jobId);
+          const poll = setInterval(async () => {
+            try {
+              const job = (await utils.products.recognitionStatus.fetch({ jobId })) as {
+                status: string; stage?: string; done?: number; total?: number; products?: RecognizedProduct[]; error?: string;
+              };
+              if (job.status === "processing") {
+                setRecogInfo({ stage: `${label}${job.stage ?? "Обработка..."}`, done: job.done ?? 0, total: job.total ?? 0 });
+              } else if (job.status === "done") {
+                clearInterval(poll);
+                resolve(job.products ?? []);
+              } else if (job.status === "error") {
+                clearInterval(poll);
+                toast.error("Ошибка распознавания: " + (job.error ?? ""));
+                resolve([]);
+              }
+            } catch {
+              clearInterval(poll);
+              toast.error("Ошибка опроса статуса");
+              resolve([]);
+            }
+          }, 3000);
+          pollRef.current = poll;
+        } catch (err) {
+          toast.error("Ошибка: " + (err instanceof Error ? err.message : String(err)));
+          resolve([]);
+        }
+      })();
+    });
+  }
+
   async function handleFile(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setFileName(file.name);
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setFileName(files.length > 1 ? `${files.length} прайс-листов` : files[0].name);
     setRows([]);
     setBusy(true);
     setRecogInfo(null);
@@ -205,37 +242,22 @@ export default function PriceImportTab({ categories }: Props) {
     if (elapsedRef.current) clearInterval(elapsedRef.current);
     elapsedRef.current = setInterval(() => setElapsed((s) => s + 1), 1000);
     try {
-      const base64 = await downscaleToJpegBase64(file, 1500, 0.85);
-      const { jobId } = await recognizeMut.mutateAsync({ base64, mimeType: "image/jpeg" });
-      setActiveJobId(jobId);
-      pollRef.current = setInterval(async () => {
-        try {
-          const job = (await utils.products.recognitionStatus.fetch({ jobId })) as {
-            status: string; stage?: string; done?: number; total?: number; products?: RecognizedProduct[]; error?: string;
-          };
-          if (job.status === "processing") {
-            setRecogInfo({ stage: job.stage ?? "Обработка...", done: job.done ?? 0, total: job.total ?? 0 });
-          } else if (job.status === "done") {
-            stopPoll();
-            if (elapsedRef.current) clearInterval(elapsedRef.current);
-            setRecogInfo(null);
-            setRows(job.products ?? []); setBusy(false);
-            toast.success(`Распознано товаров: ${job.products?.length ?? 0}`);
-          } else if (job.status === "error") {
-            stopPoll();
-            if (elapsedRef.current) clearInterval(elapsedRef.current);
-            setRecogInfo(null);
-            setBusy(false);
-            toast.error("Ошибка распознавания: " + (job.error ?? ""));
-          }
-        } catch {
-          stopPoll();
-          if (elapsedRef.current) clearInterval(elapsedRef.current);
-          setRecogInfo(null);
-          setBusy(false);
-          toast.error("Ошибка опроса статуса");
+      let totalFound = 0;
+      for (let f = 0; f < files.length; f++) {
+        const label = files.length > 1 ? `Прайс ${f + 1}/${files.length}: ` : "";
+        const products = await recognizeOneFile(files[f], label);
+        if (products.length) {
+          setRows((prev) => [...prev, ...products]);
+          totalFound += products.length;
         }
-      }, 3000);
+      }
+      stopPoll();
+      if (elapsedRef.current) clearInterval(elapsedRef.current);
+      setRecogInfo(null);
+      setBusy(false);
+      toast.success(files.length > 1
+        ? `Готово! Распознано товаров: ${totalFound} из ${files.length} прайс-листов`
+        : `Распознано товаров: ${totalFound}`);
     } catch (err) {
       setBusy(false);
       if (elapsedRef.current) clearInterval(elapsedRef.current);
@@ -322,8 +344,8 @@ export default function PriceImportTab({ categories }: Props) {
         </p>
         <label className={`inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-semibold text-sm transition-colors ${busy ? "opacity-50 pointer-events-none" : "cursor-pointer"}`}>
           <Upload size={16} />
-          Загрузить фото-прайс
-          <input type="file" accept="image/*" className="hidden" onChange={handleFile} disabled={busy} />
+          Загрузить фото-прайс (можно несколько)
+          <input type="file" accept="image/*" multiple className="hidden" onChange={handleFile} disabled={busy} />
         </label>
         {fileName && <p className="text-xs text-gray-400 mt-2">{fileName}</p>}
         {busy && (
