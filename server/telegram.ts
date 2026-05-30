@@ -447,6 +447,71 @@ export async function autoRegisterTelegramWebhook(webhookUrl: string): Promise<v
   }
 }
 
+// Отправить одно сообщение/фото в чат и вернуть message_id (для отслеживания заказа)
+async function sendAndGetMessageId(chatId: string, photoUrl: string | undefined, text: string, extra?: Record<string, unknown>): Promise<number | null> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return null;
+  const usePhoto = !!photoUrl;
+  const endpoint = usePhoto ? "sendPhoto" : "sendMessage";
+  const body = usePhoto
+    ? { chat_id: chatId, photo: photoUrl, caption: text, parse_mode: "HTML", ...(extra ?? {}) }
+    : { chat_id: chatId, text, parse_mode: "HTML", ...(extra ?? {}) };
+  try {
+    const res = await fetch(`${TELEGRAM_API}/bot${token}/${endpoint}`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      if (usePhoto) return sendAndGetMessageId(chatId, undefined, text, extra); // фото не ушло — пробуем текстом
+      console.error(`[Telegram] send to ${chatId} failed:`, await res.text().catch(() => ""));
+      return null;
+    }
+    const data = await res.json().catch(() => null) as any;
+    return data?.result?.message_id ?? null;
+  } catch (e) {
+    console.error(`[Telegram] send to ${chatId} error:`, e);
+    return null;
+  }
+}
+
+// Рассылка заказа во все чаты + сбор пар (chatId, messageId)
+async function broadcastOrderTracked(text: string, photoUrl: string | undefined, extra: Record<string, unknown>): Promise<Array<{ chatId: string; messageId: number }>> {
+  const refs: Array<{ chatId: string; messageId: number }> = [];
+  const sentTo = new Set<string>();
+  const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+  const send = async (chatId: string) => {
+    if (!chatId || sentTo.has(chatId)) return;
+    sentTo.add(chatId);
+    const mid = await sendAndGetMessageId(chatId, photoUrl, text, extra);
+    if (mid != null) refs.push({ chatId, messageId: mid });
+  };
+  if (adminChatId) await send(adminChatId);
+  try {
+    const recipients = await getActiveTelegramRecipients();
+    for (const r of recipients) await send(r.chatId);
+  } catch (e) { console.error("[Telegram] recipients load failed:", e); }
+  return refs;
+}
+
+// Заказ взят: убрать кнопки и показать «взял» у всех копий
+export async function markOrderTaken(orderId: number, takerName: string): Promise<void> {
+  const { getOrderById } = await import("./db");
+  const order = await getOrderById(orderId);
+  const refs = (order as any)?.telegramMessages as Array<{ chatId: string; messageId: number }> | null;
+  if (!refs || !refs.length) return;
+  const markup = { inline_keyboard: [[{ text: `✅ Buyurtmani oldi: ${takerName}`, callback_data: `taken:${orderId}` }]] };
+  for (const r of refs) await editMessageReplyMarkup(r.chatId, r.messageId, markup);
+}
+
+// Заказ отклонён: убрать кнопки и показать «отклонён» у всех копий
+export async function markOrderRejected(orderId: number, byName: string): Promise<void> {
+  const { getOrderById } = await import("./db");
+  const order = await getOrderById(orderId);
+  const refs = (order as any)?.telegramMessages as Array<{ chatId: string; messageId: number }> | null;
+  if (!refs || !refs.length) return;
+  const markup = { inline_keyboard: [[{ text: `❌ Rad etilgan${byName ? ` — ${byName}` : ""}`, callback_data: `taken:${orderId}` }]] };
+  for (const r of refs) await editMessageReplyMarkup(r.chatId, r.messageId, markup);
+}
+
 export async function notifyNewOrder(order: {
   id: number;
   phone: string;
@@ -507,10 +572,11 @@ export async function notifyNewOrder(order: {
       : `https://kattachegirma.uz${rawImg.startsWith("/") ? "" : "/"}${rawImg}`;
   }
 
-  if (cover && message.length <= 1000) {
-    await broadcastTelegramPhoto(cover, message, { reply_markup: keyboard });
-  } else {
-    await broadcastTelegramMessage(message, { reply_markup: keyboard });
+  const usePhoto = !!(cover && message.length <= 1000);
+  const refs = await broadcastOrderTracked(message, usePhoto ? cover : undefined, { reply_markup: keyboard });
+  if (refs.length) {
+    const { setOrderTelegramMessages } = await import("./db");
+    await setOrderTelegramMessages(order.id, refs).catch((e) => console.error("[Telegram] save refs failed:", e));
   }
 }
 

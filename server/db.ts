@@ -479,6 +479,12 @@ export async function updateOrderStatus(id: number, status: "pending" | "confirm
   await db.update(orders).set({ status }).where(eq(orders.id, id));
 }
 
+export async function setOrderTelegramMessages(orderId: number, refs: Array<{ chatId: string; messageId: number }>) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(orders).set({ telegramMessages: refs as any }).where(eq(orders.id, orderId));
+}
+
 export async function getOrderById(id: number) {
   const db = await getDb();
   if (!db) return null;

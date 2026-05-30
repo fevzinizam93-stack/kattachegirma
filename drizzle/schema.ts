@@ -139,6 +139,8 @@ export const orders = mysqlTable("orders", {
   managerId: varchar("managerId", { length: 32 }),
   managerName: varchar("managerName", { length: 128 }),
   takenAt: timestamp("takenAt"),
+  telegramMessages: json("telegramMessages").$type<Array<{ chatId: string; messageId: number }>>()
+  ,
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

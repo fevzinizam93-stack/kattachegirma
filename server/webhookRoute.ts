@@ -6,7 +6,7 @@
 
 import { Router } from "express";
 import { approveSeller, setSellerBlocked, getSellerById, getProductById, updateProduct, setReviewStatus, setReviewReply, getAllReviews, getAllOrders, getAllSellers, getPendingProducts, getOrderById, updateOrderStatusWithManager, createNotification } from "./db";
-import { answerCallbackQuery, editMessageText, editMessageCaption, editMessageReplyMarkup, sendTelegramMessageToChat, notifyCustomer } from "./telegram";
+import { answerCallbackQuery, editMessageText, editMessageCaption, editMessageReplyMarkup, sendTelegramMessageToChat, notifyCustomer, markOrderTaken, markOrderRejected } from "./telegram";
 
 const router = Router();
 
@@ -274,18 +274,8 @@ router.post("/api/telegram/webhook", async (req, res) => {
         await updateOrderStatusWithManager(orderId, "confirmed", managerId, managerName);
         await answerCallbackQuery(callbackQueryId, `✅ Buyurtma #${orderId} siz tomonidan qabul qilindi!`);
 
-        // Edit the message to show who took the order and remove buttons
-        const originalText = cbq.message?.text ?? "";
-        const updatedText = [
-          originalText,
-          ``,
-          `✅ <b>Buyurtmani oldi:</b> ${managerName}`,
-          `⏰ ${new Date().toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" })}`,
-        ].join("\n");
-
-        if (chatId && messageId) {
-          await editMessageText(chatId, messageId, updatedText);
-        }
+        // Убрать кнопки и показать «взял заказ X» во ВСЕХ копиях сообщения (фото и текст)
+        await markOrderTaken(orderId, managerName).catch((e) => console.error("[take_order] markOrderTaken:", e));
 
         // Notify the customer in Telegram if they have a telegramId
         if (order.customerPhone) {
@@ -322,17 +312,13 @@ router.post("/api/telegram/webhook", async (req, res) => {
           }).catch((e) => console.error("[Notification] reject_order failed:", e));
         }
 
-        if (chatId && messageId) {
-          const originalText = cbq.message?.text ?? "";
-          const cancelledText = [
-            originalText,
-            ``,
-            `❌ <b>Rad etildi</b> — ${adminName}`,
-            `⏰ ${new Date().toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" })}`,
-          ].join("\n");
-          await editMessageText(chatId, messageId, cancelledText);
-        }
+        const rejManagerName = [cbq.from?.first_name, cbq.from?.last_name].filter(Boolean).join(" ") || adminName;
+        await markOrderRejected(orderId, rejManagerName).catch((e) => console.error("[reject_order] markOrderRejected:", e));
 
+      } else if (data.startsWith("taken:")) {
+        const oid = parseInt(data.split(":")[1], 10);
+        const o = !isNaN(oid) ? await getOrderById(oid) : null;
+        await answerCallbackQuery(callbackQueryId, o?.managerName ? `Buyurtmani ${o.managerName} oldi` : "Buyurtma allaqachon ko'rib chiqilgan");
       } else {
         // Unknown callback — just acknowledge
         await answerCallbackQuery(callbackQueryId);
