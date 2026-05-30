@@ -1032,7 +1032,7 @@ export async function getActiveBanners(): Promise<Banner[]> {
     .where(eq(banners.isActive, true))
     .orderBy(asc(banners.sortOrder), desc(banners.createdAt));
   // Filter out expired banners (endsAt < now)
-  return rows.filter(b => !b.endsAt || b.endsAt > now);
+  return rows.filter(b => (!b.endsAt || b.endsAt > now) && (!b.startsAt || b.startsAt <= now));
 }
 
 export async function getAllBanners(): Promise<Banner[]> {
