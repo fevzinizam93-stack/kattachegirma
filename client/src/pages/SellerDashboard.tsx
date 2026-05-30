@@ -237,6 +237,10 @@ export default function SellerDashboard() {
   const uploadMut = trpc.products.sellerUploadImage.useMutation({
     onError: (e) => toast.error("Ошибка загрузки фото: " + e.message),
   });
+  const updateLogoMut = trpc.sellers.updateLogo.useMutation({
+    onSuccess: () => { utils.sellers.me.invalidate(); toast.success("Логотип обновлён"); },
+    onError: (e) => toast.error(e.message),
+  });
 
   const createMut = trpc.products.sellerCreate.useMutation({
     onSuccess: () => {
@@ -300,6 +304,23 @@ export default function SellerDashboard() {
 
   const seller = sellerQuery.data;
   const products = myProductsQuery.data ?? [];
+
+  async function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      try {
+        const base64 = (ev.target?.result as string).split(",")[1];
+        const { url } = await uploadMut.mutateAsync({ base64, mimeType: file.type, filename: file.name });
+        await updateLogoMut.mutateAsync({ logoUrl: url });
+      } catch {
+        toast.error("Не удалось загрузить логотип");
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  }
 
   async function handleFilesChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
@@ -447,7 +468,17 @@ export default function SellerDashboard() {
       <div className="bg-white border-b border-gray-100 sticky top-0 z-20">
         <div className="container flex items-center justify-between py-3">
           <div className="flex items-center gap-3">
-            <div className="bg-primary/10 rounded-xl p-2"><Store size={20} className="text-primary" /></div>
+            <label className="relative cursor-pointer shrink-0" title="Загрузить логотип магазина">
+              <input type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
+              {seller.logoUrl ? (
+                <img src={seller.logoUrl} alt={seller.name} className="w-11 h-11 rounded-xl object-cover border border-gray-200" />
+              ) : (
+                <div className="bg-primary/10 rounded-xl w-11 h-11 flex items-center justify-center"><Store size={20} className="text-primary" /></div>
+              )}
+              <span className="absolute -bottom-1 -right-1 bg-white border border-gray-200 rounded-full w-5 h-5 flex items-center justify-center shadow-sm">
+                <ImagePlus size={11} className="text-gray-500" />
+              </span>
+            </label>
             <div>
               <p className="font-black text-gray-900 leading-tight">{seller.name}</p>
               <p className="text-xs text-gray-400">{t.seller_dashboard}</p>

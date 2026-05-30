@@ -281,6 +281,13 @@
       "when": 1780134096353,
       "tag": "0039_motionless_silver_sable",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "5",
+      "when": 1780135347732,
+      "tag": "0040_plain_morph",
+      "breakpoints": true
     }
   ]
 }

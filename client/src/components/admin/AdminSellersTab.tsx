@@ -58,9 +58,13 @@ export default function AdminSellersTab() {
             <div key={seller.id} className="bg-white rounded-xl border border-gray-200 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                    <Store size={20} className="text-primary" />
-                  </div>
+                  {(seller as any).logoUrl ? (
+                    <img src={(seller as any).logoUrl} alt={seller.name} className="w-10 h-10 rounded-full object-cover border border-gray-200" />
+                  ) : (
+                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                      <Store size={20} className="text-primary" />
+                    </div>
+                  )}
                   <div>
                     <p className="font-bold text-gray-900 flex items-center gap-1.5">
                       {seller.name}

@@ -1182,6 +1182,12 @@ export async function setProductModerationStatus(id: number, status: "approved" 
   await db.update(products).set({ moderationStatus: status, isApproved: status === "approved" }).where(eq(products.id, id));
 }
 
+export async function setSellerLogo(sellerId: number, logoUrl: string) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(sellers).set({ logoUrl: logoUrl || null } as any).where(eq(sellers.id, sellerId));
+}
+
 export async function setSellerTrusted(sellerId: number, trusted: boolean) {
   const db = await getDb();
   if (!db) return;

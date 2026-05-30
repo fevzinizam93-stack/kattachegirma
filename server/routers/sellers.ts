@@ -11,6 +11,7 @@ import {
   rejectSeller,
   setSellerBlocked,
   setSellerTrusted,
+  setSellerLogo,
   getSellerProducts,
   promoteToAdmin,
   getPendingProducts,
@@ -67,6 +68,16 @@ export const sellersRouter = router({
     }),
 
   // Admin: list all sellers
+  // Seller: обновить логотип своего магазина
+  updateLogo: protectedProcedure
+    .input(z.object({ logoUrl: z.string().max(1024) }))
+    .mutation(async ({ input, ctx }) => {
+      const seller = await getSellerByUserId(ctx.user.id);
+      if (!seller) throw new TRPCError({ code: "FORBIDDEN", message: "Профиль продавца не найден" });
+      await setSellerLogo(seller.id, input.logoUrl);
+      return { success: true };
+    }),
+
   list: adminProcedure.query(async () => {
     return getAllSellers();
   }),

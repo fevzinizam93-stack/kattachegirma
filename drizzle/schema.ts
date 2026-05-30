@@ -65,6 +65,7 @@ export const sellers = mysqlTable("sellers", {
   phone: varchar("phone", { length: 32 }),
   telegram: varchar("telegram", { length: 128 }),
   description: text("description"),
+  logoUrl: varchar("logoUrl", { length: 512 }),
   isApproved: boolean("isApproved").default(false),
   isTrusted: boolean("isTrusted").default(false),
   isBlocked: boolean("isBlocked").default(false),
