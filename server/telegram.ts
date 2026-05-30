@@ -449,13 +449,23 @@ export async function notifyNewOrder(order: {
   id: number;
   phone: string;
   address: string;
-  items: Array<{ productName: string; quantity: number; price: string }>;
+  items: Array<{ productName: string; quantity: number; price: string; priceUsd?: number; imageUrl?: string }>;
   total: string;
+  totalUsd?: number;
   customerName?: string;
 }): Promise<void> {
+  const fmtUsd = (n: number) => `$${Math.round(n).toLocaleString("ru-RU")}`;
   const itemLines = order.items
-    .map((item, i) => `  ${i + 1}. <b>${item.productName}</b> × ${item.quantity} — ${Number(item.price).toLocaleString("ru-RU")} so'm`)
+    .map((item, i) => {
+      const sum = `${Number(item.price).toLocaleString("ru-RU")} so'm`;
+      const usd = item.priceUsd ? ` / ${fmtUsd(item.priceUsd)}` : "";
+      return `  ${i + 1}. <b>${item.productName}</b> × ${item.quantity} — ${sum}${usd}`;
+    })
     .join("\n");
+
+  const totalLine = order.totalUsd
+    ? `💰 <b>Jami:</b> ${Number(order.total).toLocaleString("ru-RU")} so'm / ${fmtUsd(order.totalUsd)}`
+    : `💰 <b>Jami:</b> ${Number(order.total).toLocaleString("ru-RU")} so'm`;
 
   const message = [
     `🛒 <b>YANGI BUYURTMA #${order.id}</b>`,
@@ -467,7 +477,7 @@ export async function notifyNewOrder(order: {
     `📦 <b>Mahsulotlar:</b>`,
     itemLines,
     ``,
-    `💰 <b>Jami:</b> ${Number(order.total).toLocaleString("ru-RU")} so'm`,
+    totalLine,
     ``,
     `⏰ ${new Date().toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" })}`,
   ].filter(Boolean).join("\n");
@@ -485,7 +495,21 @@ export async function notifyNewOrder(order: {
     ],
   };
 
-  await broadcastTelegramMessage(message, { reply_markup: keyboard });
+  // Фото первого товара как обложка (нужен абсолютный https-URL). Если фото нет
+  // или подпись слишком длинная для фото-сообщения — отправляем текстом.
+  const rawImg = order.items.find((it) => it.imageUrl)?.imageUrl;
+  let cover: string | undefined;
+  if (rawImg) {
+    cover = rawImg.startsWith("http")
+      ? rawImg
+      : `https://kattachegirma.uz${rawImg.startsWith("/") ? "" : "/"}${rawImg}`;
+  }
+
+  if (cover && message.length <= 1000) {
+    await broadcastTelegramPhoto(cover, message, { reply_markup: keyboard });
+  } else {
+    await broadcastTelegramMessage(message, { reply_markup: keyboard });
+  }
 }
 
 /**

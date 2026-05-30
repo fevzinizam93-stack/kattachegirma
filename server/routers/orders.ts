@@ -8,6 +8,7 @@ import {
   getOrdersByUserId,
   updateOrderStatus,
   createNotification,
+  getProductById,
   getDb,
 } from "../db";
 import { eq, sql } from "drizzle-orm";
@@ -65,21 +66,36 @@ export const ordersRouter = router({
         }
       }).catch(e => console.error("[HitScore] Failed to update salesCount:", e));
 
-      // Send Telegram notification (non-blocking)
-      notifyNewOrder({
-        id,
-        phone: input.customerPhone,
-        customerName: input.customerName,
-        address: input.deliveryAddress,
-        items: input.items.map(item => ({
-          productName: item.name,
-          quantity: item.quantity,
-          price: String(item.price),
-        })),
-        total: input.totalAmount,
-      })
-        .then(() => console.log(`[Orders] ✅ Telegram уведомление о заказе #${id} отправлено`))
-        .catch(e => console.error(`[Orders] ❌ Telegram уведомление НЕ отправлено:`, e));
+      // Telegram уведомление с фото товара и ценой в $ и сум (non-blocking)
+      void (async () => {
+        try {
+          const enriched = await Promise.all(input.items.map(async (item) => {
+            let priceUsd: number | undefined;
+            let imageUrl = item.imageUrl;
+            try {
+              const p = await getProductById(item.productId);
+              if (p) {
+                if (p.priceUsd != null) priceUsd = Number(p.priceUsd);
+                if (!imageUrl && p.imageUrl) imageUrl = p.imageUrl;
+              }
+            } catch { /* ignore */ }
+            return { productName: item.name, quantity: item.quantity, price: String(item.price), priceUsd, imageUrl };
+          }));
+          const totalUsd = enriched.reduce((s, it) => s + (it.priceUsd ? it.priceUsd * it.quantity : 0), 0);
+          await notifyNewOrder({
+            id,
+            phone: input.customerPhone,
+            customerName: input.customerName,
+            address: input.deliveryAddress,
+            items: enriched,
+            total: input.totalAmount,
+            totalUsd: totalUsd > 0 ? totalUsd : undefined,
+          });
+          console.log(`[Orders] ✅ Telegram уведомление о заказе #${id} отправлено`);
+        } catch (e) {
+          console.error(`[Orders] ❌ Telegram уведомление НЕ отправлено:`, e);
+        }
+      })();
       // Return user email for Google Customer Reviews opt-in
       let userEmail: string | null = null;
       if (ctx.user?.id) {
