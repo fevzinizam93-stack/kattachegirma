@@ -369,12 +369,12 @@ export default function Admin() {
     : products;
 
   const { data: orders, isLoading: ordersLoading } = trpc.orders.list.useQuery(undefined, {
-    enabled: tab === "orders" && user?.role === "admin",
+    enabled: user?.role === "admin",
   });
 
   // Quick orders — loaded alongside regular orders for the combined counter
   const { data: quickOrdersList } = trpc.quickOrders.list.useQuery(undefined, {
-    enabled: tab === "orders" && user?.role === "admin",
+    enabled: user?.role === "admin",
   });
   const { data: sellers, isLoading: sellersLoading } = trpc.sellers.list.useQuery(undefined, {
     enabled: tab === "sellers" && user?.role === "admin",
@@ -391,7 +391,7 @@ export default function Admin() {
 
   // Moderation
   const { data: pendingProductsData, isLoading: pendingLoading } = trpc.sellers.pendingProducts.useQuery(undefined, {
-    enabled: tab === "moderation" && user?.role === "admin",
+    enabled: user?.role === "admin",
   });
   const pendingProducts = pendingProductsData ?? [];
 
@@ -409,8 +409,8 @@ export default function Admin() {
   const [activeConvId, setActiveConvId] = useState<number | null>(null);
   const [msgInput, setMsgInput] = useState("");
   const { data: adminConvs, refetch: refetchConvs } = trpc.messaging.adminConversations.useQuery(undefined, {
-    enabled: tab === "messaging" && user?.role === "admin",
-    refetchInterval: tab === "messaging" ? 8000 : false,
+    enabled: user?.role === "admin",
+    refetchInterval: 15000,
   });
   const openConvMut = trpc.messaging.openConversation.useMutation({
     onSuccess: (data) => {
@@ -943,7 +943,7 @@ export default function Admin() {
   const tabConfig = [
     { key: "products" as Tab, icon: Package, label: "Товары" },
     { key: "categories" as Tab, icon: FolderOpen, label: "Категории" },
-    { key: "orders" as Tab, icon: ShoppingBag, label: `Заказы${(() => { const newRegular = (orders ?? []).filter(o => o.status === 'pending').length; const newQuick = (quickOrdersList ?? []).filter(o => o.status === 'new').length; const total = newRegular + newQuick; return total > 0 ? ` (${total})` : ''; })()}` },
+    { key: "orders" as Tab, icon: ShoppingBag, label: `Заказы${(() => { const total = (orders ?? []).length + (quickOrdersList ?? []).length; return total > 0 ? ` (${total})` : ''; })()}` },
     { key: "sellers" as Tab, icon: Users, label: "Продавцы" },
     { key: "moderation" as Tab, icon: Store, label: `Модерация${pendingProducts.length > 0 ? ` (${pendingProducts.length})` : ""}` },
     { key: "banners" as Tab, icon: ImagePlus, label: "Баннеры" },
