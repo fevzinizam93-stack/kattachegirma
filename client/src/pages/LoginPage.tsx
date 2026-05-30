@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Eye, EyeOff, User, Mail, Lock, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, User, Mail, Lock, ArrowLeft, Phone } from "lucide-react";
 import { useLocation } from "wouter";
 import { Link } from "wouter";
 import { usePageMeta } from "@/hooks/usePageMeta";
@@ -22,7 +22,7 @@ export default function LoginPage() {
 
   const [tab, setTab] = useState<"login" | "register">("login");
   const [showPassword, setShowPassword] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState({ name: "", email: "", password: "", phone: "" });
   const utils = trpc.useUtils();
 
   const handleSuccess = (role: string) => {
@@ -50,7 +50,7 @@ export default function LoginPage() {
     if (tab === "login") {
       loginMutation.mutate({ email: form.email, password: form.password });
     } else {
-      registerMutation.mutate({ name: form.name, email: form.email, password: form.password });
+      registerMutation.mutate({ name: form.name, email: form.email, password: form.password, phone: form.phone || undefined });
     }
   };
 
@@ -131,6 +131,23 @@ export default function LoginPage() {
                   />
                 </div>
               </div>
+
+              {tab === "register" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Телефон <span className="text-gray-400 font-normal">(необязательно)</span></label>
+                  <div className="relative">
+                    <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="tel"
+                      value={form.phone}
+                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                      className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 text-sm"
+                      placeholder="+998 90 123-45-67"
+                    />
+                  </div>
+                  <p className="text-[11px] text-gray-400 mt-1">Email обязателен — он нужен для восстановления пароля. Телефон — для связи по заказам.</p>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Пароль</label>

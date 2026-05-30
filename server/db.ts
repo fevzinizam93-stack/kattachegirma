@@ -111,7 +111,7 @@ export async function resetPasswordByToken(token: string, newPassword: string): 
   return true;
 }
 
-export async function registerUser(data: { name: string; email: string; password: string }): Promise<{ id: number; email: string; name: string; role: string; openId: string }> {
+export async function registerUser(data: { name: string; email: string; password: string; phone?: string }): Promise<{ id: number; email: string; name: string; role: string; openId: string }> {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   const existing = await getUserByEmail(data.email);
@@ -125,6 +125,7 @@ export async function registerUser(data: { name: string; email: string; password
     passwordHash,
     loginMethod: "email",
     role: "user",
+    phone: data.phone || null,
     lastSignedIn: new Date(),
   });
   const insertId = (result as any)[0]?.insertId as number;
