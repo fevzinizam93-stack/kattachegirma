@@ -30,6 +30,7 @@ import { brandsRouter } from "./routers/brands";
 import { aiRouter } from "./routers/ai";
 import { youtubeRouter } from "./routers/youtube";
 import { indexingRouter } from "./routers/indexing";
+import { backupRouter } from "./routers/backup";
 import { quickOrdersRouter } from "./routers/quickOrders";
 import { analyticsRouter } from "./routers/analytics";
 
@@ -214,6 +215,7 @@ export const appRouter = router({
   ai: aiRouter,
   youtube: youtubeRouter,
   indexing: indexingRouter,
+  backup: backupRouter,
   quickOrders: quickOrdersRouter,
   analytics: analyticsRouter,
 });

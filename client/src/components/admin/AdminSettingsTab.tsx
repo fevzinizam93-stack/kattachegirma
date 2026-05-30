@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
-import { MapPin } from "lucide-react";
+import { MapPin, Database } from "lucide-react";
 import { toast } from "sonner";
 
 interface SettingsForm {
@@ -82,6 +82,21 @@ export default function AdminSettingsTab() {
   const saveHitSettingsMut = trpc.hits.saveHitSettings.useMutation({
     onSuccess: () => { toast.success("Настройки авто-хитов сохранены!"); hitSettingsQuery.refetch(); utils.products.getHits.invalidate(); },
     onError: (e) => toast.error("Ошибка: " + e.message),
+  });
+
+  const backupMut = trpc.backup.exportDatabase.useMutation({
+    onSuccess: ({ filename, base64 }) => {
+      const bin = atob(base64);
+      const arr = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+      const blob = new Blob([arr], { type: "application/gzip" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = filename; a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Резервная копия скачана");
+    },
+    onError: (e) => toast.error(e.message),
   });
 
   const recalcHitsMut = trpc.hits.recalcHits.useMutation({
@@ -328,6 +343,22 @@ export default function AdminSettingsTab() {
             {recalcHitsMut.isPending ? "Пересчёт..." : "🔄 Пересчитать сейчас"}
           </button>
         </div>
+      </div>
+
+      {/* Резервная копия */}
+      <div className="bg-white rounded-xl shadow-sm p-6">
+        <h3 className="text-base font-bold text-gray-900 mb-1 flex items-center gap-2">
+          <Database size={18} className="text-gray-600" />
+          Резервная копия базы данных
+        </h3>
+        <p className="text-sm text-gray-500 mb-4">Скачайте полную копию базы данных. Рекомендуется раз в неделю. Файл сохраните в Google Drive — в нём вся база сайта.</p>
+        <button
+          onClick={() => backupMut.mutate()}
+          disabled={backupMut.isPending}
+          className="h-11 px-5 rounded-xl bg-gray-900 text-white font-bold text-sm hover:bg-black transition-colors disabled:opacity-50"
+        >
+          {backupMut.isPending ? "Готовлю копию…" : "💾 Скачать резервную копию базы"}
+        </button>
       </div>
     </div>
   );
