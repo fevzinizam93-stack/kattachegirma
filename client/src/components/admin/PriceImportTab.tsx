@@ -1,7 +1,10 @@
-import { useState, useRef, useEffect, type ChangeEvent } from "react";
+import { useState, useRef, useEffect, useCallback, type ChangeEvent } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Upload, Loader2, ImageOff, Save, Copy, Search, X, ImagePlus } from "lucide-react";
+import {
+  Upload, Loader2, ImageOff, Save, Copy, Search, X, ImagePlus,
+  CheckCircle2, XCircle, Clock, RefreshCw,
+} from "lucide-react";
 
 interface RecognizedProduct {
   model: string;
@@ -16,9 +19,25 @@ interface RecognizedProduct {
   originalPriceUsd?: number;
 }
 
+type FileStatus = "waiting" | "processing" | "done" | "error";
+
+interface FileEntry {
+  file: File;
+  name: string;
+  status: FileStatus;
+  found: number;
+  error?: string;
+  elapsed: number;
+}
+
 interface Props {
   categories: Array<{ id: number; name: string }>;
 }
+
+const FILE_TIMEOUT_MS = 120_000; // 120 seconds per file
+const RETRY_COUNT = 2;
+const RETRY_DELAY_MS = 2500;
+const INTER_FILE_DELAY_MS = 1500;
 
 export default function PriceImportTab({ categories }: Props) {
   const [rows, setRows] = useState<RecognizedProduct[]>([]);
@@ -27,6 +46,14 @@ export default function PriceImportTab({ categories }: Props) {
   const [busy, setBusy] = useState(false);
   const [rowBusy, setRowBusy] = useState<number | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Per-file progress state
+  const [fileEntries, setFileEntries] = useState<FileEntry[]>([]);
+  const [currentFileIdx, setCurrentFileIdx] = useState<number>(-1);
+  const [currentFileElapsed, setCurrentFileElapsed] = useState(0);
+  const [currentStage, setCurrentStage] = useState("");
+  const [importDone, setImportDone] = useState(false);
+  const fileElapsedRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const utils = trpc.useUtils();
   const recognizeMut = trpc.products.recognizePriceSheet.useMutation();
@@ -42,9 +69,6 @@ export default function PriceImportTab({ categories }: Props) {
   const [stock, setStock] = useState(10);
   const sellersQuery = trpc.sellers.list.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
-  const [recogInfo, setRecogInfo] = useState<{ stage: string; done: number; total: number } | null>(null);
-  const [elapsed, setElapsed] = useState(0);
-  const elapsedRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const createPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   function stopPoll() {
@@ -53,7 +77,10 @@ export default function PriceImportTab({ categories }: Props) {
   function stopCreatePoll() {
     if (createPollRef.current) { clearInterval(createPollRef.current); createPollRef.current = null; }
   }
-  useEffect(() => () => { stopPoll(); stopCreatePoll(); if (elapsedRef.current) clearInterval(elapsedRef.current); }, []);
+  function stopFileElapsed() {
+    if (fileElapsedRef.current) { clearInterval(fileElapsedRef.current); fileElapsedRef.current = null; }
+  }
+  useEffect(() => () => { stopPoll(); stopCreatePoll(); stopFileElapsed(); }, []);
 
   useEffect(() => {
     try {
@@ -71,35 +98,20 @@ export default function PriceImportTab({ categories }: Props) {
     if (saved.fileName) setFileName(saved.fileName);
     if (Array.isArray(saved.rows) && saved.rows.length > 0) {
       setRows(saved.rows);
-      return;
-    }
-    if (saved.activeJobId) {
-      setBusy(true);
-      setActiveJobId(saved.activeJobId);
-      pollRef.current = setInterval(async () => {
-        try {
-          const job = (await utils.products.recognitionStatus.fetch({ jobId: saved.activeJobId })) as {
-            status: string; stage?: string; done?: number; total?: number; products?: RecognizedProduct[]; error?: string;
-          };
-          if (job.status === "processing") {
-            setRecogInfo({ stage: job.stage ?? "Обработка...", done: job.done ?? 0, total: job.total ?? 0 });
-          } else if (job.status === "done") {
-            stopPoll(); setRecogInfo(null); setRows(job.products ?? []); setBusy(false);
-          } else {
-            stopPoll(); setRecogInfo(null); setBusy(false);
-          }
-        } catch { stopPoll(); setBusy(false); }
-      }, 3000);
     }
   }, []);
 
   function clearImport() {
     stopPoll();
-    if (elapsedRef.current) clearInterval(elapsedRef.current);
+    stopFileElapsed();
     setRows([]);
     setActiveJobId(null);
     setFileName("");
-    setRecogInfo(null);
+    setFileEntries([]);
+    setCurrentFileIdx(-1);
+    setCurrentFileElapsed(0);
+    setCurrentStage("");
+    setImportDone(false);
     setBusy(false);
     try { localStorage.removeItem("kc_price_import_v1"); } catch {}
   }
@@ -147,6 +159,8 @@ export default function PriceImportTab({ categories }: Props) {
             setProgress(null);
             setActiveJobId(null);
             setFileName("");
+            setFileEntries([]);
+            setImportDone(false);
             try { localStorage.removeItem("kc_price_import_v1"); } catch {}
           }
         } catch {
@@ -193,79 +207,147 @@ export default function PriceImportTab({ categories }: Props) {
     return out.split(",")[1] ?? "";
   }
 
-  function recognizeOneFile(file: File, label: string): Promise<RecognizedProduct[]> {
-    return new Promise((resolve) => {
-      (async () => {
-        try {
-          const base64 = await downscaleToJpegBase64(file, 1500, 0.85);
-          const { jobId } = await recognizeMut.mutateAsync({ base64, mimeType: "image/jpeg" });
-          setActiveJobId(jobId);
+  // Recognizes one file with retry logic and per-file timeout
+  async function recognizeOneFileWithRetry(
+    file: File,
+    fileIdx: number,
+    onStage: (stage: string) => void,
+  ): Promise<{ products: RecognizedProduct[]; error?: string }> {
+    let lastError = "";
+    for (let attempt = 0; attempt <= RETRY_COUNT; attempt++) {
+      if (attempt > 0) {
+        onStage(`Повтор ${attempt}/${RETRY_COUNT}...`);
+        await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+      }
+      try {
+        const base64 = await downscaleToJpegBase64(file, 1500, 0.85);
+        const { jobId } = await recognizeMut.mutateAsync({ base64, mimeType: "image/jpeg" });
+        setActiveJobId(jobId);
+
+        // Poll with timeout
+        const products = await new Promise<RecognizedProduct[]>((resolve, reject) => {
+          const startedAt = Date.now();
           const poll = setInterval(async () => {
             try {
+              const elapsed = Date.now() - startedAt;
+              if (elapsed > FILE_TIMEOUT_MS) {
+                clearInterval(poll);
+                reject(new Error("Превышено время ожидания (120 сек)"));
+                return;
+              }
               const job = (await utils.products.recognitionStatus.fetch({ jobId })) as {
                 status: string; stage?: string; done?: number; total?: number; products?: RecognizedProduct[]; error?: string;
               };
               if (job.status === "processing") {
-                setRecogInfo({ stage: `${label}${job.stage ?? "Обработка..."}`, done: job.done ?? 0, total: job.total ?? 0 });
+                onStage(job.stage ?? "Обработка...");
               } else if (job.status === "done") {
                 clearInterval(poll);
                 resolve(job.products ?? []);
               } else if (job.status === "error") {
                 clearInterval(poll);
-                toast.error("Ошибка распознавания: " + (job.error ?? ""));
-                resolve([]);
+                reject(new Error(job.error ?? "Ошибка распознавания"));
               }
-            } catch {
+            } catch (err) {
               clearInterval(poll);
-              toast.error("Ошибка опроса статуса");
-              resolve([]);
+              reject(err);
             }
           }, 3000);
           pollRef.current = poll;
-        } catch (err) {
-          toast.error("Ошибка: " + (err instanceof Error ? err.message : String(err)));
-          resolve([]);
-        }
-      })();
-    });
+        });
+
+        return { products };
+      } catch (err) {
+        lastError = err instanceof Error ? err.message : String(err);
+        // continue to next attempt
+      }
+    }
+    return { products: [], error: lastError };
   }
+
+  // Main processing loop for a list of file entries (by index)
+  const processFiles = useCallback(async (entries: FileEntry[], indices: number[]) => {
+    setBusy(true);
+    setImportDone(false);
+    stopFileElapsed();
+
+    for (let i = 0; i < indices.length; i++) {
+      const idx = indices[i];
+      const entry = entries[idx];
+
+      setCurrentFileIdx(idx);
+      setCurrentFileElapsed(0);
+      setCurrentStage("Подготовка...");
+
+      // Start per-file elapsed timer
+      stopFileElapsed();
+      fileElapsedRef.current = setInterval(() => {
+        setCurrentFileElapsed((s) => s + 1);
+      }, 1000);
+
+      // Mark as processing
+      setFileEntries((prev) => prev.map((e, j) => j === idx ? { ...e, status: "processing" } : e));
+
+      const { products, error } = await recognizeOneFileWithRetry(
+        entry.file,
+        idx,
+        (stage) => setCurrentStage(stage),
+      );
+
+      stopFileElapsed();
+
+      if (error) {
+        setFileEntries((prev) => prev.map((e, j) => j === idx ? { ...e, status: "error", error } : e));
+      } else {
+        setFileEntries((prev) => prev.map((e, j) => j === idx ? { ...e, status: "done", found: products.length } : e));
+        if (products.length > 0) {
+          setRows((prev) => [...prev, ...products]);
+        }
+      }
+
+      // Inter-file delay (except last)
+      if (i < indices.length - 1) {
+        await new Promise((r) => setTimeout(r, INTER_FILE_DELAY_MS));
+      }
+    }
+
+    setCurrentFileIdx(-1);
+    setCurrentStage("");
+    setCurrentFileElapsed(0);
+    setBusy(false);
+    setImportDone(true);
+  }, [recognizeMut, utils]);
 
   async function handleFile(e: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
+
     setFileName(files.length > 1 ? `${files.length} прайс-листов` : files[0].name);
     setRows([]);
-    setBusy(true);
-    setRecogInfo(null);
-    setElapsed(0);
+    setImportDone(false);
     stopPoll();
-    if (elapsedRef.current) clearInterval(elapsedRef.current);
-    elapsedRef.current = setInterval(() => setElapsed((s) => s + 1), 1000);
-    try {
-      let totalFound = 0;
-      for (let f = 0; f < files.length; f++) {
-        const label = files.length > 1 ? `Прайс ${f + 1}/${files.length}: ` : "";
-        const products = await recognizeOneFile(files[f], label);
-        if (products.length) {
-          setRows((prev) => [...prev, ...products]);
-          totalFound += products.length;
-        }
-      }
-      stopPoll();
-      if (elapsedRef.current) clearInterval(elapsedRef.current);
-      setRecogInfo(null);
-      setBusy(false);
-      toast.success(files.length > 1
-        ? `Готово! Распознано товаров: ${totalFound} из ${files.length} прайс-листов`
-        : `Распознано товаров: ${totalFound}`);
-    } catch (err) {
-      setBusy(false);
-      if (elapsedRef.current) clearInterval(elapsedRef.current);
-      setRecogInfo(null);
-      toast.error("Ошибка: " + (err instanceof Error ? err.message : String(err)));
-    } finally {
-      e.target.value = "";
-    }
+
+    const entries: FileEntry[] = files.map((f) => ({
+      file: f,
+      name: f.name,
+      status: "waiting",
+      found: 0,
+      elapsed: 0,
+    }));
+    setFileEntries(entries);
+
+    await processFiles(entries, entries.map((_, i) => i));
+
+    e.target.value = "";
+  }
+
+  async function retryFailed() {
+    const failedIndices = fileEntries.map((e, i) => e.status === "error" ? i : -1).filter((i) => i >= 0);
+    if (!failedIndices.length) return;
+
+    // Reset failed entries to waiting
+    setFileEntries((prev) => prev.map((e, i) => failedIndices.includes(i) ? { ...e, status: "waiting", error: undefined, found: 0 } : e));
+
+    await processFiles(fileEntries, failedIndices);
   }
 
   function updateRow(i: number, patch: Partial<RecognizedProduct>) {
@@ -335,12 +417,20 @@ export default function PriceImportTab({ categories }: Props) {
 
   const anyBusy = busy || rowBusy !== null || creating;
 
+  // Derived stats
+  const totalFiles = fileEntries.length;
+  const doneFiles = fileEntries.filter((e) => e.status === "done").length;
+  const errorFiles = fileEntries.filter((e) => e.status === "error").length;
+  const totalFound = fileEntries.reduce((s, e) => s + e.found, 0);
+  const hasFailedFiles = errorFiles > 0 && !busy;
+
   return (
     <div className="space-y-4">
+      {/* Upload card */}
       <div className="bg-white rounded-2xl border border-gray-200 p-5">
         <h2 className="text-lg font-black text-gray-900 mb-1">Импорт из прайса</h2>
         <p className="text-sm text-gray-500 mb-4">
-          Загрузите фото прайс-листа — система распознает модели, цены и характеристики и создаст карточки с готовым продающим описанием. Фото к товарам добавьте вручную (кнопка «Добавить фото») — так качество остаётся максимальным.
+          Загрузите фото прайс-листа — система распознает модели, цены и характеристики. Фото к товарам добавьте вручную.
         </p>
         <label className={`inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-semibold text-sm transition-colors ${busy ? "opacity-50 pointer-events-none" : "cursor-pointer"}`}>
           <Upload size={16} />
@@ -348,16 +438,79 @@ export default function PriceImportTab({ categories }: Props) {
           <input type="file" accept="image/*" multiple className="hidden" onChange={handleFile} disabled={busy} />
         </label>
         {fileName && <p className="text-xs text-gray-400 mt-2">{fileName}</p>}
-        {busy && (
-          <div className="mt-3 space-y-1">
-            <div className="flex items-center gap-2 text-sm text-blue-600">
-              <Loader2 size={16} className="animate-spin" />
-              {recogInfo
-                ? (recogInfo.total > 0 ? `${recogInfo.stage}: ${recogInfo.done}/${recogInfo.total}` : recogInfo.stage)
-                : "Запускаю распознавание..."}
-              <span className="text-gray-400">· {elapsed} сек</span>
+
+        {/* Per-file progress panel */}
+        {(busy || (importDone && totalFiles > 0)) && fileEntries.length > 0 && (
+          <div className="mt-4 space-y-3">
+            {/* Big progress bar */}
+            {busy && totalFiles > 1 && (
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-sm font-semibold text-gray-700">
+                  <span>Файл {Math.min(currentFileIdx + 1, totalFiles)} из {totalFiles}</span>
+                  <span className="text-gray-400 text-xs">{doneFiles + errorFiles}/{totalFiles} обработано</span>
+                </div>
+                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-blue-500 rounded-full transition-all duration-500"
+                    style={{ width: `${Math.round(((doneFiles + errorFiles) / totalFiles) * 100)}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Current stage + elapsed */}
+            {busy && (
+              <div className="flex items-center gap-2 text-sm text-blue-600">
+                <Loader2 size={15} className="animate-spin shrink-0" />
+                <span className="truncate">{currentStage || "Обработка..."}</span>
+                <span className="text-gray-400 shrink-0">· {currentFileElapsed} сек</span>
+              </div>
+            )}
+
+            {/* File list */}
+            <div className="space-y-1.5">
+              {fileEntries.map((entry, i) => (
+                <div key={i} className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm ${
+                  i === currentFileIdx ? "bg-blue-50 border border-blue-100" : "bg-gray-50"
+                }`}>
+                  {entry.status === "waiting" && <Clock size={15} className="text-gray-300 shrink-0" />}
+                  {entry.status === "processing" && <Loader2 size={15} className="text-blue-500 animate-spin shrink-0" />}
+                  {entry.status === "done" && <CheckCircle2 size={15} className="text-green-500 shrink-0" />}
+                  {entry.status === "error" && <XCircle size={15} className="text-red-400 shrink-0" />}
+                  <span className="flex-1 truncate text-gray-700">{entry.name}</span>
+                  {entry.status === "done" && (
+                    <span className="text-xs text-green-600 font-medium shrink-0">{entry.found} товаров</span>
+                  )}
+                  {entry.status === "error" && (
+                    <span className="text-xs text-red-400 shrink-0 truncate max-w-[140px]" title={entry.error}>{entry.error}</span>
+                  )}
+                  {entry.status === "waiting" && (
+                    <span className="text-xs text-gray-300 shrink-0">ожидание</span>
+                  )}
+                </div>
+              ))}
             </div>
-            <p className="text-xs text-gray-400">Обычно меньше минуты. Не закрывайте вкладку.</p>
+
+            {/* Summary after done */}
+            {importDone && (
+              <div className="bg-gray-50 rounded-xl px-4 py-3 flex flex-wrap items-center gap-3">
+                <span className="text-sm font-semibold text-gray-800">
+                  Готово: {doneFiles} из {totalFiles} файлов, товаров: {totalFound}
+                  {errorFiles > 0 && <span className="text-red-500 ml-2">· не удалось: {errorFiles}</span>}
+                </span>
+                {hasFailedFiles && (
+                  <button
+                    onClick={retryFailed}
+                    className="inline-flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+                  >
+                    <RefreshCw size={13} />
+                    Повторить неудавшиеся ({errorFiles})
+                  </button>
+                )}
+              </div>
+            )}
+
+            {busy && <p className="text-xs text-gray-400">Не закрывайте вкладку.</p>}
           </div>
         )}
       </div>
