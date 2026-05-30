@@ -1,0 +1,1 @@
+ALTER TABLE `products` ADD `sellerLogoUrl` varchar(512);

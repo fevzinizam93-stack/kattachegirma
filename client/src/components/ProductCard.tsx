@@ -33,6 +33,7 @@ interface Product {
   stock?: number | null;
   sellerId?: number | null;
   sellerName?: string | null;
+  sellerLogoUrl?: string | null;
   costPrice?: string | null;
   avgRating?: number | null;
   reviewCount?: number | null;
@@ -175,6 +176,18 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
 
           {/* Product name — clamp to 2 lines max */}
           <h3 className="text-sm font-semibold text-gray-800 leading-snug" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', flexShrink: 0 }}>{displayName}{product.isOfficial && <OfficialBadge size={13} className="ml-1 align-middle" />}</h3>
+
+          {/* Продавец — маленький аватар для доверия (как на маркетплейсах) */}
+          {!product.isOfficial && product.sellerName && (
+            <div className="flex items-center gap-1.5 mt-1">
+              {product.sellerLogoUrl ? (
+                <img src={product.sellerLogoUrl} alt={product.sellerName} className="w-4 h-4 rounded-full object-cover border border-gray-200 shrink-0" />
+              ) : (
+                <div className="w-4 h-4 rounded-full bg-gray-200 flex items-center justify-center text-[8px] font-bold text-gray-500 shrink-0">{product.sellerName.charAt(0).toUpperCase()}</div>
+              )}
+              <span className="text-[11px] text-gray-400 truncate">{product.sellerName}</span>
+            </div>
+          )}
 
           {/* Price block */}
           <div className="mt-auto pt-1">

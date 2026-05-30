@@ -1185,7 +1185,10 @@ export async function setProductModerationStatus(id: number, status: "approved" 
 export async function setSellerLogo(sellerId: number, logoUrl: string) {
   const db = await getDb();
   if (!db) return;
-  await db.update(sellers).set({ logoUrl: logoUrl || null } as any).where(eq(sellers.id, sellerId));
+  const value = logoUrl || null;
+  await db.update(sellers).set({ logoUrl: value } as any).where(eq(sellers.id, sellerId));
+  // Денормализуем логотип в товары продавца — чтобы он показывался на карточках без join'ов
+  await db.update(products).set({ sellerLogoUrl: value } as any).where(eq(products.sellerId, sellerId));
 }
 
 export async function setSellerTrusted(sellerId: number, trusted: boolean) {

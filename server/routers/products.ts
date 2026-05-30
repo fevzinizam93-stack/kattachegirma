@@ -415,6 +415,7 @@ export const productsRouter = router({
         specs: (cleanInput.specs ?? {}) as Record<string, string>,
         sellerId: seller.id,
         sellerName: seller.name,
+        sellerLogoUrl: seller.logoUrl ?? undefined,
         sellerPhone: seller.phone ?? undefined,
         sellerTelegram: seller.telegram ?? undefined,
         isApproved: false,

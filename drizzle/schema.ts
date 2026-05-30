@@ -107,6 +107,7 @@ export const products = mysqlTable("products", {
   sellerPhone: varchar("sellerPhone", { length: 32 }),
   sellerTelegram: varchar("sellerTelegram", { length: 128 }),
   sellerName: varchar("sellerName", { length: 256 }),
+  sellerLogoUrl: varchar("sellerLogoUrl", { length: 512 }),
   isApproved: boolean("isApproved").default(true),
   isOfficial: boolean("isOfficial").default(true),
   isActive: boolean("isActive").default(true).notNull(),
