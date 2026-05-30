@@ -241,6 +241,7 @@ export default function SellerDashboard() {
     onSuccess: () => { utils.sellers.me.invalidate(); toast.success("Логотип обновлён"); },
     onError: (e) => toast.error(e.message),
   });
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   const createMut = trpc.products.sellerCreate.useMutation({
     onSuccess: () => {
@@ -469,7 +470,7 @@ export default function SellerDashboard() {
         <div className="container flex items-center justify-between py-3">
           <div className="flex items-center gap-3">
             <label className="relative cursor-pointer shrink-0" title="Загрузить логотип магазина">
-              <input type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
+              <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
               {seller.logoUrl ? (
                 <img src={seller.logoUrl} alt={seller.name} className="w-11 h-11 rounded-xl object-cover border border-gray-200" />
               ) : (
@@ -481,7 +482,15 @@ export default function SellerDashboard() {
             </label>
             <div>
               <p className="font-black text-gray-900 leading-tight">{seller.name}</p>
-              <p className="text-xs text-gray-400">{t.seller_dashboard}</p>
+              <button
+                type="button"
+                onClick={() => logoInputRef.current?.click()}
+                disabled={uploadMut.isPending || updateLogoMut.isPending}
+                className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 disabled:opacity-50"
+              >
+                <ImagePlus size={12} />
+                {uploadMut.isPending || updateLogoMut.isPending ? "Загрузка…" : seller.logoUrl ? "Изменить логотип" : "Добавить логотип"}
+              </button>
             </div>
           </div>
           <div className="flex items-center gap-2">
