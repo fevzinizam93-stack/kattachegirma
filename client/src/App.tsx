@@ -31,6 +31,8 @@ const SellerStorefront = lazy(() => import("./pages/SellerStorefront"));
 const SellersList = lazy(() => import("./pages/SellersList"));
 const Profile = lazy(() => import("./pages/Profile"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
 const Sales = lazy(() => import("./pages/Sales"));
 const Favorites = lazy(() => import("./pages/Favorites"));
 const SellerMessages = lazy(() => import("./pages/SellerMessages"));
@@ -111,6 +113,8 @@ function Router() {
       </Route>
       <Route path="/profile" component={Profile} />
       <Route path="/login" component={LoginPage} />
+      <Route path="/reset-password" component={ResetPassword} />
+      <Route path="/verify-email" component={VerifyEmail} />
       <Route path="/sales" component={Sales} />
       <Route path="/videos" component={Videos} />
       <Route path="/order/:id">

@@ -168,6 +168,13 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login", redir
             </div>
           </div>
 
+          {tab === "login" && (
+            <div className="text-right -mt-1">
+              <button type="button" onClick={() => { onClose(); navigate("/reset-password"); }} className="text-xs text-gray-500 hover:text-[#cc0000]">
+                Забыли пароль?
+              </button>
+            </div>
+          )}
           <button
             type="submit"
             disabled={isPending}

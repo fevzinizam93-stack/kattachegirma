@@ -155,6 +155,13 @@ export default function LoginPage() {
                 </div>
               </div>
 
+              {tab === "login" && (
+                <div className="text-right -mt-1">
+                  <button type="button" onClick={() => navigate("/reset-password")} className="text-xs text-gray-500 hover:text-red-600">
+                    Забыли пароль?
+                  </button>
+                </div>
+              )}
               <button
                 type="submit"
                 disabled={isPending}
