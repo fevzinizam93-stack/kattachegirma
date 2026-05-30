@@ -7,6 +7,7 @@ import { useCart } from "@/contexts/CartContext";
 import { Link, useLocation } from "wouter";
 import { ShoppingBag, Heart, User, LogOut, Package, ChevronRight, ArrowLeft, RotateCcw, MapPin, Phone, Camera } from "lucide-react";
 import { toast } from "sonner";
+import { imgUrl } from "@/lib/imgUrl";
 
 export default function Profile() {
   const [tab, setTab] = useState<"orders" | "favorites">("orders");
@@ -111,7 +112,7 @@ export default function Profile() {
             <label className="relative cursor-pointer shrink-0" title="Загрузить аватар">
               <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
               {(user as any).avatarUrl ? (
-                <img src={(user as any).avatarUrl} alt={user.name ?? ""} className="w-14 h-14 rounded-full object-cover border border-gray-200" />
+                <img src={imgUrl((user as any).avatarUrl, 128, 92)} alt={user.name ?? ""} className="w-14 h-14 rounded-full object-cover border border-gray-200" />
               ) : (
                 <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-white text-2xl font-bold">
                   {user.name?.charAt(0)?.toUpperCase() ?? "U"}

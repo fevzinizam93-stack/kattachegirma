@@ -31,6 +31,7 @@ import { aiRouter } from "./routers/ai";
 import { youtubeRouter } from "./routers/youtube";
 import { indexingRouter } from "./routers/indexing";
 import { backupRouter } from "./routers/backup";
+import { customersRouter } from "./routers/customers";
 import { quickOrdersRouter } from "./routers/quickOrders";
 import { analyticsRouter } from "./routers/analytics";
 
@@ -180,8 +181,8 @@ export const appRouter = router({
     updateAvatar: protectedProcedure
       .input(z.object({ base64: z.string(), filename: z.string().default("avatar.jpg") }))
       .mutation(async ({ input, ctx }) => {
-        const { uploadEnhancedImage } = await import("./productVision");
-        const { url } = await uploadEnhancedImage(input.base64, input.filename);
+        const { uploadAvatarImage } = await import("./productVision");
+        const { url } = await uploadAvatarImage(input.base64, input.filename);
         await setUserAvatar(ctx.user.id, url);
         return { url };
       }),
@@ -216,6 +217,7 @@ export const appRouter = router({
   youtube: youtubeRouter,
   indexing: indexingRouter,
   backup: backupRouter,
+  customers: customersRouter,
   quickOrders: quickOrdersRouter,
   analytics: analyticsRouter,
 });

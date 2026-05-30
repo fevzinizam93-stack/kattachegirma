@@ -12,6 +12,7 @@ import AdminBannersTab from "@/components/admin/AdminBannersTab";
 import AdminNotificationsTab from "@/components/admin/AdminNotificationsTab";
 import AdminUTMTab from "@/components/admin/AdminUTMTab";
 import AdminSettingsTab from "@/components/admin/AdminSettingsTab";
+import AdminCustomersTab from "@/components/admin/AdminCustomersTab";
 import { trpc } from "@/lib/trpc";
 import { BarChart3, Bell, Edit, FolderOpen, ImagePlus, MapPin, MessageSquare, Package, Plus, Search, Send, Settings, ShoppingBag, Star, Store, Trash2, Upload, Users, X, Zap, Phone, CheckCircle2, Clock, Youtube, PlayCircle, RefreshCw } from "lucide-react";
 import { useState, useEffect, useRef, useCallback, Fragment } from "react";
@@ -54,7 +55,7 @@ function AllSellersList({ onSelect, activeSellerUserId }: { onSelect: (sellerUse
   );
 }
 
-type Tab = "products" | "categories" | "orders" | "sellers" | "moderation" | "settings" | "banners" | "notifications" | "utm" | "messaging" | "quickorders" | "indexing" | "reviews" | "priceimport" | "priceupdate";
+type Tab = "products" | "categories" | "orders" | "sellers" | "moderation" | "settings" | "banners" | "notifications" | "utm" | "messaging" | "quickorders" | "indexing" | "reviews" | "priceimport" | "priceupdate" | "customers";
 
 interface BannerForm {
   id?: number;
@@ -953,6 +954,7 @@ export default function Admin() {
     { key: "banners" as Tab, icon: ImagePlus, label: "Баннеры" },
     { key: "notifications" as Tab, icon: Bell, label: "Уведомления" },
     { key: "utm" as Tab, icon: MapPin, label: "Источники трафика" },
+    { key: "customers" as Tab, icon: Users, label: "Клиенты" },
     { key: "settings" as Tab, icon: Settings, label: "Настройки" },
     { key: "messaging" as Tab, icon: MessageSquare, label: `Сообщения${(adminConvs ?? []).reduce((s, c) => s + c.unread, 0) > 0 ? ` (${(adminConvs ?? []).reduce((s, c) => s + c.unread, 0)})` : ""}` },
     { key: "quickorders" as Tab, icon: Zap, label: `Быстрые заявки${(quickOrdersList ?? []).filter(o => o.status === 'new').length > 0 ? ` (${(quickOrdersList ?? []).filter(o => o.status === 'new').length})` : ""}` },
@@ -2162,6 +2164,8 @@ export default function Admin() {
         {tab === "utm" && <AdminUTMTab />}
 
         {tab === "settings" && <AdminSettingsTab />}
+
+        {tab === "customers" && <AdminCustomersTab />}
 
         {/* ==================== QUICK ORDERS TAB ==================== */}
         {tab === "quickorders" && <AdminQuickOrdersTab />}

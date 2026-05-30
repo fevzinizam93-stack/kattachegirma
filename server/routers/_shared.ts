@@ -8,6 +8,20 @@ export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
   return next({ ctx });
 });
 
+// Owner-only guard — uses OWNER_OPEN_ID (already in env) for fail-closed access
+export const ownerProcedure = adminProcedure.use(({ ctx, next }) => {
+  const ownerOpenId = (process.env.OWNER_OPEN_ID || "").trim();
+  const userOpenId = ((ctx.user as any).openId || "").trim();
+  // Also allow matching by email as fallback
+  const ownerEmail = (process.env.OWNER_EMAIL || "").toLowerCase().trim();
+  const userEmail = ((ctx.user as any).email || "").toLowerCase().trim();
+  const isOwner =
+    (ownerOpenId && userOpenId && ownerOpenId === userOpenId) ||
+    (ownerEmail && userEmail && ownerEmail === userEmail);
+  if (!isOwner) throw new TRPCError({ code: "FORBIDDEN", message: "Доступ только для владельца" });
+  return next();
+});
+
 // Seller guard middleware - checks if user has a seller profile OR is admin
 export const sellerProcedure = protectedProcedure.use(async ({ ctx, next }) => {
   if (ctx.user.role === "admin") {

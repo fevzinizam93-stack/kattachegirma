@@ -7,6 +7,7 @@ import { Bell, ChevronDown, ChevronRight, Heart, LayoutGrid, Search, ShieldCheck
 import { useWishlist } from "@/hooks/useWishlist";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
+import { imgUrl } from "@/lib/imgUrl";
 
 interface NavbarProps {
   onOpenAuth?: (redirectPath?: string) => void;
@@ -492,7 +493,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
             {isAuthenticated ? (
               <Link href="/profile" className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">
                 {(user as any)?.avatarUrl ? (
-                  <img src={(user as any).avatarUrl} alt={user?.name ?? ""} className="w-5 h-5 rounded-full object-cover" />
+                  <img src={imgUrl((user as any).avatarUrl, 64, 92)} alt={user?.name ?? ""} className="w-5 h-5 rounded-full object-cover" />
                 ) : (
                   <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center text-xs font-bold text-red-700">{user?.name?.charAt(0)?.toUpperCase() ?? "U"}</div>
                 )}

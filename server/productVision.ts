@@ -211,6 +211,22 @@ export async function uploadEnhancedImage(
   return enhanceAndStore(buffer, baseName);
 }
 
+// ---- Загрузка аватара/логотипа (без фото-обработки, аккуратный ресайз) ----
+export async function uploadAvatarImage(
+  base64: string,
+  filename: string,
+): Promise<{ url: string }> {
+  const buffer = Buffer.from(base64, "base64");
+  const safe = (filename.replace(/\.[^.]+$/, "") || `avatar-${Date.now()}`).replace(/[^a-zA-Z0-9-]/g, "_");
+  // Аватар/логотип: без апскейла и без фото-обработки (она портит тонкие линии). Аккуратный ресайз + высокое качество.
+  const out = await sharp(buffer)
+    .resize(256, 256, { fit: "inside", withoutEnlargement: true })
+    .webp({ quality: 92 })
+    .toBuffer();
+  const { url } = await storagePut(`avatars/${Date.now()}-${safe}.webp`, out, "image/webp");
+  return { url };
+}
+
 // ---- Белый фон через remove.bg (matting, товар не меняется) ----
 export async function whitenBackground(
   imageUrl: string,
