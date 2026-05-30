@@ -61,28 +61,40 @@ function TopTable({
   col2?: string;
   col2Label?: string;
 }) {
+  const [showAll, setShowAll] = useState(false);
   if (!rows.length) return <p className="text-sm text-gray-400 italic">Нет данных</p>;
   const max = rows[0]?.value ?? 1;
+  const visible = showAll ? rows : rows.slice(0, 10);
   return (
-    <div className="space-y-2">
-      {rows.map((r, i) => (
-        <div key={i} className="flex items-center gap-2">
-          <span className="text-xs text-gray-400 w-5 text-right shrink-0">{i + 1}</span>
-          <div className="flex-1 min-w-0">
-            <div className="flex justify-between items-center mb-0.5">
-              <span className="text-xs font-medium text-gray-700 truncate max-w-[70%]">{r.name || "—"}</span>
-              <span className="text-xs font-bold text-gray-800 shrink-0 ml-1">{fmt(r.value)} {col2Label}</span>
-            </div>
-            <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full"
-                style={{ width: `${Math.round((r.value / max) * 100)}%`, backgroundColor: "#cc0000" }}
-              />
+    <>
+      <div className={`space-y-2 ${showAll ? "max-h-[420px] overflow-y-auto pr-1" : ""}`}>
+        {visible.map((r, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <span className="text-xs text-gray-400 w-6 text-right shrink-0">{i + 1}</span>
+            <div className="flex-1 min-w-0">
+              <div className="flex justify-between items-center mb-0.5">
+                <span className="text-xs font-medium text-gray-700 truncate max-w-[70%]">{r.name || "—"}</span>
+                <span className="text-xs font-bold text-gray-800 shrink-0 ml-1">{fmt(r.value)} {col2Label}</span>
+              </div>
+              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full"
+                  style={{ width: `${Math.round((r.value / max) * 100)}%`, backgroundColor: "#cc0000" }}
+                />
+              </div>
             </div>
           </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+      {rows.length > 10 && (
+        <button
+          onClick={() => setShowAll((v) => !v)}
+          className="mt-3 w-full text-xs font-semibold text-gray-500 hover:text-gray-800 border-t border-gray-100 pt-2 transition-colors"
+        >
+          {showAll ? "Свернуть" : `Показать все (${rows.length})`}
+        </button>
+      )}
+    </>
   );
 }
 

@@ -752,7 +752,7 @@ export async function getAnalyticsStats(days = 30) {
     .where(and(eq(analyticsEvents.eventType, "product_view"), gte(analyticsEvents.createdAt, since)))
     .groupBy(analyticsEvents.productId, analyticsEvents.productName)
     .orderBy(desc(count()))
-    .limit(10);
+    .limit(100);
 
   // Top clicked products (by product_click events)
   const topClickedProducts = await db
@@ -761,7 +761,7 @@ export async function getAnalyticsStats(days = 30) {
     .where(and(eq(analyticsEvents.eventType, "product_click"), gte(analyticsEvents.createdAt, since)))
     .groupBy(analyticsEvents.productId, analyticsEvents.productName)
     .orderBy(desc(count()))
-    .limit(10);
+    .limit(100);
 
   // Top added to cart products
   const topCartProducts = await db
@@ -770,7 +770,7 @@ export async function getAnalyticsStats(days = 30) {
     .where(and(eq(analyticsEvents.eventType, "add_to_cart"), gte(analyticsEvents.createdAt, since)))
     .groupBy(analyticsEvents.productId, analyticsEvents.productName)
     .orderBy(desc(count()))
-    .limit(10);
+    .limit(100);
 
   // Top favorited products (from analytics events)
   const topFavoritedProducts = await db
@@ -779,7 +779,7 @@ export async function getAnalyticsStats(days = 30) {
     .where(and(eq(analyticsEvents.eventType, "add_to_favorites"), gte(analyticsEvents.createdAt, since)))
     .groupBy(analyticsEvents.productId, analyticsEvents.productName)
     .orderBy(desc(count()))
-    .limit(10);
+    .limit(100);
 
   // Search queries
   const searchQueries = await db
@@ -893,7 +893,7 @@ export async function getAnalyticsStats(days = 30) {
   const topOrderedProducts = Object.entries(productOrderMap)
     .map(([productId, v]) => ({ productId: Number(productId), productName: v.name, orders: v.count, revenue: Math.round(v.revenue) }))
     .sort((a, b) => b.orders - a.orders)
-    .slice(0, 10);
+    .slice(0, 100);
 
   // Favorites count from favorites table
   const favoritesCountResult = await db
