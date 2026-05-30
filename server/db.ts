@@ -978,6 +978,19 @@ export async function getAnalyticsStats(days = 30) {
     .having(sql`COUNT(*) > 1`);
   const repeatOrderUsers = repeatOrdersResult.length;
 
+  // Воронка по уникальным посетителям (сессиям) — чтобы шаги корректно убывали
+  const productSessionsRes = await db
+    .select({ n: sql<number>`COUNT(DISTINCT sessionId)` })
+    .from(analyticsEvents)
+    .where(and(sql`eventType IN ('product_view','product_click')`, gte(analyticsEvents.createdAt, since)));
+  const cartSessionsRes = await db
+    .select({ n: sql<number>`COUNT(DISTINCT sessionId)` })
+    .from(analyticsEvents)
+    .where(and(eq(analyticsEvents.eventType, "add_to_cart"), gte(analyticsEvents.createdAt, since)));
+  const funnelProductSessions = Number(productSessionsRes[0]?.n ?? 0);
+  const funnelCartSessions = Number(cartSessionsRes[0]?.n ?? 0);
+  const funnelOrders = ordersStatsCombined.reduce((s, r) => s + Number(r.total), 0);
+
   return {
     eventCounts,
     topProducts,
@@ -1001,12 +1014,15 @@ export async function getAnalyticsStats(days = 30) {
     repeatOrderUsers,
     utmStats,
     funnel: {
+      visitors: uniqueSessions,
+      productSessions: funnelProductSessions,
+      cartSessions: funnelCartSessions,
+      orders: funnelOrders,
       pageViews: funnelCounts["page_view"] ?? 0,
       productViews: funnelCounts["product_view"] ?? 0,
       productClicks: funnelCounts["product_click"] ?? 0,
       addToCart: funnelCounts["add_to_cart"] ?? 0,
       addToFavorites: funnelCounts["add_to_favorites"] ?? 0,
-      orders: funnelCounts["order_placed"] ?? 0,
     },
   };
 }

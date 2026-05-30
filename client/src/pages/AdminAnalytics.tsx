@@ -164,10 +164,11 @@ export default function AdminAnalytics() {
   }
 
   // ── Derived data ─────────────────────────────────────────────────────────
-  const funnel = (stats.funnel ?? { pageViews: 0, productViews: 0, productClicks: 0, addToCart: 0, addToFavorites: 0, orders: 0 }) as {
-    pageViews: number; productViews: number; productClicks: number; addToCart: number; addToFavorites: number; orders: number;
+  const funnel = (stats.funnel ?? { visitors: 0, productSessions: 0, cartSessions: 0, orders: 0, pageViews: 0, productViews: 0, productClicks: 0, addToCart: 0, addToFavorites: 0 }) as {
+    visitors: number; productSessions: number; cartSessions: number; orders: number;
+    pageViews: number; productViews: number; productClicks: number; addToCart: number; addToFavorites: number;
   };
-  const maxFunnel = funnel.pageViews || 1;
+  const maxFunnel = funnel.visitors || 1;
 
   // Merge daily views + sessions + orders into one array
   const dailyMap: Record<string, { date: string; views: number; sessions: number; orders: number; revenue: number }> = {};
@@ -273,24 +274,22 @@ export default function AdminAnalytics() {
         {/* ── 3. Funnel ────────────────────────────────────────────────── */}
         <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
           <SectionTitle><TrendingUp size={16} className="text-orange-600" /> Воронка конверсии</SectionTitle>
-          <FunnelBar label="Просмотры страниц" value={funnel.pageViews} max={maxFunnel} color="#1565c0" />
-          <FunnelBar label="Просмотры товаров" value={funnel.productViews} max={maxFunnel} color="#6a1b9a" />
-          <FunnelBar label="Клики по товарам" value={funnel.productClicks} max={maxFunnel} color="#f57c00" />
-          <FunnelBar label="Добавлено в корзину" value={funnel.addToCart} max={maxFunnel} color="#e65100" />
-          <FunnelBar label="Добавлено в избранное" value={funnel.addToFavorites} max={maxFunnel} color="#c62828" />
-          <FunnelBar label="Заказов оформлено" value={funnel.orders} max={maxFunnel} color="#2e7d32" />
+          <FunnelBar label="Посетители (сессии)" value={funnel.visitors} max={maxFunnel} color="#1565c0" />
+          <FunnelBar label="Смотрели товары" value={funnel.productSessions} max={maxFunnel} color="#6a1b9a" />
+          <FunnelBar label="Добавили в корзину" value={funnel.cartSessions} max={maxFunnel} color="#e65100" />
+          <FunnelBar label="Оформили заказ" value={funnel.orders} max={maxFunnel} color="#2e7d32" />
           <div className="mt-3 pt-3 border-t border-gray-100 grid grid-cols-3 gap-3 text-center">
             <div>
-              <p className="text-xs text-gray-500">Клики → Корзина</p>
-              <p className="text-lg font-black text-orange-600">{pct(funnel.addToCart, funnel.productClicks)}</p>
+              <p className="text-xs text-gray-500">Посетитель → товар</p>
+              <p className="text-lg font-black text-purple-600">{pct(funnel.productSessions, funnel.visitors)}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">Корзина → Заказ</p>
-              <p className="text-lg font-black text-green-700">{pct(funnel.orders, funnel.addToCart)}</p>
+              <p className="text-xs text-gray-500">Товар → корзина</p>
+              <p className="text-lg font-black text-orange-600">{pct(funnel.cartSessions, funnel.productSessions)}</p>
             </div>
             <div>
               <p className="text-xs text-gray-500">Общая конверсия</p>
-              <p className="text-lg font-black text-red-700">{pct(funnel.orders, funnel.pageViews)}</p>
+              <p className="text-lg font-black text-green-700">{pct(funnel.orders, funnel.visitors)}</p>
             </div>
           </div>
         </div>
