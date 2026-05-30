@@ -75,6 +75,12 @@ export async function getUserById(id: number) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+export async function setUserAvatar(userId: number, avatarUrl: string) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(users).set({ avatarUrl: avatarUrl || null } as any).where(eq(users.id, userId));
+}
+
 export async function setEmailVerifyToken(userId: number, token: string, expires: Date) {
   const db = await getDb();
   if (!db) return;

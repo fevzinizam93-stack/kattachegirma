@@ -4,7 +4,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { registerUser, loginUser, updateUserPhone, setEmailVerifyToken, verifyEmailByToken, setPasswordResetToken, resetPasswordByToken, getUserById } from "./db";
+import { registerUser, loginUser, updateUserPhone, setEmailVerifyToken, verifyEmailByToken, setPasswordResetToken, resetPasswordByToken, getUserById, setUserAvatar } from "./db";
 import { SignJWT } from "jose";
 import { ENV } from "./_core/env";
 import { sendVerificationEmail, sendPasswordResetEmail } from "./email";
@@ -174,6 +174,16 @@ export const appRouter = router({
       if (!sent) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Не удалось отправить письмо. Проверьте настройку почты или попробуйте позже." });
       return { success: true, alreadyVerified: false };
     }),
+
+    // Загрузить аватар профиля (любой залогиненный пользователь)
+    updateAvatar: protectedProcedure
+      .input(z.object({ base64: z.string(), filename: z.string().default("avatar.jpg") }))
+      .mutation(async ({ input, ctx }) => {
+        const { uploadEnhancedImage } = await import("./productVision");
+        const { url } = await uploadEnhancedImage(input.base64, input.filename);
+        await setUserAvatar(ctx.user.id, url);
+        return { url };
+      }),
 
     // Update phone number
     updatePhone: protectedProcedure

@@ -5,7 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useCart } from "@/contexts/CartContext";
 import { Link, useLocation } from "wouter";
-import { ShoppingBag, Heart, User, LogOut, Package, ChevronRight, ArrowLeft, RotateCcw, MapPin, Phone } from "lucide-react";
+import { ShoppingBag, Heart, User, LogOut, Package, ChevronRight, ArrowLeft, RotateCcw, MapPin, Phone, Camera } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Profile() {
@@ -27,6 +27,23 @@ export default function Profile() {
   const { data: orders, isLoading: ordersLoading } = trpc.orders.myOrders.useQuery();
   const { data: favorites, isLoading: favsLoading } = trpc.favorites.list.useQuery();
   const utils = trpc.useUtils();
+  const avatarMut = trpc.auth.updateAvatar.useMutation({
+    onSuccess: () => { utils.auth.me.invalidate(); toast.success("Аватар обновлён"); },
+    onError: (e) => toast.error(e.message),
+  });
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const base64 = (ev.target?.result as string).split(",")[1];
+      try { await avatarMut.mutateAsync({ base64, filename: file.name }); }
+      catch { toast.error("Не удалось загрузить аватар"); }
+    };
+    reader.readAsDataURL(file);
+  }
+
   const removeFav = trpc.favorites.remove.useMutation({
     onSuccess: () => {
       utils.favorites.list.invalidate();
@@ -91,9 +108,19 @@ export default function Profile() {
         {/* Profile header */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6 flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-white text-2xl font-bold">
-              {user.name?.charAt(0)?.toUpperCase() ?? "U"}
-            </div>
+            <label className="relative cursor-pointer shrink-0" title="Загрузить аватар">
+              <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+              {(user as any).avatarUrl ? (
+                <img src={(user as any).avatarUrl} alt={user.name ?? ""} className="w-14 h-14 rounded-full object-cover border border-gray-200" />
+              ) : (
+                <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-white text-2xl font-bold">
+                  {user.name?.charAt(0)?.toUpperCase() ?? "U"}
+                </div>
+              )}
+              <span className="absolute -bottom-0.5 -right-0.5 bg-white border border-gray-200 rounded-full w-5 h-5 flex items-center justify-center shadow-sm">
+                <Camera size={11} className="text-gray-500" />
+              </span>
+            </label>
             <div>
               <h1 className="text-xl font-bold text-gray-900">{user.name}</h1>
               <p className="text-sm text-gray-500">{user.email}</p>

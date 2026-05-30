@@ -20,6 +20,7 @@ export const users = mysqlTable("users", {
   role: mysqlEnum("role", ["user", "admin", "seller", "vip"]).default("user").notNull(),
   phone: varchar("phone", { length: 32 }),
   telegramId: varchar("telegramId", { length: 64 }),
+  avatarUrl: varchar("avatarUrl", { length: 512 }),
   telegramUsername: varchar("telegramUsername", { length: 128 }),
   vipExpiresAt: timestamp("vipExpiresAt"),
   vipEnabled: boolean("vipEnabled").default(false).notNull(),
