@@ -258,7 +258,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                         key={cat.id}
                         href={`/category/${cat.slug}`}
                         onClick={() => setShowCatalogModal(false)}
-                        className={`flex items-center justify-between px-4 py-2.5 rounded-xl transition-all group cursor-pointer ${
+                        className={`flex items-center justify-between px-4 py-2.5 rounded-xl transition-all duration-100 group cursor-pointer active:scale-[0.97] active:brightness-95 touch-manipulation select-none ${
                           location === `/category/${cat.slug}`
                             ? "bg-red-600 text-white"
                             : "hover:bg-gray-50 text-gray-700"

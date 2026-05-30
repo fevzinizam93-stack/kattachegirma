@@ -346,7 +346,7 @@ export default function Home() {
               </div>
               <Link
                 href={`/category/${cat.slug}`}
-                className="text-sm font-semibold hover:underline flex items-center gap-1"
+                className="text-sm font-semibold hover:underline flex items-center gap-1 transition-all duration-100 active:scale-[0.97] active:brightness-95 touch-manipulation select-none"
                 style={{ color: "#cc0000" }}
               >
                 {t.home_view_all} <ArrowRight size={14} />
@@ -359,7 +359,7 @@ export default function Home() {
             <div className="mt-3 text-center">
               <Link
                 href={`/category/${cat.slug}`}
-                className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-all duration-100 active:scale-[0.97] active:brightness-95 touch-manipulation select-none"
                 style={{ color: "#cc0000" }}
               >
                 Смотреть все товары категории <ArrowRight size={14} />
