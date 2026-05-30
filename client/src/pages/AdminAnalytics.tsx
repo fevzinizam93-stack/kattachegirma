@@ -456,7 +456,7 @@ export default function AdminAnalytics() {
               <div className="space-y-2">
                 {topRatedProducts.slice(0, 8).map((r: any, i: number) => (
                   <div key={i} className="flex items-center justify-between py-1 border-b border-gray-50 last:border-0">
-                    <span className="text-sm text-gray-700 truncate max-w-[60%]">Товар #{r.productId}</span>
+                    <span className="text-sm text-gray-700 truncate max-w-[60%]">{r.productName ?? `Товар #${r.productId}`}</span>
                     <div className="flex items-center gap-2 shrink-0">
                       <span className="text-yellow-500 text-xs">{'★'.repeat(Math.round(Number(r.avgRating)))}</span>
                       <span className="text-xs font-bold text-gray-800">{Number(r.avgRating).toFixed(1)}</span>

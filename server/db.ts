@@ -904,12 +904,14 @@ export async function getAnalyticsStats(days = 30) {
   const topRatedProducts = await db
     .select({
       productId: reviews.productId,
+      productName: products.name,
       avgRating: sql<number>`ROUND(AVG(rating), 1)`,
       reviewCount: count(),
     })
     .from(reviews)
+    .leftJoin(products, eq(reviews.productId, products.id))
     .where(eq(reviews.status, "approved"))
-    .groupBy(reviews.productId)
+    .groupBy(reviews.productId, products.name)
     .having(sql`COUNT(*) >= 1`)
     .orderBy(desc(sql`AVG(rating)`), desc(count()))
     .limit(10);
