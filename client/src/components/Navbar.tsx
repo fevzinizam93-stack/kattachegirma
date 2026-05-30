@@ -3,7 +3,7 @@ import { useLanguage, getLocalizedPath } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { Bell, ChevronDown, ChevronRight, Heart, LayoutGrid, Search, ShoppingCart, User, X, Youtube } from "lucide-react";
+import { Bell, ChevronDown, ChevronRight, Heart, LayoutGrid, Search, ShieldCheck, ShoppingCart, User, X, Youtube } from "lucide-react";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
@@ -501,9 +501,11 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
               </button>
             )}
 
-            {/* Admin link */}
+            {/* Admin shortcut — иконка вместо дублирующей плашки с ролью */}
             {isAuthenticated && user?.role === "admin" && (
-              <Link href="/admin" className="text-red-600 text-xs font-bold px-2.5 py-1 bg-red-50 rounded-full hover:bg-red-100 transition-colors">Admin</Link>
+              <Link href="/admin" title="Админ-панель" aria-label="Админ-панель" className="shrink-0 w-9 h-9 flex items-center justify-center rounded-full bg-red-50 text-red-600 hover:bg-red-100 transition-colors">
+                <ShieldCheck size={18} />
+              </Link>
             )}
 
 
