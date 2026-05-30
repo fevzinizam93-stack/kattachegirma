@@ -4,11 +4,11 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Link } from "wouter";
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend,
+  PieChart, Pie, Legend,
 } from "recharts";
 import {
   Eye, ShoppingCart, Package, TrendingUp, Users, Lock, Loader2,
-  Search, Heart, Star, MousePointerClick, Clock, Globe, RotateCcw,
+  Search, Heart, Star, MousePointerClick, Clock, RotateCcw,
 } from "lucide-react";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -101,7 +101,7 @@ function FunnelBar({ label, value, max, color }: { label: string; value: number;
   );
 }
 
-const COLORS = ["#cc0000", "#e65100", "#f57c00", "#388e3c", "#1565c0", "#6a1b9a", "#00838f"];
+
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
@@ -186,12 +186,7 @@ export default function AdminAnalytics() {
     .map((r: any) => ({ name: `${r.rating}★`, value: Number(r.total) }))
     .sort((a: any, b: any) => b.name.localeCompare(a.name));
 
-  // UTM sources
-  const utmStats = (stats as any).utmStats ?? {};
-  const utmSources = (utmStats.topSources ?? []).map((s: any) => ({
-    name: s.source || "прямой",
-    value: Number(s.total),
-  }));
+
 
   const topClickedProducts = (stats as any).topClickedProducts ?? [];
   const topCartProducts = (stats as any).topCartProducts ?? [];
@@ -374,45 +369,7 @@ export default function AdminAnalytics() {
             )}
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-            <SectionTitle><Globe size={16} className="text-teal-600" /> Источники трафика</SectionTitle>
-            {utmSources.length === 0 ? (
-              <p className="text-sm text-gray-400 italic">Нет данных об источниках</p>
-            ) : (
-              <div className="flex flex-col gap-3">
-                <ResponsiveContainer width="100%" height={160}>
-                  <PieChart>
-                    <Pie
-                      data={utmSources}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={65}
-                      dataKey="value"
-                      nameKey="name"
-                      label={({ name, percent }: { name: string; percent: number }) => `${name} ${Math.round(percent * 100)}%`}
-                      labelLine={false}
-                    >
-                      {utmSources.map((_: any, i: number) => (
-                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(v: number) => fmt(v)} />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="space-y-1">
-                  {utmSources.slice(0, 8).map((s: any, i: number) => (
-                    <div key={i} className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                        <span className="text-gray-700 truncate max-w-[180px]">{s.name}</span>
-                      </div>
-                      <span className="font-bold text-gray-800">{fmt(s.value)}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+
         </div>
 
         {/* ── 7. Ratings & Reviews ─────────────────────────────────────── */}
