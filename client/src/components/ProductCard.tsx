@@ -213,7 +213,7 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
           style={{ backgroundColor: inStock ? (addedFeedback ? "#16a34a" : "#cc0000") : "#aaa", transition: 'background-color 0.2s', fontSize: 'clamp(11px, 1.1vw, 13px)' }}
         >
           <ShoppingCart size={13} className="shrink-0" />
-          <span className="truncate">{!inStock ? t.detail_out_of_stock : addedFeedback ? "✓ Добавлено" : t.card_add_to_cart}</span>
+          <span className="truncate">{!inStock ? t.detail_out_of_stock : addedFeedback ? "✓ Добавлено" : hasDiscount ? t.card_add_to_cart : t.card_cart_plain}</span>
         </button>
       </div>
     </div>

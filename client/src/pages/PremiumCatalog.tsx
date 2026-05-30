@@ -116,7 +116,7 @@ function PremiumProductCard({ product }: { product: any }) {
             onClick={handleAddToCart}
             className="w-full bg-gradient-to-r from-[#d4af37] to-[#f0d060] text-black font-bold text-sm py-2.5 rounded-xl hover:from-[#e8c84a] hover:to-[#fde272] transition-all duration-200 active:scale-95 shadow-[0_4px_12px_rgba(212,175,55,0.3)] hover:shadow-[0_4px_20px_rgba(212,175,55,0.5)]"
           >
-            {t.card_add_to_cart}
+            {(originalPrice && originalPrice > price) || discount > 0 ? t.card_add_to_cart : t.card_cart_plain}
           </button>
         </div>
       </div>

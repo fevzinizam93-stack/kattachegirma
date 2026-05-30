@@ -65,6 +65,7 @@ export interface Translations {
 
   // Product card
   card_add_to_cart: string;
+  card_cart_plain: string;
   card_new: string;
   card_in_cart: string;
   card_hit: string;
@@ -340,6 +341,7 @@ const ru: Translations = {
 
   // Product card
   card_add_to_cart: "Успей по скидке",
+  card_cart_plain: "Добавить в корзину",
   card_new: "НОВИНКА",
   card_in_cart: "В корзине",
   card_hit: "Хит",
@@ -615,6 +617,7 @@ const uz: Translations = {
 
   // Product card
   card_add_to_cart: "Chegirmada olish",
+  card_cart_plain: "Savatga qo'shish",
   card_new: "YANGI",
   card_in_cart: "Savatda",
   card_hit: "Hit",

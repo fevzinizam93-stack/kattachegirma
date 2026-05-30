@@ -965,7 +965,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
                     }`}
                   >
                     <ShoppingCart size={16} />
-                    {(product.stock ?? 0) === 0 ? t.detail_out_of_stock : hasDiscount ? "Успей по скидке!" : t.card_add_to_cart}
+                    {(product.stock ?? 0) === 0 ? t.detail_out_of_stock : hasDiscount ? t.detail_buy_discount : t.card_cart_plain}
                   </button>
                 </div>
 
@@ -1315,7 +1315,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
             className="press ripple flex-1 h-12 rounded-2xl bg-primary text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary/30 active:scale-[0.98] transition-all"
           >
             <ShoppingCart size={18} />
-            {hasDiscount ? "Успей по скидке!" : "В корзину"}
+            {hasDiscount ? t.detail_buy_discount : t.card_cart_plain}
           </button>
           <button
             onClick={() => setQuickBuyOpen(true)}
