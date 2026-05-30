@@ -300,7 +300,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
             <Link
               href="/seller/dashboard"
               style={{ fontSize: "13px" }}
-              className="press shrink-0 font-bold px-3 py-1.5 rounded-full border-2 border-green-600 text-green-700 hover:bg-green-600 hover:text-white transition-colors whitespace-nowrap"
+              className="press ripple shrink-0 font-bold px-3 py-1.5 rounded-full border-2 border-green-600 text-green-700 hover:bg-green-600 hover:text-white transition-colors whitespace-nowrap"
             >
               + Добавить товар
             </Link>
@@ -308,7 +308,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
             <Link
               href="/seller/register"
               style={{ fontSize: "13px" }}
-              className="press shrink-0 font-bold px-3 py-1.5 rounded-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors whitespace-nowrap"
+              className="press ripple shrink-0 font-bold px-3 py-1.5 rounded-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors whitespace-nowrap"
             >
               {t.nav_become_seller}
             </Link>
@@ -334,7 +334,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
                 <X size={14} />
               </button>
               )}
-              <button type="submit" aria-label="Найти" className="bg-red-600 hover:bg-red-700 text-white px-5 self-stretch flex items-center justify-center text-sm font-medium transition-colors shrink-0">
+              <button type="submit" aria-label="Найти" className="ripple bg-red-600 hover:bg-red-700 text-white px-5 self-stretch flex items-center justify-center text-sm font-medium transition-colors shrink-0">
                 <Search size={15} />
               </button>
             </form>

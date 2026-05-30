@@ -209,7 +209,7 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
           onClick={handleAddToCart}
           disabled={!inStock}
           aria-label={`Добавить ${displayName} в корзину`}
-          className="w-full flex items-center justify-center gap-1.5 text-white py-2 px-2 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97] active:brightness-90 duration-100 touch-manipulation select-none shadow-sm whitespace-nowrap overflow-hidden"
+          className="ripple w-full flex items-center justify-center gap-1.5 text-white py-2 px-2 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97] active:brightness-90 duration-100 touch-manipulation select-none shadow-sm whitespace-nowrap overflow-hidden"
           style={{ backgroundColor: inStock ? (addedFeedback ? "#16a34a" : "#cc0000") : "#aaa", transition: 'background-color 0.2s', fontSize: 'clamp(11px, 1.1vw, 13px)' }}
         >
           <ShoppingCart size={13} className="shrink-0" />

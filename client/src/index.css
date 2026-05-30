@@ -309,3 +309,17 @@ button:disabled, [aria-disabled="true"] { filter: none !important; }
 @media (hover: hover) and (pointer: fine) {
   .press-icon:hover { transform: scale(1.08); }
 }
+
+/* ---- Ripple: волна из точки нажатия ---- */
+.ripple { position: relative; overflow: hidden; }
+.ripple-effect {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+  transform: scale(0);
+  animation: rippleAnim 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+  z-index: 0;
+}
+@keyframes rippleAnim { to { transform: scale(2.6); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .ripple-effect { display: none; } }

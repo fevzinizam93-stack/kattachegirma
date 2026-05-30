@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, lazy, Suspense } from "react";
+import { createContext, useContext, useState, lazy, Suspense, useEffect } from "react";
 import { useUTMTracker } from "./hooks/useUTMTracker";
 import { useGA4 } from "./hooks/useGA4";
 import { Toaster } from "@/components/ui/sonner";
@@ -134,6 +134,25 @@ function App() {
 
   // Track UTM params on first visit
   useUTMTracker();
+
+  // Global ripple effect — волна из точки нажатия для кнопок с классом .ripple
+  useEffect(() => {
+    function spawnRipple(e: PointerEvent) {
+      const el = (e.target as HTMLElement).closest(".ripple") as HTMLElement | null;
+      if (!el || el.hasAttribute("disabled") || el.getAttribute("aria-disabled") === "true") return;
+      const rect = el.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      const span = document.createElement("span");
+      span.className = "ripple-effect";
+      span.style.width = span.style.height = `${size}px`;
+      span.style.left = `${e.clientX - rect.left - size / 2}px`;
+      span.style.top = `${e.clientY - rect.top - size / 2}px`;
+      el.appendChild(span);
+      span.addEventListener("animationend", () => span.remove());
+    }
+    document.addEventListener("pointerdown", spawnRipple);
+    return () => document.removeEventListener("pointerdown", spawnRipple);
+  }, []);
 
   const openLogin = (redirectPath?: string) => { setAuthTab("login"); setAuthRedirect(redirectPath); setAuthOpen(true); };
   const openRegister = (redirectPath?: string) => { setAuthTab("register"); setAuthRedirect(redirectPath); setAuthOpen(true); };
