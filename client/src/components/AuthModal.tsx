@@ -174,13 +174,22 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login", redir
                 minLength={6}
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
+                onBlur={() => setShowPassword(false)}
                 className="w-full pl-9 pr-10 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc0000] focus:border-transparent text-sm"
                 placeholder={tab === "login" ? "Ваш пароль" : "Минимум 6 символов"}
               />
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                tabIndex={-1}
+                aria-label="Удерживайте, чтобы увидеть пароль"
+                title="Удерживайте, чтобы увидеть"
+                onMouseDown={(e) => { e.preventDefault(); setShowPassword(true); }}
+                onMouseUp={() => setShowPassword(false)}
+                onMouseLeave={() => setShowPassword(false)}
+                onTouchStart={(e) => { e.preventDefault(); setShowPassword(true); }}
+                onTouchEnd={() => setShowPassword(false)}
+                onBlur={() => setShowPassword(false)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 select-none"
               >
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
