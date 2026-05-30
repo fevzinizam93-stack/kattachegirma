@@ -338,6 +338,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
   }, [product?.id]);
 
   // SEO: dynamic meta tags via usePageMeta
+  const fbProdName = decodeURIComponent(slug).replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()).trim();
   const productTitle = product
     ? (() => {
         const brand = product.brand || "";
@@ -358,7 +359,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
           SHORT_SUFFIX;
         return `${baseName}${suffix}`;
       })()
-    : "Катта Чегирма — Магазин бытовой техники";
+    : `${fbProdName} narxi — купить в Ташкенте | Katta Chegirma`;
 
   const productDesc = product
     ? (() => {
@@ -373,7 +374,7 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
         }
         return `Купите ${brand}${product.name} по выгодной цене в интернет-магазине Катта Чегирма.${priceStr}${stockStr} Быстрая доставка по Ташкенту и Узбекистану.`;
       })()
-    : "Катта Чегирма — самая дешёвая бытовая техника в Узбекистане. Пылесосы, стиральные машины, холодильники, телевизоры, кондиционеры.";
+    : `Купить ${fbProdName} со скидкой в Ташкенте. Выгодные цены, рассрочка, доставка по всему Узбекистану.`;
 
   // Keywords: exact model number + product name + brand + category — helps rank for model number searches
   const productKeywordsUz = product

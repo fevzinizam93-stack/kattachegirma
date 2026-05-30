@@ -47,12 +47,13 @@ export default function CategoryPage({ slug }: CategoryPageProps) {
   const totalPages = Math.ceil(total / LIMIT);
 
   // SEO: dynamic meta tags for category page
+  const fbCatName = decodeURIComponent(slug).replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()).trim();
   const categoryTitle = category
     ? `${category.name} narxi — купить в Ташкенте | Katta Chegirma`
-    : `Категория — Katta Chegirma`;
+    : `${fbCatName} — купить в Ташкенте | Katta Chegirma`;
   const categoryDesc = category
     ? `Купить ${category.name} со скидкой в Ташкенте. ${total > 0 ? `${total} товаров в наличии.` : ""} Выгодные цены, рассрочка, быстрая доставка по Ташкенту и всему Узбекистану. Гарантия качества.`
-    : `Каталог техники в Ташкенте. Телефоны, холодильники, пылесосы, кондиционеры. Рассрочка, быстрая доставка по Узбекистану.`;
+    : `Купить ${fbCatName} со скидкой в Ташкенте. Выгодные цены, рассрочка, быстрая доставка по всему Узбекистану.`;
 
   // UZ keywords: category name used as UZ search term (category names are already in Russian,
   // but Google also indexes them when combined with UZ keywords)
