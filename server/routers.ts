@@ -4,7 +4,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { registerUser, loginUser, updateUserPhone, setEmailVerifyToken, verifyEmailByToken, setPasswordResetToken, resetPasswordByToken } from "./db";
+import { registerUser, loginUser, updateUserPhone, setEmailVerifyToken, verifyEmailByToken, setPasswordResetToken, resetPasswordByToken, getUserById } from "./db";
 import { SignJWT } from "jose";
 import { ENV } from "./_core/env";
 import { sendVerificationEmail, sendPasswordResetEmail } from "./email";
@@ -152,6 +152,27 @@ export const appRouter = router({
         if (!ok) throw new TRPCError({ code: "BAD_REQUEST", message: "Ссылка недействительна или устарела. Запросите сброс заново." });
         return { success: true };
       }),
+
+    // Статус аккаунта: подтверждена ли почта, есть ли телефон
+    myStatus: protectedProcedure.query(async ({ ctx }) => {
+      const u = await getUserById(ctx.user.id);
+      return {
+        email: u?.email ?? null,
+        phone: u?.phone ?? null,
+        emailVerified: !!(u as any)?.emailVerified,
+      };
+    }),
+
+    // Повторно отправить письмо-подтверждение почты
+    resendVerification: protectedProcedure.mutation(async ({ ctx }) => {
+      const u = await getUserById(ctx.user.id);
+      if (!u?.email) throw new TRPCError({ code: "BAD_REQUEST", message: "У аккаунта нет email" });
+      if ((u as any).emailVerified) return { success: true, alreadyVerified: true };
+      const vToken = randomBytes(32).toString("hex");
+      await setEmailVerifyToken(u.id, vToken, new Date(Date.now() + 24 * 60 * 60 * 1000));
+      void sendVerificationEmail(u.email, vToken);
+      return { success: true, alreadyVerified: false };
+    }),
 
     // Update phone number
     updatePhone: protectedProcedure
